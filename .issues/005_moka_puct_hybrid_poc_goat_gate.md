@@ -6,12 +6,13 @@ Issue 576 (a specialist to plug in). The E0 measurement below can run NOW
 reviewer): G0 kill switch split from the evidence gate, G1 floor-metric pin,
 G3 → paired non-inferiority (δ = 1.0 pp), G5 per-suite arm pre-registration
 on train/cal + δ on the budget face, G2 per-question wording for H1, T5/P3
-single frozen test read (P3's laya row joins this run). Round 2: G3 sign
-corrected (regression = A0 − hybrid) and δ re-based on a power calculation
-(δ = max(1.0 pp, 2.5·SE_suite) from the train/cal discordant rate; a fixed
-1.0 pp fails a parity hybrid 36–58% of the time — that was α/power
-confusion); G5's budget clause given the same paired, correctly-signed form.
-Round 3: AGREE — G2's laya clause also given the paired signed form.
+single frozen test read (P3's laya row joins this run). Same-day riir-ai
+.docs substrate sweep (6 vocabulary families): H3 value-head category rule
+pinned (Research 322 state-forecast-vs-Q(s,a) verdict + the TMNF-C negative,
+Research 380 §5), H1 names the Bench 565 tri-gate delegate precedent, the
+instrument section names the in-repo precedents (Bench 898 Elo option-choice,
+Plan 213 ruliology_arena pattern, best_belief Beta idiom). No gate arithmetic
+changed.
 
 ## Lineage (what the workspace already measured)
 
@@ -32,7 +33,10 @@ count-table fusion is only as good as its evidence density. Measure that FIRST.
 - **A1 instinct alone:** the specialist, no modelless term (the attribution
   control Bench 205:86 demands: the hybrid must beat THIS, not just reflex).
 - **H1 cascade** (Proposal 047's default): reflex answers when the fused abstain
-  gate passes; else the specialist decides among reflex's top-k.
+  gate passes; else the specialist decides among reflex's top-k. (The Salience
+  Tri-Gate delegate — Bench 565, G3 PASS, ΔF1 +0.3145 — is the in-repo
+  escalate-to-the-stronger-lane-only-when-informed precedent for this gate
+  family.)
 - **H2 prior fusion** (the Proposal 013 shape, transplanted): specialist prior
   `p_i` sharpened by reflex evidence:
   `p'_i = normalize(p_i · exp(g · β · m_i))`, where `m_i` = the nb_scope
@@ -44,7 +48,14 @@ count-table fusion is only as good as its evidence density. Measure that FIRST.
   H2's `p'`; value = the specialist value head (Moka's shape), optionally
   initialised from `successor_density_critic` Q. Defaults copied, not tuned:
   c_puct 1.5, top_k 8. Single-shot classification needs no tree, so H3 is
-  scored only where a chain exists.
+  scored only where a chain exists. **Value-head category rule (the in-repo
+  measured lessons):** the value must be a per-option critic. A STATE
+  forecaster cannot substitute — Research 322's category-confusion verdict
+  (conformal-naive / BoMSampler / Sleep-Time / Best-Belief all produce state
+  forecasts and fit no `Q(s,a)` seam), and RPE-style value feeding existing
+  selection is the measured TMNF-C negative (Research 380 §5, the
+  mb_personality rule). H3 stands on the Moka shape's own measured win
+  (Bench 205) or it dies — it never substitutes a cheaper value source.
 
 ## E0 — measure evidence density before building H2 (runs now)
 
@@ -130,6 +141,14 @@ method, so arm selection cannot drift into vibes:
   win-rates are reported, not the selector.
 - H2's β / n_min / τ_n are selected by the SAME instrument over the
   train/cal grid — no test-side tuning anywhere.
+- In-repo precedents for the shapes involved: `attack_reasoning` (Plan 575,
+  Bench 898) is the LIVE `katgpt_core::rating` Elo option-choice shape at
+  runtime (expected-score + deterministic UCB1 bonus) — the shape a PROMOTED
+  lane would use for per-question routing, distinct from this one-shot
+  selector; riir-games' `ruliology_arena` (Plan 213) is the in-repo
+  WinMatrix/ParadigmRanking head-to-head shape (pattern reference only —
+  riir-instinct never deps riir-ai); `best_belief`'s ε-quantile Beta
+  conservative selection is the third corroboration of the Beta-LCB idiom.
 
 Why not 042's pick verbatim: there it is a RUNTIME per-candidate seam (among
 generated quest candidates, per request) and its wiring is gated OFF — Phase
