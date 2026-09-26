@@ -101,17 +101,49 @@ unlike Go transpositions, but the number decides.
   lower bound of accuracy > max(A0, A1) point accuracy with no G3 breach,
   **or** A1 − arm has a 95% upper bound ≤ δ, paired, under the same power
   rule (the Proposal 013 budget face, where the hybrid's value is the
-  latency it saves).
+  latency it saves). The pre-registration instrument is named in its own
+  section below — Pareto rank-0 + argmax Beta-LCB on train/cal, never vibes.
 - **G6 purity:** the reflex half is frozen counts (no runtime gradient); the
   instinct half is a sealed HOSTED-ONLY vessel (Issue 001).
 
 Promote the winning arm, demote the rest. Report every arm, losses included.
 
+## The pre-registration instrument (train-side; the Proposal 042 seam shape)
+
+G5's "pre-registered on train/cal" names a decision, not a method. The
+method, so arm selection cannot drift into vibes:
+
+- On the train/cal slice, run every arm; keep the PAIRED per-question
+  outcomes (both arms answer the same questions, so win/loss/tie counts are
+  direct).
+- Score each arm on three axes: accuracy Beta-LCB, escalation rate, p99
+  latency.
+- **Pareto rank-0 filter** over (accuracy LCB ↑, escalation ↓, p99 ↓) using
+  the `dominates` shape (~30 LOC — riir-clippy `ruliology_search.rs`,
+  borrowed from `katgpt-ruliology::WinMatrix::pareto_front`, Bench 572 GOAT
+  lineage; the same seam shape Proposal 042 §3 prescribes at
+  `QuestLeoScorer`).
+- **The gated arm per suite = argmax Beta-LCB among rank-0**
+  (`katgpt_core::beta_lcb_order_into` — the riir-dao strategy-selection
+  substrate; conservative under small n, which is what train/cal slices
+  are). Elo (`katgpt_core::rating`) is the companion READOUT where pairwise
+  win-rates are reported, not the selector.
+- H2's β / n_min / τ_n are selected by the SAME instrument over the
+  train/cal grid — no test-side tuning anywhere.
+
+Why not 042's pick verbatim: there it is a RUNTIME per-candidate seam (among
+generated quest candidates, per request) and its wiring is gated OFF — Phase
+0 closed UNMEASURABLE 2026-09-22 (dead completion channel), Phase 3 dead
+until re-open. Here the shape transplants to the EXPERIMENT pre-registration
+seam, where the channel is live: train/cal accuracy exists. Five
+lineage-motivated arms do not need a full L3 enumeration; they need a
+dominated-candidate filter that cannot be argued with after the fact.
+
 ## Plan
 
 - [ ] **T1 — E0** evidence-density measurement (reflex-only, now).
 - [ ] **T2** — arms A0/A1/H1 once riir-train Issue 576 ships a specialist.
-- [ ] **T3** — H2 on the suites E0 clears; β / n_min / τ_n selected on held-out train.
+- [ ] **T3** — H2 on the suites E0 clears; β / n_min and τ_n selected on held-out train by the pre-registration instrument (Pareto rank-0 + argmax Beta-LCB, below).
 - [ ] **T4** — H3 on chain-shaped cases only; `successor_density_critic` Q-init as a sub-arm.
 - [ ] **T5** — GOAT gate G0–G6, record as a Bench; promote the winner as the
       "Reflex · instinct" lane (Issue 003). ONE test read total: arms are

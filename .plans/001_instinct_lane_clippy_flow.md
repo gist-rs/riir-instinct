@@ -63,7 +63,8 @@ ns/option (per question for H1) + absolute p99 published, faster than laya
 reflex-won suites (A0 − hybrid 95% upper bound ≤ δ; δ = max(1.0 pp, 2.5·SE)
 per suite from the train/cal discordant rate, ≈80% power at parity) · G4
 alloc-free hot path · G5 per-suite candidate arm pre-registered on
-train/cal; its Wilson lower bound > max(reflex, instinct-alone) on a gap
+train/cal (Pareto rank-0 + argmax Beta-LCB, the Proposal 042 seam shape);
+its Wilson lower bound > max(reflex, instinct-alone) on a gap
 suite, or A1 − arm 95% upper bound ≤ δ (paired, same power rule) at ≤ 50%
 escalation · G6 purity (frozen counts + sealed vessel, no runtime gradient).
 Train rows only; the
