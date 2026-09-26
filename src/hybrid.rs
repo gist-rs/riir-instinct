@@ -120,8 +120,13 @@ pub struct SpecialistLane {
 
 impl SpecialistLane {
     /// Join an artifact onto the seat's labels: every seat label must
-    /// appear exactly once in the artifact's label universe (asserted
-    /// both directions). `suite` is asserted too — loading the banking77
+    /// appear EXACTLY ONCE in the artifact's universe (the map is
+    /// injective, asserted). The artifact may carry MORE labels than the
+    /// seat offers (riir-train trains over the full intent set; the
+    /// harness's test option union can be one narrower — measured,
+    /// massive_intent_en 60 vs 59) — the extra classes are never
+    /// survivors, because the arms only ever pick among the seat's
+    /// offered options. `suite` is asserted too — loading the banking77
     /// winner into the emotion seat must be loud, never a permute.
     pub fn join(
         spec: Specialist,
@@ -135,24 +140,35 @@ impl SpecialistLane {
                 spec.suite
             ));
         }
-        if spec.labels.len() != seat_labels.len() {
+        if spec.labels.len() < seat_labels.len() {
             return Err(format!(
-                "join: artifact has {} labels, seat has {}",
+                "join: artifact has {} labels, seat needs {} — a seat option would \n                 be unscoreable",
                 spec.labels.len(),
                 seat_labels.len()
             ));
         }
         let mut perm = vec![usize::MAX; seat_labels.len()];
+        let mut used = vec![false; spec.labels.len()];
         for (li, seat_label) in seat_labels.iter().enumerate() {
             let ci = spec
                 .labels
                 .iter()
                 .position(|l| l == seat_label)
                 .ok_or_else(|| format!("join: seat label {seat_label:?} not in the artifact"))?;
+            if used[ci] {
+                return Err(format!("join: artifact label {seat_label:?} matched twice"));
+            }
+            used[ci] = true;
             perm[li] = ci;
         }
         if perm.contains(&usize::MAX) {
             return Err("join: incomplete permutation".into());
+        }
+        let ignored = used.iter().filter(|&&u| !u).count();
+        if ignored > 0 {
+            eprintln!(
+                "  [join] {suite}: artifact carries {ignored} label(s) the seat never \n                 offers — unmapped, never survivors"
+            );
         }
         Ok(Self {
             spec,

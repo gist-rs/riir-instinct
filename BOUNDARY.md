@@ -40,8 +40,8 @@ shaped like `../riir-clippy` (private product engine over public katgpt-rs):
 
 | Crate | Location | Condition |
 |---|---|---|
-| katgpt-core | `../katgpt-rs/crates/katgpt-core` | `default-features = false`; consumed: `exact_sigmoid` (the score readout, never softmax) — measured at P3 T1 (`src/specialist.rs`) |
-| riir-reflex | `../riir-reflex` | lib dep, features `modelless,nb_scope`; consumed: `embed::hashed_tokens_into` (the ONE tokenizer law — the specialist's training-side `events_into` is the same bytes) + the `nb_scope` tables for the hybrid composition (Issue 003 T2) — measured at P3 T1. **Never a dep on the harness lane** (the arena's lane wiring decides by boundary check, Issue 003 T3) |
+| katgpt-core | `../katgpt-rs/crates/katgpt-core` | `default-features = false`, features `best_belief` + `sigmoid_calibration`. Consumed: `exact_sigmoid` (the score readout, never softmax — `src/specialist.rs`), `best_belief_score` (the ε-quantile Beta LCB — the pre-registration instrument's selector, `src/stats.rs`), `SigmoidGateCalibrator` (the G1 Platt face, the arena) — measured at P3 T1/T2 (2026-09-26/27) |
+| riir-reflex | `../riir-reflex` | lib dep, features `modelless,nb_scope`; consumed: `embed::hashed_tokens_into` (the ONE tokenizer law — the specialist's training-side `events_into` is the same bytes) + the `nb_scope` tables for the hybrid composition + `harness::{suites, metrics, runner::seat}` (the seat — byte-identical questions + the deployed posture, Issue 003 T3) — measured at P3 T1/T3. **Never a dep on the harness's lane runners** (the arena calls `run()` only for the A0 drift pin) |
 
 Next planned rows (land WITH their first consumer, each measured):
 `riir-infer` (model forward loaders, HOSTED-ONLY lane), `reflexer-vessel`
