@@ -76,7 +76,16 @@ the specialist only where the modelless lane abstains, so it keeps the
       the sorted-array inserts, i.e. the O(n) work itself); the arena's
       G2 row refreshes at its next run. The laya paired face measured
       same day: **PASS ×6** (lane sub-µs p50 vs laya 118–650 ms). The
-      site publish remains open.
+      site publish remains open — **blocked on comparability, not
+      wiring**: the site's published modelless/laya lanes are the
+      Bench 052 protocol runs (reflex-site `9839f5a`), while the v2
+      arena numbers come from THIS box's current `.raw/datasets`, which
+      the record itself flags as differing from earlier pulls
+      ("internally consistent, never comparable"). Publishing the
+      hybrid lane beside them without a same-protocol, same-bytes
+      re-measurement would put non-comparable numbers on the public
+      tables — the publish needs one aligned run (the reflex harness
+      protocol + the arena seat on the same bytes) first.
 
 ## References
 
