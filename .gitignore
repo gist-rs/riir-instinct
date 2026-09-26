@@ -1,0 +1,10 @@
+/target
+.DS_Store
+CLAUDE.md
+.raw/
+# Specialist weights and HOSTED-ONLY vessels are runtime data — never committed
+# (riir-clippy Proposal 009: weights are bytes, never a path dep).
+*.vessel
+*.bin
+*.safetensors
+*.gguf

@@ -1,0 +1,69 @@
+# riir-instinct — boundary contract
+
+Visibility: private
+
+> The single source of truth for what may live in and depend on this repo.
+> Audited by the `boundary-guard` skill and
+> `../riir-ai/scripts/ci_boundary_contract.sh` (workspace dep graph +
+> contract honesty). Cross-repo rules LINK to their one canonical home —
+> never copied. Born 2026-09-26 per `../riir-ai/.proposals/047_riir_instinct_hybrid_decision_engine.md`.
+
+## Owns
+
+**The model-based and hybrid decision lanes** ("Reflex · instinct") — the
+private, trained sibling of the public modelless engine `../riir-reflex`,
+shaped like `../riir-clippy` (private product engine over public katgpt-rs):
+
+- specialist serving: load a sealed specialist artifact (bytes, never a path
+  dep) and run its forward through `../riir-infer` loaders
+- the hybrid composition: the modelless lane (riir-reflex `nb_scope` count
+  tables) prunes options to top-k / answers confident questions; the
+  specialist decides the rest (escalation policy + calibrated confidence)
+- the HOSTED-ONLY vessel READER (the class `../riir-reflexer` deliberately
+  refuses): verify → decrypt → apply, whole-snapshot, monotonic
+- the instinct arena rows (harness lane beside modelless / laya) and the
+  hosted-lane deploy manifest (`deploy.yaml`, via `../riir-deployer`)
+
+## Does not own
+
+| Concern | Correct home |
+|---|---|
+| Training, distillation, the self-evolve loop, vessel MINTING + lineage store | `../riir-train` (Issue 576; Research 457 moat map) |
+| Model forward kernels, loaders, tokenizers | `../riir-infer` (public; ships loaders, not weights) |
+| The modelless engine + arena harness | `../riir-reflex` (public) |
+| The vessel FORMAT crate (public read/verify for PUBLIC-RELEASE) | `../riir-reflexer` (`reflexer-vessel`) |
+| Game runtime / NPC cognition / the L0–L5 layer stack | `../riir-ai` (Proposal 047 §L0–L5) |
+| Deploy orchestration | `../riir-deployer` |
+| Settlement, decstat contribution rows, pricing | `../riir-dapps` (+ `../riir-kat` wire) |
+
+## May depend on
+
+| Crate | Location | Condition |
+|---|---|---|
+| — | — | **none yet** (born md-only; P3 adds the first code) |
+
+Planned rows (land WITH the first code, each measured): `katgpt-core`
+(`../katgpt-rs`), `riir-reflex` lib (`../riir-reflex`), `riir-infer-*`
+(`../riir-infer`), `reflexer-vessel` (`../riir-reflexer`). **Never riir-ai**
+(this repo sits beside riir-ai, not downstream of it). No game crates, no
+Python, no candle.
+
+## Standing invariants
+
+- **Source secrecy**: private; distribution is prebuilt binaries / hosted
+  lanes only. Never `cargo publish`.
+- **Weights never enter any repo** (`.gitignore` refuses `*.vessel`, `*.bin`,
+  `*.safetensors`, `*.gguf`). HOSTED-ONLY artifacts never reach
+  uncontrolled hardware; encrypted at rest.
+- **No-cheat protocol** (riir-reflex Issue 038): train rows only for any
+  corpus/weights; select on held-out train; arena test split read once.
+- **No training code here** — riir-train trains, this repo consumes bytes.
+
+## Inherited boundaries (links)
+
+- Dep direction: `../riir-ai/BOUNDARY.md`
+- Public/private split: `../riir-ai/.research/003_Commercial_Open_Source_Strategy_Verdict.md`
+
+## Drift ledger (target vs actual)
+
+**None.**
