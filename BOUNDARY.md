@@ -40,13 +40,13 @@ shaped like `../riir-clippy` (private product engine over public katgpt-rs):
 
 | Crate | Location | Condition |
 |---|---|---|
-| — | — | **none yet** (born md-only; P3 adds the first code) |
+| katgpt-core | `../katgpt-rs/crates/katgpt-core` | `default-features = false`; consumed: `exact_sigmoid` (the score readout, never softmax) — measured at P3 T1 (`src/specialist.rs`) |
+| riir-reflex | `../riir-reflex` | lib dep, features `modelless,nb_scope`; consumed: `embed::hashed_tokens_into` (the ONE tokenizer law — the specialist's training-side `events_into` is the same bytes) + the `nb_scope` tables for the hybrid composition (Issue 003 T2) — measured at P3 T1. **Never a dep on the harness lane** (the arena's lane wiring decides by boundary check, Issue 003 T3) |
 
-Planned rows (land WITH the first code, each measured): `katgpt-core`
-(`../katgpt-rs`), `riir-reflex` lib (`../riir-reflex`), `riir-infer-*`
-(`../riir-infer`), `reflexer-vessel` (`../riir-reflexer`). **Never riir-ai**
-(this repo sits beside riir-ai, not downstream of it). No game crates, no
-Python, no candle.
+Next planned rows (land WITH their first consumer, each measured):
+`riir-infer` (model forward loaders, HOSTED-ONLY lane), `reflexer-vessel`
+(vessel format reader). **Never riir-ai** (this repo sits beside riir-ai,
+not downstream of it). No game crates, no Python, no candle.
 
 ## Standing invariants
 

@@ -1,6 +1,16 @@
 # Issue 003 — hybrid serving + the "Reflex · instinct" arena lane
 
-**Status:** OPEN — filed 2026-09-26 (Plan 001 P3). Blocked on riir-train Issue 576 (a specialist to serve).
+**Status:** OPEN — filed 2026-09-26 (Plan 001 P3). ~~Blocked on riir-train
+Issue 576~~ — 576 CLOSED 2026-09-26 (Bench 608 + 609, winners
+`<suite>_winner_v1.bin`). **T1 DONE 2026-09-26**: crate skeleton + the
+RISP v1 artifact reader (`src/specialist.rs`), BLAKE3-seal + vocab-pin +
+format fixtures; the serving forward runs the reflex tokenizer law
+(`embed::hashed_tokens_into`, one lexicon) + katgpt-core `exact_sigmoid`
+(never softmax); live pin `examples/load_winners` decodes all six real
+winners and scores sample texts (ag_news business text → class 2,
+emotion joy text → 1, banking77 card text → "get physical card"); clippy
+`-D warnings` lib/examples/tests. Dep rows measured into BOUNDARY:
+katgpt-core + riir-reflex (T2 consumes nb_scope for the composition).
 
 ## Why
 
@@ -12,8 +22,16 @@ the specialist only where the modelless lane abstains, so it keeps the
 
 ## Plan
 
-- [ ] **T1** — crate skeleton (declared deps: katgpt-core, riir-reflex lib,
-      riir-infer; BOUNDARY rows land with the code, measured).
+- [x] **T1** — crate skeleton (declared deps: katgpt-core, riir-reflex lib,
+      riir-infer; BOUNDARY rows land with the code, measured). DONE
+      2026-09-26: workspace + lib; the RISP v1 reader (sealed artifact,
+      i8-quantized weights, vocab pin 2^17 both directions) + the serving
+      forward (bag law over the reflex tokenizer, sigmoid per class, argmax
+      ties-lowest); 2 format-fixture unit tests; the live cross-repo pin
+      (`examples/load_winners`, real winner bytes). riir-infer's row stays
+      PLANNED (its first consumer is the hosted model lane, not the
+      specialist) — declared deps without a consumer would be unused-dep
+      rot.
 - [ ] **T2** — composition: serve the arm Issue 005's POC promotes (H1
       cascade / H2 prior fusion / H3 PUCT-over-options). The default until
       then is H1: modelless `nb_scope` scores → top-k prune → specialist over
