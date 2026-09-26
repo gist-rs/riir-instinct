@@ -186,6 +186,18 @@ impl SpecialistLane {
         }
     }
 
+    /// Score ARBITRARY class rows into `out` (one class row per entry).
+    /// The per-case presented-position path: the caller resolves each
+    /// presented option to its artifact class row (the Issue-006 bridge —
+    /// the seat's pick space is the question's presented options, not the
+    /// label universe). Zero-alloc.
+    pub fn scores_classes_into(&self, bag: &[(u32, f32)], class_rows: &[usize], out: &mut [f32]) {
+        assert_eq!(out.len(), class_rows.len(), "scores out of shape");
+        for (o, &c) in out.iter_mut().zip(class_rows.iter()) {
+            *o = self.spec.score_class(bag, c);
+        }
+    }
+
     /// A1 — the specialist alone: argmax score over the full label
     /// universe, ties to the lowest LABEL index. Returns (pick, winning
     /// score). Zero-alloc (`scores` is the caller's scratch, len = label
@@ -205,11 +217,18 @@ impl SpecialistLane {
     /// passes through when its gate did not abstain; an abstaining
     /// question is pruned to the top-k modelless survivors and the
     /// specialist picks among them (ties among survivors → the lowest
-    /// LABEL index, the global argmax law). Zero-alloc.
+    /// POSITION, the global argmax law). `class_of_pos` maps each of A0's
+    /// option positions to the artifact class row that position denotes —
+    /// the PER-CASE bridge between the seat's presented-option space
+    /// (what A0's probs and the gold index speak) and the specialist's
+    /// label space; indexing `perm` by position instead is the Issue-006
+    /// instrument defect. The pick is a POSITION, directly comparable
+    /// with gold. Zero-alloc.
     pub fn h1_decide(
         &self,
         a0: A0Answer<'_>,
         bag: &[(u32, f32)],
+        class_of_pos: &[usize],
         survivors: &mut [(usize, f64); MAX_TOP_K],
         scores: &mut [f32; MAX_TOP_K],
     ) -> HybridDecision {
@@ -219,10 +238,11 @@ impl SpecialistLane {
                 escalated: false,
             };
         }
+        debug_assert_eq!(class_of_pos.len(), a0.probs.len(), "class map out of shape");
         let kept = self.cascade.prune(a0.probs, survivors);
         let n = kept.len();
-        for (i, &(li, _)) in kept.iter().enumerate() {
-            scores[i] = self.spec.score_class(bag, self.perm[li]);
+        for (i, &(pos, _)) in kept.iter().enumerate() {
+            scores[i] = self.spec.score_class(bag, class_of_pos[pos]);
         }
         let mut best = 0usize;
         for i in 1..n {
@@ -251,10 +271,13 @@ pub enum HybridLane {
 
 impl HybridLane {
     /// H1 decision. `ReflexOnly` never escalates — the kill switch.
+    /// `class_of_pos` is the per-case position → class-row bridge (see
+    /// [`SpecialistLane::h1_decide`]).
     pub fn h1_decide(
         &self,
         a0: A0Answer<'_>,
         bag: &[(u32, f32)],
+        class_of_pos: &[usize],
         survivors: &mut [(usize, f64); MAX_TOP_K],
         scores: &mut [f32; MAX_TOP_K],
     ) -> HybridDecision {
@@ -263,7 +286,18 @@ impl HybridLane {
                 pick: a0.pick,
                 escalated: false,
             },
-            HybridLane::Specialist(lane) => lane.h1_decide(a0, bag, survivors, scores),
+            HybridLane::Specialist(lane) => {
+                lane.h1_decide(a0, bag, class_of_pos, survivors, scores)
+            }
+        }
+    }
+
+    /// Score ARBITRARY class rows (see
+    /// [`SpecialistLane::scores_classes_into`]).
+    pub fn scores_classes_into(&self, bag: &[(u32, f32)], class_rows: &[usize], out: &mut [f32]) {
+        match self {
+            HybridLane::ReflexOnly => unreachable!("specialist scores without a specialist"),
+            HybridLane::Specialist(lane) => lane.scores_classes_into(bag, class_rows, out),
         }
     }
 
@@ -462,14 +496,14 @@ mod tests {
             pick: 1,
             abstained: true,
         };
-        let d = lane.h1_decide(a0, &[], &mut survivors, &mut scores);
+        let d = lane.h1_decide(a0, &[], &[0, 1], &mut survivors, &mut scores);
         assert_eq!(d, HybridDecision { pick: 1, escalated: false });
         let a0 = A0Answer {
             probs: &[0.9, 0.1],
             pick: 0,
             abstained: false,
         };
-        let d = lane.h1_decide(a0, &[], &mut survivors, &mut scores);
+        let d = lane.h1_decide(a0, &[], &[0, 1], &mut survivors, &mut scores);
         assert_eq!(d, HybridDecision { pick: 0, escalated: false });
     }
 
@@ -533,7 +567,7 @@ mod tests {
         };
         let mut survivors = [(0usize, 0.0f64); MAX_TOP_K];
         let mut scores = [0.0f32; MAX_TOP_K];
-        let d = lane.h1_decide(a0, &bag, &mut survivors, &mut scores);
+        let d = lane.h1_decide(a0, &bag, &[0, 1], &mut survivors, &mut scores);
         assert!(d.escalated);
         assert_eq!(d.pick, 1, "top-1 prune confines the specialist to A0's argmax");
     }
@@ -570,6 +604,32 @@ mod tests {
         };
         let fused = prior_fusion_pick(&fusion, &spec_scores, &[-9.0, 9.0], 0, 5);
         assert_eq!(fused.pick, a1, "g ≡ 0 ⇒ the fused ordering is the A1 ordering, even against a dominant nb margin for the other option");
+    }
+
+    /// H1 scores the class each POSITION denotes (the per-case bridge),
+    /// never perm[position] — the Issue-006 instrument law, pinned on a
+    /// discriminating shape. The toy's artifact order is ["s1","s0"] so
+    /// perm = [1, 0]; a case presenting (s1, s0) in THAT order has
+    /// class_of_pos = [0, 1] (position 0 is the artifact's class 0). With
+    /// bag "beta" (class 0 strong) the pick must be position 0 — the
+    /// perm-indexed defect scores perm[0] = class 1 at position 0 and
+    /// picks exactly the reverse.
+    #[test]
+    fn h1_scores_the_class_the_position_denotes() {
+        let lane = HybridLane::Specialist(toy_lane_with(2));
+        let bag = bag_of("beta");
+        let a0 = A0Answer {
+            probs: &[0.5, 0.5],
+            pick: 0,
+            abstained: true,
+        };
+        let mut survivors = [(0usize, 0.0f64); MAX_TOP_K];
+        let mut scores = [0.0f32; MAX_TOP_K];
+        let d = lane.h1_decide(a0, &bag, &[0, 1], &mut survivors, &mut scores);
+        assert_eq!(
+            d.pick, 0,
+            "position 0 = class 0 = the beta-strong class; the perm-indexed bug picks 1"
+        );
     }
 
     /// H2's margin term actually discriminates: the prior favors s0 on

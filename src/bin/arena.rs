@@ -23,6 +23,7 @@
 //!
 //! Output: `<out>/RESULTS.md` + `predictions.json` + `registration.json`.
 
+use std::collections::HashMap;
 use std::hint::black_box;
 use std::path::{Path, PathBuf};
 
@@ -308,9 +309,23 @@ struct SuiteCtx<const N: usize> {
     tok: Vec<u32>,
     survivors: [(usize, f64); MAX_TOP_K],
     h1_scores: [f32; MAX_TOP_K],
-    spec_scores: Vec<f32>,
     in_scores: Vec<f32>,
     nb_scratch: Vec<u32>,
+    /// Presented-option bridge, built once per suite: criteria key →
+    /// (seat label idx, artifact class row). The engine's answer space is
+    /// the question's presented criteria keys — `engine_request`'s
+    /// iteration order — and gold.idx speaks the same space; the
+    /// specialist's space is the label universe. The per-case position
+    /// vectors below are this map's product (Issue 006: indexing the
+    /// label permutation by position instead is the instrument defect
+    /// that read massive at chance).
+    key_map: HashMap<String, (usize, usize)>,
+    /// Seat label idx → artifact class row (the join permutation).
+    perm: Vec<usize>,
+    pos_label: Vec<usize>,
+    pos_class: Vec<usize>,
+    pos_spec: Vec<f32>,
+    pos_nb: Vec<f32>,
 }
 
 /// One H2 grid point's accumulated readings: (params, picks, correct,
@@ -318,6 +333,96 @@ struct SuiteCtx<const N: usize> {
 type GridRow = (Cand, Vec<usize>, Vec<bool>, Vec<f64>, Vec<f64>);
 
 impl<const N: usize> SuiteCtx<N> {
+    /// Fill the per-case position maps from the question's presented
+    /// criteria keys, in the object's own order — the exact iteration
+    /// `engine_request` feeds the engine, so position p here IS the
+    /// engine's answer index p (and the gold index's space). The
+    /// position → domain rule mirrors the engine's own two rules
+    /// (`solve_into`): every key resolving to a seat label → BY NAME
+    /// (massive/banking77, whose keys are the label strings); otherwise
+    /// count == label count → IDENTITY BY INDEX (the fixed-criteria
+    /// suites ag_news/emotion/sst5/xnli, whose keys are display names
+    /// over int-string domains). Anything else is the engine's
+    /// route-less shape — the specialist bridge is undefined there, so
+    /// REFUSE loud (Issue 006: the mismatch of these two spaces is the
+    /// instrument defect that read massive at chance).
+    fn fill_positions(&mut self, case: &SuiteCase) {
+        self.pos_label.clear();
+        self.pos_class.clear();
+        let q = &case.questions[0];
+        // The presented options, in presentation order — a choice's
+        // criteria OBJECT keys, or a score's criteria ARRAY levels (the
+        // engine's `Outcome::Score { level }` indexes the array).
+        let keys: Vec<String> = if let Some(obj) = q.criteria.as_object() {
+            obj.keys().cloned().collect()
+        } else if let Some(levels) = q.criteria.as_array() {
+            levels
+                .iter()
+                .map(|v| match v {
+                    serde_json::Value::String(s) => s.clone(),
+                    other => other.to_string(),
+                })
+                .collect()
+        } else {
+            panic!(
+                "case {}: criteria must be an object (choice) or an array (score)",
+                case.id
+            );
+        };
+        let all_named = keys.iter().all(|key| self.key_map.contains_key(key));
+        if all_named {
+            for key in &keys {
+                let (li, cls) = self.key_map[key];
+                self.pos_label.push(li);
+                self.pos_class.push(cls);
+            }
+        } else if keys.len() == self.perm.len() {
+            for (li, &cls) in self.perm.iter().enumerate() {
+                self.pos_label.push(li);
+                self.pos_class.push(cls);
+            }
+        } else {
+            panic!(
+                "case {}: presented options neither all name seat labels nor match the \
+                 label count ({}) — the specialist bridge is undefined",
+                case.id,
+                self.perm.len()
+            );
+        }
+    }
+
+    /// Score the presented positions' classes into `pos_spec` (position
+    /// space — A1/H2's pick space). Zero-alloc after warmup.
+    fn score_positions(&mut self) {
+        let SuiteCtx {
+            lane,
+            bag,
+            pos_spec,
+            pos_class,
+            ..
+        } = self;
+        pos_spec.clear();
+        pos_spec.resize(pos_class.len(), 0.0);
+        lane.scores_classes_into(bag, pos_class, pos_spec);
+    }
+
+    /// Gather the label-space NB in-scores into position space (the H2
+    /// fusion's vectors must speak the pick space; the margin's rivals
+    /// become the presented options — the decision's true alternatives).
+    fn gather_positions_nb(&mut self) {
+        let SuiteCtx {
+            in_scores,
+            pos_label,
+            pos_nb,
+            ..
+        } = self;
+        pos_nb.clear();
+        pos_nb.resize(pos_label.len(), 0.0);
+        for (o, &li) in pos_nb.iter_mut().zip(pos_label.iter()) {
+            *o = in_scores[li];
+        }
+    }
+
     /// A0 + H1 over a case set. A0's latency = the reflex solve
     /// ([`eval_seat`]'s per-case µs); H1's = reflex + its own decision,
     /// both disclosed.
@@ -358,11 +463,17 @@ impl<const N: usize> SuiteCtx<N> {
                 abstained: qo.abstained,
             };
             let state = strs[ci].as_bytes();
-            let t = std::time::Instant::now();
             riir_instinct::specialist::bag_into(state, &mut self.bag, &mut self.tok);
-            let d = self
-                .lane
-                .h1_decide(a0_ans, &self.bag, &mut self.survivors, &mut self.h1_scores);
+            self.fill_positions(case);
+            self.score_positions();
+            let t = std::time::Instant::now();
+            let d = self.lane.h1_decide(
+                a0_ans,
+                &self.bag,
+                &self.pos_class,
+                &mut self.survivors,
+                &mut self.h1_scores,
+            );
             let dt_us = t.elapsed().as_nanos() as f64 / 1000.0;
             h1.picks.push(d.pick);
             h1.correct.push(d.pick == gold);
@@ -374,7 +485,7 @@ impl<const N: usize> SuiteCtx<N> {
             // the specialist's winning score when escalated (read OUTSIDE
             // the timed region — a readout, not decision work).
             h1.confs.push(if d.escalated {
-                f64::from(self.lane.pick_alone(&self.bag, &mut self.spec_scores).1)
+                f64::from(argmax_pos(&self.pos_spec).1)
             } else {
                 qo.conf
             });
@@ -419,10 +530,15 @@ impl<const N: usize> SuiteCtx<N> {
             .collect();
         for (ci, case) in cases.iter().enumerate() {
             let gold = case.gold[0].idx;
+            self.fill_positions(case);
             let state = strs[ci].as_bytes();
             let t = std::time::Instant::now();
             riir_instinct::specialist::bag_into(state, &mut self.bag, &mut self.tok);
-            let (pick, conf) = self.lane.pick_alone(&self.bag, &mut self.spec_scores);
+            self.score_positions();
+            // A1's pick in PRESENTED-OPTION space — the space gold speaks
+            // (the specialist answers the question asked, among the
+            // options presented; Issue 006).
+            let (pick, conf) = argmax_pos(&self.pos_spec);
             let fwd_us = t.elapsed().as_nanos() as f64 / 1000.0;
             a1.picks.push(pick);
             a1.correct.push(pick == gold);
@@ -432,22 +548,25 @@ impl<const N: usize> SuiteCtx<N> {
             a1.total_durs_us.push(fwd_us);
 
             // The frozen count tables' evidence for this state (read-only).
-            let (inscores, n_seen, n_tok): (&[f32], usize, usize) = if self.nb_armed {
+            let (n_seen, n_tok): (usize, usize) = if self.nb_armed {
                 let tables = self
                     .engine
                     .nb_scope()
                     .expect("nb_armed without tables — the posture lied");
                 riir_reflex::nb_scope::view_tokens_into(self.nb_view, state, &mut self.nb_scratch);
                 tables.in_scores(&self.nb_scratch, &mut self.in_scores);
-                let n_seen = tables.seen_count(&self.nb_scratch);
-                (
-                    self.in_scores.as_slice(),
-                    n_seen,
-                    self.nb_scratch.len(),
-                )
+                let seen = tables.seen_count(&self.nb_scratch);
+                (seen, self.nb_scratch.len())
             } else {
-                (&[] as &[f32], 0, 0)
+                (0, 0)
             };
+            let inscores: &[f32] = if self.nb_armed {
+                self.gather_positions_nb();
+                &self.pos_nb
+            } else {
+                &[]
+            };
+            let spec_pos: &[f32] = &self.pos_spec;
             for (cand, picks, correct, confs, durs) in grid.iter_mut() {
                 let Cand::H2 { beta, n_min, tau_n } = cand else {
                     unreachable!("grid holds only H2 candidates")
@@ -457,7 +576,7 @@ impl<const N: usize> SuiteCtx<N> {
                     n_min: *n_min,
                     tau_n: *tau_n,
                 };
-                let f = prior_fusion_pick(&fusion, &self.spec_scores, inscores, n_seen, n_tok);
+                let f = prior_fusion_pick(&fusion, spec_pos, inscores, n_seen, n_tok);
                 picks.push(f.pick);
                 correct.push(f.pick == gold);
                 confs.push(f.conf);
@@ -535,12 +654,17 @@ fn run_suite_n<const N: usize>(
         winner_path.display(),
         spec.labels.len()
     );
-    let lane = HybridLane::Specialist(SpecialistLane::join(
-        spec,
-        name,
-        &seat.labels,
-        Cascade { top_k },
-    )?);
+    let joined = SpecialistLane::join(spec, name, &seat.labels, Cascade { top_k })?;
+    // The presented-option bridge (SuiteCtx::key_map): every seat label
+    // → (its own index, its artifact class row).
+    let key_map: HashMap<String, (usize, usize)> = seat
+        .labels
+        .iter()
+        .enumerate()
+        .map(|(li, l)| (l.clone(), (li, joined.perm[li])))
+        .collect();
+    let perm: Vec<usize> = joined.perm.clone();
+    let lane = HybridLane::Specialist(joined);
     let nb_armed = posture.cfg.nb_scale > 0.0 && engine.nb_scope().is_some();
 
     let mut ctx = SuiteCtx::<N> {
@@ -552,9 +676,14 @@ fn run_suite_n<const N: usize>(
         tok: Vec::new(),
         survivors: [(0usize, 0.0f64); MAX_TOP_K],
         h1_scores: [0.0f32; MAX_TOP_K],
-        spec_scores: vec![0.0; N],
         in_scores: vec![0.0; N],
         nb_scratch: Vec::new(),
+        key_map,
+        perm,
+        pos_label: Vec::new(),
+        pos_class: Vec::new(),
+        pos_spec: Vec::new(),
+        pos_nb: Vec::new(),
     };
 
     // ── CAL phase (train-side): the instrument's readings ────────────
@@ -620,13 +749,15 @@ fn run_suite_n<const N: usize>(
         .iter()
         .map(|&i| (cal_arms[i].correct.len() as u32) - cal_arms[i].n_correct())
         .collect();
-    let rank0_sorted = {
-        let mut v = rank0.clone();
-        v.sort_unstable();
-        v
-    };
-    let win_pos = select_arm(&rank0_sorted, &successes, &failures);
-    let registered = cands[rank0_sorted[win_pos]].clone();
+    let win_pos = select_arm(&rank0, &successes, &failures);
+    // select_arm returns the CANDIDATE index (the rank-0 element), never
+    // a position within the rank-0 set — the massive run's rank0 [0, 2,
+    // 16] made the old rank0_sorted[win_pos] re-index OOB (Issue 006's
+    // position-vs-index class, one level up in the instrument). rank0 is
+    // already in ascending candidate order (pareto_rank0 keeps index
+    // order), so argmax ties resolve identically with or without the
+    // sort that used to sit here.
+    let registered = cands[win_pos].clone();
     eprintln!(
         "  instrument: rank-0 {}/{} · registered {}",
         rank0.len(),
@@ -744,6 +875,7 @@ fn fusion_overhead_micro<const N: usize>(
     /// (h1 full decision, h1 fusion-only, h2 fusion per option)
     const ITERS: usize = 20_000;
     let probs: Vec<f64> = (0..n).map(|i| (i as f64 * 0.61).cos().abs()).collect();
+    let class_of_pos: Vec<usize> = (0..n).collect();
     riir_instinct::specialist::bag_into(b"alpha beta gamma", &mut ctx.bag, &mut ctx.tok);
     let a0 = A0Answer {
         probs: &probs,
@@ -755,16 +887,24 @@ fn fusion_overhead_micro<const N: usize>(
     // legitimately all be label 0).
     let mut checksum = 0usize;
     for _ in 0..100 {
-        let d = ctx
-            .lane
-            .h1_decide(a0, &ctx.bag, &mut ctx.survivors, &mut ctx.h1_scores);
+        let d = ctx.lane.h1_decide(
+            a0,
+            &ctx.bag,
+            &class_of_pos,
+            &mut ctx.survivors,
+            &mut ctx.h1_scores,
+        );
         checksum += d.pick;
     }
     let t = std::time::Instant::now();
     for _ in 0..ITERS {
-        let d = ctx
-            .lane
-            .h1_decide(a0, &ctx.bag, &mut ctx.survivors, &mut ctx.h1_scores);
+        let d = ctx.lane.h1_decide(
+            a0,
+            &ctx.bag,
+            &class_of_pos,
+            &mut ctx.survivors,
+            &mut ctx.h1_scores,
+        );
         checksum += black_box(d.pick);
     }
     let h1_ns = t.elapsed().as_nanos() as f64 / ITERS as f64;
@@ -808,19 +948,32 @@ fn fusion_overhead_micro<const N: usize>(
         n_min: 4.0,
         tau_n: 4.0,
     };
+    let mut spec_scores = vec![0.0f32; n];
     ctx.lane
-        .scores_label_into(&ctx.bag, &mut ctx.spec_scores);
+        .scores_label_into(&ctx.bag, &mut spec_scores);
     // H2's per-question cost = the fusion arithmetic over the scores
     // (the specialist forward + nb read are measured separately in the
     // arm latencies; the BAR in the gate is the fusion term).
     let t = std::time::Instant::now();
     for _ in 0..ITERS {
-        let f = prior_fusion_pick(&fusion, &ctx.spec_scores, &[], 99, 5);
+        let f = prior_fusion_pick(&fusion, &spec_scores, &[], 99, 5);
         checksum += black_box(f.pick);
     }
     let h2_ns = t.elapsed().as_nanos() as f64 / ITERS as f64;
     black_box(checksum);
     (h1_ns, h1_fusion_ns, h2_ns / n as f64)
+}
+
+/// Argmax over f32 scores, ties to the LOWEST index — the engine argmax
+/// law. Returns (position, score).
+fn argmax_pos(scores: &[f32]) -> (usize, f32) {
+    let mut best = 0usize;
+    for (i, &s) in scores.iter().enumerate().skip(1) {
+        if s > scores[best] {
+            best = i;
+        }
+    }
+    (best, scores[best])
 }
 
 /// G1 — the registered arm's confidence readout on TEST: uncalibrated vs
@@ -1123,7 +1276,15 @@ argmax Beta-LCB instrument; predictions frozen in `predictions.json`.\n\n");
 registry caps), fit through the SAME code reflex's runner uses (`harness::runner::seat`). \
 The A0 drift pin asserts the arena's A0 xnli_en accuracy equals reflex's own `run()` row \
 byte for byte. H1 top-k = 8 (default). H2 grid: β ∈ {BETA_GRID:?} × n_min ∈ {N_MIN_GRID:?} × \
-τ ∈ {TAU_GRID:?} — 45 candidates, train-side only.\n\n"
+τ ∈ {TAU_GRID:?} — 45 candidates, train-side only. PICK SPACE (Issue 006, the v2 \
+instrument): A0's probs and every gold idx speak the question's PRESENTED-option space; \
+A1/H1/H2 resolve each presented option to its specialist class row (by name for the \
+suites whose keys are the label strings — massive/banking77 — by index under k == N for \
+the fixed-criteria suites), and every hybrid pick is a position, directly comparable with \
+gold. The v1 read scored the label permutation by position and compared label-space picks \
+against position-space gold — invisible wherever the presented set is the full universe, \
+chance-level on massive (20 of 59 + shuffle); its registration also double-indexed \
+`rank0_sorted[select_arm(..)]` (select_arm already returns the candidate index)."
     ));
     md.push_str(&format!("Box state: {box_state}\n\n"));
 

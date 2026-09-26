@@ -64,16 +64,21 @@ GOAT record.** Master plan:
   ONE-WAY `harness::runner::seat` seam (byte-identical questions + the
   deployed Bench 051 posture through the same fit code reflex's runner
   uses; the A0 drift pin asserts arena A0 == reflex `run()` byte-exact).
-- **Bench 001** (`.benchmarks/001_hybrid_goat/`): the single frozen test
-  read. Registered arms — **ag_news H2(β=1,nmin=2,τ=4) 0.8975** (A0
-  0.8625 / A1 0.8875; G1+G5 PASS; p50 2 µs vs A0's 150 µs);
-  **emotion A1 0.8550**, **sst5 A1 0.4217** (G1+G3 PASS);
-  **xnli/massive/banking77 A0 stands** (G5 refused honestly). G2's H1
-  fusion-only overhead 8–20 ns/q on narrow suites, honest fails on wide
-  (the O(n·k) prune — the O(n) survivor heap is the named remedy).
-  Open faces: the laya paired row (`--features arena-laya`), the
-  reflex-site publish, Issue 006 (massive's specialist reads chance on
-  the seat — A0 unaffected).
+- **Bench 001 v2** (`.benchmarks/001_hybrid_goat/`): the single frozen
+  test read under the CORRECTED instrument (Issue 006 — v1 scored the
+  label permutation by position and compared label-space picks against
+  presented-option gold; only massive's 20-of-59 sampled options could
+  expose it, and v1's registration also double-indexed
+  `rank0_sorted[select_arm(..)]`). Registered arms — **ag_news
+  H2(β=0.25,nmin=2,τ=2) 0.9000** (A0 0.8625 / A1 0.8875; G1+G5 PASS);
+  **emotion A1 0.8550**, **sst5 A1 0.4217**, **banking77 A1 0.7960**
+  (G1+G3 PASS); **massive H2(β=0.25,nmin=4,τ=4) 0.8300** (A1 0.8167 vs
+  A0 0.4200 — the suite flips from "A0 stands" to a hybrid win; G1+G3
+  PASS); **xnli A0 stands** (G5 refused honestly). The laya paired face
+  PASS ×6 (lane sub-µs p50 vs laya 118–650 ms). G2's H1 fusion-only
+  overhead 8–20 ns/q narrow, honest fails on wide (the O(n·k) prune —
+  the O(n) survivor heap is the named remedy). Open face: the
+  reflex-site publish.
 - **Stats** (`src/stats.rs`): Wilson bounds, paired non-inferiority
   (δ = max(1.0pp, 2.5·SE)), Pareto rank-0, Beta-LCB selection
   (katgpt-core best_belief) — the pre-registration instrument.

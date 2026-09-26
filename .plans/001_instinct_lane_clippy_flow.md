@@ -1,13 +1,18 @@
 # Plan 001 — the Reflex · instinct lane, riir-clippy flow end to end
 
 **Status:** IN PROGRESS — P1 ✓; P2 ✓ (576 closed, winners exported);
-P3a-E0 ✓ (reflex Bench 053); **P3a T2–T5 ✓ 2026-09-27 (Bench 001: the
-hybrid GOAT run — ag_news promotes H2, emotion/sst5 promote A1,
-xnli/massive/banking77 keep A0; H3 excluded with reason; the single
-test read spent, predictions frozen)**; **P3 T1–T4 ✓ 2026-09-27**
-(Issue 003: hybrid composition + the arena lane + the G0–G6 gate faces;
-the laya paired face and the reflex-site publish remain open); P4–P6
-open; Issue 006 (massive specialist anomaly) open.
+P3a-E0 ✓ (reflex Bench 053); **P3a T2–T5 ✓ 2026-09-27 (Bench 001 v2, the
+corrected instrument: ag_news promotes H2(0.25,2,2) 0.9000, emotion/sst5
+promote A1, massive promotes H2(0.25,4,4) 0.8300 (+41 pp over A0),
+banking77 registers A1 0.7960, xnli keeps A0; the single test read spent,
+predictions frozen)**; **P3 T1–T4 ✓ 2026-09-27** (Issue 003: hybrid
+composition + the arena lane + the G0–G6 gate faces; the laya paired face
+PASS ×6; the reflex-site publish remains open); P4–P6 open; Issue 006
+RESOLVED 2026-09-27 — the v1 massive anomaly was the ARENA's
+position-vs-index defect (label-space picks compared against
+presented-option gold; `select_arm`'s candidate index re-indexed through
+`rank0_sorted`), not a model defect — the artifact reads 0.76 on the seat's
+own rows and massive now registers a hybrid arm.
 
 Design of record: `../riir-ai/.proposals/047_riir_instinct_hybrid_decision_engine.md`.
 Trainer: `../riir-train/.issues/576_arena_specialists_for_riir_instinct.md`.
@@ -47,7 +52,7 @@ weights are bytes; mining → settle → corpus → retrain).
       (`../riir-train/data/instinct_specialists/`, gitignored — P3 mounts
       them via its artifact loader; the format is arm-agnostic). P3
       unblocked.
-- [x] **P3a — Moka+PUCT-style hybrid POC (Issue 005):** arms A0 reflex / A1 instinct / H1 cascade / H2 prior fusion (the Proposal 013 shape); H3 PUCT-over-options EXCLUDED with reason (no chain-shaped specialist suite — re-opens with a typed_decisions specialist). E0 MEASURED 2026-09-26 (riir-reflex Bench 053 — ARMED-PENDING on all 8 dataset suites). **T2–T5 MEASURED 2026-09-27 — Bench 001:** the instrument (Pareto rank-0 + argmax Beta-LCB on the cal front) registered per-suite arms; the single frozen test read landed (predictions.json); the GOAT verdict: ag_news → H2, emotion/sst5 → A1, xnli/massive/banking77 → A0. P3's laya row rides `--features arena-laya` (open).
+- [x] **P3a — Moka+PUCT-style hybrid POC (Issue 005):** arms A0 reflex / A1 instinct / H1 cascade / H2 prior fusion (the Proposal 013 shape); H3 PUCT-over-options EXCLUDED with reason (no chain-shaped specialist suite — re-opens with a typed_decisions specialist). E0 MEASURED 2026-09-26 (riir-reflex Bench 053 — ARMED-PENDING on all 8 dataset suites). **T2–T5 MEASURED 2026-09-27 — Bench 001 v2 (the corrected instrument, Issue 006):** the instrument (Pareto rank-0 + argmax Beta-LCB on the cal front) registered per-suite arms; the single frozen test read landed (predictions.json); the GOAT verdict: ag_news → H2(0.25,2,2) 0.9000, emotion/sst5 → A1, massive → H2(0.25,4,4) 0.8300, banking77 → A1 0.7960, xnli → A0. P3's laya row rode `--features arena-laya` (PASS ×6, measured same day).
 - [x] **P3 — hybrid serving + arena lane (Issue 003).** T1 ✓ 2026-09-26
       (crate skeleton + the RISP artifact reader + the live winner-load
       pin); **T2 ✓ 2026-09-27** (src/hybrid.rs: H1 cascade + H2 prior
@@ -56,8 +61,11 @@ weights are bytes; mining → settle → corpus → retrain).
       `harness::runner::seat` seam — the boundary check forced this
       shape: a reflex→instinct dep would be a cycle; the A0 drift pin
       holds the seat path to reflex's own run()); **T4 ✓ 2026-09-27**
-      (the G0–G6 faces measured in Bench 001). Open: the laya paired
-      face, the reflex-site lane-scoped publish, Issue 006 (massive).
+      (the G0–G6 faces measured in Bench 001 v2; the laya paired face
+      PASS ×6 same day). Open: the reflex-site lane-scoped publish.
+      (Issue 006 RESOLVED 2026-09-27: the arena's position-vs-index
+      instrument defect — massive was its only possible exposure; the
+      fix + the corrected frozen read are Bench 001 v2.)
 - [ ] **P4 — vessels (Issue 001).** HOSTED-ONLY reader over the
       `reflexer-vessel` format (verify → decrypt → monotonic apply); minting
       + lineage stay in riir-train; first minting key pinned in the same

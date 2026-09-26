@@ -78,13 +78,18 @@ fn hybrid_hot_path_allocates_nothing() {
     };
     let nb = [1.5f32, -0.5, 0.25];
 
+    // The identity position bridge: the G4 hot path exercises the same
+    // per-case class-map argument the arena passes (0 allocations holds
+    // through it).
+    let class_of_pos: Vec<usize> = (0..probs.len()).collect();
+
     // Warm any lazy paths OUTSIDE the counting window.
     let a0 = A0Answer {
         probs: &probs,
         pick: 3,
         abstained: true,
     };
-    let _ = lane.h1_decide(a0, &bag, &mut survivors, &mut scores);
+    let _ = lane.h1_decide(a0, &bag, &class_of_pos, &mut survivors, &mut scores);
     let _ = prior_fusion_pick(&fusion, &label_scores, &nb, 9, 5);
 
     ALLOCS.store(0, Ordering::Relaxed);
@@ -96,7 +101,7 @@ fn hybrid_hot_path_allocates_nothing() {
             pick: 3,
             abstained: true,
         };
-        let d = lane.h1_decide(a0, &bag, &mut survivors, &mut scores);
+        let d = lane.h1_decide(a0, &bag, &class_of_pos, &mut survivors, &mut scores);
         lane.scores_label_into(&bag, &mut label_scores);
         let f = prior_fusion_pick(&fusion, &label_scores, &nb, 9, 5);
         checksum += d.pick + f.pick + usize::from(d.escalated);
