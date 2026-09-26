@@ -11,5 +11,12 @@
 //! reflexer-vessel rows land with their first consumer).
 
 pub mod specialist;
+pub mod hybrid;
+pub mod stats;
 
+pub use hybrid::{
+    A0Answer, Cascade, FusedPick, HybridDecision, HybridLane, MAX_TOP_K, PriorFusion,
+    SpecialistLane, prior_fusion_pick,
+};
 pub use specialist::Specialist;
+pub use stats::{ArmStat, PairedDiff, delta_suite, paired_upper_bound, pareto_rank0, select_arm, wilson_bound, wilson_lb};

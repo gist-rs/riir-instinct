@@ -36,15 +36,21 @@ pub struct Specialist {
 }
 
 impl Specialist {
+    /// One class's sigmoid score for one sparse L2-normalized bag (never
+    /// softmax). The single math body — [`Self::scores_into`] delegates.
+    pub fn score_class(&self, bag: &[(u32, f32)], c: usize) -> f32 {
+        let mut s = self.b[c];
+        for &(j, v) in bag {
+            s += self.w[c * VOCAB + j as usize] * v;
+        }
+        katgpt_core::exact_sigmoid(s)
+    }
+
     /// Per-class sigmoid scores for one sparse L2-normalized bag
     /// (never softmax). `out.len() == labels.len()`.
     pub fn scores_into(&self, bag: &[(u32, f32)], out: &mut [f32]) {
         for (c, o) in out.iter_mut().enumerate() {
-            let mut s = self.b[c];
-            for &(j, v) in bag {
-                s += self.w[c * VOCAB + j as usize] * v;
-            }
-            *o = katgpt_core::exact_sigmoid(s);
+            *o = self.score_class(bag, c);
         }
     }
 
