@@ -64,26 +64,46 @@ GOAT record.** Master plan:
   ONE-WAY `harness::runner::seat` seam (byte-identical questions + the
   deployed Bench 051 posture through the same fit code reflex's runner
   uses; the A0 drift pin asserts arena A0 == reflex `run()` byte-exact).
-- **Bench 001 v2** (`.benchmarks/001_hybrid_goat/`): the single frozen
-  test read under the CORRECTED instrument (Issue 006 — v1 scored the
-  label permutation by position and compared label-space picks against
-  presented-option gold; only massive's 20-of-59 sampled options could
-  expose it, and v1's registration also double-indexed
-  `rank0_sorted[select_arm(..)]`). Registered arms — **ag_news
-  H2(β=0.25,nmin=2,τ=2) 0.9000** (A0 0.8625 / A1 0.8875; G1+G5 PASS);
-  **emotion A1 0.8550**, **sst5 A1 0.4217**, **banking77 A1 0.7960**
-  (G1+G3 PASS); **massive H2(β=0.25,nmin=4,τ=4) 0.8300** (A1 0.8167 vs
-  A0 0.4200 — the suite flips from "A0 stands" to a hybrid win; G1+G3
-  PASS); **xnli A0 stands** (G5 refused honestly). The laya paired face
-  PASS ×6 (lane sub-µs p50 vs laya 118–650 ms). G2's H1 fusion-only
-  overhead 8–20 ns/q narrow; the wide-suite breach (v1: 136–181 ns/q,
-  the O(n·k) prune) got its remedy 2026-09-27 — the running-threshold
-  prune (`Cascade::prune`, output-identical, sort-reference + tie pins;
-  `examples/prune_bench`: massive 135→109 ns, banking 163→122,
-  n=400 441→290) — still ~10–30 ns above the 100 ns bar at n=59–77
-  (the compare floor + sorted inserts ARE the O(n) work now); the
-  arena's G2 row refreshes at its next run. Open face: the
-  reflex-site publish.
+- **Bench 001 v2** (`.benchmarks/001_hybrid_goat/`, the corrected
+  instrument — Issue 006): v1 scored the label permutation by position
+  and compared label-space picks against presented-option gold; only
+  massive's 20-of-59 sampled options could expose it, and v1's
+  registration also double-indexed `rank0_sorted[select_arm(..)]`. The
+  prune remedy for the wide-suite G2 breach (the O(n·k) prune →
+  running-threshold `Cascade::prune`, output-identical, sort-reference
+  + tie pins) landed 2026-09-27 (`27e9257`). **Superseded as the
+  publishable record by Bench 002 below** — its bytes (`.raw/datasets`,
+  the old pull) were never comparable with the published lanes.
+- **Bench 002** (`.benchmarks/002_hybrid_052_protocol/`, the ALIGNED
+  read — supersedes v2's numbers as the publishable record): the same
+  arena at the Bench-052 protocol on the SAME `datasets_t20k` bytes the
+  published lanes + the 4090 T5 re-run carry (977/977 byte-verified);
+  the comparability proof is **A0 == the published 052 modelless rows
+  6/6** (ag_news 0.8825, emotion 0.7375, sst5 0.3967, xnli 0.5233,
+  massive 0.7800, banking77 0.8260) + the in-run xnli drift pin.
+  Registered arms — **ag_news H2(β=0.25,nmin=2,τ=2) 0.8975** (G1 FAIL:
+  the raw fused readout is already calibrated at 0.0133, Platt hurt;
+  G5 PASS); **emotion A1 0.8550**, **sst5 A1 0.4217** (G1+G3 PASS);
+  **massive H2(β=1,nmin=2,τ=8) 0.8267** (A0 0.7800 → +4.7 pt — the
+  v2 "flips from A0 0.42" story was the old first-N sample's
+  unrepresentative A0; G1+G3 PASS; the t20k test split lacks
+  `cooking_query` so the cal front presents an artifact-known,
+  seat-unknown option — the bridge gained the NaN-no-evidence
+  extension: margin muted to 0, never a rival, pinned by
+  `h2_nan_evidence_mutes_the_margin_and_is_never_a_rival`);
+  **banking77 H1 0.8060 @ 46.8% consult** (G3 FAIL — H1 pays up to
+  ~4.7 pt at 95% confidence; no promotable hybrid arm, A0 stands);
+  **xnli A0 stands**. G2 fusion-only 9–119 ns/q; the laya paired face
+  PASS (lane sub-2 µs vs laya metal 118–187 ms p50). **The reflex-site
+  publish LANDED 2026-09-27**: the `hybrid` lane class joined
+  publish_bench (carry/rename/inventory + `LANE_DISPLAY` →
+  `instinct (hybrid)`), the bench page (table + filter + charts + the
+  LANES palette slot + the lane explainer), and the lane published from
+  `hybrid_lane_doc.json` — the registered arm per suite, xnli honestly
+  absent (test_publish_bench 22/22 incl. the hybrid case; page + chart
+  smokes PASS; `scripts/build_hybrid_doc.py` re-derives the reflex
+  metric laws exactly and cross-checks against the arena's G1 ECE
+  lines).
 - **Stats** (`src/stats.rs`): Wilson bounds, paired non-inferiority
   (δ = max(1.0pp, 2.5·SE)), Pareto rank-0, Beta-LCB selection
   (katgpt-core best_belief) — the pre-registration instrument.

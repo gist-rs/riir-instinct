@@ -1,5 +1,56 @@
 # HISTORY — riir-instinct
 
+## 2026-09-27 — Bench 002: the aligned Bench-052-protocol read + the reflex-site hybrid lane publish (Issue 003 T4 closed)
+
+The site publish's comparability blocker is discharged with a measurement,
+not an argument. The arena re-ran at the **Bench-052 protocol on the same
+`datasets_t20k` bytes** the published lanes carry (the 4090 T5 run verified
+977/977), and the comparability proof is **A0 == the published 052 modelless
+rows 6/6** (ag_news 0.8825, emotion 0.7375, sst5 0.3967, xnli 0.5233,
+massive 0.7800, banking77 0.8260) plus the in-run xnli drift pin. Record:
+`.benchmarks/002_hybrid_052_protocol/` (ALIGNMENT.md carries the table,
+the box state, and the gate notes).
+
+Registered arms at the aligned protocol: ag_news H2(0.25,2,2) 0.8975
+(G1 FAIL — the raw fused readout is already calibrated at 0.0133, the
+Platt refit hurt; the raw readout stands), emotion A1 0.8550, sst5 A1
+0.4217 (both G1+G3 PASS), massive H2(1,2,8) 0.8267 vs A0 0.7800 (+4.7
+pt — the v2 "flips from A0 0.42" story was the old first-N sample's
+unrepresentative 30-of-60 label prefix), banking77 H1 0.8060 @ 46.8%
+consult (G3 FAIL — H1 pays up to ~4.7 pt at 95% confidence; no
+promotable hybrid arm, A0 stands), xnli A0 stands. The v2 numbers are
+superseded as the publishable record.
+
+**The bridge gap the aligned protocol surfaced** (and v2 could not, on
+the old bytes): the t20k massive test split carries 59 of the artifact's
+60 intents (`cooking_query` has zero test rows), so the train-derived
+cal front legitimately presents an artifact-known, seat-unknown option —
+the Issue-006 bridge refused that shape and the run died at case 0. The
+`cooking_query` panic's first diagnosis was WRONG (the seat's test cases
+are clean; a python replication of the sampler "proved" it) — the
+offending case was CAL-side, invisible to any test-split probe. Resolution:
+`fill_positions`/`key_map` admit artifact-only labels (sentinel seat
+index), and `prior_fusion_pick` gained the NaN-no-evidence mark — the
+margin term mutes to 0 (the prior stands) and the option is never a
+rival in the best/second scan; pinned by
+`h2_nan_evidence_mutes_the_margin_and_is_never_a_rival` (the first test
+draft's expectation was also wrong twice — the second-known rival is
+the rival, and f32 `exp` rounding put the honest tolerance at 1e-6).
+
+**The reflex-site publish** (`instinct (hybrid)` lane): publish_bench
+gained the `hybrid` lane class (merge carry with the device-variant
+skip, LANE_DISPLAY, the wholesale-replace inventory, both rename
+surfaces), the bench page gained the lane in table/filter/charts + the
+explainer + a magenta palette slot, and the det cell went three-state
+(a lane that does not claim a repeat check renders "—", never a lying
+✗). `scripts/build_hybrid_doc.py` packages the frozen read (registered
+arm per suite; A0-registered suites honestly absent — xnli carries no
+hybrid lane) with the reflex metric laws re-derived exactly, including
+the `cooking_query`-class cal-front extension in the arena. Site tests
+22/22 incl. the new hybrid case; bench_page + chart_render smokes PASS.
+Published from `hybrid_lane_doc.json`; `lane_sources.git_sha` names the
+landing commit.
+
 ## 2026-09-27 — Issue 006 RESOLVED: the arena's position-vs-index instrument defect (Bench 001 v2)
 
 Fix `3a12a70`. The v1 massive anomaly (A1 0.0267 vs Bench 609's .670) was

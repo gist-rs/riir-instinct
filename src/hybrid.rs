@@ -396,11 +396,23 @@ pub fn prior_fusion_pick(
     // The per-token margin of i against the best OTHER option: with the
     // global max + second max, margin_i = in[i] − (i == argmax ? second
     // : max). One pass, no per-option rescans.
-    let mut best = 0usize;
+    //
+    // NaN = NO count-table evidence for that option (the bridge's
+    // artifact-known, seat-unknown label — a cal-front option whose class
+    // the specialist trained but the seat's tables never carried): its
+    // margin term is muted to 0 (the prior stands) and it is never a
+    // rival in this scan. The strict `>` comparisons already skip it;
+    // the anchor is a MAX index, never NaN.
+    let mut best = usize::MAX;
     let mut second: Option<usize> = None;
     for (i, &s) in nb_in_scores.iter().enumerate() {
-        if s > nb_in_scores[best] {
-            second = Some(best);
+        if s.is_nan() {
+            continue;
+        }
+        if best == usize::MAX || s > nb_in_scores[best] {
+            if best != usize::MAX {
+                second = Some(best);
+            }
             best = i;
         } else if second.is_none_or(|j| s > nb_in_scores[j]) {
             second = Some(i);
@@ -413,17 +425,24 @@ pub fn prior_fusion_pick(
         let margin = if nb_in_scores.is_empty() {
             0.0
         } else {
-            let rival = if i == best {
-                second.map_or(f32::NEG_INFINITY, |j| nb_in_scores[j])
+            let own = nb_in_scores[i];
+            if own.is_nan() {
+                0.0
             } else {
-                nb_in_scores[best]
-            };
-            let m = if rival.is_finite() {
-                nb_in_scores[i] - rival
-            } else {
-                nb_in_scores[i]
-            };
-            m * inv
+                let rival = if i == best {
+                    second.map_or(f32::NEG_INFINITY, |j| nb_in_scores[j])
+                } else if best != usize::MAX {
+                    nb_in_scores[best]
+                } else {
+                    f32::NEG_INFINITY
+                };
+                let m = if rival.is_finite() {
+                    own - rival
+                } else {
+                    own
+                };
+                m * inv
+            }
         };
         let v = f64::from(p) * f64::from((g * fusion.beta * margin).exp());
         total += v;
@@ -732,6 +751,44 @@ mod tests {
         assert_eq!(beta0.pick, 0, "β = 0 mutes the margin term entirely");
         let no_table = prior_fusion_pick(&fusion, &spec_scores, &[], 99, 5);
         assert_eq!(no_table.pick, 0, "no count tables ⇒ no margin ⇒ A1");
+    }
+
+    /// NaN in the NB in-scores = NO evidence for that option (the
+    /// artifact-known, seat-unknown label the aligned 052 protocol
+    /// surfaced): its own margin term mutes to 0 — the option still
+    /// competes via its prior, its weight is exactly the no-table weight
+    /// — and it is NEVER a rival (a huge real score flips the pick; a
+    /// NaN in the same slot must not).
+    #[test]
+    fn h2_nan_evidence_mutes_the_margin_and_is_never_a_rival() {
+        let fusion = PriorFusion {
+            beta: 1.0,
+            n_min: 0.0,
+            tau_n: 1.0,
+        };
+        let spec = [0.5f32, 0.3, 0.2];
+        // (a) the masked option's weight is the NO-TABLE weight: with
+        // known margins 9/−4 for options 0/2 and 0 for the masked 1, the
+        // normalization is the closed form — the pick stands and the
+        // confidence denominator includes the prior-weighted masked term.
+        let f = prior_fusion_pick(&fusion, &spec, &[9.0, f32::NAN, 5.0], 99, 1);
+        let v0 = 0.5f64 * 4.0f64.exp();
+        let v1 = 0.3f64;
+        let v2 = 0.2f64 * (-4.0f64).exp();
+        assert_eq!(f.pick, 0);
+        assert!(f.pick == 0 && (f.conf - v0 / (v0 + v1 + v2)).abs() < 1e-6,
+            "the masked option's margin is exactly 0 and its prior weight counts in the denominator");
+        // (b) never a rival: a real 1000 in slot 1 flips the pick to 1
+        // (m0 = 9−1000); the NaN in the same slot must not.
+        let rival = prior_fusion_pick(&fusion, &spec, &[9.0, 1000.0, 5.0], 99, 1);
+        assert_eq!(rival.pick, 1, "sanity: a real dominant rival does flip");
+        let masked = prior_fusion_pick(&fusion, &spec, &[9.0, f32::NAN, 5.0], 99, 1);
+        assert_eq!(masked.pick, 0, "a NaN slot is never a rival — the pick stands");
+        // (c) NaN never anchors the max: an all-NaN vector is the
+        // no-evidence case (A1 stands, finite confidence).
+        let all_nan = prior_fusion_pick(&fusion, &spec, &[f32::NAN, f32::NAN, f32::NAN], 99, 1);
+        assert_eq!(all_nan.pick, 0, "all-NaN ⇒ no margins ⇒ A1");
+        assert!(all_nan.conf.is_finite(), "no NaN may leak into the confidence");
     }
 
     /// H2's readout confidence is a proper [0,1] normalization of the

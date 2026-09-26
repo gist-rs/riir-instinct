@@ -1,13 +1,16 @@
 # Plan 001 — the Reflex · instinct lane, riir-clippy flow end to end
 
 **Status:** IN PROGRESS — P1 ✓; P2 ✓ (576 closed, winners exported);
-P3a-E0 ✓ (reflex Bench 053); **P3a T2–T5 ✓ 2026-09-27 (Bench 001 v2, the
-corrected instrument: ag_news promotes H2(0.25,2,2) 0.9000, emotion/sst5
-promote A1, massive promotes H2(0.25,4,4) 0.8300 (+41 pp over A0),
-banking77 registers A1 0.7960, xnli keeps A0; the single test read spent,
-predictions frozen)**; **P3 T1–T4 ✓ 2026-09-27** (Issue 003: hybrid
-composition + the arena lane + the G0–G6 gate faces; the laya paired face
-PASS ×6; the reflex-site publish remains open); P4–P6 open; Issue 006
+P3a-E0 ✓ (reflex Bench 053); **P3a T2–T5 ✓ 2026-09-27** (Bench 001 v2;
+**superseded same day by Bench 002, the aligned Bench-052-protocol
+read: ag_news promotes H2(0.25,2,2) 0.8975, emotion/sst5 promote A1
+0.8550/0.4217, massive promotes H2(1,2,8) 0.8267 (+4.7 pt over the
+honest stratified A0 0.7800), banking77 registers H1 0.8060 with G3
+FAIL — A0 stands as the product posture, xnli keeps A0; A0 == the
+published 052 rows 6/6)**; **P3 T1–T4 ✓ 2026-09-27** (Issue 003: hybrid
+composition + the arena lane + the G0–G6 gate faces; the laya paired
+face PASS; **the reflex-site publish LANDED — the `instinct (hybrid)`
+lane is live in bench.json**); P4–P6 open; Issue 006
 RESOLVED 2026-09-27 — the v1 massive anomaly was the ARENA's
 position-vs-index defect (label-space picks compared against
 presented-option gold; `select_arm`'s candidate index re-indexed through

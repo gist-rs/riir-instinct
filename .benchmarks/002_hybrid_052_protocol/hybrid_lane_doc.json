@@ -1,0 +1,115 @@
+{
+ "meta": {
+  "host": "m3",
+  "git_sha": "PLACEHOLDER",
+  "date_utc": "2026-09-26T23:04:17Z",
+  "profile": "release",
+  "laya_feature": false,
+  "lane_note": "instinct hybrid lane: the registered arm's single frozen test read over the reflex harness seat (the Bench-052 stratified protocol); a suite whose registered arm is A0 carries no hybrid lane",
+  "skipped_suites_a0_registered": [
+   "xnli_en"
+  ]
+ },
+ "suites": [
+  {
+   "name": "ag_news",
+   "n_questions": 400,
+   "n_cases": 400,
+   "hybrid": {
+    "lane": "hybrid",
+    "model": "H2(\u03b2=0.25,nmin=2,\u03c4=2)",
+    "hard": {
+     "n": 400,
+     "accuracy": 0.8975,
+     "ece": 0.013315694555954022,
+     "mean_confidence": 0.888912138562494,
+     "acc_at_50_coverage": 0.99
+    },
+    "consult_rate": 1.0,
+    "latency_p50_ms": 0.001583,
+    "latency_p99_ms": 0.0035,
+    "latency_tail_support": 5
+   }
+  },
+  {
+   "name": "emotion",
+   "n_questions": 400,
+   "n_cases": 400,
+   "hybrid": {
+    "lane": "hybrid",
+    "model": "A1",
+    "hard": {
+     "n": 400,
+     "accuracy": 0.855,
+     "ece": 0.17770379842258988,
+     "mean_confidence": 0.6780355910304934,
+     "acc_at_50_coverage": 0.955
+    },
+    "consult_rate": 1.0,
+    "latency_p50_ms": 0.000625,
+    "latency_p99_ms": 0.001792,
+    "latency_tail_support": 5
+   }
+  },
+  {
+   "name": "sst5",
+   "n_questions": 600,
+   "n_cases": 600,
+   "hybrid": {
+    "lane": "hybrid",
+    "model": "A1",
+    "hard": {
+     "n": 600,
+     "accuracy": 0.4216666666666667,
+     "ece": 0.10076249030729133,
+     "mean_confidence": 0.4711805712431669,
+     "acc_at_50_coverage": 0.5
+    },
+    "consult_rate": 1.0,
+    "latency_p50_ms": 0.0006670000000000001,
+    "latency_p99_ms": 0.001459,
+    "latency_tail_support": 8
+   }
+  },
+  {
+   "name": "massive_intent_en",
+   "n_questions": 300,
+   "n_cases": 300,
+   "hybrid": {
+    "lane": "hybrid",
+    "model": "H2(\u03b2=1,nmin=2,\u03c4=8)",
+    "hard": {
+     "n": 300,
+     "accuracy": 0.8266666666666667,
+     "ece": 0.06070700170483837,
+     "mean_confidence": 0.8355173326634961,
+     "acc_at_50_coverage": 0.9933333333333333
+    },
+    "consult_rate": 1.0,
+    "latency_p50_ms": 0.0010840000000000001,
+    "latency_p99_ms": 0.002166,
+    "latency_tail_support": 4
+   }
+  },
+  {
+   "name": "banking77",
+   "n_questions": 500,
+   "n_cases": 500,
+   "hybrid": {
+    "lane": "hybrid",
+    "model": "H1",
+    "hard": {
+     "n": 500,
+     "accuracy": 0.806,
+     "ece": 0.70590855337074,
+     "mean_confidence": 0.10282889961311593,
+     "acc_at_50_coverage": 0.8
+    },
+    "consult_rate": 0.468,
+    "latency_p50_ms": 0.379542,
+    "latency_p99_ms": 0.687042,
+    "latency_tail_support": 6
+   }
+  }
+ ]
+}

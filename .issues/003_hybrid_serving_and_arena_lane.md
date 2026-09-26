@@ -1,8 +1,15 @@
 # Issue 003 — hybrid serving + the "Reflex · instinct" arena lane
 
-**Status:** OPEN — T1–T4 DONE; **T4's verdict updated 2026-09-27 to the
-corrected Bench 001 v2** (Issue 006's instrument fix — the row below is
-superseded). The site publish remains.
+**Status:** OPEN — T1–T4 DONE; **T4's site publish UNBLOCKED 2026-09-27**:
+the aligned Bench-052-protocol re-run landed (Bench 002,
+`.benchmarks/002_hybrid_052_protocol/` — A0 == the published 052
+modelless rows 6/6, same `datasets_t20k` bytes the 4090 T5 run verified
+977/977), the reflex-site hybrid lane carry + render shipped
+(test_publish_bench 22/22, page + chart smokes PASS), and the lane is
+published. The v2 (Bench 001, old-bytes) numbers are superseded by
+Bench 002 — the v2 "massive flips from A0 0.42" narrative was the old
+first-N sample's unrepresentative A0; the honest stratified story is
+A0 0.7800 vs hybrid 0.8267.
 
 ~~Blocked on riir-train
 Issue 576~~ — 576 CLOSED 2026-09-26 (Bench 608 + 609, winners
@@ -59,33 +66,36 @@ the specialist only where the modelless lane abstains, so it keeps the
       a reflex→instinct dep is a cycle, so the lane lives here and
       reflex exposes the one-way seat (`prepare_seat` / `fit_posture` /
       `eval_seat` + `laya_escalation_latency_us` behind `laya-riir`).
-- [x] **T4** — the merged GOAT gate G0–G6 MEASURED 2026-09-27 (Bench
-      001; **v2 same day** — Issue 006's corrected instrument:
-      `.benchmarks/001_hybrid_goat/`): per-suite registered arms —
-      **ag_news H2(β=0.25,nmin=2,τ=2) 0.9000** (A0 0.8625, A1 0.8875;
-      G1+G5 PASS); **emotion A1 0.8550**, **sst5 A1 0.4217**,
-      **banking77 A1 0.7960** (G1+G3 PASS); **massive
-      H2(β=0.25,nmin=4,τ=4) 0.8300** (A1 0.8167 vs A0 0.4200 — the
-      suite flips to a hybrid win); **xnli A0 stands** (G5 refused
-      honestly). G2's H1 fusion-only overhead passes narrow suites
-      (8–20 ns/q); the wide-suite breach got its remedy 2026-09-27 —
-      the running-threshold prune (output-identical, sort-reference +
-      tie pins; `examples/prune_bench`: massive 135→109 ns,
-      banking 163→122, n=400 441→290) — still ~10–30 ns above the
-      100 ns bar at n=59–77 (the remaining cost is the compare floor +
-      the sorted-array inserts, i.e. the O(n) work itself); the arena's
-      G2 row refreshes at its next run. The laya paired face measured
-      same day: **PASS ×6** (lane sub-µs p50 vs laya 118–650 ms). The
-      site publish remains open — **blocked on comparability, not
-      wiring**: the site's published modelless/laya lanes are the
-      Bench 052 protocol runs (reflex-site `9839f5a`), while the v2
-      arena numbers come from THIS box's current `.raw/datasets`, which
-      the record itself flags as differing from earlier pulls
-      ("internally consistent, never comparable"). Publishing the
-      hybrid lane beside them without a same-protocol, same-bytes
-      re-measurement would put non-comparable numbers on the public
-      tables — the publish needs one aligned run (the reflex harness
-      protocol + the arena seat on the same bytes) first.
+- [x] **T4** — DONE 2026-09-27 (v2 + the **aligned Bench-052 re-run,
+      Bench 002**): per-suite registered arms at the 052 protocol
+      (`datasets_t20k` bytes, stratified split, A0 == the published 052
+      rows 6/6 — `.benchmarks/002_hybrid_052_protocol/ALIGNMENT.md`):
+      **ag_news H2(β=0.25,nmin=2,τ=2) 0.8975** (A0 0.8825; G1 FAIL —
+      the raw fused readout is already calibrated, Platt hurt; G5
+      PASS); **emotion A1 0.8550** (G1+G3 PASS); **sst5 A1 0.4217**
+      (G1+G3 PASS); **massive H2(β=1,nmin=2,τ=8) 0.8267** (A0 0.7800,
+      +4.7 pt — the honest stratified gap; G1+G3 PASS; the t20k test
+      split lacks `cooking_query`, so the cal front presents an
+      artifact-known seat-unknown option — the bridge gained the
+      NaN-no-evidence extension, margin muted to 0, never a rival);
+      **banking77 H1 0.8060** (A0 0.8260; **G3 FAIL** — H1 pays up to
+      ~4.7 pt at 95% confidence; no promotable hybrid arm, A0 stands);
+      **xnli A0 stands** (G5 refused honestly — no hybrid lane
+      published). G2: fusion-only 9–119 ns/q (the 100 ns bar holds on
+      the narrow suites; massive/banking sit 2–19 ns over — the compare
+      floor + sorted inserts are the O(n) work). The laya paired face
+      measured: **PASS ×5** (lane sub-2 µs vs laya metal 118–187 ms
+      p50). **Site publish LANDED 2026-09-27**: reflex-site gained the
+      `hybrid` lane class (publish_bench carry + rename + inventory,
+      LANE_DISPLAY `instinct (hybrid)`, page table + filter + charts +
+      LANES palette slot; test_publish_bench 22/22 with the new hybrid
+      case; bench_page + chart_render smokes PASS) and the lane was
+      published from `hybrid_lane_doc.json` (the registered arm per
+      suite, xnli honestly absent; `lane_sources.git_sha` names the
+      landing commit). The doc builder is `scripts/build_hybrid_doc.py`
+      (the reflex metric laws re-derived exactly — ece_of's 15-bin law,
+      stable-argsort acc@50cov, nearest-rank p50/p99 — cross-checked
+      against the arena's own G1 ECE lines).
 
 ## References
 

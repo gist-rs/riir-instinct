@@ -346,6 +346,11 @@ impl<const N: usize> SuiteCtx<N> {
     /// route-less shape — the specialist bridge is undefined there, so
     /// REFUSE loud (Issue 006: the mismatch of these two spaces is the
     /// instrument defect that read massive at chance).
+    ///
+    /// A key naming an ARTIFACT-KNOWN label the seat never offers (the
+    /// test-split universe can be a strict subset of the artifact's
+    /// train-derived one) resolves to the sentinel seat index —
+    /// scoreable by the specialist, NaN-evidence for the NB margin.
     fn fill_positions(&mut self, case: &SuiteCase) {
         self.pos_label.clear();
         self.pos_class.clear();
@@ -382,10 +387,18 @@ impl<const N: usize> SuiteCtx<N> {
                 self.pos_class.push(cls);
             }
         } else {
+            let unmatched: Vec<String> = keys
+                .iter()
+                .filter(|k| !self.key_map.contains_key(*k))
+                .cloned()
+                .collect();
             panic!(
                 "case {}: presented options neither all name seat labels nor match the \
-                 label count ({}) — the specialist bridge is undefined",
+                 label count ({}) — the specialist bridge is undefined; \
+                 unmatched {unmatched:?}; key_map {} entries; perm {}",
                 case.id,
+                self.perm.len(),
+                self.key_map.len(),
                 self.perm.len()
             );
         }
@@ -409,6 +422,9 @@ impl<const N: usize> SuiteCtx<N> {
     /// Gather the label-space NB in-scores into position space (the H2
     /// fusion's vectors must speak the pick space; the margin's rivals
     /// become the presented options — the decision's true alternatives).
+    /// A sentinel seat index (the artifact-known, seat-unknown option)
+    /// carries NO count-table evidence → NaN, the fusion's no-evidence
+    /// mark (the margin term mutes to 0; never a rival).
     fn gather_positions_nb(&mut self) {
         let SuiteCtx {
             in_scores,
@@ -419,7 +435,11 @@ impl<const N: usize> SuiteCtx<N> {
         pos_nb.clear();
         pos_nb.resize(pos_label.len(), 0.0);
         for (o, &li) in pos_nb.iter_mut().zip(pos_label.iter()) {
-            *o = in_scores[li];
+            *o = if li == usize::MAX {
+                f32::NAN
+            } else {
+                in_scores[li]
+            };
         }
     }
 
@@ -649,6 +669,7 @@ fn run_suite_n<const N: usize>(
     // label order (the bijection pin lives in SpecialistLane::join).
     let winner_path = winners_dir.join(format!("{name}_winner_v1.bin"));
     let spec = riir_instinct::specialist::load_artifact(&winner_path)?;
+    let artifact_labels: Vec<String> = spec.labels.clone();
     eprintln!(
         "  winner: {} ({} labels, BLAKE3 seal verified)",
         winner_path.display(),
@@ -657,12 +678,21 @@ fn run_suite_n<const N: usize>(
     let joined = SpecialistLane::join(spec, name, &seat.labels, Cascade { top_k })?;
     // The presented-option bridge (SuiteCtx::key_map): every seat label
     // → (its own index, its artifact class row).
-    let key_map: HashMap<String, (usize, usize)> = seat
+    let mut key_map: HashMap<String, (usize, usize)> = seat
         .labels
         .iter()
         .enumerate()
         .map(|(li, l)| (l.clone(), (li, joined.perm[li])))
         .collect();
+    // Artifact-known labels the SEAT never offers (the t20k massive test
+    // split carries 59 of the artifact's 60 intents): legitimate presented
+    // options on the train-derived cal front (and at serving time). The
+    // seat-label sentinel usize::MAX marks them — the NB gather reads NaN
+    // (no evidence) for those positions, and the specialist still scores
+    // the class row (the artifact trained it).
+    for (ci, l) in artifact_labels.iter().enumerate() {
+        key_map.entry(l.clone()).or_insert((usize::MAX, ci));
+    }
     let perm: Vec<usize> = joined.perm.clone();
     let lane = HybridLane::Specialist(joined);
     let nb_armed = posture.cfg.nb_scale > 0.0 && engine.nb_scope().is_some();
@@ -1266,8 +1296,23 @@ fn write_predictions(out_dir: &Path, runs: &[SuiteRun]) {
 }
 
 fn write_results(out_dir: &Path, runs: &[SuiteRun], box_state: &str) {
+    // The record number comes from the OUT DIR the caller chose — a
+    // hand-typed title here would have kept saying "Bench 001" when the
+    // 052-protocol rerun landed in 002_ (it did).
+    let bench_tag = out_dir
+        .file_name()
+        .and_then(|n| n.to_str())
+        .map(|n| match n.split_once('_') {
+            Some((tag, _)) if tag.chars().all(|c| c.is_ascii_digit()) && !tag.is_empty() => {
+                format!("Bench {tag}")
+            }
+            _ => format!("Bench record ({n})"),
+        })
+        .unwrap_or_else(|| "Bench record".to_string());
     let mut md = String::with_capacity(16 << 10);
-    md.push_str("# Bench 001 — the Reflex · instinct hybrid GOAT run\n\n");
+    md.push_str(&format!(
+        "# {bench_tag} — the Reflex · instinct hybrid GOAT run\n\n"
+    ));
     md.push_str("**Status:** MEASURED — the single frozen test read (Issue 005 T5 / \
 Issue 003 T4); arms pre-registered on the cal front by the Pareto rank-0 + \
 argmax Beta-LCB instrument; predictions frozen in `predictions.json`.\n\n");
