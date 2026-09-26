@@ -1,7 +1,12 @@
 # Issue 005 — the Moka+PUCT-style hybrid POC: instinct (model) × reflex (modelless), three compositions + one GOAT gate
 
 **Status:** OPEN — filed 2026-09-26 (Plan 001 P3 design). Blocked on riir-train
-Issue 576 (a specialist to plug in). The E0 measurement below can run NOW
+Issue 576 (a specialist to plug in). **T1 E0 MEASURED 2026-09-26 (riir-reflex
+Bench 053): H2 ARMED-PENDING on all 8 dataset suites** — rumor fraction
+(n < 4) 0.0% everywhere except massive_intent_en at 6.5%, median n 9–129,
+seen/total 81–100% — no suite pre-declared NOT ARMED, T3 unblocked by E0
+(typed_decisions carries the Bench-051 route-terms caveat into T3/T4
+planning; density ≠ armability there). The E0 measurement below can run NOW
 (reflex half only). Gate AMENDED 2026-09-26 per verdict round 1 (proposal-001
 reviewer): G0 kill switch split from the evidence gate, G1 floor-metric pin,
 G3 → paired non-inferiority (δ = 1.0 pp), G5 per-suite arm pre-registration
@@ -57,14 +62,37 @@ count-table fusion is only as good as its evidence density. Measure that FIRST.
   mb_personality rule). H3 stands on the Moka shape's own measured win
   (Bench 205) or it dies — it never substitutes a cheaper value source.
 
-## E0 — measure evidence density before building H2 (runs now)
+## E0 — measure evidence density before building H2 — MEASURED 2026-09-26
 
-Per suite, on the stratified selection slice: the distribution of `n` (seen
-tokens per state) and the "rumor fraction" (states with n < 4). Proposal 013
-died at 100%. If a suite's rumor fraction is > 50%, H2 is pre-declared NOT
-armed there, recorded as a measurement rather than tried and refuted.
-Expected (unmeasured): low. Bench 051's NB tables see 91–95% of test tokens,
-unlike Go transpositions, but the number decides.
+**Result (riir-reflex Bench 053, `harness --e0`: per suite, on the
+stratified selection slice, the distribution of `n` over the DEPLOYED
+count tables — full record + artifacts in
+`../riir-reflex/.benchmarks/053_e0_evidence_density/`):**
+
+| suite | view | med n | min n | seen/total | rumor fraction (< 4) | verdict |
+|---|---|---|---|---|---|---|
+| typed_decisions | bag | 129 | 61 | 100.0% | 0.0% | ARMED-PENDING |
+| ag_news | bag | 81 | 32 | 98.8% | 0.0% | ARMED-PENDING |
+| emotion | bag | 37 | 6 | 99.7% | 0.0% | ARMED-PENDING |
+| sst5 | bag | 33 | 4 | 96.8% | 0.0% | ARMED-PENDING |
+| prompt_injections | bag | 20 | 6 | 94.4% | 0.0% | ARMED-PENDING |
+| xnli_en | bag | 57 | 10 | 96.3% | 0.0% | ARMED-PENDING |
+| xnli_en | pair | 26 | 7 | 100.0% | 0.0% | ARMED-PENDING |
+| massive_intent_en | bag | 9 | 3 | 81.0% | 6.5% | ARMED-PENDING |
+| banking77 | bag | 18 | 8 | 95.0% | 0.0% | ARMED-PENDING |
+
+The Proposal-013 death class does not reproduce on this substrate — **no
+suite is pre-declared NOT ARMED; T3 is unblocked by E0 on all 8 dataset
+suites.** Two recorded notes: (a) the evidence gate `g` will sit at ~1
+almost everywhere, so H2's discriminating work is the margin term β·m_i,
+with the gate a safety floor for the thin tail (massive's n = 3);
+(b) typed_decisions is dense BUT Bench 051 measured its tables never arm
+(options are state-field values, so route terms never activate) — arming
+H2/H3 there needs the option-conditioned scorer first; density ≠
+armability. Original expectation, for the record: "Expected (unmeasured):
+low. Bench 051's NB tables see 91–95% of test tokens, unlike Go
+transpositions, but the number decides." Confirmed and made precise — the
+tables see 81–100% of every state's events, and the number now decides: GO.
 
 ## GOAT gate (merged from Proposal 013 + Plan 001)
 
@@ -92,7 +120,7 @@ unlike Go transpositions, but the number decides.
   A0 exactly at 0.95 / n≈2000 reads a Wilson LB ≈ 0.940, i.e. "significantly
   worse"), which would have disqualified H1 — identical to A0 on every
   non-escalated question — for being no better. **δ per suite =
-  better. **δ per suite = max(1.0 pp, 2.5·SE_suite), pre-declared from a
+  max(1.0 pp, 2.5·SE_suite), pre-declared from a
   power calculation:** SE_suite is the paired SE computed on the held-out
   train/cal discordant rate at the test n. α = 5% is the chance of passing
   a hybrid truly δ-worse; the PARITY fail rate is the other error — at a
@@ -160,7 +188,10 @@ dominated-candidate filter that cannot be argued with after the fact.
 
 ## Plan
 
-- [ ] **T1 — E0** evidence-density measurement (reflex-only, now).
+- [x] **T1 — E0** evidence-density measurement (reflex-only) — MEASURED
+      2026-09-26: ARMED-PENDING on all 8 dataset suites (rumor fraction
+      ≤ 6.5%, median n 9–129); record = riir-reflex Bench 053
+      (`../riir-reflex/.benchmarks/053_e0_evidence_density/BENCH.md`).
 - [ ] **T2** — arms A0/A1/H1 once riir-train Issue 576 ships a specialist.
 - [ ] **T3** — H2 on the suites E0 clears; β / n_min and τ_n selected on held-out train by the pre-registration instrument (Pareto rank-0 + argmax Beta-LCB, below).
 - [ ] **T4** — H3 on chain-shaped cases only; `successor_density_critic` Q-init as a sub-arm.

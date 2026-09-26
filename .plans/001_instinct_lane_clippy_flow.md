@@ -1,6 +1,8 @@
 # Plan 001 — the Reflex · instinct lane, riir-clippy flow end to end
 
-**Status:** IN PROGRESS — P1 done (repo born + registered 2026-09-26); P2–P6 open.
+**Status:** IN PROGRESS — P1 done (repo born + registered 2026-09-26); P3a's
+E0 measured 2026-09-26 (reflex Bench 053: ARMED-PENDING on all 8 dataset
+suites — no suite excluded, T3 unblocked by E0); P2–P6 open.
 
 Design of record: `../riir-ai/.proposals/047_riir_instinct_hybrid_decision_engine.md`.
 Trainer: `../riir-train/.issues/576_arena_specialists_for_riir_instinct.md`.
@@ -34,7 +36,7 @@ weights are bytes; mining → settle → corpus → retrain).
 - [ ] **P2 — specialists (riir-train Issue 576).** Arm A supervised CE + Arm
       B laya distillation on the arena train splits; held-out train
       selection; sealed frozen artifacts. Blocks P3.
-- [ ] **P3a — Moka+PUCT-style hybrid POC (Issue 005):** arms A0 reflex / A1 instinct / H1 cascade / H2 prior fusion (the Proposal 013 shape) / H3 PUCT-over-options (chains only); E0 evidence-density measurement first (runs now, reflex-only); the winner feeds P3 (per-suite arms pre-registered on train/cal; one frozen test read — P3a's run IS the read, P3 never re-reads it).
+- [ ] **P3a — Moka+PUCT-style hybrid POC (Issue 005):** arms A0 reflex / A1 instinct / H1 cascade / H2 prior fusion (the Proposal 013 shape) / H3 PUCT-over-options (chains only); E0 evidence-density measurement MEASURED 2026-09-26 (riir-reflex Bench 053 — ARMED-PENDING on all 8 dataset suites, no suite excluded); the winner feeds P3 (per-suite arms pre-registered on train/cal; one frozen test read — P3a's run IS the read, P3 never re-reads it).
 - [ ] **P3 — hybrid serving + arena lane (Issue 003).** First code: crate
       skeleton, specialist forward via riir-infer, modelless top-k prune +
       escalation on the fused abstain gate; harness lane "Reflex · instinct"
