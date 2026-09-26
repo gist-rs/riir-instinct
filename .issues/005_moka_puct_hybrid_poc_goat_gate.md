@@ -1,7 +1,10 @@
 # Issue 005 — the Moka+PUCT-style hybrid POC: instinct (model) × reflex (modelless), three compositions + one GOAT gate
 
-**Status:** OPEN — filed 2026-09-26 (Plan 001 P3 design). Blocked on riir-train
-Issue 576 (a specialist to plug in). **T1 E0 MEASURED 2026-09-26 (riir-reflex
+**Status:** OPEN — filed 2026-09-26 (Plan 001 P3 design). ~~Blocked on
+riir-train Issue 576 (a specialist to plug in)~~ **the specialist SHIPPED
+2026-09-26 (576 closed, Bench 608 + 609: winners `<suite>_winner_v1.bin`,
+A on emotion/sst5/banking77, distilled B on ag_news/massive/xnli — the
+A1 arm loads the winner per suite); T2 unblocked**. **T1 E0 MEASURED 2026-09-26 (riir-reflex
 Bench 053): H2 ARMED-PENDING on all 8 dataset suites** — rumor fraction
 (n < 4) 0.0% everywhere except massive_intent_en at 6.5%, median n 9–129,
 seen/total 81–100% — no suite pre-declared NOT ARMED, T3 unblocked by E0
@@ -192,7 +195,10 @@ dominated-candidate filter that cannot be argued with after the fact.
       2026-09-26: ARMED-PENDING on all 8 dataset suites (rumor fraction
       ≤ 6.5%, median n 9–129); record = riir-reflex Bench 053
       (`../riir-reflex/.benchmarks/053_e0_evidence_density/BENCH.md`).
-- [ ] **T2** — arms A0/A1/H1 once riir-train Issue 576 ships a specialist.
+- [ ] **T2** — arms A0/A1/H1 — UNBLOCKED 2026-09-26: riir-train Issue 576
+      closed (Bench 608 + 609); A1 loads the per-suite winner artifact
+      (`<suite>_winner_v1.bin`, the `decode_artifact` law; distilled where
+      the teacher transfer won — ag_news/massive/xnli — gold elsewhere).
 - [ ] **T3** — H2 on the suites E0 clears; β / n_min and τ_n selected on held-out train by the pre-registration instrument (Pareto rank-0 + argmax Beta-LCB, below).
 - [ ] **T4** — H3 on chain-shaped cases only; `successor_density_critic` Q-init as a sub-arm.
 - [ ] **T5** — GOAT gate G0–G6, record as a Bench; promote the winner as the
