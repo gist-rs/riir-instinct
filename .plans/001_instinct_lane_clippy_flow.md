@@ -34,12 +34,13 @@ weights are bytes; mining → settle → corpus → retrain).
 - [ ] **P2 — specialists (riir-train Issue 576).** Arm A supervised CE + Arm
       B laya distillation on the arena train splits; held-out train
       selection; sealed frozen artifacts. Blocks P3.
-- [ ] **P3a — Moka+PUCT-style hybrid POC (Issue 005):** arms A0 reflex / A1 instinct / H1 cascade / H2 prior fusion (the Proposal 013 shape) / H3 PUCT-over-options (chains only); E0 evidence-density measurement first (runs now, reflex-only); the winner feeds P3.
+- [ ] **P3a — Moka+PUCT-style hybrid POC (Issue 005):** arms A0 reflex / A1 instinct / H1 cascade / H2 prior fusion (the Proposal 013 shape) / H3 PUCT-over-options (chains only); E0 evidence-density measurement first (runs now, reflex-only); the winner feeds P3 (per-suite arms pre-registered on train/cal; one frozen test read — P3a's run IS the read, P3 never re-reads it).
 - [ ] **P3 — hybrid serving + arena lane (Issue 003).** First code: crate
       skeleton, specialist forward via riir-infer, modelless top-k prune +
       escalation on the fused abstain gate; harness lane "Reflex · instinct"
-      (accuracy, escalation rate, p50/p99); GOAT gate vs modelless AND laya
-      on the same test split, read once.
+      (accuracy, escalation rate, p50/p99); GOAT gate vs modelless AND laya —
+      the laya row joined onto P3a's single frozen test read, never a second
+      pass.
 - [ ] **P4 — vessels (Issue 001).** HOSTED-ONLY reader over the
       `reflexer-vessel` format (verify → decrypt → monotonic apply); minting
       + lineage stay in riir-train; first minting key pinned in the same
@@ -54,11 +55,17 @@ weights are bytes; mining → settle → corpus → retrain).
 
 ## GOAT gate (every promotion) — the merged Proposal 013 + Plan 001 gate
 
-Full definitions: Issue 005. G0 identity (no specialist → byte-identical to
-reflex) · G1 calibration vs the conformal-naive floor · G2 fusion overhead
-< 100 ns/option + absolute p99 published, faster than laya at equal accuracy
-on escalated questions · G3 no regression on reflex-won suites (Wilson 95%
-lower bound ≥ reflex) · G4 alloc-free hot path · G5 Wilson lower bound >
-max(reflex, instinct-alone) on a gap suite, or instinct-alone accuracy at ≤ 50%
+Full definitions: Issue 005. G0 identity (kill switch → byte-identical to
+reflex; g ≡ 0 → byte-identical to instinct-alone) · G1 calibration vs the
+conformal-naive floor, same metric both sides · G2 fusion overhead < 100
+ns/option (per question for H1) + absolute p99 published, faster than laya
+(laya − lane 95% UB ≤ δ, paired) on escalated questions · G3 paired non-inferiority on
+reflex-won suites (A0 − hybrid 95% upper bound ≤ δ; δ = max(1.0 pp, 2.5·SE)
+per suite from the train/cal discordant rate, ≈80% power at parity) · G4
+alloc-free hot path · G5 per-suite candidate arm pre-registered on
+train/cal; its Wilson lower bound > max(reflex, instinct-alone) on a gap
+suite, or A1 − arm 95% upper bound ≤ δ (paired, same power rule) at ≤ 50%
 escalation · G6 purity (frozen counts + sealed vessel, no runtime gradient).
-Train rows only; test read once; every arm reported, losses included.
+Train rows only; the
+test split read once and its predictions frozen (P3's laya row joins that
+run); every arm reported, losses included.
