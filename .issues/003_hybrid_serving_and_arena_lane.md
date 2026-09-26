@@ -1,6 +1,7 @@
 # Issue 003 — hybrid serving + the "Reflex · instinct" arena lane
 
-**Status:** OPEN — filed 2026-09-26 (Plan 001 P3). ~~Blocked on riir-train
+**Status:** OPEN — T1+T2+T3 DONE 2026-09-27; T4's gates MEASURED
+(Bench 001) — the site publish remains. ~~Blocked on riir-train
 Issue 576~~ — 576 CLOSED 2026-09-26 (Bench 608 + 609, winners
 `<suite>_winner_v1.bin`). **T1 DONE 2026-09-26**: crate skeleton + the
 RISP v1 artifact reader (`src/specialist.rs`), BLAKE3-seal + vocab-pin +
@@ -11,6 +12,20 @@ winners and scores sample texts (ag_news business text → class 2,
 emotion joy text → 1, banking77 card text → "get physical card"); clippy
 `-D warnings` lib/examples/tests. Dep rows measured into BOUNDARY:
 katgpt-core + riir-reflex (T2 consumes nb_scope for the composition).
+**T2 DONE 2026-09-27** (`src/hybrid.rs`): H1 cascade (reflex fused-gate
+pass-through, else the specialist over the deterministic top-k prune
+survivors) + H2 prior fusion (p′ᵢ ∝ pᵢ·exp(g·β·mᵢ), the Proposal 013
+shape; per-token nb margin via the engine's `nb_scope()` accessor); G0
+kill switch a first-class arm (ReflexOnly → byte-identical A0); the
+label join is a name-injection asserted both directions (and it earned
+its keep twice — see the 60-vs-59 refinement); G4 alloc-free pinned by
+tests/g4_alloc.rs. **T3 DONE 2026-09-27** (`src/bin/arena.rs` + the
+reflex `harness::runner::seat` seam): the lane lives HERE (the boundary
+check was forced — reflex consuming instinct would be a cycle; the seat
+is reflex's ONE-WAY public surface), byte-identical questions via the
+seat, the deployed Bench 051 posture via the same fit code reflex's
+runner uses, and the A0 DRIFT PIN (arena A0 xnli_en == reflex `run()`
+hard accuracy, byte-exact) proving the seat path.
 
 ## Why
 
@@ -32,18 +47,26 @@ the specialist only where the modelless lane abstains, so it keeps the
       PLANNED (its first consumer is the hosted model lane, not the
       specialist) — declared deps without a consumer would be unused-dep
       rot.
-- [ ] **T2** — composition: serve the arm Issue 005's POC promotes (H1
-      cascade / H2 prior fusion / H3 PUCT-over-options). The default until
-      then is H1: modelless `nb_scope` scores → top-k prune → specialist over
-      the survivors, with confident modelless answers short-circuiting (the
-      fused abstain gate).
-- [ ] **T3** — harness lane in riir-reflex's arena (same byte-identical
-      questions; accuracy, escalation rate, p50/p99, G1 calibration). The
-      lane crate lives here; riir-reflex consumes it behind an opt-in feature
-      or as a subprocess lane (decide by boundary check, not preference).
-- [ ] **T4** — the merged GOAT gate G0–G6 (Issue 005) vs modelless, instinct-alone AND laya, test read once; publish via
-      the reflex-site lane-scoped update path (both hosts bit-identical where
-      the lane is deterministic).
+- [x] **T2** — composition: the arena measured all arms 2026-09-27
+      (Bench 001). H1 is the default posture (top_k 8); H2 registered on
+      ag_news (the one promotable hybrid — see Issue 005 T5).
+- [x] **T3** — DONE 2026-09-27: the arena lane (this repo, `src/bin/arena.rs`)
+      over the reflex `seat` seam — accuracy, escalation rate, p50/p99,
+      G1 calibration, the A0 drift pin. The lane-wiring boundary check:
+      a reflex→instinct dep is a cycle, so the lane lives here and
+      reflex exposes the one-way seat (`prepare_seat` / `fit_posture` /
+      `eval_seat` + `laya_escalation_latency_us` behind `laya-riir`).
+- [x] **T4** — the merged GOAT gate G0–G6 MEASURED 2026-09-27 (Bench
+      001, `.benchmarks/001_hybrid_goat/`): per-suite registered arms —
+      ag_news H2(β=1,nmin=2,τ=4) 0.8975 (A0 0.8625, A1 0.8875; G1+G5
+      PASS, p50 2 µs vs A0's 150 µs); emotion A1 0.8550 (G1+G3 PASS);
+      sst5 A1 0.4217 (G1+G3 PASS); xnli/massive/banking77 A0 stands
+      (G5 refused honestly — no hybrid arm clears). G2's H1 fusion-only
+      overhead passes narrow suites (8–20 ns/q) and honestly fails the
+      100 ns bar on wide ones (massive 136, banking77 181 ns/q — the
+      O(n·k) prune; the O(n) survivor heap is the named remedy).
+      vs laya: the laya row rides `--features arena-laya` (the paired
+      escalation face) — the site publish remains open.
 
 ## References
 

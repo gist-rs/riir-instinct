@@ -51,5 +51,29 @@ riir-deployer (cf-container) ◀─ vessel minting ◀─ riir-train ◀─ riir
 
 ## Current state
 
-**P1 — BORN 2026-09-26 (md-only).** Master plan:
+**P1–P3a substantially DONE (2026-09-26/27) — Bench 001 is the hybrid
+GOAT record.** Master plan:
 [`.plans/001_instinct_lane_clippy_flow.md`](.plans/001_instinct_lane_clippy_flow.md).
+
+- **The hybrid composition** (`src/hybrid.rs`): H1 cascade (reflex
+  fused-gate pass-through → top-k prune → specialist over survivors) +
+  H2 prior fusion (p′ᵢ ∝ pᵢ·exp(g·β·mᵢ), the Proposal 013 shape) + the
+  G0 kill-switch arm; allocation-free hot path (tests/g4_alloc.rs); the
+  label join is a name-injection asserted both directions.
+- **The arena** (`src/bin/arena.rs`): the GOAT runner over reflex's
+  ONE-WAY `harness::runner::seat` seam (byte-identical questions + the
+  deployed Bench 051 posture through the same fit code reflex's runner
+  uses; the A0 drift pin asserts arena A0 == reflex `run()` byte-exact).
+- **Bench 001** (`.benchmarks/001_hybrid_goat/`): the single frozen test
+  read. Registered arms — **ag_news H2(β=1,nmin=2,τ=4) 0.8975** (A0
+  0.8625 / A1 0.8875; G1+G5 PASS; p50 2 µs vs A0's 150 µs);
+  **emotion A1 0.8550**, **sst5 A1 0.4217** (G1+G3 PASS);
+  **xnli/massive/banking77 A0 stands** (G5 refused honestly). G2's H1
+  fusion-only overhead 8–20 ns/q on narrow suites, honest fails on wide
+  (the O(n·k) prune — the O(n) survivor heap is the named remedy).
+  Open faces: the laya paired row (`--features arena-laya`), the
+  reflex-site publish, Issue 006 (massive's specialist reads chance on
+  the seat — A0 unaffected).
+- **Stats** (`src/stats.rs`): Wilson bounds, paired non-inferiority
+  (δ = max(1.0pp, 2.5·SE)), Pareto rank-0, Beta-LCB selection
+  (katgpt-core best_belief) — the pre-registration instrument.

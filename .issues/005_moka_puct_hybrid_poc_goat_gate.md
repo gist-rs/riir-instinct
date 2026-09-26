@@ -1,26 +1,22 @@
 # Issue 005 — the Moka+PUCT-style hybrid POC: instinct (model) × reflex (modelless), three compositions + one GOAT gate
 
-**Status:** OPEN — filed 2026-09-26 (Plan 001 P3 design). ~~Blocked on
-riir-train Issue 576 (a specialist to plug in)~~ **the specialist SHIPPED
-2026-09-26 (576 closed, Bench 608 + 609: winners `<suite>_winner_v1.bin`,
-A on emotion/sst5/banking77, distilled B on ag_news/massive/xnli — the
-A1 arm loads the winner per suite); T2 unblocked**. **T1 E0 MEASURED 2026-09-26 (riir-reflex
-Bench 053): H2 ARMED-PENDING on all 8 dataset suites** — rumor fraction
-(n < 4) 0.0% everywhere except massive_intent_en at 6.5%, median n 9–129,
-seen/total 81–100% — no suite pre-declared NOT ARMED, T3 unblocked by E0
-(typed_decisions carries the Bench-051 route-terms caveat into T3/T4
-planning; density ≠ armability there). The E0 measurement below can run NOW
-(reflex half only). Gate AMENDED 2026-09-26 per verdict round 1 (proposal-001
-reviewer): G0 kill switch split from the evidence gate, G1 floor-metric pin,
-G3 → paired non-inferiority (δ = 1.0 pp), G5 per-suite arm pre-registration
-on train/cal + δ on the budget face, G2 per-question wording for H1, T5/P3
-single frozen test read (P3's laya row joins this run). Same-day riir-ai
-.docs substrate sweep (6 vocabulary families): H3 value-head category rule
-pinned (Research 322 state-forecast-vs-Q(s,a) verdict + the TMNF-C negative,
-Research 380 §5), H1 names the Bench 565 tri-gate delegate precedent, the
-instrument section names the in-repo precedents (Bench 898 Elo option-choice,
-Plan 213 ruliology_arena pattern, best_belief Beta idiom). No gate arithmetic
-changed.
+**Status:** OPEN — T1–T5 MEASURED 2026-09-27 (Bench 001) except H3
+(excluded with a recorded reason) and the laya/site faces. The GOAT
+verdict per suite: **ag_news promotes H2(β=1,nmin=2,τ=4) — 0.8975 test
+vs A0 0.8625 / A1 0.8875, p50 2 µs, G1+G5 PASS; emotion and sst5
+promote A1 (the specialist alone — 0.8550 and 0.4217 vs A0's 0.5750 and
+0.2017); xnli/massive/banking77 keep A0** (the specialist does not clear
+the modelless lane there — xnli's distilled artifact reads 0.41 vs A0
+0.5167; massive's artifact reads CHANCE and is Issue 006; banking77's
+strong A1 0.796 is reachable only unconfined — H1's top-8 prune loses
+the answer, 0.476). The single frozen test read is spent; predictions
+frozen in `.benchmarks/001_hybrid_goat/predictions.json`. P3's laya row
+still rides `--features arena-laya` (paired escalation face) — not yet
+run. H3 (PUCT over chains): NOT SCORED — its only chain-shaped suite
+(typed_decisions) has no trained specialist in the 576 winner set, and
+its value-head category rule bars substituting one; the arm is deferred
+until a typed_decisions specialist exists (also blocked by E0's
+route-terms caveat there).
 
 ## Lineage (what the workspace already measured)
 
@@ -195,17 +191,20 @@ dominated-candidate filter that cannot be argued with after the fact.
       2026-09-26: ARMED-PENDING on all 8 dataset suites (rumor fraction
       ≤ 6.5%, median n 9–129); record = riir-reflex Bench 053
       (`../riir-reflex/.benchmarks/053_e0_evidence_density/BENCH.md`).
-- [ ] **T2** — arms A0/A1/H1 — UNBLOCKED 2026-09-26: riir-train Issue 576
-      closed (Bench 608 + 609); A1 loads the per-suite winner artifact
-      (`<suite>_winner_v1.bin`, the `decode_artifact` law; distilled where
-      the teacher transfer won — ag_news/massive/xnli — gold elsewhere).
-- [ ] **T3** — H2 on the suites E0 clears; β / n_min and τ_n selected on held-out train by the pre-registration instrument (Pareto rank-0 + argmax Beta-LCB, below).
-- [ ] **T4** — H3 on chain-shaped cases only; `successor_density_critic` Q-init as a sub-arm.
-- [ ] **T5** — GOAT gate G0–G6, record as a Bench; promote the winner as the
-      "Reflex · instinct" lane (Issue 003). ONE test read total: arms are
-      compared and per-suite candidates registered on the held-out
-      train/cal slice, the test split is read once, and P3's laya row is
-      JOINED onto this run's frozen predictions — never a second pass.
+- [x] **T2** — arms A0/A1/H1 MEASURED 2026-09-27 (Bench 001).
+- [x] **T3** — H2 on the suites E0 clears; β/n_min/τ selected on the
+      cal front by the pre-registration instrument (45-point grid;
+      ag_news's winning point β=1, nmin=2, τ=4; on emotion/sst5 the
+      grid's β=0 points collapse to A1 — the margin term adds nothing
+      where the tables are unarmed or the prior dominates). MEASURED.
+- [x] **T4** — H3: EXCLUDED with reason (no chain-shaped suite has a
+      specialist; the value-head category rule bars substitution). The
+      arm re-opens when a typed_decisions specialist is trained.
+- [x] **T5** — GOAT gate G0–G6 recorded as Bench 001
+      (`.benchmarks/001_hybrid_goat/RESULTS.md`), ONE test read
+      (predictions frozen), losses reported. Open faces: the laya
+      paired row (`--features arena-laya`) and the reflex-site publish
+      (Issue 003 T4).
 
 ## References
 

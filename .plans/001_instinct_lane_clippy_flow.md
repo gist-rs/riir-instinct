@@ -1,14 +1,13 @@
 # Plan 001 — the Reflex · instinct lane, riir-clippy flow end to end
 
-**Status:** IN PROGRESS — P1 done (repo born + registered 2026-09-26); P3a's
-E0 measured 2026-09-26 (reflex Bench 053: ARMED-PENDING on all 8 dataset
-suites — no suite excluded, T3 unblocked by E0); **P2 DONE 2026-09-26
-(riir-train Issue 576 closed, Bench 608 + 609: Arm A all six suites;
-Arm B distillation wins ag_news/massive/xnli; winners exported as
-`<suite>_winner_v1.bin` BLAKE3-sealed artifacts — P3 unblocked)**;
-**P3 T1 DONE 2026-09-26** (Issue 003: crate skeleton + RISP reader + live
-winner-load pin; BOUNDARY rows katgpt-core + riir-reflex measured);
-P3 T2–T4, P3a T2–T5, P4–P6 open.
+**Status:** IN PROGRESS — P1 ✓; P2 ✓ (576 closed, winners exported);
+P3a-E0 ✓ (reflex Bench 053); **P3a T2–T5 ✓ 2026-09-27 (Bench 001: the
+hybrid GOAT run — ag_news promotes H2, emotion/sst5 promote A1,
+xnli/massive/banking77 keep A0; H3 excluded with reason; the single
+test read spent, predictions frozen)**; **P3 T1–T4 ✓ 2026-09-27**
+(Issue 003: hybrid composition + the arena lane + the G0–G6 gate faces;
+the laya paired face and the reflex-site publish remain open); P4–P6
+open; Issue 006 (massive specialist anomaly) open.
 
 Design of record: `../riir-ai/.proposals/047_riir_instinct_hybrid_decision_engine.md`.
 Trainer: `../riir-train/.issues/576_arena_specialists_for_riir_instinct.md`.
@@ -48,14 +47,17 @@ weights are bytes; mining → settle → corpus → retrain).
       (`../riir-train/data/instinct_specialists/`, gitignored — P3 mounts
       them via its artifact loader; the format is arm-agnostic). P3
       unblocked.
-- [ ] **P3a — Moka+PUCT-style hybrid POC (Issue 005):** arms A0 reflex / A1 instinct / H1 cascade / H2 prior fusion (the Proposal 013 shape) / H3 PUCT-over-options (chains only); E0 evidence-density measurement MEASURED 2026-09-26 (riir-reflex Bench 053 — ARMED-PENDING on all 8 dataset suites, no suite excluded); the winner feeds P3 (per-suite arms pre-registered on train/cal; one frozen test read — P3a's run IS the read, P3 never re-reads it).
-- [ ] **P3 — hybrid serving + arena lane (Issue 003).** T1 DONE 2026-09-26
+- [x] **P3a — Moka+PUCT-style hybrid POC (Issue 005):** arms A0 reflex / A1 instinct / H1 cascade / H2 prior fusion (the Proposal 013 shape); H3 PUCT-over-options EXCLUDED with reason (no chain-shaped specialist suite — re-opens with a typed_decisions specialist). E0 MEASURED 2026-09-26 (riir-reflex Bench 053 — ARMED-PENDING on all 8 dataset suites). **T2–T5 MEASURED 2026-09-27 — Bench 001:** the instrument (Pareto rank-0 + argmax Beta-LCB on the cal front) registered per-suite arms; the single frozen test read landed (predictions.json); the GOAT verdict: ag_news → H2, emotion/sst5 → A1, xnli/massive/banking77 → A0. P3's laya row rides `--features arena-laya` (open).
+- [x] **P3 — hybrid serving + arena lane (Issue 003).** T1 ✓ 2026-09-26
       (crate skeleton + the RISP artifact reader + the live winner-load
-      pin; BOUNDARY rows measured: katgpt-core, riir-reflex);
-      T2 composition (H1: modelless scores → top-k prune → specialist
-      over survivors, fused abstain short-circuit) + T3 arena lane + T4
-      GOAT gate open. The laya row joins P3a's single frozen test read,
-      never a second pass.
+      pin); **T2 ✓ 2026-09-27** (src/hybrid.rs: H1 cascade + H2 prior
+      fusion + G0 kill-switch arm + the name-injection join pin);
+      **T3 ✓ 2026-09-27** (src/bin/arena.rs over reflex's one-way
+      `harness::runner::seat` seam — the boundary check forced this
+      shape: a reflex→instinct dep would be a cycle; the A0 drift pin
+      holds the seat path to reflex's own run()); **T4 ✓ 2026-09-27**
+      (the G0–G6 faces measured in Bench 001). Open: the laya paired
+      face, the reflex-site lane-scoped publish, Issue 006 (massive).
 - [ ] **P4 — vessels (Issue 001).** HOSTED-ONLY reader over the
       `reflexer-vessel` format (verify → decrypt → monotonic apply); minting
       + lineage stay in riir-train; first minting key pinned in the same
