@@ -1,7 +1,10 @@
 # Issue 003 — hybrid serving + the "Reflex · instinct" arena lane
 
-**Status:** OPEN — T1+T2+T3 DONE 2026-09-27; T4's gates MEASURED
-(Bench 001) — the site publish remains. ~~Blocked on riir-train
+**Status:** OPEN — T1–T4 DONE; **T4's verdict updated 2026-09-27 to the
+corrected Bench 001 v2** (Issue 006's instrument fix — the row below is
+superseded). The site publish remains.
+
+~~Blocked on riir-train
 Issue 576~~ — 576 CLOSED 2026-09-26 (Bench 608 + 609, winners
 `<suite>_winner_v1.bin`). **T1 DONE 2026-09-26**: crate skeleton + the
 RISP v1 artifact reader (`src/specialist.rs`), BLAKE3-seal + vocab-pin +
@@ -57,16 +60,23 @@ the specialist only where the modelless lane abstains, so it keeps the
       reflex exposes the one-way seat (`prepare_seat` / `fit_posture` /
       `eval_seat` + `laya_escalation_latency_us` behind `laya-riir`).
 - [x] **T4** — the merged GOAT gate G0–G6 MEASURED 2026-09-27 (Bench
-      001, `.benchmarks/001_hybrid_goat/`): per-suite registered arms —
-      ag_news H2(β=1,nmin=2,τ=4) 0.8975 (A0 0.8625, A1 0.8875; G1+G5
-      PASS, p50 2 µs vs A0's 150 µs); emotion A1 0.8550 (G1+G3 PASS);
-      sst5 A1 0.4217 (G1+G3 PASS); xnli/massive/banking77 A0 stands
-      (G5 refused honestly — no hybrid arm clears). G2's H1 fusion-only
-      overhead passes narrow suites (8–20 ns/q) and honestly fails the
-      100 ns bar on wide ones (massive 136, banking77 181 ns/q — the
-      O(n·k) prune; the O(n) survivor heap is the named remedy).
-      vs laya: the laya row rides `--features arena-laya` (the paired
-      escalation face) — the site publish remains open.
+      001; **v2 same day** — Issue 006's corrected instrument:
+      `.benchmarks/001_hybrid_goat/`): per-suite registered arms —
+      **ag_news H2(β=0.25,nmin=2,τ=2) 0.9000** (A0 0.8625, A1 0.8875;
+      G1+G5 PASS); **emotion A1 0.8550**, **sst5 A1 0.4217**,
+      **banking77 A1 0.7960** (G1+G3 PASS); **massive
+      H2(β=0.25,nmin=4,τ=4) 0.8300** (A1 0.8167 vs A0 0.4200 — the
+      suite flips to a hybrid win); **xnli A0 stands** (G5 refused
+      honestly). G2's H1 fusion-only overhead passes narrow suites
+      (8–20 ns/q); the wide-suite breach got its remedy 2026-09-27 —
+      the running-threshold prune (output-identical, sort-reference +
+      tie pins; `examples/prune_bench`: massive 135→109 ns,
+      banking 163→122, n=400 441→290) — still ~10–30 ns above the
+      100 ns bar at n=59–77 (the remaining cost is the compare floor +
+      the sorted-array inserts, i.e. the O(n) work itself); the arena's
+      G2 row refreshes at its next run. The laya paired face measured
+      same day: **PASS ×6** (lane sub-µs p50 vs laya 118–650 ms). The
+      site publish remains open.
 
 ## References
 

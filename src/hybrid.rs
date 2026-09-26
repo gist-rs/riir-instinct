@@ -70,7 +70,16 @@ impl Cascade {
     /// The deterministic top-k prune of `probs`: descending probability,
     /// ties keep the LOWER label index first (an equal later label never
     /// displaces an earlier one). Writes `(label_idx, prob)` into
-    /// `survivors[..returned]`, best first. O(n·k), zero-alloc.
+    /// `survivors[..returned]`, best first. Zero-alloc.
+    ///
+    /// The running k-th threshold makes the common case ONE compare:
+    /// once the window is full, an option at or below the threshold
+    /// cannot enter (an EQUAL later label must not displace the earlier
+    /// one it ties with — the tie law), so only genuine candidates pay
+    /// the insertion walk. Issue 003's G2 remedy for the O(n·k) shape
+    /// that breached the 100 ns fusion-only bar on the wide suites.
+    /// Output-identical to the naive insertion scan (pinned against a
+    /// sort-based reference by `prune_matches_the_sort_reference`).
     pub fn prune<'s>(
         &self,
         probs: &[f64],
@@ -81,17 +90,30 @@ impl Cascade {
             "top_k out of range"
         );
         let mut n = 0usize;
+        // The enter threshold: −∞ until the window fills, then the k-th
+        // survivor's prob. `!(p > thr)` is the ONE NaN-safe skip — a NaN
+        // prob can never enter (it would poison the ordering and, in the
+        // full window, walk past the array).
+        let mut thr = f64::NEG_INFINITY;
         for (i, &p) in probs.iter().enumerate() {
+            // NaN-safe skip: `!(p > thr)` (never `p <= thr`) so a NaN prob
+            // fails the enter test and can neither poison the ordering
+            // nor walk past the array. The negated form is the point —
+            // the lint is allowed for exactly this.
+            #[allow(clippy::neg_cmp_op_on_partial_ord)]
+            if !(p > thr) {
+                continue;
+            }
             // Insertion position: first slot strictly worse than (i, p) —
             // an equal element stops the walk, so an equal LATER label
             // lands after it (ties keep the lower index first).
-            let mut pos = n.min(self.top_k);
+            let mut pos = n;
             while pos > 0 && survivors[pos - 1].1 < p {
                 pos -= 1;
             }
-            if pos >= self.top_k {
-                continue;
-            }
+            debug_assert!(pos < self.top_k);
+            // Shift the tail right; when full the LAST element (the
+            // smallest prob, highest index among equals) falls off.
             let last = n.min(self.top_k - 1);
             let mut s = last;
             while s > pos {
@@ -102,6 +124,11 @@ impl Cascade {
             if n < self.top_k {
                 n += 1;
             }
+            thr = if n == self.top_k {
+                survivors[n - 1].1
+            } else {
+                f64::NEG_INFINITY
+            };
         }
         &mut survivors[..n]
     }
@@ -585,6 +612,47 @@ mod tests {
         let kept = cas.prune(&[0.1, 0.2], &mut survivors);
         assert_eq!(kept.len(), 2);
         assert_eq!(kept[0].0, 1);
+    }
+
+    /// The threshold path: an equal LATER option at the k-th threshold
+    /// must land AFTER the earlier one it ties with, and the displaced
+    /// element is the smallest prob (highest index among equals).
+    #[test]
+    fn prune_threshold_tie_keeps_the_earlier_index_first() {
+        let cas = Cascade { top_k: 3 };
+        let mut survivors = [(0usize, 0.0f64); MAX_TOP_K];
+        let kept = cas.prune(&[0.9, 0.5, 0.3, 0.5], &mut survivors);
+        let idx: Vec<usize> = kept.iter().map(|&(i, _)| i).collect();
+        assert_eq!(
+            idx,
+            vec![0, 1, 3],
+            "the later 0.5 (idx 3) enters above the threshold but lands AFTER the earlier 0.5 (idx 1) — the tie law; idx 2 (0.3) falls off"
+        );
+    }
+
+    /// Output-identical to a naive sort-based reference over a
+    /// deterministic pseudo-random spread (the threshold fast path must
+    /// never reorder or mistie). `top_k` at both extremes included.
+    #[test]
+    fn prune_matches_the_sort_reference() {
+        for top_k in [1usize, 3, 8, MAX_TOP_K] {
+            for n in [1usize, 7, 59, 400] {
+                let probs: Vec<f64> = (0..n)
+                    .map(|i| ((i as f64 * 0.618_033_988_7).sin() * 1e4).fract().abs())
+                    .collect();
+                let mut ranked: Vec<(usize, f64)> =
+                    probs.iter().copied().enumerate().collect();
+                ranked
+                    .sort_unstable_by(|a, b| b.1.partial_cmp(&a.1).unwrap().then(a.0.cmp(&b.0)));
+                let want: Vec<usize> = ranked[..top_k.min(n)].iter().map(|&(i, _)| i).collect();
+
+                let cas = Cascade { top_k };
+                let mut survivors = [(0usize, 0.0f64); MAX_TOP_K];
+                let kept = cas.prune(&probs, &mut survivors);
+                let got: Vec<usize> = kept.iter().map(|&(i, _)| i).collect();
+                assert_eq!(got, want, "top_k {top_k} · n {n}");
+            }
+        }
     }
 
     /// H2's g ≡ 0 identity: with the evidence gate hard-zeroed (n_min far

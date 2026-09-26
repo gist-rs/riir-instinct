@@ -76,8 +76,13 @@ GOAT record.** Master plan:
   A0 0.4200 — the suite flips from "A0 stands" to a hybrid win; G1+G3
   PASS); **xnli A0 stands** (G5 refused honestly). The laya paired face
   PASS ×6 (lane sub-µs p50 vs laya 118–650 ms). G2's H1 fusion-only
-  overhead 8–20 ns/q narrow, honest fails on wide (the O(n·k) prune —
-  the O(n) survivor heap is the named remedy). Open face: the
+  overhead 8–20 ns/q narrow; the wide-suite breach (v1: 136–181 ns/q,
+  the O(n·k) prune) got its remedy 2026-09-27 — the running-threshold
+  prune (`Cascade::prune`, output-identical, sort-reference + tie pins;
+  `examples/prune_bench`: massive 135→109 ns, banking 163→122,
+  n=400 441→290) — still ~10–30 ns above the 100 ns bar at n=59–77
+  (the compare floor + sorted inserts ARE the O(n) work now); the
+  arena's G2 row refreshes at its next run. Open face: the
   reflex-site publish.
 - **Stats** (`src/stats.rs`): Wilson bounds, paired non-inferiority
   (δ = max(1.0pp, 2.5·SE)), Pareto rank-0, Beta-LCB selection
