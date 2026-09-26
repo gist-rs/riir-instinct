@@ -743,7 +743,9 @@ fn fusion_overhead_micro<const N: usize>(ctx: &mut SuiteCtx<N>, n: usize) -> (f6
         pick: 0,
         abstained: true,
     };
-    // Warm.
+    // Warm (the loop's liveness is guaranteed by black_box on the
+    // consumed picks — a value assert here would be wrong: the picks can
+    // legitimately all be label 0).
     let mut checksum = 0usize;
     for _ in 0..100 {
         let d = ctx
@@ -776,7 +778,7 @@ fn fusion_overhead_micro<const N: usize>(ctx: &mut SuiteCtx<N>, n: usize) -> (f6
         checksum += black_box(f.pick);
     }
     let h2_ns = t.elapsed().as_nanos() as f64 / ITERS as f64;
-    assert!(checksum > 0, "the micro loops must stay live");
+    black_box(checksum);
     (h1_ns, h2_ns / n as f64)
 }
 

@@ -7,6 +7,7 @@ use riir_instinct::{
     prior_fusion_pick,
 };
 use std::alloc::{GlobalAlloc, Layout, System};
+use std::hint::black_box;
 use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 
 static ALLOCS: AtomicUsize = AtomicUsize::new(0);
@@ -101,7 +102,7 @@ fn hybrid_hot_path_allocates_nothing() {
         checksum += d.pick + f.pick + usize::from(d.escalated);
     }
     COUNTING.store(false, Ordering::Relaxed);
-    assert!(checksum > 0, "the loop must be live, never folded away");
+    black_box(checksum);
     assert_eq!(
         ALLOCS.load(Ordering::Relaxed),
         0,
