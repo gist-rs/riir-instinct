@@ -1,5 +1,48 @@
 # HISTORY — riir-instinct
 
+## 2026-09-27 — Issue 006 RESOLVED: the arena's position-vs-index instrument defect (Bench 001 v2)
+
+Fix `3a12a70`. The v1 massive anomaly (A1 0.0267 vs Bench 609's .670) was
+the ARENA, never the specialist. Two instrument bugs, one class:
+
+1. **Space mismatch**: A1/H1/H2 scored and picked in the seat's LABEL
+   space (`perm` is label→class) while A0's probs and every `gold.idx`
+   speak the question's PRESENTED-option space; the arena compared them
+   directly. Expected ≈ 1/59 ≈ .017 — the observed .0150/.0267. Masked on
+   every full-universe suite (identity); only massive's 20-of-59 sampled
+   + shuffled options could expose it.
+2. **Double indirect**: `cands[rank0_sorted[select_arm(..)]]` —
+   `select_arm` already returns the candidate index. v1's banking77
+   "A0 stands" registration was an artifact of this; v2 it crashed loud
+   (rank0 [0,2,16]) and is fixed.
+
+All three filed hypotheses refuted by measurement (the probe:
+`examples/massive_anomaly_probe.rs`): the teacher dump join is asserted
+at train (KeyMap permutation cannot pass); the pyjson state envelope
+costs ~0.7 pp (state 0.7559 vs raw 0.7626 on the seat's own rows);
+t20k and datasets massive test rows are identical, and the artifact
+(seal `7bc3ee385f81abc0` = Bench 609's recorded winner) reads 0.86
+train / 0.76 test through the SERVING reader.
+
+The fix: `h1_decide` takes a per-case `class_of_pos` bridge;
+`fill_positions` mirrors the engine's own two resolution rules (by name
+when every presented key is a seat label — massive/banking77; identity
+under k == N — the fixed-criteria suites, score-array included; else
+refuse loud). A1/H2 pick among presented positions; the H2 margin's
+rivals are the presented options. Pinned by
+`h1_scores_the_class_the_position_denotes`.
+
+**Bench 001 v2 supersedes v1 wholesale** (corrected frozen read):
+massive A1 **0.8167**, registered H2(β=0.25,nmin=4,τ=4) **0.8300** vs A0
+0.4200 — the suite flips from A0-stands to a hybrid win; banking77
+registers **A1 0.7960** (v1's A0 was the bug); ag_news H2(0.25,2,2)
+0.9000; emotion/sst5 A1 (0.8550/0.4217); xnli A0 stands. Laya paired
+face PASS ×6. The lesson generalizes: **a pick/gold pair is a SPACE
+contract — when a seat samples its option set, every scorer must speak
+the presented-option space, and an instrument index that survives on
+coincidence is an OOB panic waiting for the first suite that breaks the
+coincidence.**
+
 ## 2026-09-27 — Bench 001: the hybrid GOAT run (P3 + P3a through the single test read)
 
 The Reflex · instinct hybrid measured end to end. Commits: reflex seat
@@ -25,12 +68,14 @@ The Reflex · instinct hybrid measured end to end. Commits: reflex seat
 - Honest fails on record: G2's H1 fusion-only bar (100 ns/q) is
   breached on wide suites by the O(n·k) prune (massive 136 ns/q,
   banking77 181 ns/q) — the O(n) survivor heap is the named remedy;
-  massive's distilled specialist reads CHANCE on the seat (Issue 006 —
-  A0 unaffected; banking77's artifact works at 0.796, so the pipeline
-  is not wholesale broken); this box's `.raw/datasets` differ from
+  this box's `.raw/datasets` differ from
   Bench 051's bytes (the A0 rows shifted accordingly — the arena is
   internally consistent per the drift pin; 051 cross-references are
-  indicative, never comparable numbers).
+  indicative, never comparable numbers). ⚠ SUPERSEDED the same day by
+  Issue 006's resolution (the entry above): the massive chance reading
+  and the xnli/massive/banking77 A0 registrations were the instrument's
+  position-vs-index defect — read Bench 001 v2 for the corrected
+  numbers.
 - Instrument lessons paid for en route: the sigmoid-gate calibrator's
   `apply()` is the identity until `refit()` (the first run read Platt ==
   raw to 4 decimals — G1 false-failed everywhere until the face called
