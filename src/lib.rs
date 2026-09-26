@@ -19,4 +19,7 @@ pub use hybrid::{
     SpecialistLane, prior_fusion_pick,
 };
 pub use specialist::Specialist;
-pub use stats::{ArmStat, PairedDiff, delta_suite, paired_upper_bound, pareto_rank0, select_arm, wilson_bound, wilson_lb};
+pub use stats::{
+    ArmStat, PairedDiff, delta_suite, paired_upper_bound, paired_upper_bound_f64, pareto_rank0,
+    select_arm, wilson_bound, wilson_lb,
+};

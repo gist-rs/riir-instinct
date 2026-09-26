@@ -7,9 +7,15 @@ publish = false
 [dependencies]
 blake3 = "1"
 serde_json = "1"
-katgpt-core = { path = "../katgpt-rs/crates/katgpt-core", default-features = false, features = ["best_belief"] }
+katgpt-core = { path = "../katgpt-rs/crates/katgpt-core", default-features = false, features = ["best_belief", "sigmoid_calibration"] }
 riir-reflex = { path = "../riir-reflex", default-features = false, features = ["modelless", "nb_scope"] }
 
 [dev-dependencies]
+
+[features]
+default = []
+# The arena's laya paired face (G2): forwards reflex's laya-riir — the
+# metal/tokenizers tree compiles only under this feature.
+arena-laya = ["riir-reflex/laya-riir"]
 
 [workspace]

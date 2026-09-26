@@ -45,19 +45,30 @@ pub fn paired_upper_bound(a: &[bool], b: &[bool]) -> Option<PairedDiff> {
     if a.len() != b.len() || a.is_empty() {
         return None;
     }
-    let n = a.len() as f64;
-    let mut sum = 0.0f64;
-    let mut sum2 = 0.0f64;
-    for (x, y) in a.iter().zip(b) {
-        let d = i8::from(*x) - i8::from(*y);
-        let d = f64::from(d);
-        sum += d;
-        sum2 += d * d;
+    let diffs: Vec<f64> = a
+        .iter()
+        .zip(b)
+        .map(|(x, y)| f64::from(i8::from(*x) - i8::from(*y)))
+        .collect();
+    paired_upper_bound_f64(&diffs)
+}
+
+/// The paired bound over CONTINUOUS per-question differences (the G2
+/// latency face: laya − lane per escalated question, µs). Same SE/UB
+/// arithmetic as the binary form.
+pub fn paired_upper_bound_f64(diffs: &[f64]) -> Option<PairedDiff> {
+    if diffs.is_empty() {
+        return None;
     }
+    let n = diffs.len() as f64;
+    let sum: f64 = diffs.iter().sum();
+    let sum2: f64 = diffs.iter().map(|d| d * d).sum();
     let mean = sum / n;
-    // Sample variance of the diffs (n−1); the diffs are ±1/0, so this is
-    // exact, never a proportion shortcut.
-    let var = ((sum2 - sum * sum / n) / (n - 1.0)).max(0.0);
+    let var = if diffs.len() > 1 {
+        ((sum2 - sum * sum / n) / (n - 1.0)).max(0.0)
+    } else {
+        0.0
+    };
     let se = var.sqrt() / n.sqrt();
     Some(PairedDiff {
         mean,
