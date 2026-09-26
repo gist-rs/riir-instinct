@@ -1060,11 +1060,22 @@ fn pin_a0_identity(datasets_dir: &Path, runs: &[SuiteRun]) -> Result<(), String>
 }
 
 fn write_predictions(out_dir: &Path, runs: &[SuiteRun]) {
+    // The freeze contract is the REGISTERED arm + the controls (A0/A1/H1)
+    // — the 45-point H2 grid is recomputable deterministically from the
+    // seat + posture + cal front, and freezing it cost 14 MB in git
+    // history (Bench 001's first landing; trimmed same-day, the arms
+    // proven byte-identical across runs 3 and 4 before the trim).
     let mut suites = Vec::new();
     for run in runs {
         let arms: Vec<serde_json::Value> = run
             .test_arms
             .iter()
+            .filter(|a| {
+                a.name == "A0"
+                    || a.name == "A1"
+                    || a.name == "H1"
+                    || a.name == run.registered.name()
+            })
             .map(|a| {
                 serde_json::json!({
                     "name": a.name,
