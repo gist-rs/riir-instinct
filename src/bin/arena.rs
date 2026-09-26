@@ -985,10 +985,16 @@ fn laya_face(seat: &Seat, test_arms: &[ArmOut]) -> Option<LayaFace> {
     let durs = riir_reflex::harness::runner::seat::laya_escalation_latency_us(&cases).ok()?;
     let lane_durs: Vec<f64> = escalated.iter().map(|&i| h1.own_durs_us[i]).collect();
     let laya_durs: Vec<f64> = durs.iter().map(|&d| d as f64).collect();
-    let diffs: Vec<f64> = laya_durs
+    // The non-inferiority form: the violation direction is lane − laya
+    // (positive = the lane SLOWER = bad); the gate passes when its 95%
+    // upper bound ≤ 0 — i.e. the lane is faster with 95% confidence.
+    // (The first recording inverted this: ub95(laya − lane) ≤ 0 fails
+    // exactly when the lane is much faster — the data was favorable, the
+    // sign was not.)
+    let diffs: Vec<f64> = lane_durs
         .iter()
-        .zip(&lane_durs)
-        .map(|(l, m)| l - m)
+        .zip(&laya_durs)
+        .map(|(m, l)| m - l)
         .collect();
     let pd = paired_upper_bound_f64(&diffs)?;
     Some(LayaFace {
@@ -1232,7 +1238,7 @@ escalated decision incl. specialist scoring is {:.0} ns/q) · H2 fusion {:.2} ns
         if let Some(l) = &run.laya {
             md.push_str(&format!(
                 "- **G2 laya paired ({} escalated):** lane p50 {:.0} µs vs laya p50 {:.0} µs · \
-laya−lane UB95 {:+.0} µs → {}\n",
+lane−laya UB95 {:+.0} µs ≤ 0 → {}\n",
                 l.escalated_n,
                 l.lane_p50_us,
                 l.laya_p50_us,
