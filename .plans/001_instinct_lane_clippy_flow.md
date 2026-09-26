@@ -34,6 +34,7 @@ weights are bytes; mining → settle → corpus → retrain).
 - [ ] **P2 — specialists (riir-train Issue 576).** Arm A supervised CE + Arm
       B laya distillation on the arena train splits; held-out train
       selection; sealed frozen artifacts. Blocks P3.
+- [ ] **P3a — Moka+PUCT-style hybrid POC (Issue 005):** arms A0 reflex / A1 instinct / H1 cascade / H2 prior fusion (the Proposal 013 shape) / H3 PUCT-over-options (chains only); E0 evidence-density measurement first (runs now, reflex-only); the winner feeds P3.
 - [ ] **P3 — hybrid serving + arena lane (Issue 003).** First code: crate
       skeleton, specialist forward via riir-infer, modelless top-k prune +
       escalation on the fused abstain gate; harness lane "Reflex · instinct"
@@ -51,10 +52,13 @@ weights are bytes; mining → settle → corpus → retrain).
       measured threshold → new vessel → P5 redeploy. The riir-clippy mining
       loop, carried for decisions.
 
-## GOAT gate (every promotion)
+## GOAT gate (every promotion) — the merged Proposal 013 + Plan 001 gate
 
-G1 calibration vs the conformal-naive floor · G2 p99 within the lane's
-budget (the instinct lane must beat laya's latency where it matches its
-accuracy) · G3 no regression on suites where the modelless lane already wins
-(emotion, sst5, massive, banking77 at Bench 051) · G4 hot path alloc-free
-after warmup. Test split read once; train rows only.
+Full definitions: Issue 005. G0 identity (no specialist → byte-identical to
+reflex) · G1 calibration vs the conformal-naive floor · G2 fusion overhead
+< 100 ns/option + absolute p99 published, faster than laya at equal accuracy
+on escalated questions · G3 no regression on reflex-won suites (Wilson 95%
+lower bound ≥ reflex) · G4 alloc-free hot path · G5 Wilson lower bound >
+max(reflex, instinct-alone) on a gap suite, or instinct-alone accuracy at ≤ 50%
+escalation · G6 purity (frozen counts + sealed vessel, no runtime gradient).
+Train rows only; test read once; every arm reported, losses included.

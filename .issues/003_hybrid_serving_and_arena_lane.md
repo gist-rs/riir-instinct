@@ -14,14 +14,16 @@ the specialist only where the modelless lane abstains, so it keeps the
 
 - [ ] **T1** — crate skeleton (declared deps: katgpt-core, riir-reflex lib,
       riir-infer; BOUNDARY rows land with the code, measured).
-- [ ] **T2** — composition: modelless `nb_scope` scores → top-k prune →
-      specialist over the survivors; confident modelless answers
-      short-circuit (the fused abstain gate).
+- [ ] **T2** — composition: serve the arm Issue 005's POC promotes (H1
+      cascade / H2 prior fusion / H3 PUCT-over-options). The default until
+      then is H1: modelless `nb_scope` scores → top-k prune → specialist over
+      the survivors, with confident modelless answers short-circuiting (the
+      fused abstain gate).
 - [ ] **T3** — harness lane in riir-reflex's arena (same byte-identical
       questions; accuracy, escalation rate, p50/p99, G1 calibration). The
       lane crate lives here; riir-reflex consumes it behind an opt-in feature
       or as a subprocess lane (decide by boundary check, not preference).
-- [ ] **T4** — GOAT gate vs modelless AND laya, test read once; publish via
+- [ ] **T4** — the merged GOAT gate G0–G6 (Issue 005) vs modelless, instinct-alone AND laya, test read once; publish via
       the reflex-site lane-scoped update path (both hosts bit-identical where
       the lane is deterministic).
 
