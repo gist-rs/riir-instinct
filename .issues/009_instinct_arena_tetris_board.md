@@ -1,6 +1,6 @@
 # Issue 009 — Instinct plays Tetris on the arena (a real board, not a text-suite card)
 
-**Status:** OPEN — filed 2026-09-27 (owner direction). The placeholder card is pulled from the arena until this lands. HOW section added 2026-09-27 (training flow: search-distill via expert iteration, chance_puct teacher — verdict AGREE after 2 rounds); T5–T9 added and gate T7's start.
+**Status:** OPEN — filed 2026-09-27 (owner direction). The placeholder card is pulled from the arena until this lands. HOW section added 2026-09-27 (training flow: search-distill via expert iteration, chance_puct teacher — verdict AGREE after 2 rounds); T5–T9 gate T7's start. KARC adjudicated same day: refused as drop predictor, added as a T8 modelless readout arm.
 
 ## Why
 
@@ -66,10 +66,20 @@ modelless-only board does not carry the gain.
   higher-order predictor over recent drops (LEO-style sequence memory,
   `QuestLeoScorer` transplant, …) would be fitting the RNG stream — the
   memorize-the-fixture class; Proposal 042's Phase 0 also closed UNMEASURABLE.
-  If T5's widened wire carries the bag state or a preview, consume it DIRECTLY
-  — exact enumeration of a known distribution beats any predictor of it. The
+  **KARC included** (Plan 308, `katgpt_core::karc`): its GOAT G1 defines its
+  domain of validity — DETERMINISTIC temporal structure (double-scroll
+  attractor, 8 Lyapunov times; in riir-engine, HLA belief trajectories, a
+  semantic-domain signal with real inertia). The 7-bag is i.i.d.-within-bag:
+  `P(next | history) = P(next | bag state)` exactly, so the delay ring carries
+  zero predictive bits and KARC would learn the uniform marginal that exact
+  enumeration already gives for free (the Research-322 category-confusion
+  class). Cheap closing gate if ever contested: measure `H(next | last-k)` —
+  it equals `H(uniform over remaining bag)` by construction. If T5's widened
+  wire carries the bag state or a preview, consume it DIRECTLY — exact
+  enumeration of a known distribution beats any predictor of it. The
   head-to-head ("duel") instrument IS in the design already: paired per-seed
-  win/tie/loss + sign test for selection, never memory.
+  win/tie/loss + sign test for selection, never memory. **Where KARC DOES
+  belong: the value-function readout — see T8's second modelless arm.**
 - **Serve:** ONE 1-ply afterstate value critic, argmax over the offered options.
   A placement is deterministic, so V(afterstate) IS the per-option critic
   Q(s,a) — Issue 005's value-head category rule holds. Policy+V at 1-ply is
@@ -132,7 +142,16 @@ land.
       trained head (verdict amendment). The trained critic must strictly beat
       THIS baseline, not just Reflex: preview search + Dellacherie-style rules
       are modelless gains that belong in free Reflex, and shipping them there
-      raises Instinct's bar (Issue 008 root cause 1).
+      raises Instinct's bar (Issue 008 root cause 1). **Second modelless arm
+      (KARC readout, added 2026-09-27):** a closed-form KARC basis-ridge fit of
+      V(afterstate) over the same board features (Plan 308 — no delay ring,
+      plain basis expansion + ridge; the reflex head's linear micro-fit with a
+      nonlinear basis; modelless per Plan 332's own annotation). The trained
+      critic must beat BOTH arms; if the KARC readout wins, the modelless path
+      wins and that is the honest verdict under the modelless-first mandate
+      (same vessel serving, closed-form weights, no expert iteration). Note
+      the readout upgrade does NOT escape T5: the reflex head's ceiling is the
+      5-coarse-class input, not the ridge shape.
 - [ ] T9 — **Mint + serve.** riir-train trains + mints the PUBLIC-RELEASE
       vessel (Proposal 001 A4/A10 — no game-IP content) via `vessel-mint`;
       file the training run as its own riir-train issue. Instinct serves the
