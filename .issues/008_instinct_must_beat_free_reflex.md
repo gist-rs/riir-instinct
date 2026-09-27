@@ -95,6 +95,8 @@ and the six harness_* suites.
 - [ ] T4 — **close the two gaps with specialists that clear G3**: emotion
   (vs 0.8850) and banking77 (vs 0.8260; H1 lost up to ~4.7 pt at 95%).
   Training runs in riir-train (`vessel-mint`), on the GPU; not deferred.
+  Filed: riir-train Issue 579 (the v2 bar + the 576 protocol + the
+  teacher-quality lever warnings).
 - [ ] T5 — **coverage**: arms for the 9 unsold suites, starting with the
   ones where Reflex is weakest and a specialist has the most room
   (code_fixtures 0.25, harness_visibility 0.375, sst5-class tasks), and the
