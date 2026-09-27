@@ -52,7 +52,7 @@ for _s in (sys.stdout, sys.stderr):
     _s.reconfigure(encoding="utf-8", errors="backslashreplace")
 
 # The lane's machine id — publish_bench.py's LANE_DISPLAY renames it to
-# the public "instinct (hybrid)" at the publish boundary.
+# the public "Instinct (hybrid)" at the publish boundary.
 LANE_ID = "hybrid"
 
 

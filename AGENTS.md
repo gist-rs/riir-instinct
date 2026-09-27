@@ -126,7 +126,9 @@ intake leg filed as riir-train Issue 577.** Master plan:
   PASS (lane sub-2 µs vs laya metal 118–187 ms p50). **The reflex-site
   publish LANDED 2026-09-27**: the `hybrid` lane class joined
   publish_bench (carry/rename/inventory + `LANE_DISPLAY` →
-  `instinct (hybrid)`), the bench page (table + filter + charts + the
+  `Instinct (hybrid)` — cap-case rename 2026-09-27, old spelling kept as
+  a LANE_DISPLAY alias so re-publishing the prior bench.json lands it),
+  the bench page (table + filter + charts + the
   LANES palette slot + the lane explainer), and the lane published from
   `hybrid_lane_doc.json` — the registered arm per suite, xnli honestly
   absent (test_publish_bench 22/22 incl. the hybrid case; page + chart
