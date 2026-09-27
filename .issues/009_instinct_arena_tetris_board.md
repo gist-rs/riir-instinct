@@ -1,6 +1,6 @@
 # Issue 009 — Instinct plays Tetris on the arena (a real board, not a text-suite card)
 
-**Status:** OPEN — filed 2026-09-27 (owner direction). The placeholder card is pulled from the arena until this lands. HOW section added 2026-09-27 (training flow: search-distill via expert iteration, chance_puct teacher — verdict AGREE after 2 rounds); T5–T9 gate T7's start. KARC adjudicated same day: refused as drop predictor, added as a T8 modelless readout arm.
+**Status:** OPEN — filed 2026-09-27 (owner direction). The placeholder card is pulled from the arena until this lands. HOW section added 2026-09-27 (training flow: search-distill via expert iteration, chance_puct teacher — verdict AGREE after 2 rounds); T5–T9 gate T7's start. KARC adjudicated same day: refused as drop predictor, added as a T8 modelless readout arm. **T5 MEASURED 2026-09-27 (Bench 006): WIRE-MUST-WIDEN — the five-ordinal spot wire carries at most 0.30 of the champion 1-ply evaluator's ranking (maximal decoder, full v2 state sentence included); the widened wire (raw afterstate, Instinct-only sidecar) is a precondition of T7, and its two cross-repo halves (reflex contract sidecar field, reflex-site sender) are the next lands.**
 
 ## Why
 
@@ -112,12 +112,31 @@ which T1 records as a negative. Hence T5 first, and T6's information rule.
 Execution order: T5 → T6 → T7 → T8 → T9. T7 must not start before T5 and T6
 land.
 
-- [ ] T5 — **Pin the serving input contract.** Measure whether the state
-      sentence carries enough for a richer decoder; else widen the wire so the
-      Instinct lane receives the raw afterstate grid (protocol change touching
-      reflex-site T4 + the reflex contract). If the widened wire is offered to
-      Instinct ONLY, record that here as a deliberate owner decision (the
-      modelless lane keeps the 5-class text).
+- [x] T5 — **Pin the serving input contract.** MEASURED 2026-09-27 —
+      **WIRE-MUST-WIDEN** (`.benchmarks/006_wire_ceiling/BENCH.md`; the
+      instrument = katgpt-rs `examples/tetris_10_wire_ceiling.rs`,
+      `required-features = ["template_decode"]`). champ1ply (the champion
+      genome with NextPreview OFF + depth 1 — `plies()` clamps to ≥2 while
+      the preview rule is on, and depth-2 injects `TOPOUT` values; both
+      traps fixed) vs the maximal wire decoder (saturated cell tables over
+      the 5-tuple ⊗ piece ⊗ the full v2 state sentence, fallback to the
+      reflex-head-shaped ridge): rank agreement **0.3002** (n = 378 301
+      held decisions), board ratio **0.001** (90 pts / 19 pieces vs 107 638
+      / 3153), all 120 wire games top out, sign p < 0.0001 — both
+      pre-declared MUST-WIDEN gates fire. Occupancy ruled out (t1 dense,
+      agreement still 0.147). The binding-constraint hypothesis is
+      confirmed quantitatively: the wire ceiling is far below tie.
+      **Design decision recorded (per this task's own instruction): the
+      wire widens INSTINCT-ONLY** — the Instinct `/decide` request carries
+      the raw afterstate (grid rows + piece + bag remainder) as a sidecar
+      beside the unchanged 5-class text; the modelless lane, v0.2.x
+      serving, and every fixture/pin stay byte-identical. Owed lands:
+      the reflex contract's optional sidecar field + the reflex-site
+      sender/board-card half (T4's session). T6 (teacher check,
+      serving-matched) is now the gate on all GPU spend; note the probe
+      already shows the full-feature 1-ply champion is very strong under
+      serving information (3153 pieces / 1256 lines avg on held garbage
+      seeds), so the T6 separating-regime bar is reachable.
 - [ ] T6 — **Teacher check, serving-matched, BEFORE any distillation.**
       chance_puct over the rulebook champion must STRICTLY beat free Reflex's
       board on held-out seeds in a separating regime (garbage starts of the
