@@ -188,6 +188,16 @@ sender) still gates the SERVE path (T9).** Master plan:
   Thai-pins commit — tests-only); the site half (doc rebuild +
   republish + card three-state render) belongs to the session holding
   the reflex-site checkout (outside this workspace).
+- **Bench 011** (`.benchmarks/011_hybrid_families_seated/`, Issue 010 T6
+  + reflex Issue 049, 2026-09-28): the harness families + `code_fixtures`
+  joined the arena population through reflex `03415e5`'s synthetic seat
+  seam (the `Seat.synthetic` marker; `harness_cache_reuse` stays a
+  disclosed refusal). All six publish `a0_stands` (A0 0.375–0.500 —
+  049's scope-note expectation); the G1 disclosure rows FAIL on the tiny
+  cal fronts (they register nothing); the eight dataset suites' A0 rows
+  reproduced Bench 005 byte-identically — the seat refactor perturbed
+  nothing. Seat gates: reflex `tests/harness_seat_gates` (5/5, incl. the
+  seat-engine == manual-build bit-exact pin).
 - **Bench 004** (`.benchmarks/004_rebaseline_current_reflex/`, Issue 008
   T1+T2 executed 2026-09-27, supersedes 002
   as the serving verdict): the arena re-baselined at the CURRENT
