@@ -1,0 +1,86 @@
+# riir-instinct deploy manifest — the hosted hybrid decision lane
+# (Plan 001 P5 / Issue 002, the katgpt-rs Proposal 014 §4 Tier-2(b)
+# posture: the native binary in a container behind the Worker edge, the
+# container existing for process isolation + specialist vessels).
+#
+# The cf-container runtime is x86_64-only; on this M3 host the plan
+# routes the build through cross-build.sh (cargo-zigbuild) and the stage
+# gate re-verifies the ELF. The image carries MORE than the binary: the
+# six sealed winner artifacts + the six dataset suites the seat boots
+# from ride as `files:` rows (the multi-file container shape).
+#
+# Walkthrough (stage-only — no CF creds needed):
+#   ../riir-deployer/target/debug/riir-deploy -m deploy.yaml plan
+#   RIIR_DEPLOY_STAGE_ONLY=1 \
+#     ../riir-deployer/target/debug/riir-deploy -m deploy.yaml deploy --dest local
+#   file .deploy/local/stage/decisions/app-bin   # → ELF 64-bit x86-64
+#
+# Devnet-first (Issue 002 T4): the real `wrangler containers build` +
+# deploy is the owner-adjacent step; mainnet is the owner ceremony
+# (Proposal 014:79). No secret ever lives here — T2 refuses secret-shaped
+# env keys at plan time.
+
+name: riir-instinct
+domain: ops
+
+artifacts:
+  - name: serve
+    kind: cargo
+    package: riir-instinct
+    bin: serve
+    profile: release
+    # cf-container runtime is x86_64-only; bare triple → zigbuild's
+    # default glibc floor (bookworm is 2.36 — comfortably above it)
+    target_triple: x86_64-unknown-linux-gnu
+
+outputs:
+  # The binary (the triple appears in `from` — the plan's tripwire rule).
+  - { path: serve, from: "{target_dir}/x86_64-unknown-linux-gnu/release/serve" }
+  # The six sealed winner artifacts (riir-train Issue 576 winners; the
+  # BLAKE3 seal is verified at lane boot). Exact rows, never the parent
+  # dir — the dir also carries the armA variants, which do not ship.
+  - { path: winners/ag_news_winner_v1.bin, from: ../riir-train/data/instinct_specialists/ag_news_winner_v1.bin }
+  - { path: winners/emotion_winner_v1.bin, from: ../riir-train/data/instinct_specialists/emotion_winner_v1.bin }
+  - { path: winners/sst5_winner_v1.bin, from: ../riir-train/data/instinct_specialists/sst5_winner_v1.bin }
+  - { path: winners/massive_intent_en_winner_v1.bin, from: ../riir-train/data/instinct_specialists/massive_intent_en_winner_v1.bin }
+  - { path: winners/banking77_winner_v1.bin, from: ../riir-train/data/instinct_specialists/banking77_winner_v1.bin }
+  - { path: winners/xnli_en_winner_v1.bin, from: ../riir-train/data/instinct_specialists/xnli_en_winner_v1.bin }
+  # The six dataset suites the seat boots from (the t20k bytes the
+  # published lanes carry — the Bench 002 alignment law). Soft dir rows:
+  # per-file hashes recorded + verified, order-stable walk.
+  - { path: datasets/ag_news, from: ../riir-reflex/.raw/datasets_t20k/ag_news, soft: true }
+  - { path: datasets/emotion, from: ../riir-reflex/.raw/datasets_t20k/emotion, soft: true }
+  - { path: datasets/sst5, from: ../riir-reflex/.raw/datasets_t20k/sst5, soft: true }
+  - { path: datasets/massive_intent_en, from: ../riir-reflex/.raw/datasets_t20k/massive_intent_en, soft: true }
+  - { path: datasets/banking77, from: ../riir-reflex/.raw/datasets_t20k/banking77, soft: true }
+  - { path: datasets/xnli_en, from: ../riir-reflex/.raw/datasets_t20k/xnli_en, soft: true }
+
+targets:
+  decisions:
+    kind: node
+    artifact: serve
+    provider: cf-container
+    port: 8080
+    health: { http: /healthz }
+    instance_type: standard-2
+    env:
+      # The generated Dockerfile has no WORKDIR, so the files: rows' relative
+      # `to` paths land at the image root (`data/…` → `/data/…`).
+      INSTINCT_DATASETS_DIR: /data/datasets
+      INSTINCT_WINNERS_DIR: /data/winners
+    files:
+      - { from: winners/ag_news_winner_v1.bin, to: data/winners/ag_news_winner_v1.bin }
+      - { from: winners/emotion_winner_v1.bin, to: data/winners/emotion_winner_v1.bin }
+      - { from: winners/sst5_winner_v1.bin, to: data/winners/sst5_winner_v1.bin }
+      - { from: winners/massive_intent_en_winner_v1.bin, to: data/winners/massive_intent_en_winner_v1.bin }
+      - { from: winners/banking77_winner_v1.bin, to: data/winners/banking77_winner_v1.bin }
+      - { from: winners/xnli_en_winner_v1.bin, to: data/winners/xnli_en_winner_v1.bin }
+      - { from: datasets/ag_news, to: data/datasets/ag_news }
+      - { from: datasets/emotion, to: data/datasets/emotion }
+      - { from: datasets/sst5, to: data/datasets/sst5 }
+      - { from: datasets/massive_intent_en, to: data/datasets/massive_intent_en }
+      - { from: datasets/banking77, to: data/datasets/banking77 }
+      - { from: datasets/xnli_en, to: data/datasets/xnli_en }
+
+destinations:
+  local: { targets: [decisions] }

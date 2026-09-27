@@ -8,3 +8,7 @@ CLAUDE.md
 *.bin
 *.safetensors
 *.gguf
+
+# riir-deploy build/stage trees (generated; the manifest is the source of truth)
+/.deploy/
+/dist/

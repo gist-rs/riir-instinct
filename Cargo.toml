@@ -6,7 +6,16 @@ publish = false
 
 [dependencies]
 blake3 = "1"
-serde_json = "1"
+# preserve_order: the criteria object's INSERTION ORDER is the presented
+# option order — the bridge's index space shifts if reordered
+# (parity-critical; the reflex-side reason verbatim). Declared LOCALLY so
+# the law survives reflex dropping it (feature unification is an accident,
+# not a contract).
+serde_json = { version = "1", features = ["preserve_order"] }
+# derive: the /decide request envelope at the HTTP edge (already in-tree
+# via katgpt-core's non-optional serde — no new package; edge-only by law,
+# the reflex serve posture).
+serde = { version = "1", features = ["derive"] }
 katgpt-core = { path = "../katgpt-rs/crates/katgpt-core", default-features = false, features = ["best_belief", "sigmoid_calibration"] }
 riir-reflex = { path = "../riir-reflex", default-features = false, features = ["modelless", "nb_scope"] }
 reflexer-vessel = { path = "../riir-reflexer/crates/reflexer-vessel", optional = true }

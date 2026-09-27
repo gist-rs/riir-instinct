@@ -10,7 +10,10 @@ FAIL — A0 stands as the product posture, xnli keeps A0; A0 == the
 published 052 rows 6/6)**; **P3 T1–T4 ✓ 2026-09-27** (Issue 003: hybrid
 composition + the arena lane + the G0–G6 gate faces; the laya paired
 face PASS; **the reflex-site publish LANDED — the `instinct (hybrid)`
-lane is live in bench.json**); P4 done 2026-09-27 (HOSTED-ONLY vessel reader, gates 7/7); P5–P6 open; Issue 006
+lane is live in bench.json**); P4 done 2026-09-27 (HOSTED-ONLY vessel
+reader, gates 7/7); **P5 done 2026-09-27** (Issue 002: the hosted
+serving binary + deploy.yaml + the local container e2e); P6 open
+(Issue 004, unblocked — the served lane exists to collect from); Issue 006
 RESOLVED 2026-09-27 — the v1 massive anomaly was the ARENA's
 position-vs-index defect (label-space picks compared against
 presented-option gold; `select_arm`'s candidate index re-indexed through
@@ -84,9 +87,18 @@ weights are bytes; mining → settle → corpus → retrain).
       riir-train. Minting and lineage remain in riir-train; the first
       minting key gets pinned in the same change that ships the first
       artifact.
-- [ ] **P5 — hosted deploy (Issue 002).** `deploy.yaml` for riir-deployer:
-      cf-container target (Proposal 014 §hosted plane (b)), stage → verify →
-      rolling flip, explicit rollback; secrets via `wrangler secret put` only.
+- [x] **P5 — hosted deploy (Issue 002).** DONE 2026-09-27: the serving
+      binary (`src/bin/serve.rs` — std-only HTTP edge, the decision
+      receipt, lanes loading async with healthz live) + the lib serving
+      half (`src/server.rs` — the seat boot + per-request decision, the
+      Bench-002 GOAT posture table, banking77 serves A0 per its G3
+      FAIL) + `deploy.yaml` (cf-container, zigbuild x86_64, 12 file
+      rows via the deployer `files:` rows at riir-deployer `75b8240`) +
+      the local docker e2e (all six lanes ready in the x86-64 image,
+      live decisions + receipts verified). Parity gate: served picks ==
+      the frozen Bench-002 predictions (serve path == arena path). The
+      CF push itself is owner-adjacent (creds); mainnet is the owner
+      ceremony. Gates: `tests/serve_gates.rs` 6/6; suite 28/0.
 - [ ] **P6 — the flywheel (Issue 004).** decstat contribution rows → riir-kat
       → riir-dapps settle (devnet first) → riir-train corpus → retrain at the
       measured threshold → new vessel → P5 redeploy. The riir-clippy mining

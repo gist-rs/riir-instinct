@@ -45,14 +45,39 @@ riir-deployer (cf-container) ◀─ vessel minting ◀─ riir-train ◀─ riir
 /git/riir-dapps      ← settlement (private)
 ```
 
+## Build commands
+
+```sh
+cargo check
+cargo clippy --all-targets -- -D warnings
+cargo test                                   # the gate suite (serve gates skip loud without data)
+cargo run --release --bin arena              # the GOAT run (writes .benchmarks/<out>/)
+
+# The hosted serving lane (P5, Issue 002):
+cargo run --release --bin serve -- --bind 127.0.0.1:8091 --suites ag_news,massive_intent_en
+#   datasets default ../riir-reflex/.raw/datasets_t20k · winners
+#   ../riir-train/data/instinct_specialists · INSTINCT_DATASETS_DIR /
+#   INSTINCT_WINNERS_DIR / INSTINCT_BIND env overrides · CORS via
+#   RIIR_INSTINCT_ALLOWED_ORIGIN (comma list, closed by default)
+curl -s -X POST localhost:8091/decide \
+  -d '{"suite":"ag_news","state":"Wall Street rallies as the Fed signals a rate cut"}'
+
+# Deploy: plan → cross-build (zigbuild x86_64) → stage (no CF creds needed);
+# the real `wrangler containers build` + deploy is the owner-adjacent step
+../riir-deployer/target/debug/riir-deploy -m deploy.yaml plan
+RIIR_DEPLOY_STAGE_ONLY=1 \
+  ../riir-deployer/target/debug/riir-deploy -m deploy.yaml deploy --dest local
+file .deploy/local/stage/decisions/app-bin   # → ELF 64-bit x86-64
+```
+
 ## Branch
 
 `develop` is the working branch. No feature branches.
 
 ## Current state
 
-**P1–P3a substantially DONE (2026-09-26/27) — Bench 001 is the hybrid
-GOAT record.** Master plan:
+**P1–P5 substantially DONE (2026-09-26/27) — Bench 001 is the hybrid
+GOAT record; P6 (the flywheel) is open.** Master plan:
 [`.plans/001_instinct_lane_clippy_flow.md`](.plans/001_instinct_lane_clippy_flow.md).
 
 - **The hybrid composition** (`src/hybrid.rs`): H1 cascade (reflex
@@ -107,3 +132,50 @@ GOAT record.** Master plan:
 - **Stats** (`src/stats.rs`): Wilson bounds, paired non-inferiority
   (δ = max(1.0pp, 2.5·SE)), Pareto rank-0, Beta-LCB selection
   (katgpt-core best_belief) — the pre-registration instrument.
+- **P4 — the HOSTED-ONLY vessel reader** (`src/vessel.rs`, opt-in
+  `vessel` feature, 2026-09-27): authenticates with reflexer-vessel's
+  own exported primitives (peek, PinTable key resolution, strict
+  ed25519, blake3 commitment), applies the blake3-XOF confidentiality
+  envelope, decodes the RISP artifact, enforces the monotonic apply
+  gate; gate taxonomy 7/7 in `tests/vessel_gates.rs` against real
+  minted fixtures. `encrypt_payload` is the published minting contract
+  for riir-train; no vessel exists yet (the minter is the riir-train
+  side) — the serve lane still boots from the raw winner artifacts
+  until the first vessel ships.
+- **P5 — the hosted serving lane** (`src/server.rs` +
+  `src/bin/serve.rs` + `deploy.yaml`, 2026-09-27): the servable binary
+  and the cf-container shape (Issue 002, katgpt-rs Proposal 014 §4
+  Tier-2(b)).
+  - **The serving posture table is the GOAT product verdict, not the
+    registration instrument's pick** (`server::serving_posture`): they
+    disagree exactly once — banking77's cal front registered H1 and G3
+    FAILED it, so **A0 serves** there and the H1 row stays a published
+    site measurement. The parity gate
+    (`tests/serve_gates.rs::served_decisions_are_the_frozen_bench_002_picks`)
+    replays committed test cases through `decide()` and asserts identity
+    with the frozen `predictions.json` picks — the serve path IS the
+    arena path.
+  - The edge is std-only HTTP (`/decide`, `/healthz`, `/`); lanes boot
+    on 64 MiB-stack threads with the listener bound FIRST (healthz live
+    during the seat boot; loading/failed lanes answer 503 with the state
+    named, never a silent fallback). Every response carries the
+    **decision receipt** (Proposal 014 §4): build fingerprint (blake3
+    over rustc release/commit/host + the compiled feature set, generated
+    by `build.rs`), BLAKE3(input), BLAKE3(canonical decision), lane id.
+    Refusals carry machine-readable `code`s (`unknown_suite`, `loading`,
+    `bridge_undefined`, `too_large`, …). CORS allow-list env
+    `RIIR_INSTINCT_ALLOWED_ORIGIN`, closed by default.
+  - The container: `deploy.yaml` (domain `ops`, cf-container,
+    `standard-2`) cross-builds the serve bin via cargo-zigbuild (the
+    deployer's ELF gate) and rides the deployer's **`files:` rows**
+    (riir-deployer `75b8240`) to stage the 6 sealed winners + 6 t20k
+    dataset suites (per-file BLAKE3 rows) beside the binary; env points
+    the lanes at `/data/{winners,datasets}` (the generated Dockerfile
+    has no WORKDIR — relative `to` paths land at the image root).
+    Secrets never enter the manifest (cf-container env keys are
+    plan-time refused when secret-shaped — the cf-worker T1d rule).
+  - Verified locally end to end: plan → zigbuild → 948-row BLAKE3
+    manifest → stage → docker run (x86-64 under Rosetta, HEALTHCHECK
+    healthy) → all six lanes ready ≤ 14.7 s → live decisions 0.2–5 ms
+    with receipts. The CF push itself is owner-adjacent (creds);
+    mainnet is the owner ceremony (T4).
