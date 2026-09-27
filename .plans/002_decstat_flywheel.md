@@ -62,7 +62,11 @@ public view + per-epoch commitment root → (later) retrain threshold.
 - [ ] **T4 — riir-train intake** (filed, deferred): settled rows join the
       specialist corpus; retrain at the measured threshold, GOAT-gated,
       then vessel mint + P5 redeploy. Filed as riir-train Issue 577 —
-      blocked on accumulated rows.
+      blocked on accumulated rows. PROGRESS 2026-09-27: 577 T1+T2 (the
+      intake reader + the pinned 10⁴/suite demand floor) LANDED at
+      riir-train `b4898e01` — the first dec epoch is fetched, verified,
+      and recorded in the train-side ledger; T3+T4 (the retrain) still
+      wait on rows.
 - [ ] Docs: instinct BOUNDARY.md dep row + AGENTS.md sibling table,
       dapps lib counts, issue 004 checkboxes.
 

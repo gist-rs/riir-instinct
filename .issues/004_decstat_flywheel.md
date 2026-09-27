@@ -45,7 +45,12 @@ healer improves). Nothing carries it for decisions yet.
       retrain fires only at the measured threshold and is GOAT-gated (the
       Bench-062 ID + withheld-pair OOD discipline), then mints a new
       vessel (Issue 001) and redeploys (Issue 002). DEFERRED to
-      riir-train Issue 577 — rows accumulate first.
+      riir-train Issue 577 — rows accumulate first. PROGRESS 2026-09-27:
+      the intake reader + the retrain demand floor (10⁴/suite, the
+      Issue-125 band low end, pinned pre-read) LANDED in riir-train at
+      `b4898e01`+`443d2900` — the dec lane's first root (`191db259…`)
+      verified and its epoch recorded in the train-side ledger the same
+      day; the retrain itself (577 T3/T4) stays deferred on rows.
 
 ## References
 
