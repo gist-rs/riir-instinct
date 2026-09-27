@@ -134,7 +134,16 @@ intake leg filed as riir-train Issue 577.** Master plan:
   absent (test_publish_bench 22/22 incl. the hybrid case; page + chart
   smokes PASS; `scripts/build_hybrid_doc.py` re-derives the reflex
   metric laws exactly and cross-checks against the arena's G1 ECE
-  lines).
+  lines). **The arena + sizes presence LANDED same-day** (reflex-site
+  `f7a0574`): an Instinct (hybrid) lane card in every arena game, placed
+  directly before the raw board — the raw board is ALWAYS the last card
+  (owner rule) — rendering the registered per-suite arms from
+  data/bench.json at load (`arena_hybrid_card.js`; a text-suite card, not
+  a game board: game spots answer through the Reflex half), and the
+  #sizes disk-footprint report gained the hosted serving posture (serve
+  binary + the six t20k dataset suites as engine, the six sealed winner
+  vessels as model — 42.9 MB total, recorded measurements with verbatim
+  lstat commands; publish_sizes grew recorded model source kinds).
 - **Stats** (`src/stats.rs`): Wilson bounds, paired non-inferiority
   (δ = max(1.0pp, 2.5·SE)), Pareto rank-0, Beta-LCB selection
   (katgpt-core best_belief) — the pre-registration instrument.
