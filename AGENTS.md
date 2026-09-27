@@ -237,23 +237,24 @@ reflex contract field + the reflex-site sender); training seeds
   binary + the six t20k dataset suites as engine, the six sealed winner
   vessels as model — 42.9 MB total, recorded measurements with verbatim
   lstat commands; publish_sizes grew recorded model source kinds).
-  ✅ The site's hybrid lane now publishes the SERVED posture (Issue 008
-  T3 closed 2026-09-27, reflex-site `4ca2ef6`):
-  the Instinct lane carries exactly ONE cell — massive H2 0.8267
-  (+4.7 pt, the certified arm, == arsenal.toml) — and the four
-  Bench-002-era REFUSED cells (ag_news H2 0.8975 / emotion A1 0.8550 /
-  sst5 A1 0.4217 / banking77 H1 0.8060) are REMOVED. The mechanism is
-  publish_bench.py's a0_stands arm (riir-instinct Issue 010 T3): a lane
-  doc suite marked `verdict: "a0_stands"` deletes the incumbent hybrid
-  cell and discloses the removal loudly; a doc WITHOUT the marker never
-  erases the lane (test-pinned both directions,
-  `case_a0_stands_removes_refused_incumbent_cell`). Published from the
-  Bench-005 record (`.benchmarks/005_hybrid_every_suite_measured/`, the
-  lane doc committed beside it); the massive cell's latency is
-  UNJUDGED (that run's box carried load 6.26 — recorded in the bench's
-  own RESULTS header; accuracy is the claim, the verdict discloses
-  itself). The arena GAME card stays removed per Issue 009 (owner
-  direction) until a real Instinct board strictly beats Reflex's.
+  ✅ **The serving law + the full-coverage display law (owner verdict
+  2026-09-27, riir-instinct `4cc4441` + reflex-site `aeea24b`):** the
+  SERVED arm is the **best measured arm** per suite over the Bench-005
+  frozen read, A0 a candidate like any other — ag_news serves H2 0.8975
+  (+1.5 pt), sst5 serves A1 0.4217 (+2.5 pt), massive serves H2 0.8267
+  (+4.7 pt, T2-certified); emotion/banking77/xnli serve A0 because A0 IS
+  the argmax there (the losing specialists are the T4/T5 backlog, not a
+  refusal to serve). The T2 strict-superiority gate REMAINS as the
+  advertising law (the site's ✓/✗ row), never the serving selector.
+  The site publishes EVERY seated suite's cell — reflex-half suites
+  included (a tie or a loss is shown, labeled, and stays visible as the
+  improvement backlog; hiding a measured result reads as "can't handle
+  it") — with `serves` + `gate` disclosure on each cell. Gates:
+  serve_gates 11/11 (parity now resolves the expected arm from the
+  MANIFEST — the record's `registered` field is T2-era data; digest
+  repinned `4e63e9d9…`), publish_bench 48/48, pairing 28/28. The arena
+  GAME card stays removed per Issue 009 (owner direction) until a real
+  Instinct board strictly beats Reflex's.
 - **Stats** (`src/stats.rs`): Wilson bounds, paired non-inferiority
   (δ = max(1.0pp, 2.5·SE)), Pareto rank-0, Beta-LCB selection
   (katgpt-core best_belief) — the pre-registration instrument.

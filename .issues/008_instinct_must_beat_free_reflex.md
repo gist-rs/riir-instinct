@@ -1,11 +1,19 @@
 # Issue 008 — Instinct must strictly beat free Reflex on every suite it sells
 
 **Status:** OPEN — filed 2026-09-27 (owner direction). T1+T2 EXECUTED 2026-09-27
-(Bench 004, `.benchmarks/004_rebaseline_current_reflex/`): the sold set is now
-exactly ONE certified arm — massive H2 +4.7 pt, paired LB95 +0.0124 — with
-ag_news/sst5/banking77 refused by the gate and emotion's specialist outrun by
-reflex's ridge@8 base. T3 (site publishes the SERVED posture) is the next
-owner-visible step; T4/T5 grow the sold set.
+(Bench 004): the T2-certified set is exactly ONE arm — massive H2 +4.7 pt.
+**AMENDED same day (owner serving verdict): the SERVING selector is the
+BEST MEASURED ARM per suite (A0 a candidate like any other) — ag_news
+serves H2 0.8975 and sst5 serves A1 0.4217 while still T2-uncertified;
+T2 remains the ADVERTISING law (the site ✓/✗ row), never the serving
+selector. The site displays EVERY seated suite's cell (reflex-half
+suites included, labeled) — hiding a measured result reads as "can't
+handle it". Serving law + display landed at riir-instinct `4cc4441` +
+reflex-site `aeea24b` (serve_gates 11/11, publish 48/48, pairing 28/28).
+T4/T5 are now the whole improvement backlog: certify ag_news/sst5
+(more questions) and replace the losing specialists (emotion/banking77/
+xnli) — the served posture upgrades automatically when a better arm
+measures.
 
 ## Why
 
