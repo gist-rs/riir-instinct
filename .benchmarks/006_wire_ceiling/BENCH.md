@@ -110,7 +110,8 @@ not an engine change. Consequences:
 ## Instrument provenance
 
 - `katgpt-rs` example: `examples/tetris_10_wire_ceiling.rs` at
-  `483f2cf6e` — run with
+  `6b6589370` (rebased from `483f2cf6e` — the citation follows the
+  landed SHA) — run with
   `cargo run --release --example tetris_10_wire_ceiling
   --features template_decode` (the `[[example]]` row carries
   `required-features = ["template_decode"]`).
