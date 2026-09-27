@@ -1,0 +1,40 @@
+{
+ "meta": {
+  "host": "m3",
+  "git_sha": "f2bed09",
+  "date_utc": "2026-09-27T14:45:33Z",
+  "profile": "release",
+  "laya_feature": false,
+  "lane_note": "instinct hybrid lane: the registered arm's single frozen test read over the reflex harness seat at the current published reflex posture (the Bench-004 re-baseline); a suite whose registered arm is A0 carries no hybrid lane",
+  "skipped_suites_a0_registered": [
+   "ag_news",
+   "emotion",
+   "sst5",
+   "xnli_en",
+   "banking77"
+  ]
+ },
+ "suites": [
+  {
+   "name": "massive_intent_en",
+   "n_questions": 300,
+   "n_cases": 300,
+   "hybrid": {
+    "lane": "hybrid",
+    "model": "H2(\u03b2=1,nmin=2,\u03c4=8)",
+    "hard": {
+     "n": 300,
+     "accuracy": 0.8266666666666667,
+     "ece": 0.06070700170483837,
+     "mean_confidence": 0.8355173326634961,
+     "acc_at_50_coverage": 0.9933333333333333
+    },
+    "consult_rate": 1.0,
+    "latency_scope": "arm-only",
+    "latency_p50_ms": 0.000959,
+    "latency_p99_ms": 0.001833,
+    "latency_tail_support": 5
+   }
+  }
+ ]
+}

@@ -1,6 +1,11 @@
 # Issue 008 — Instinct must strictly beat free Reflex on every suite it sells
 
-**Status:** OPEN — filed 2026-09-27 (owner direction). Measured baseline below; T1 is the highest-leverage task.
+**Status:** OPEN — filed 2026-09-27 (owner direction). T1+T2 EXECUTED 2026-09-27
+(Bench 004, `.benchmarks/004_rebaseline_current_reflex/`): the sold set is now
+exactly ONE certified arm — massive H2 +4.7 pt, paired LB95 +0.0124 — with
+ag_news/sst5/banking77 refused by the gate and emotion's specialist outrun by
+reflex's ridge@8 base. T3 (site publishes the SERVED posture) is the next
+owner-visible step; T4/T5 grow the sold set.
 
 ## Why
 
@@ -43,22 +48,37 @@ and the six harness_* suites.
 
 ## Tasks
 
-- [ ] T1 — **re-baseline A0 on the CURRENT published Reflex posture** (the
+- [x] T1 — **re-baseline A0 on the CURRENT published Reflex posture** (the
   armed heads: emotion ridge@8, typed oc@2, sst5/xnli nb@16 … as published)
   and re-run the Bench-002 arena on the same `datasets_t20k` bytes. Every
   hybrid arm fuses over that Reflex, so A0 == the published modelless row
   becomes the comparability proof again (the 6/6 pin, re-pinned). Expected:
   emotion's fused arm re-scores against 0.8850; ties are the floor, not a loss.
-- [ ] T2 — **a product gate: registration REFUSES an arm not strictly above
+  ✅ DONE (Bench 004): seat knobs = head+nb+ridge select (the ladder arms
+  only where reflex's bar clears — emotion @8, all other arena suites 0,
+  byte-identical to off); the drift pin extended to all six suites AND to
+  the published site rows (arena == reflex run() == bench.json, 6/6 site ✓).
+  Emotion measured: A1 0.8550 vs the new A0 0.8850 — the instrument picked
+  A0 outright; the +11.8 pt story closed at −3.0 pt, exactly as this issue
+  predicted.
+- [x] T2 — **a product gate: registration REFUSES an arm not strictly above
   the current Reflex row** on the frozen test read (paired, with the existing
   `stats.rs` non-inferiority machinery turned into superiority: lower bound
   of the paired delta > 0). This makes the site's ✓ a riir-instinct GOAT
   gate instead of a page rule, and T1's drift can never silently reopen.
-- [ ] T3 — **publish the SERVED posture, not the registered one**
-  (`scripts/build_hybrid_doc.py` reads `server::serving_posture`). An A0-served
-  suite is then absent, as xnli already is, instead of showing an arm
-  customers never get. Owner-visible change to a recorded AGENTS.md
-  decision; recommended because the arena row compares what is sold.
+  ✅ DONE (Bench 004): `stats::PairedDiff::lb95` + the gate in the arena's
+  registration (`src/bin/arena.rs`) — a refused pick prints its paired mean
+  and LB95, A0 serves, and the refusal rides the frozen record
+  (`predictions.json`'s `instrument_pick`/`superiority` fields) + the
+  RESULTS.md gate table. Refusals measured: ag_news H2 (+0.0150/−0.0100),
+  sst5 A1 (+0.0250/−0.0129), banking77 H1 (−0.0200/−0.0466).
+- [ ] T3 — **publish the SERVED posture, not the registered one** — now
+  MOOT AS STATED (the T2 gate made registered == served: a refused arm is
+  not registered, so there is no unserved arm left to hide). The REMAINING
+  half is the site sync: `scripts/build_hybrid_doc.py` + reflex-site must
+  republish from Bench 004's record so the site row carries the served set
+  (massive only, +4.7 pt certified) instead of the Bench-002 arms. Not done
+  here — reflex-site is a separate checkout another session may hold.
 - [ ] T4 — **close the two gaps with specialists that clear G3**: emotion
   (vs 0.8850) and banking77 (vs 0.8260; H1 lost up to ~4.7 pt at 95%).
   Training runs in riir-train (`vessel-mint`), on the GPU; not deferred.

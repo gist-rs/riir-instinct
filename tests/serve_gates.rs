@@ -6,8 +6,9 @@
 //! 1. **The manifest byte pin** — the embedded `arsenal.toml` is pinned
 //!    byte-for-byte (BLAKE3): a TOML edit reds exactly like a code edit
 //!    does (law A6 — the posture is DATA now, so the pin moved with it).
-//! 2. **The posture pin** — the manifest's rows ARE the Bench-002 GOAT
-//!    verdicts, arm-by-arm against the frozen record. Runs everywhere.
+//! 2. **The posture pin** — the manifest's rows ARE the Bench-004 GOAT
+//!    verdicts (the Issue-008 T1 re-baseline + T2 product gate), arm-by-arm
+//!    against the frozen record. Runs everywhere.
 //! 3. **The parity gate** — the served decision for committed test cases
 //!    IS the frozen `predictions.json` pick for the same case (the serve
 //!    path is the arena path, never a re-derivation). SKIPs loud when the
@@ -39,7 +40,7 @@ fn winners_dir() -> PathBuf {
 }
 
 fn predictions_path() -> PathBuf {
-    repo_root().join(".benchmarks/002_hybrid_052_protocol/predictions.json")
+    repo_root().join(".benchmarks/004_rebaseline_current_reflex/predictions.json")
 }
 
 fn embedded_manifest() -> ArsenalManifest {
@@ -54,7 +55,7 @@ fn embedded_manifest() -> ArsenalManifest {
 /// re-run + frozen-predictions parity update law A6 demands). This is
 /// the TOML analogue of the compile-time posture table it replaced.
 const PINNED_MANIFEST_DIGEST: &str =
-    "blake3:219356e01fcaa5010df10b3d76ac4c387ed3b5b201bda9896a6f928a6d2fe089";
+    "blake3:57dc4f311ce43f0cf2b55c46dd4702dc4c75ccd7b7503b0ab703698b884b33f7";
 
 #[test]
 fn arsenal_manifest_bytes_are_pinned_byte_for_byte() {
@@ -66,26 +67,24 @@ fn arsenal_manifest_bytes_are_pinned_byte_for_byte() {
     );
 }
 
-// ── face 2: the posture pin (the Bench-002 verdict, now as DATA) ─────
+// ── face 2: the posture pin (the Bench-004 verdict, now as DATA) ─────
 
 #[test]
-fn manifest_posture_rows_are_the_bench_002_goat_verdict() {
+fn manifest_posture_rows_are_the_rebaseline_goat_verdict() {
     let m = embedded_manifest();
+    // The Bench-004 verdicts (Issue 008 T1's re-baseline at the CURRENT
+    // published reflex posture + T2's strict-superiority gate): exactly
+    // ONE hybrid arm certifies — massive's H2. The refusals are DATA
+    // (each row's comment carries the paired LB95 that refused it).
     let expected: [(&str, Arm, &str); 6] = [
-        (
-            "ag_news",
-            Arm::H2 { beta: 0.25, n_min: 2.0, tau_n: 2.0 },
-            "H2(β=0.25,nmin=2,τ=2)",
-        ),
-        ("emotion", Arm::A1, "A1"),
-        ("sst5", Arm::A1, "A1"),
+        ("ag_news", Arm::A0, "A0"),
+        ("emotion", Arm::A0, "A0"),
+        ("sst5", Arm::A0, "A0"),
         (
             "massive_intent_en",
             Arm::H2 { beta: 1.0, n_min: 2.0, tau_n: 8.0 },
             "H2(β=1,nmin=2,τ=8)",
         ),
-        // G3 FAIL — the instrument's H1 registration is a measurement,
-        // never the product posture.
         ("banking77", Arm::A0, "A0"),
         ("xnli_en", Arm::A0, "A0"),
     ];
@@ -99,7 +98,7 @@ fn manifest_posture_rows_are_the_bench_002_goat_verdict() {
             .unwrap_or_else(|e| panic!("{suite}: posture refused: {e}"));
         assert_eq!(
             parsed, arm,
-            "{suite}: the manifest posture drifted from the Bench-002 verdict"
+            "{suite}: the manifest posture drifted from the Bench-004 verdict"
         );
         assert_eq!(parsed.name(), name, "{suite}: arm display name drifted");
     }
@@ -145,7 +144,11 @@ fn boot_suite(suite: &'static str) -> Result<riir_instinct::server::AnySuiteServ
 }
 
 /// The frozen predictions record: suite → (registered arm name, picks).
-fn frozen_picks(suite: &str) -> Option<(String, Vec<usize>)> {
+/// The frozen predictions record: suite → (registered arm name, picks,
+/// the registered arm's per-case abstention flags — the SERVE's
+/// first-class abstention contract, recorded since Bench 004; an older
+/// record without the field reads as all-answered).
+fn frozen_picks(suite: &str) -> Option<(String, Vec<usize>, Vec<bool>)> {
     let doc: serde_json::Value =
         serde_json::from_reader(std::fs::File::open(predictions_path()).ok()?).ok()?;
     for s in doc["frozen_test_predictions"].as_array()? {
@@ -153,6 +156,13 @@ fn frozen_picks(suite: &str) -> Option<(String, Vec<usize>)> {
             let registered = s["registered"].as_str()?.to_string();
             for arm in s["arms"].as_array()? {
                 if arm["name"].as_str()? == registered {
+                    let abstained = arm["abstained"]
+                        .as_array()
+                        .map(|a| a.iter().map(|b| b.as_bool().unwrap_or(false)).collect())
+                        .unwrap_or_else(|| {
+                            let n = arm["picks"].as_array().map(|p| p.len()).unwrap_or(0);
+                            vec![false; n]
+                        });
                     return Some((
                         registered,
                         arm["picks"]
@@ -160,6 +170,7 @@ fn frozen_picks(suite: &str) -> Option<(String, Vec<usize>)> {
                             .iter()
                             .map(|p| p.as_u64().unwrap() as usize)
                             .collect(),
+                        abstained,
                     ));
                 }
             }
@@ -189,7 +200,7 @@ fn case_option_keys(case: &riir_reflex::harness::suites::SuiteCase) -> Vec<Strin
 }
 
 #[test]
-fn served_decisions_are_the_frozen_bench_002_picks() {
+fn served_decisions_are_the_frozen_goat_picks() {
     if !data_present() {
         eprintln!(
             "SKIP loud: t20k datasets / winner artifacts absent (bare clone) — \
@@ -200,7 +211,7 @@ fn served_decisions_are_the_frozen_bench_002_picks() {
     let seat = riir_reflex::harness::runner::seat::prepare_seat("ag_news", &datasets_dir())
         .expect("prepare ag_news seat");
     let mut server = boot_suite("ag_news").expect("boot ag_news server");
-    let (registered, picks) = frozen_picks("ag_news").expect("frozen ag_news record");
+    let (registered, picks, abstained) = frozen_picks("ag_news").expect("frozen ag_news record");
     assert_eq!(
         registered,
         server.meta().arm.name(),
@@ -216,12 +227,22 @@ fn served_decisions_are_the_frozen_bench_002_picks() {
         let d = server
             .decide(&seat.state_strs[ci], Some(&options))
             .unwrap_or_else(|e| panic!("case {ci}: decide failed: {e}"));
+        // The abstention contract FIRST: A0's record follows reflex's
+        // HARD convention (abstains forced to their argmax pick), while
+        // the serve honors the fused gate's abstention — so an abstained
+        // case's recorded pick is not a servable answer, and the serve
+        // must abstain exactly where the record says it does.
         assert_eq!(
-            d.pick_index,
-            Some(picks[ci]),
-            "case {ci}: served pick drifted from the frozen Bench-002 pick"
+            d.abstained, abstained[ci],
+            "case {ci}: served abstention drifted from the frozen record"
         );
-        assert!(!d.abstained, "ag_news H2 abstains never in the frozen record");
+        if !d.abstained {
+            assert_eq!(
+                d.pick_index,
+                Some(picks[ci]),
+                "case {ci}: served pick drifted from the frozen pick"
+            );
+        }
         assert!(d.us < 100_000, "case {ci}: decision took {} µs — outside the modelless tier", d.us);
     }
 }
@@ -243,7 +264,8 @@ fn massive_artifact_known_seat_unknown_option_stays_scorable() {
     )
     .expect("prepare massive seat");
     let mut server = boot_suite("massive_intent_en").expect("boot massive server");
-    let (registered, picks) = frozen_picks("massive_intent_en").expect("frozen massive record");
+    let (registered, picks, _abstained) =
+        frozen_picks("massive_intent_en").expect("frozen massive record");
     assert_eq!(registered, server.meta().arm.name());
     assert_eq!(
         server.meta().artifact_labels,
@@ -465,9 +487,11 @@ fn http_decide_happy_path_with_data() {
     }
     let srv = spawn_server();
     // Wait for the ag_news lane to become READY (the seat boot takes
-    // seconds; 120 s ceiling — a boot slower than that is a finding).
+    // seconds — plus the Bench-004 ridge ladders, ~10 s for ag_news and
+    // ~65 s for banking77 in the other loader threads; 420 s ceiling — a
+    // boot slower than that is a finding, contention included).
     let mut ready = false;
-    for _ in 0..240 {
+    for _ in 0..840 {
         let (status, body) = http(srv.port, "GET /healthz HTTP/1.1", None);
         if status == 200 && body.contains("ag_news\":{\"state\":\"ready\"") {
             ready = true;
@@ -475,26 +499,54 @@ fn http_decide_happy_path_with_data() {
         }
         std::thread::sleep(std::time::Duration::from_millis(500));
     }
-    assert!(ready, "the ag_news lane never reached ready within 120s");
+    assert!(ready, "the ag_news lane never reached ready within 420s");
 
+    // The decide state comes from the FROZEN record — the first test case
+    // the arena measured the served arm answering (not an invented
+    // sentence, whose gate outcome no record pins). The parity gate
+    // covers the abstention contract case by case; this one pins the
+    // ANSWERED shape end to end over HTTP.
+    let seat = riir_reflex::harness::runner::seat::prepare_seat("ag_news", &datasets_dir())
+        .expect("prepare ag_news seat");
+    let (_, _, abstained) = frozen_picks("ag_news").expect("frozen ag_news record");
+    let answered = abstained
+        .iter()
+        .position(|a| !a)
+        .expect("the frozen record has at least one answered ag_news case");
+    let case = &seat.suite.cases[answered];
+    let q = &case.questions[0];
+    let state = seat.state_strs[answered].clone();
+    let options: Vec<String> = if let Some(obj) = q.criteria.as_object() {
+        obj.keys().cloned().collect()
+    } else {
+        panic!("ag_news criteria must be an object");
+    };
+    let req = serde_json::json!({ "suite": "ag_news", "state": state, "options": options });
+    let req_body = req.to_string();
     let (status, body) = http(
         srv.port,
         "POST /decide HTTP/1.1",
-        Some(r#"{"suite":"ag_news","state":"Apple unveils a new M-series chip with a neural engine for on-device AI"}"#),
+        Some(&req_body),
     );
     assert_eq!(status, 200, "{body}");
     let doc: serde_json::Value = serde_json::from_str(&body).expect("decide body parses");
     assert_eq!(doc["lane"], "hybrid");
     assert_eq!(doc["suite"], "ag_news");
+    // ag_news serves A0 (the Bench-004 T2 refusal) — the modelless lane
+    // answers: the response carries the full-arity PROBABILITIES (a real
+    // distribution over the presented options) and NO specialist scores
+    // (the specialist is never consulted).
+    assert_eq!(doc["arm"], "A0", "{body}");
+    assert_eq!(doc["abstained"], false, "{body}");
     assert!(doc["pick"].is_string(), "{body}");
-    assert!(doc["options"].as_array().unwrap().len() == 4, "{body}");
-    // ag_news serves H2 — the specialist decides, so the response carries
-    // the specialist's per-option scores (honest about not being a
-    // distribution), not the modelless probabilities.
-    assert!(doc["probabilities"].is_null(), "{body}");
-    assert!(doc["specialist_scores"].as_array().unwrap().len() == 4, "{body}");
-    assert_eq!(doc["arm"], "H2(β=0.25,nmin=2,τ=2)", "{body}");
-    assert_eq!(doc["escalated"], true, "{body}");
+    let probs = doc["probabilities"].as_array().expect("A0 answers with probabilities");
+    assert!(probs.len() == 4, "{body}");
+    assert!(
+        probs.iter().all(|p| p.is_f64()),
+        "A0's probabilities must be numbers: {body}"
+    );
+    assert!(doc["specialist_scores"].is_null(), "{body}");
+    assert_eq!(doc["escalated"], false, "{body}");
     let receipt = &doc["receipt"];
     assert!(receipt["build"].as_str().unwrap().len() == 16, "{body}");
     assert!(receipt["input"].as_str().unwrap().len() == 64, "{body}");
@@ -656,8 +708,9 @@ fn arsenal_lazy_release_reload_cycle_over_http() {
     assert_eq!(status, 503, "{body}");
     assert!(body.contains("\"code\":\"loading\""), "{body}");
 
-    // The window closes; the lane serves.
-    wait_suite_state(srv.port, "ag_news", "ready", 120)
+    // The window closes; the lane serves (the lazy load re-derives the
+    // published posture incl. the ag_news ridge ladder — 420 s ceiling).
+    wait_suite_state(srv.port, "ag_news", "ready", 420)
         .unwrap_or_else(|b| panic!("the lazy load never completed; last healthz: {b}"));
     let (status, body) = http_to(
         srv.port,
@@ -685,7 +738,7 @@ fn arsenal_lazy_release_reload_cycle_over_http() {
         30,
     );
     assert_eq!(status, 503, "the re-decision must re-trigger the lazy load");
-    wait_suite_state(srv.port, "ag_news", "ready", 120)
+    wait_suite_state(srv.port, "ag_news", "ready", 420)
         .unwrap_or_else(|b| panic!("the reload never completed; last healthz: {b}"));
     let (status, _) = http_to(
         srv.port,
@@ -708,7 +761,7 @@ fn arsenal_swap_monotonic_gate_over_http() {
     }
     let srv = spawn_server_cfg(&["--suites", "ag_news"], &[]);
     assert!(wait_bind(srv.port), "the server never bound");
-    wait_suite_state(srv.port, "ag_news", "ready", 120)
+    wait_suite_state(srv.port, "ag_news", "ready", 420)
         .unwrap_or_else(|b| panic!("the ag_news lane never reached ready; last healthz: {b}"));
 
     // Idempotent no-op: the boot artifact at epoch 0 IS the applied tag —
@@ -733,13 +786,13 @@ fn arsenal_swap_monotonic_gate_over_http() {
     assert_eq!(status, 409, "{body}");
     assert!(body.contains("\"code\":\"fork\""), "{body}");
 
-    // Advance: epoch 1, same artifact — the full load runs, then the
-    // atomic install.
+    // Advance: epoch 1, same artifact — the full load runs (the ridge
+    // ladder included), then the atomic install.
     let (status, body) = http_to(
         srv.port,
         "POST /arsenal/swap HTTP/1.1",
         Some(r#"{"suite":"ag_news","artifact":"ag_news_winner_v1.bin","epoch":1}"#),
-        300,
+        600,
     );
     assert_eq!(status, 200, "{body}");
     assert!(body.contains("\"status\":\"advanced\""), "{body}");

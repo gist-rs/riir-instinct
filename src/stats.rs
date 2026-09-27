@@ -32,13 +32,15 @@ pub fn wilson_bound(k: usize, n: usize, z: f64, upper: bool) -> f64 {
 
 /// The paired difference A − B over per-question correctness (both arms
 /// answer the SAME questions — the paired outcomes are direct). The G3
-/// statistic: mean, SE, and the one-sided 95% UPPER bound (regression =
-/// A0 − hybrid; the bound caps the regression).
+/// statistic: mean, SE, and the ONE-SIDED 95% bounds — `ub95` caps a
+/// regression (G3: A0 − hybrid), `lb95` certifies a strict win (the
+/// Issue-008 T2 product gate: hybrid − A0 with `lb95 > 0`).
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct PairedDiff {
     pub mean: f64,
     pub se: f64,
     pub ub95: f64,
+    pub lb95: f64,
 }
 
 pub fn paired_upper_bound(a: &[bool], b: &[bool]) -> Option<PairedDiff> {
@@ -74,6 +76,7 @@ pub fn paired_upper_bound_f64(diffs: &[f64]) -> Option<PairedDiff> {
         mean,
         se,
         ub95: mean + Z95 * se,
+        lb95: mean - Z95 * se,
     })
 }
 
@@ -196,8 +199,34 @@ mod tests {
         let var = (sum2 - sum * sum / n) / (n - 1.0);
         let se = var.sqrt() / n.sqrt();
         assert!(close(pd.ub95, pd.mean + Z95 * se, 1e-12));
+        assert!(close(pd.lb95, pd.mean - Z95 * se, 1e-12));
         assert!(pd.ub95 > 0.0, "a regressing hybrid's bound must admit the regression");
+        assert!(pd.lb95 < 0.0, "the same regression's lower bound must refuse superiority");
         assert!(paired_upper_bound(&a[..3], &b).is_none(), "length mismatch refuses");
+    }
+
+    /// The Issue-008 T2 product gate's known answer: a WINNING hybrid
+    /// (disjoint wins exceeding losses) reads `lb95 > 0` — the strict
+    /// superiority the registration demands — while a narrow edge with
+    /// the same mean spread over more discordance does not.
+    #[test]
+    fn superiority_lb95_known_answer() {
+        // The hybrid wins 10 disjoint questions, loses 2: mean +0.08 over
+        // 100 — wide enough that the LOWER bound stays positive.
+        let a0: Vec<bool> = (0..100).map(|i| !(0..10).contains(&i)).collect();
+        let arm: Vec<bool> = (0..100).map(|i| !(10..12).contains(&i)).collect();
+        let pd = paired_upper_bound(&arm, &a0).expect("pairs");
+        assert!(close(pd.mean, 0.08, 1e-12));
+        assert!(pd.lb95 > 0.0, "lb95 {} must certify the strict win", pd.lb95);
+
+        // A narrower net over more discordance (30 wins, 22 losses over
+        // 400): mean +0.02 but the lower bound dips under zero — a narrow
+        // edge is NOT registrable, however positive its mean.
+        let a0: Vec<bool> = (0..400).map(|i| !(0..30).contains(&i)).collect();
+        let arm: Vec<bool> = (0..400).map(|i| !(30..52).contains(&i)).collect();
+        let pd = paired_upper_bound(&arm, &a0).expect("pairs");
+        assert!(close(pd.mean, 0.02, 1e-12));
+        assert!(pd.lb95 < 0.0, "lb95 {} must refuse the narrow edge", pd.lb95);
     }
 
     /// δ = max(1.0 pp, 2.5·SE) — the floor and the scaling both pinned.

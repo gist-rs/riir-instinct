@@ -137,8 +137,34 @@ intake leg filed as riir-train Issue 577.** Master plan:
   + tie pins) landed 2026-09-27 (`27e9257`). **Superseded as the
   publishable record by Bench 002 below** — its bytes (`.raw/datasets`,
   the old pull) were never comparable with the published lanes.
+- **Bench 004** (`.benchmarks/004_rebaseline_current_reflex/`, the
+  CURRENT record — Issue 008 T1+T2 executed 2026-09-27, supersedes 002
+  as the serving verdict): the arena re-baselined at the CURRENT
+  published reflex posture (seat knobs `head+nb+ridge` select — emotion
+  arms ridge@8, every other suite's ladder declines at the arming bar,
+  byte-identical to off) + the **T2 product gate** (registration REFUSES
+  an arm not STRICTLY above the current Reflex row — paired (pick − A0)
+  LB95 > 0 on the frozen test read; `stats::PairedDiff::lb95`). The
+  comparability proof is the **6/6 drift pin + site pin**: arena A0 ==
+  reflex `run()` == the PUBLISHED bench.json rows, every suite (ag_news
+  0.8825, emotion 0.8850, sst5 0.3967, xnli 0.5233, massive 0.7800,
+  banking77 0.8260). Verdicts — **massive H2(1,2,8) 0.8267 PASSES the
+  gate (LB95 +0.0124): the ONE certified arm**; ag_news H2
+  (+0.0150/−0.0100), sst5 A1 (+0.0250/−0.0129), banking77 H1
+  (−0.0200/−0.0466) REFUSED → A0 serves; emotion's A1 (0.8550) is
+  outrun by reflex's ridge@8 base (0.8850) — the instrument picked A0
+  outright; xnli A0 stands. The sold set is exactly one suite, certified.
+  **The abstention contract** (found by the parity gate the same day):
+  reflex's hard accuracy is the FORCED convention while the serve
+  honors abstention — A0's per-case abstain flags are now recorded
+  (`predictions.json` per-arm `abstained`; ag_news A0 abstains 196/400)
+  and the parity gate asserts served-abstention == recorded-abstention
+  before picks. Serve readiness ceilings raised 120→420 s (the ridge
+  ladders are per-boot derivation work now; a frozen-derived-posture
+  seam is the recorded follow-up).
 - **Bench 002** (`.benchmarks/002_hybrid_052_protocol/`, the ALIGNED
-  read — supersedes v2's numbers as the publishable record): the same
+  read — supersedes v2's numbers as the publishable record; SUPERSEDED
+  AS THE SERVING VERDICT by Bench 004): the same
   arena at the Bench-052 protocol on the SAME `datasets_t20k` bytes the
   published lanes + the 4090 T5 re-run carry (977/977 byte-verified);
   the comparability proof is **A0 == the published 052 modelless rows
@@ -178,6 +204,8 @@ intake leg filed as riir-train Issue 577.** Master plan:
   binary + the six t20k dataset suites as engine, the six sealed winner
   vessels as model — 42.9 MB total, recorded measurements with verbatim
   lstat commands; publish_sizes grew recorded model source kinds).
+  ⚠ The site's hybrid lane still renders the Bench-002 arms — the
+  Bench-004 re-sync is Issue 008 T3's remaining half.
 - **Stats** (`src/stats.rs`): Wilson bounds, paired non-inferiority
   (δ = max(1.0pp, 2.5·SE)), Pareto rank-0, Beta-LCB selection
   (katgpt-core best_belief) — the pre-registration instrument.
@@ -198,15 +226,21 @@ intake leg filed as riir-train Issue 577.** Master plan:
   `src/bin/serve.rs` + `deploy.yaml`, 2026-09-27): the servable binary
   and the cf-container shape (Issue 002, katgpt-rs Proposal 014 §4
   Tier-2(b)).
-  - **The serving posture table is the GOAT product verdict, not the
-    registration instrument's pick** (`server::serving_posture`): they
-    disagree exactly once — banking77's cal front registered H1 and G3
-    FAILED it, so **A0 serves** there and the H1 row stays a published
-    site measurement. The parity gate
-    (`tests/serve_gates.rs::served_decisions_are_the_frozen_bench_002_picks`)
+  - **The serving posture is the GOAT product verdict, and since the
+    Bench-004 T2 gate it is ONE verdict**: the registration itself
+    refuses any arm not strictly above the current Reflex row (paired
+    LB95 > 0 on the frozen test read), so the instrument pick and the
+    manifest row can no longer disagree — registered == served, per
+    suite. Reflex is free; a tie sells nothing. The verdict rows live
+    in `arsenal.toml` (law A5 — the ONE selection surface; the
+    historical `server::serving_posture()` match table was deleted by
+    Proposal 001 T2); the embedded default is pinned byte-for-byte by
+    the gates (law A6). The parity gate
+    (`tests/serve_gates.rs::served_decisions_are_the_frozen_goat_picks`)
     replays committed test cases through `decide()` and asserts identity
     with the frozen `predictions.json` picks — the serve path IS the
-    arena path.
+    arena path — INCLUDING the abstention contract (served abstention
+    == recorded abstention, per case; Bench 004's addendum).
   - The edge is std-only HTTP (`/decide`, `/healthz`, `/`); lanes boot
     on 64 MiB-stack threads with the listener bound FIRST (healthz live
     during the seat boot; loading/failed lanes answer 503 with the state

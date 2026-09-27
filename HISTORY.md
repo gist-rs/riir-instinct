@@ -233,6 +233,67 @@ The Reflex · instinct hybrid measured end to end. Commits: reflex seat
   contract is seat⊆artifact, not equality (massive: 60 artifact labels
   vs the seat's 59 offered options).
 
+## 2026-09-27 — Bench 004: the re-baseline + the strict-superiority product gate (Issue 008 T1+T2)
+
+Executed in one session, `feat:` commit of the same day. **Trigger:** Issue
+008's root causes measured — Bench 002 registered every arm against the
+Bench-052 Reflex while Reflex armed its cal-selected heads (Bench 057:
+emotion ridge@8 → 0.8850), and banking77's refused H1 still showed on the
+site row. Two changes:
+
+1. **The seat posture is the CURRENT PUBLISHED reflex posture** (T1):
+   `head+nb+ridge` select on (the reflex dep gained
+   `nb_ridge`+`option_cond` — the latter only because `nb_ridge` alone
+   does not compile upstream, reflex Issue 050 `7a99431`), genome off.
+   The ridge ladder arms only where reflex's arming bar clears — emotion
+   @8, every other arena suite 0 (byte-identical to off, reflex's own
+   full-workspace measurement) — so ONE knob set reproduces the published
+   per-suite postures. The A0 drift pin widened from xnli-only to ALL SIX
+   suites, and gained the **site pin**: reflex's rows must equal the
+   published `reflex-site/data/bench.json` numbers when that checkout
+   stands beside the workspace (absent → loud skip). Measured 6/6 + site
+   ✓ twice (at reflex `ad45067` and again at `7b5f0ba`, byte-identical
+   verdicts — the sibling's intervening commits were measurement-only
+   arms, pinned off in the drift pin: `nli_feature_ab`,
+   `cascade_worthiness_lcb`).
+2. **The registration IS the product gate** (T2): an arm not STRICTLY
+   above the current Reflex row — paired (pick − A0) LB95 > 0 on the
+   frozen test read (`stats::PairedDiff::lb95`, known-answer-tested both
+   directions) — is REFUSED; A0 serves. registered == served from now on;
+   there is no unserved-arm disclosure gap left (Issue 008 T3's original
+   wording is moot; the remaining half is the site re-sync).
+
+**Verdicts:** massive H2(1,2,8) 0.8267 vs A0 0.7800 — LB95 +0.0124, the
+ONE certified arm. ag_news H2 (+0.0150/−0.0100), sst5 A1
+(+0.0250/−0.0129), banking77 H1 (−0.0200/−0.0466) REFUSED. Emotion: the
+ridge@8 base outruns A1 (0.8850 vs 0.8550) — the instrument picked A0
+outright; the specialist must now OUT-GROW reflex, not trail it. The
+sold set is exactly one suite; the site ✓ law (strictly ahead on every
+suite it sells) holds on it.
+
+**The abstention contract** (found by the parity gate the same day):
+reflex's hard accuracy is the FORCED convention (abstains forced to
+argmax — the published numbers) while the serve honors abstention. With
+ag_news serving A0 (gate abstains 196/400 = 49% of its test questions),
+the gate compared a served `None` against a recorded forced pick. Repair:
+the arena's `ArmOut` records `abstained` per arm (A0 = the seat's flag;
+H1 = the passthrough half; A1/H2 never), `predictions.json` carries it,
+and the parity gate asserts served-abstention == recorded-abstention
+before picks.
+
+**Boot cost, honestly:** the ridge ladders are per-boot derivation now
+(banking77 ≈ 65 s standalone) — serve readiness ceilings raised 120 →
+420 s; a frozen-derived-posture seam (selected values pinned as data,
+ladder skipped at serve time) is the recorded follow-up if it ever
+binds.
+
+**Validation:** full `cargo test` green (46 lib incl. the two new lb95
+known-answers + 11 serve_gates incl. the abstention-aware parity gate
+and the A0-shaped HTTP happy path over a frozen answered case); clippy
+`-D`-grade clean at default + all-features. Committed with the re-pinned
+manifest digest + face-2 rows + the 004 record (predictions, registration,
+run.log, RESULTS, ALIGNMENT).
+
 ## 2026-09-26 — birth
 
 Created per riir-ai Proposal 047 (owner decision: the model-based/hybrid

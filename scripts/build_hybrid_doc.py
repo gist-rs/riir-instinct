@@ -290,9 +290,9 @@ def build_doc_from(preds: dict, git_sha: str, date_utc: str) -> dict:
         "laya_feature": False,
         "lane_note": (
             "instinct hybrid lane: the registered arm's single frozen test "
-            "read over the reflex harness seat (the Bench-052 stratified "
-            "protocol); a suite whose registered arm is A0 carries no "
-            "hybrid lane"
+            "read over the reflex harness seat at the current published "
+            "reflex posture (the Bench-004 re-baseline); a suite whose "
+            "registered arm is A0 carries no hybrid lane"
         ),
     }
     if skipped:

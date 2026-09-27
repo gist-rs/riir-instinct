@@ -70,6 +70,15 @@ struct ArmOut {
     probs: Vec<Vec<f64>>,
     confs: Vec<f64>,
     escalated: Vec<bool>,
+    /// The fused gate's abstention, per question — recorded so the
+    /// serving-side parity gate can compare the SERVE's first-class
+    /// abstention against the record. A0's picks/correct follow reflex's
+    /// HARD convention (abstains forced to their argmax pick — the
+    /// published accuracy), so WITHOUT this field an A0 abstain was
+    /// invisible in the record and the serve's `pick: None` read as a
+    /// drift (measured: ag_news case 0, Bench 004's first serve_gates
+    /// run). A1/H2 never abstain.
+    abstained: Vec<bool>,
     /// The arm's OWN per-question work (µs): A0 = the reflex solve, H1 =
     /// its decision alone, A1/H2 = their forward alone.
     own_durs_us: Vec<f64>,
@@ -173,7 +182,13 @@ struct SuiteRun {
     n_questions: usize,
     posture: DisclosedPosture,
     registration: Vec<RegRow>,
+    /// The arm that SERVES — post-product-gate (Issue 008 T2): the
+    /// instrument's pick when it clears the superiority bar, else A0.
     registered: Cand,
+    /// The superiority-gate face (Some iff the instrument picked a
+    /// non-A0 candidate): the paired (pick − A0) reading on the frozen
+    /// test read and the gate's verdict.
+    superiority: Option<SuperiorityFace>,
     test_arms: Vec<ArmOut>,
     h1_ns_decision: f64,
     h1_ns_fusion: f64,
@@ -185,10 +200,29 @@ struct SuiteRun {
     laya: Option<LayaFace>,
 }
 
+/// The Issue-008 T2 product gate's face: the registered arm must be
+/// STRICTLY above the current Reflex row — the paired delta's 95% lower
+/// bound > 0 on the frozen test read (`stats::PairedDiff::lb95`). An
+/// arm that fails is REFUSED: A0 serves and the suite is not sold.
+#[derive(Debug, Clone)]
+struct SuperiorityFace {
+    /// The instrument's pick the gate judged.
+    pick: Cand,
+    /// Paired (pick − A0) mean accuracy delta on the test read.
+    mean: f64,
+    /// Its 95% lower bound — the gate: > 0 to register.
+    lb95: f64,
+    passed: bool,
+}
+
 struct DisclosedPosture {
     effective_cap: usize,
     head_scale: f32,
     nb_scale: f32,
+    /// The cal-selected NBSVM-ridge readout scale (0.0 = off — the
+    /// ladder declined). Emotion arms 8 (Bench 057); every other arena
+    /// suite reads 0 by the same arming bar.
+    ridge_scale: f32,
     nb_view: &'static str,
     score_threshold: f32,
     distance_threshold: f32,
@@ -196,7 +230,7 @@ struct DisclosedPosture {
 
 fn main() {
     let args: Vec<String> = std::env::args().collect();
-    let mut datasets_dir = PathBuf::from("../riir-reflex/.raw/datasets");
+    let mut datasets_dir = PathBuf::from("../riir-reflex/.raw/datasets_t20k");
     let mut winners_dir = PathBuf::from("../riir-train/data/instinct_specialists");
     let mut out_dir = PathBuf::from(".benchmarks/001_hybrid_goat");
     let mut top_k = 8usize;
@@ -249,12 +283,18 @@ fn main() {
     }
 
     // The A0 drift pin: the seat path must reproduce reflex's own lane,
-    // byte for byte, on one cheap suite.
+    // byte for byte, on EVERY arena suite — and, when the reflex-site
+    // checkout stands beside the workspace, reflex's rows must equal the
+    // PUBLISHED bench.json numbers (the Issue-008 T1 re-baseline law).
     if pin_a0 {
         if let Err(e) = pin_a0_identity(&datasets_dir, &runs) {
             die(&format!("A0 identity pin FAILED: {e}"));
         }
-        eprintln!("A0 identity pin: xnli_en arena A0 == reflex run() hard accuracy ✓");
+        eprintln!(
+            "A0 identity pin: all {} arena suites — arena A0 == reflex run() at the \
+             published-posture knobs ✓",
+            runs.len()
+        );
     }
 
     std::fs::create_dir_all(&out_dir).expect("create out dir");
@@ -461,6 +501,7 @@ impl<const N: usize> SuiteCtx<N> {
             probs: Vec::with_capacity(n),
             confs: Vec::with_capacity(n),
             escalated: vec![false; n],
+            abstained: Vec::with_capacity(n),
             own_durs_us: se.durs_us.iter().map(|&d| d as f64).collect(),
             total_durs_us: se.durs_us.iter().map(|&d| d as f64).collect(),
             contains_seat_solve: true,
@@ -472,6 +513,7 @@ impl<const N: usize> SuiteCtx<N> {
             probs: Vec::with_capacity(n),
             confs: Vec::with_capacity(n),
             escalated: Vec::with_capacity(n),
+            abstained: Vec::with_capacity(n),
             own_durs_us: Vec::with_capacity(n),
             total_durs_us: Vec::with_capacity(n),
             contains_seat_solve: true,
@@ -483,6 +525,7 @@ impl<const N: usize> SuiteCtx<N> {
             a0.correct.push(qo.pick == gold);
             a0.probs.push(qo.probs.clone());
             a0.confs.push(qo.conf);
+            a0.abstained.push(qo.abstained);
 
             let a0_ans = A0Answer {
                 probs: &qo.probs,
@@ -506,6 +549,9 @@ impl<const N: usize> SuiteCtx<N> {
             h1.correct.push(d.pick == gold);
             h1.probs.push(qo.probs.clone());
             h1.escalated.push(d.escalated);
+            // H1 abstains only where reflex abstained AND the gate did
+            // not escalate (the passthrough half of the cascade).
+            h1.abstained.push(qo.abstained && !d.escalated);
             h1.own_durs_us.push(dt_us);
             h1.total_durs_us.push(dt_us + se.durs_us[ci] as f64);
             // The hybrid's confidence readout: reflex's when it answered,
@@ -531,6 +577,7 @@ impl<const N: usize> SuiteCtx<N> {
             probs: Vec::with_capacity(n),
             confs: Vec::with_capacity(n),
             escalated: vec![true; n],
+            abstained: vec![false; n],
             own_durs_us: Vec::with_capacity(n),
             total_durs_us: Vec::with_capacity(n),
             contains_seat_solve: false,
@@ -620,6 +667,7 @@ impl<const N: usize> SuiteCtx<N> {
                 probs: Vec::new(),
                 confs,
                 escalated: vec![true; n],
+                abstained: vec![false; n],
                 own_durs_us: durs.clone(),
                 total_durs_us: durs,
                 contains_seat_solve: false,
@@ -648,24 +696,37 @@ fn run_suite_n<const N: usize>(
         );
     }
 
-    // The deployed Bench 051 protocol: head-select + nb-select, registry
-    // caps (no cal-slice cap ladder). Genome selection stays off — the
-    // arena IS the serve path, the frozen Bench 002 posture measured
-    // without it (flag-off is behavior-identical; Issue 008 T1 owns the
-    // re-baseline that would turn it on).
+    // The CURRENT PUBLISHED reflex posture (Issue 008 T1's re-baseline):
+    // head-select + nb-select + ridge-select, registry caps, genome off.
+    // `ridge_select` is the cal-selected NBSVM-ridge lane (reflex Bench
+    // 057): the ladder arms only where the selection slice clears the
+    // house arming bar — emotion selects ridge@8, every other arena
+    // suite selects 0 (byte-identical to off; reflex measured the
+    // full-workspace delta at 0.0000). The 6/6 drift pin below holds
+    // the seat path to reflex's own run() at these knobs, and the pin's
+    // site check holds reflex's rows to the published bench.json — the
+    // published-posture drift that root cause 1 names can no longer
+    // reopen silently.
     let knobs = PostureKnobs {
         head_select: true,
         nb_select: true,
+        // option_cond is enabled on the dep ONLY because reflex's
+        // nb_ridge lane does not compile without it (upstream gap, filed
+        // reflex-side): the oc lane itself stays OFF — typed_decisions,
+        // its only armed suite upstream, is not an arena suite.
+        oc_select: false,
+        ridge_select: true,
         genome_select: false,
         genome_accept_margin: 0.0,
         cal_select_caps: vec![],
     };
     let posture = fit_posture::<N>(name, &seat, &knobs)?;
     eprintln!(
-        "  posture: cap {} · head {:.2} · nb {:.2} · gates {:.3}/{:.3}",
+        "  posture: cap {} · head {:.2} · nb {:.2} · ridge {:.2} · gates {:.3}/{:.3}",
         posture.effective_cap,
         posture.cfg.head_scale,
         posture.cfg.nb_scale,
+        posture.cfg.ridge_scale,
         posture.score_threshold,
         posture.distance_threshold
     );
@@ -801,12 +862,12 @@ fn run_suite_n<const N: usize>(
     // already in ascending candidate order (pareto_rank0 keeps index
     // order), so argmax ties resolve identically with or without the
     // sort that used to sit here.
-    let registered = cands[win_pos].clone();
+    let instrument_pick = cands[win_pos].clone();
     eprintln!(
         "  instrument: rank-0 {}/{} · registered {}",
         rank0.len(),
         registration.len(),
-        registered.name()
+        instrument_pick.name()
     );
 
     // ── THE TEST READ (once; predictions frozen below) ───────────────
@@ -827,13 +888,53 @@ fn run_suite_n<const N: usize>(
             .unwrap_or(f64::NAN)
     };
     eprintln!(
-        "  test: A0 {:.4} · A1 {:.4} · H1 {:.4} · registered {} → {:.4}",
+        "  test: A0 {:.4} · A1 {:.4} · H1 {:.4} · pick {} → {:.4}",
         test_acc(&Cand::A0),
         test_acc(&Cand::A1),
         test_acc(&Cand::H1),
-        registered.name(),
-        test_acc(&registered)
+        instrument_pick.name(),
+        test_acc(&instrument_pick)
     );
+
+    // ── the product gate (Issue 008 T2): STRICTLY above the current ────
+    // Reflex row, or the registration refuses. Reflex is free; a tie (or
+    // an edge the paired data cannot certify) sells nothing. The paired
+    // superiority bound (stats::PairedDiff::lb95) reads the SAME frozen
+    // test read the predictions freeze — no extra read is spent.
+    let mut registered = instrument_pick.clone();
+    let superiority = if instrument_pick != Cand::A0 {
+        let face = (|| {
+            let reg = test_arms.iter().find(|a| a.name == instrument_pick.name())?;
+            let a0 = test_arms.iter().find(|a| a.name == "A0")?;
+            paired_upper_bound(&reg.correct, &a0.correct)
+        })();
+        let Some(pd) = face else {
+            die(&format!(
+                "{}: the superiority gate could not pair the pick with A0 \
+                 on the test read — the arm record is missing",
+                name
+            ));
+        };
+        let passed = pd.lb95 > 0.0;
+        eprintln!(
+            "  T2 superiority: {} − A0 mean {:+.4} · LB95 {:+.4} > 0 → {}",
+            instrument_pick.name(),
+            pd.mean,
+            pd.lb95,
+            if passed { "PASS" } else { "REFUSED → A0 serves" }
+        );
+        if !passed {
+            registered = Cand::A0;
+        }
+        Some(SuperiorityFace {
+            pick: instrument_pick.clone(),
+            mean: pd.mean,
+            lb95: pd.lb95,
+            passed,
+        })
+    } else {
+        None
+    };
 
     // ── the fusion-overhead micro (G2's <100 ns bar) ─────────────
     let (h1_ns, h1_fusion_ns, h2_ns_opt) = fusion_overhead_micro(&mut ctx, N);
@@ -842,15 +943,16 @@ fn run_suite_n<const N: usize>(
         h1_ns, h1_fusion_ns, h2_ns_opt
     );
 
-    // ── the gate faces ───────────────────────────────────────────────
-    let g1 = g1_face(&cal_arms, &test_arms, &registered);
+    // ── the gate faces (judged on the INSTRUMENT pick — a refused arm's
+    // regression/calibration disclosures survive the refusal) ──────────
+    let g1 = g1_face(&cal_arms, &test_arms, &instrument_pick);
     let (g3, g3_delta) = if REFLEX_WON.contains(&name) {
-        g3_face(&cal_arms, &test_arms, &registered)
+        g3_face(&cal_arms, &test_arms, &instrument_pick)
     } else {
         (None, None)
     };
     let g5 = if GAP_SUITES.contains(&name) {
-        Some(g5_face(&test_arms, &registered))
+        Some(g5_face(&test_arms, &instrument_pick))
     } else {
         None
     };
@@ -886,6 +988,7 @@ fn run_suite_n<const N: usize>(
             effective_cap: posture.effective_cap,
             head_scale: posture.cfg.head_scale,
             nb_scale: posture.cfg.nb_scale,
+            ridge_scale: posture.cfg.ridge_scale,
             nb_view: match posture.cfg.nb_view {
                 NbView::Bag => "bag",
                 NbView::Pair => "pair",
@@ -895,6 +998,7 @@ fn run_suite_n<const N: usize>(
         },
         registration,
         registered,
+        superiority,
         test_arms,
         h1_ns_decision: h1_ns,
         h1_ns_fusion: h1_fusion_ns,
@@ -1214,7 +1318,7 @@ fn laya_face(_seat: &Seat, _test_arms: &[ArmOut]) -> Option<LayaFace> {
 fn pin_a0_identity(datasets_dir: &Path, runs: &[SuiteRun]) -> Result<(), String> {
     let opts = riir_reflex::harness::runner::RunOptions {
         datasets_dir: datasets_dir.to_path_buf(),
-        suites: vec!["xnli_en".to_string()],
+        suites: SUITES.iter().map(|s| s.to_string()).collect(),
         laya_max_questions: 0,
         skip_laya: true,
         // the cascade lane (sibling reflex Issue 038 T4′ / 042 lever 3) —
@@ -1222,6 +1326,9 @@ fn pin_a0_identity(datasets_dir: &Path, runs: &[SuiteRun]) -> Result<(), String>
         cascade: false,
         cascade_worthiness: false,
         cascade_worthiness_margin: 0.0,
+        // the LCB-armed worthiness probe (reflex issue 042 lever 3's
+        // support extension) — cascade-lane-only, None = off.
+        cascade_worthiness_lcb: None,
         // Issue 042's gate rate-axis levers — off: the plain T1.6
         // cal-slice fused fit is the posture the pin reproduces.
         gate_fit_selection: false,
@@ -1238,55 +1345,148 @@ fn pin_a0_identity(datasets_dir: &Path, runs: &[SuiteRun]) -> Result<(), String>
         nb_select: true,
         clm: false,
         paw_local: false,
-        // issue 038's option-conditioned selection — the baseline posture
-        // for the drift pin (the reflex-side default).
+        // The Issue-008 T1 re-baseline posture: the cal-selected NBSVM
+        // ridge (reflex Bench 057) — emotion arms @8, the rest decline
+        // by the same arming bar the runner applies.
+        ridge_select: true,
+        // option_cond rides the dep for the nb_ridge compile only
+        // (upstream gap, filed reflex-side); the oc lane stays off —
+        // typed_decisions, its only armed suite upstream, is not an
+        // arena suite.
         oc_select: false,
-        // the ridge-selection lane (sibling reflex WIP) — likewise off.
-        ridge_select: false,
-        // Issue 038 T5's joint genome walk — off: the published Bench 002
-        // posture carried no genome selection (flag-off is
-        // behavior-identical; Issue 008 T1 owns the re-baseline).
+        // Issue 038 T5's joint genome walk — off: reflex's published
+        // bench rows predate the genome lane (the site rows are the
+        // 052/057 postures); turning it on here would be a NEW posture
+        // no published row carries.
         genome_select: false,
         genome_accept_margin: 0.0,
+        // reflex's issue-044 probe arm — measurement-only upstream, and
+        // never part of the published posture the pin reproduces.
+        nli_feature_ab: false,
     };
     let (out, errors) = riir_reflex::harness::runner::run(&opts)?;
     if !errors.is_empty() {
         return Err(format!("reflex run() reported errors: {errors:?}"));
     }
-    let sr = out
-        .suites
-        .iter()
-        .find(|s| s.name == "xnli_en")
-        .ok_or("reflex run() produced no xnli_en row")?;
-    let published = sr
-        .modelless
-        .as_ref()
-        .ok_or("reflex run() produced no modelless lane for xnli_en")?
-        .hard
-        .accuracy;
-    let run = runs
-        .iter()
-        .find(|r| r.suite == "xnli_en")
-        .ok_or("arena has no xnli_en run")?;
-    let arena = run
-        .test_arms
-        .iter()
-        .find(|a| a.name == "A0")
-        .ok_or("arena xnli_en has no A0 arm")?;
-    if published != arena.accuracy() {
-        return Err(format!(
-            "published {published:.6} != arena A0 {:.6} — the seat path diverged",
-            arena.accuracy()
-        ));
+
+    // The site check: when the reflex-site checkout stands beside this
+    // workspace, the runner's rows must equal the PUBLISHED bench.json
+    // numbers — that is the "A0 == the published modelless row" half of
+    // the re-baseline (Issue 008 T1). Absent checkout → a loud skip
+    // (a deferral, never a green).
+    let site_rows = site_published_rows(datasets_dir, SUITES)?;
+
+    let mut mismatches = Vec::new();
+    for run in runs {
+        let sr = out
+            .suites
+            .iter()
+            .find(|s| s.name == run.suite)
+            .ok_or_else(|| format!("reflex run() produced no {} row", run.suite))?;
+        let published = sr
+            .modelless
+            .as_ref()
+            .ok_or_else(|| format!("reflex run() produced no modelless lane for {}", run.suite))?
+            .hard
+            .accuracy;
+        let arena = run
+            .test_arms
+            .iter()
+            .find(|a| a.name == "A0")
+            .ok_or_else(|| format!("arena {} has no A0 arm", run.suite))?
+            .accuracy();
+        if published != arena {
+            mismatches.push(format!(
+                "{}: reflex run() {published:.6} != arena A0 {arena:.6} — the seat path diverged",
+                run.suite
+            ));
+            continue;
+        }
+        let site_note = match site_rows.as_ref() {
+            Some(rows) => match rows.get(&run.suite) {
+                Some(&site) if site == published => " · site ✓".to_string(),
+                Some(&site) => {
+                    mismatches.push(format!(
+                        "{}: reflex run() {published:.6} != PUBLISHED site row {site:.6} — \
+                         reflex's published posture moved past this arena's knobs; \
+                         re-baseline the knobs (Issue 008 T1)",
+                        run.suite
+                    ));
+                    continue;
+                }
+                None => " · site row absent".to_string(),
+            },
+            None => " · site json absent (skip loud)".to_string(),
+        };
+        eprintln!(
+            "  A0 pin · {}: arena == reflex run() == {published:.6}{}",
+            run.suite, site_note
+        );
     }
-    Ok(())
+    if mismatches.is_empty() {
+        Ok(())
+    } else {
+        Err(mismatches.join("; "))
+    }
+}
+
+/// The published bench.json's per-suite modelless hard accuracies, read
+/// from the reflex-site checkout that stands beside the reflex datasets
+/// (`<datasets>/../../../reflex-site/data/bench.json`). Only the WANTED
+/// suites are extracted — the site carries non-arena rows whose hard
+/// accuracy is legitimately absent (the synthetic families), and a row
+/// the pin never reads must not fail it. `Ok(None)` when the checkout
+/// is absent — the caller discloses the skip, never reads it as a pass.
+fn site_published_rows(
+    datasets_dir: &Path,
+    wanted: &[&str],
+) -> Result<Option<std::collections::HashMap<String, f64>>, String> {
+    let Some(root) = datasets_dir.canonicalize().ok().and_then(|p| {
+        p.ancestors().nth(3).map(|a| a.to_path_buf())
+    }) else {
+        eprintln!(
+            "  A0 pin · site check skipped loud: the datasets dir does not resolve \
+             to a workspace root"
+        );
+        return Ok(None);
+    };
+    let path = root.join("reflex-site/data/bench.json");
+    if !path.is_file() {
+        eprintln!(
+            "  A0 pin · site check skipped loud: {} is absent (no reflex-site checkout) — \
+             the published-row half of the pin is UNVERIFIED this run",
+            path.display()
+        );
+        return Ok(None);
+    }
+    let doc: serde_json::Value = serde_json::from_reader(
+        std::fs::File::open(&path).map_err(|e| format!("site bench.json unreadable: {e}"))?,
+    )
+    .map_err(|e| format!("site bench.json unparsable: {e}"))?;
+    let suites = doc["suites"]
+        .as_array()
+        .ok_or("site bench.json: no suites array")?;
+    let mut rows = std::collections::HashMap::new();
+    for s in suites {
+        let name = s["name"]
+            .as_str()
+            .ok_or("site bench.json: suite row without a name")?;
+        if !wanted.contains(&name) {
+            continue;
+        }
+        let acc = s["modelless"]["hard"]["accuracy"]
+            .as_f64()
+            .ok_or_else(|| format!("site bench.json: {name} has no modelless hard accuracy"))?;
+        rows.insert(name.to_string(), acc);
+    }
+    Ok(Some(rows))
 }
 
 fn write_predictions(out_dir: &Path, runs: &[SuiteRun]) {
-    // The freeze contract is the REGISTERED arm + the controls (A0/A1/H1)
-    // — the 45-point H2 grid is recomputable deterministically from the
-    // seat + posture + cal front, and freezing it cost 14 MB in git
-    // history (Bench 001's first landing; trimmed same-day, the arms
+    // The freeze contract is the REGISTERED (served) arm + the controls
+    // (A0/A1/H1) — the 45-point H2 grid is recomputable deterministically
+    // from the seat + posture + cal front, and freezing it cost 14 MB in
+    // git history (Bench 001's first landing; trimmed same-day, the arms
     // proven byte-identical across runs 3 and 4 before the trim).
     let mut suites = Vec::new();
     for run in runs {
@@ -1298,12 +1498,17 @@ fn write_predictions(out_dir: &Path, runs: &[SuiteRun]) {
                     || a.name == "A1"
                     || a.name == "H1"
                     || a.name == run.registered.name()
+                    || run
+                        .superiority
+                        .as_ref()
+                        .is_some_and(|s| !s.passed && a.name == s.pick.name())
             })
             .map(|a| {
                 serde_json::json!({
                     "name": a.name,
                     "accuracy": a.accuracy(),
                     "picks": a.picks,
+                    "abstained": a.abstained,
                     "correct": a.correct,
                     "confs": a.confs,
                     "escalated": a.escalated,
@@ -1317,6 +1522,13 @@ fn write_predictions(out_dir: &Path, runs: &[SuiteRun]) {
             "suite": run.suite,
             "n_questions": run.n_questions,
             "registered": run.registered.name(),
+            "instrument_pick": run.superiority.as_ref().map(|s| s.pick.name()),
+            "superiority": run.superiority.as_ref().map(|s| serde_json::json!({
+                "pick": s.pick.name(),
+                "mean": s.mean,
+                "lb95": s.lb95,
+                "passed": s.passed,
+            })),
             "arms": arms,
         }));
     }
@@ -1328,6 +1540,35 @@ fn write_predictions(out_dir: &Path, runs: &[SuiteRun]) {
     )
     .expect("write predictions");
     eprintln!("frozen predictions: {}", path.display());
+
+    // The full pre-registration table (the RESULTS.md text has promised
+    // this file since Bench 001; write it for real).
+    let regs: serde_json::Value = serde_json::to_value(
+        runs.iter()
+            .map(|r| {
+                serde_json::json!({
+                    "suite": r.suite,
+                    "registered": r.registered.name(),
+                    "rows": r.registration.iter().map(|row| serde_json::json!({
+                        "arm": row.arm,
+                        "cal_acc": row.cal_acc,
+                        "acc_lcb": row.acc_lcb,
+                        "consult": row.consult,
+                        "p99_us": row.p99_us,
+                        "rank0": row.rank0,
+                    })).collect::<Vec<_>>(),
+                })
+            })
+            .collect::<Vec<_>>(),
+    )
+    .expect("registration json");
+    let rpath = out_dir.join("registration.json");
+    std::fs::write(
+        &rpath,
+        serde_json::to_string_pretty(&regs).expect("registration json"),
+    )
+    .expect("write registration");
+    eprintln!("registration table: {}", rpath.display());
 }
 
 fn write_results(out_dir: &Path, runs: &[SuiteRun], box_state: &str) {
@@ -1352,11 +1593,15 @@ fn write_results(out_dir: &Path, runs: &[SuiteRun], box_state: &str) {
 Issue 003 T4); arms pre-registered on the cal front by the Pareto rank-0 + \
 argmax Beta-LCB instrument; predictions frozen in `predictions.json`.\n\n");
     md.push_str(&format!(
-        "Protocol: the seat posture = the Bench 051 protocol (`--head-select --nb-select`, \
-registry caps), fit through the SAME code reflex's runner uses (`harness::runner::seat`). \
-The A0 drift pin asserts the arena's A0 xnli_en accuracy equals reflex's own `run()` row \
-byte for byte. H1 top-k = 8 (default). H2 grid: β ∈ {BETA_GRID:?} × n_min ∈ {N_MIN_GRID:?} × \
-τ ∈ {TAU_GRID:?} — 45 candidates, train-side only. PICK SPACE (Issue 006, the v2 \
+        "Protocol: the seat posture = the CURRENT PUBLISHED reflex posture (Issue 008 T1's \
+re-baseline: `--head-select --nb-select --ridge-select`, registry caps, genome off) fit \
+through the SAME code reflex's runner uses (`harness::runner::seat`). The A0 drift pin \
+asserts the arena's A0 accuracy equals reflex's own `run()` row on EVERY arena suite, and \
+— when the reflex-site checkout stands beside the workspace — that reflex's rows equal the \
+PUBLISHED bench.json numbers. H1 top-k = 8 (default). H2 grid: β ∈ {BETA_GRID:?} × n_min ∈ {N_MIN_GRID:?} × \
+τ ∈ {TAU_GRID:?} — 45 candidates, train-side only. Product gate (Issue 008 T2): the \
+registered arm must be STRICTLY above the current Reflex row — paired (pick − A0) LB95 > 0 \
+on this frozen test read — else the registration refuses and A0 serves. PICK SPACE (Issue 006, the v2 \
 instrument): A0's probs and every gold idx speak the question's PRESENTED-option space; \
 A1/H1/H2 resolve each presented option to its specialist class row (by name for the \
 suites whose keys are the label strings — massive/banking77 — by index under k == N for \
@@ -1371,11 +1616,12 @@ chance-level on massive (20 of 59 + shuffle); its registration also double-index
     for run in runs {
         md.push_str(&format!("## {}\n\n", run.suite));
         md.push_str(&format!(
-            "Posture: cap {} · head {:.2} · nb {:.2} ({}) · fused-gate thresholds \
+            "Posture: cap {} · head {:.2} · nb {:.2} · ridge {:.2} ({}) · fused-gate thresholds \
 {:.3}/{:.3}. Questions: {}.\n\n",
             run.posture.effective_cap,
             run.posture.head_scale,
             run.posture.nb_scale,
+            run.posture.ridge_scale,
             run.posture.nb_view,
             run.posture.score_threshold,
             run.posture.distance_threshold,
@@ -1383,10 +1629,12 @@ chance-level on massive (20 of 59 + shuffle); its registration also double-index
         ));
 
         // The registration table (train/cal — the instrument's output).
+        // The refused pick stays visible beside the served arm.
         md.push_str("### Pre-registration (cal front, train-side only)\n\n");
         md.push_str("| rank-0 | arm | cal acc | Beta LCB₅ | consult | p99 µs |\n|---|---|---|---|---|---|\n");
+        let pick = run.superiority.as_ref().map(|s| &s.pick);
         for r in &run.registration {
-            if r.rank0 || r.cand == run.registered {
+            if r.rank0 || r.cand == run.registered || pick.is_some_and(|p| *p == r.cand) {
                 md.push_str(&format!(
                     "| {} | {} | {:.4} | {:.4} | {:.3} | {:.0} |\n",
                     if r.rank0 { "✓" } else { "" },
@@ -1399,22 +1647,49 @@ chance-level on massive (20 of 59 + shuffle); its registration also double-index
             }
         }
         md.push_str(&format!(
-            "\nRegistered arm: **{}** (rank-0 {}/{} candidates; the full table rides \
-`registration.json`).\n\n",
+            "\nServed arm: **{}** (rank-0 {}/{} candidates; the full table rides \
+`registration.json`).{}\n\n",
             run.registered.name(),
             run.registration.iter().filter(|r| r.rank0).count(),
-            run.registration.len()
+            run.registration.len(),
+            match &run.superiority {
+                Some(s) if !s.passed => format!(
+                    " The instrument's pick **{}** was REFUSED by the superiority gate \
+(paired LB95 {:+.4} ≤ 0) — A0 serves and the suite is not sold (Issue 008 T2).",
+                    s.pick.name(),
+                    s.lb95
+                ),
+                Some(s) => format!(
+                    " The superiority gate certified it strictly above Reflex \
+(paired LB95 {:+.4} > 0).",
+                    s.lb95
+                ),
+                None => String::new(),
+            }
         ));
 
-        // The test table (the single read).
+        // The test table (the single read). The refused pick still shows —
+        // its row is the measurement the refusal is grounded in.
         md.push_str("### The single test read\n\n");
         md.push_str("| arm | accuracy | consult | p50 µs | p99 µs |\n|---|---|---|---|---|\n");
         for a in &run.test_arms {
-            if a.name == "A0" || a.name == "A1" || a.name == "H1" || a.name == run.registered.name() {
+            let is_pick = run
+                .superiority
+                .as_ref()
+                .is_some_and(|s| a.name == s.pick.name())
+                || a.name == run.registered.name();
+            if a.name == "A0" || a.name == "A1" || a.name == "H1" || is_pick {
+                let mark = if a.name == "A0" || a.name == "A1" || a.name == "H1" {
+                    ""
+                } else if run.registered.name() == a.name {
+                    " ★"
+                } else {
+                    " ✗"
+                };
                 md.push_str(&format!(
                     "| {}{} | {:.4} | {:.3} | {:.0} | {:.0} |\n",
                     a.name,
-                    if a.name == run.registered.name() && a.name != "A0" && a.name != "A1" && a.name != "H1" { " ★" } else { "" },
+                    mark,
                     a.accuracy(),
                     a.consult_rate(),
                     a.p50(),
@@ -1442,6 +1717,20 @@ chance-level on massive (20 of 59 + shuffle); its registration also double-index
 
         // The gates.
         md.push_str("### Gates\n\n");
+        if let Some(s) = &run.superiority {
+            md.push_str(&format!(
+                "- **G7 product gate (Issue 008 T2):** {} − A0 mean {:+.4} · paired LB95 \
+{:+.4} → {}\n",
+                s.pick.name(),
+                s.mean,
+                s.lb95,
+                if s.passed {
+                    "PASS (strictly above Reflex)".to_string()
+                } else {
+                    format!("REFUSED — {} is not sold; A0 serves", s.pick.name())
+                }
+            ));
+        }
         if let Some(g) = &run.g1 {
             md.push_str(&format!(
                 "- **G1 calibration:** raw ECE {:.4} · Platt {:.4} (fit engaged: {}) · \

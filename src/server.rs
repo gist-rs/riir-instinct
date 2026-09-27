@@ -7,16 +7,16 @@
 //!
 //! Two laws hold by construction here:
 //!
-//! 1. **The serving posture is the GOAT product verdict** (Bench
-//!    002, `.benchmarks/002_hybrid_052_protocol/`), not the registration
-//!    instrument's pick. They disagree exactly once: banking77's cal front
-//!    registered H1, and G3 FAILED it (the hybrid pays up to ~4.7 pt on
-//!    reflex-won cases at 95% confidence) — so the instrument row stays a
-//!    published measurement (the site lane carries it with its ECE) while
-//!    A0 is what serves. Promotion is GOAT-gated; demote the loser. The
-//!    verdict rows live in the arsenal manifest (Proposal 001, law A5 —
-//!    the ONE selection surface); the embedded default is pinned
-//!    byte-for-byte by the gates (law A6).
+//! 1. **The serving posture is the GOAT product verdict**, and since the
+//!    Issue-008 T2 product gate it is ONE verdict: the registration
+//!    itself refuses any arm not strictly above the current Reflex row
+//!    (paired LB95 > 0 on the frozen test read), so the instrument pick
+//!    and the manifest row can no longer disagree. Reflex is free; a
+//!    tie — or an edge the paired data cannot certify — sells nothing.
+//!    The seat posture is the CURRENT PUBLISHED reflex posture (T1's
+//!    re-baseline knobs); the verdict rows live in the arsenal manifest
+//!    (Proposal 001, law A5 — the ONE selection surface); the embedded
+//!    default is pinned byte-for-byte by the gates (law A6).
 //! 2. **The served answer must be the measured answer.** The parity gate
 //!    (`tests/serve_gates.rs`) replays committed test cases through
 //!    `decide()` and asserts identity with the frozen `predictions.json`
@@ -339,19 +339,26 @@ impl<const N: usize> SuiteServer<N> {
             (q.kind, q.instructions.clone(), q.qid.clone())
         };
 
-        // The deployed Bench 051 protocol: head-select + nb-select,
-        // registry caps (no cal-slice cap ladder) — the arena's knobs.
-        // (oc_select stays off — reflex's issue-038 lane is not the
-        // published posture the serving arms were measured at; this repo
-        // never enables reflex/option_cond, so the field is cfg'd out of
-        // PostureKnobs here.) Genome selection stays off for the same
-        // reason: the serving arms were measured without it, and the
-        // flag-off path is behavior-identical to the frozen Bench 002
-        // posture. Enabling it is the Issue 008 T1 re-baseline, never a
-        // silent posture change under a frozen-picks parity gate.
+        // The CURRENT PUBLISHED reflex posture (Issue 008 T1's
+        // re-baseline): head-select + nb-select + ridge-select, registry
+        // caps, genome off — byte-identical knobs to the arena's
+        // (`run_suite_n`), so the serve path stays the arena path.
+        // `ridge_select` is the cal-selected NBSVM-ridge lane (reflex
+        // Bench 057): emotion arms @8, every other suite's ladder
+        // declines at the arming bar (selected 0.0 — byte-identical to
+        // off, reflex's full-workspace delta 0.0000). Boot cost: the
+        // emotion ladder ≈ +5 s, the wide suites' ≈ +40–60 s (Bench 057's
+        // fit-cost disclosure) — deterministic derivation of the PUBLISHED
+        // posture, never a fork from the arena's. Genome selection stays
+        // off: reflex's published bench rows predate that lane — turning
+        // it on would serve a posture no published row carries.
         let knobs = PostureKnobs {
             head_select: true,
             nb_select: true,
+            // option_cond rides the dep for the nb_ridge compile only
+            // (upstream gap, filed reflex-side); the oc lane stays off.
+            oc_select: false,
+            ridge_select: true,
             genome_select: false,
             genome_accept_margin: 0.0,
             cal_select_caps: vec![],
