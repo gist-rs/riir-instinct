@@ -20,9 +20,10 @@ data-gated: **H3 (PUCT over chains)** — its only chain-shaped suite
 (typed_decisions) has no trained specialist in the 576 winner set, and
 its value-head category rule bars substituting one; the arm re-opens
 when a typed_decisions specialist is trained (also blocked by E0's
-route-terms caveat there). **The armed-off/serving faces ride the
-arsenal Proposal 001** (T5/T6 landed; T8's `arsenal_budget_goat` is the
-remaining GOAT leg).
+route-terms caveat there). **The armed-off/serving faces rode the
+arsenal Proposal 001 — CLOSED: T8's `arsenal_budget_goat` passed 7/7
+(Bench 003, 2026-09-27; the signed-centroid defect it caught fixed in
+the same landing).**
 
 Superseded Bench 001 v2 status, for the record: ag_news H2(β=1,nmin=2,τ=4)
 0.8975 vs A0 0.8625 / A1 0.8875; emotion A1 0.8550, sst5 A1 0.4217 vs
