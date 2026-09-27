@@ -43,7 +43,7 @@ outputs:
   - { path: winners/emotion_winner_v1.bin, from: ../riir-train/data/instinct_specialists/emotion_winner_v1.bin }
   - { path: winners/sst5_winner_v1.bin, from: ../riir-train/data/instinct_specialists/sst5_winner_v1.bin }
   - { path: winners/massive_intent_en_winner_v1.bin, from: ../riir-train/data/instinct_specialists/massive_intent_en_winner_v1.bin }
-  - { path: winners/banking77_winner_v1.bin, from: ../riir-train/data/instinct_specialists/banking77_winner_v1.bin }
+  - { path: winners/banking77_nbsvm_v2.bin, from: ../riir-train/data/instinct_specialists/banking77_nbsvm_v2.bin }   # Issue 579 v2 (presence-bag convention) — the refused v1 file no longer ships
   - { path: winners/xnli_en_winner_v1.bin, from: ../riir-train/data/instinct_specialists/xnli_en_winner_v1.bin }
   # The six dataset suites the seat boots from (the t20k bytes the
   # published lanes carry — the Bench 002 alignment law). Soft dir rows:
@@ -73,7 +73,7 @@ targets:
       - { from: winners/emotion_winner_v1.bin, to: data/winners/emotion_winner_v1.bin }
       - { from: winners/sst5_winner_v1.bin, to: data/winners/sst5_winner_v1.bin }
       - { from: winners/massive_intent_en_winner_v1.bin, to: data/winners/massive_intent_en_winner_v1.bin }
-      - { from: winners/banking77_winner_v1.bin, to: data/winners/banking77_winner_v1.bin }
+      - { from: winners/banking77_nbsvm_v2.bin, to: data/winners/banking77_nbsvm_v2.bin }
       - { from: winners/xnli_en_winner_v1.bin, to: data/winners/xnli_en_winner_v1.bin }
       - { from: datasets/ag_news, to: data/datasets/ag_news }
       - { from: datasets/emotion, to: data/datasets/emotion }

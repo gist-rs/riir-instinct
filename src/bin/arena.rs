@@ -270,6 +270,10 @@ struct DisclosedPosture {
     nb_view: &'static str,
     score_threshold: f32,
     distance_threshold: f32,
+    /// The winner artifact's input-bag convention (Issue 579's bridge):
+    /// "count" for the v1 winners, "presence" for the banking77 nbsvm
+    /// v2 lane.
+    bag_convention: &'static str,
 }
 
 fn main() {
@@ -394,6 +398,9 @@ fn run_suite(
 struct SuiteCtx<const N: usize> {
     engine: DecisionEngine<N, EMBED_DIM>,
     lane: HybridLane,
+    /// The winner artifact's training convention (Issue 579's bridge) —
+    /// every bag this context builds dispatches through it.
+    conv: riir_instinct::specialist::BagConvention,
     nb_view: NbView,
     nb_armed: bool,
     bag: Vec<(u32, f32)>,
@@ -611,7 +618,7 @@ impl<const N: usize> SuiteCtx<N> {
                 abstained: qo.abstained,
             };
             let state = strs[ci].as_bytes();
-            riir_instinct::specialist::bag_into(state, &mut self.bag, &mut self.tok);
+            self.conv.bag_into(state, &mut self.bag, &mut self.tok);
             self.fill_positions(case);
             self.score_positions();
             let t = std::time::Instant::now();
@@ -686,7 +693,7 @@ impl<const N: usize> SuiteCtx<N> {
             self.fill_positions(case);
             let state = strs[ci].as_bytes();
             let t = std::time::Instant::now();
-            riir_instinct::specialist::bag_into(state, &mut self.bag, &mut self.tok);
+            self.conv.bag_into(state, &mut self.bag, &mut self.tok);
             self.score_positions();
             // A1's pick in PRESENTED-OPTION space — the space gold speaks
             // (the specialist answers the question asked, among the
@@ -812,8 +819,16 @@ fn run_suite_n<const N: usize>(
     // Issue 010 T2: a MISSING artifact is not a crash — the suite runs
     // its honest A0/G0-only posture and publishes its measured
     // `a0_stands` row. A PRESENT-but-broken artifact stays fatal (a
-    // corrupt seal must never degrade into a quiet A0).
-    let winner_path = winners_dir.join(format!("{name}_winner_v1.bin"));
+    // corrupt seal must never degrade into a quiet A0). The FILE and the
+    // BAG CONVENTION both resolve through the winner bridge (Issue 579's
+    // one home for the 578 coupling).
+    let bridge = riir_instinct::specialist::winner_bridge(name);
+    let winner_path = winners_dir.join(
+        bridge
+            .file
+            .map(str::to_string)
+            .unwrap_or_else(|| format!("{name}_winner_v1.bin")),
+    );
     let spec = match riir_instinct::specialist::load_artifact(&winner_path) {
         Ok(spec) => Some(spec),
         Err(_) if !winner_path.is_file() => {
@@ -848,9 +863,10 @@ fn run_suite_n<const N: usize>(
     }
     let artifact_labels: Vec<String> = spec.labels.clone();
     eprintln!(
-        "  winner: {} ({} labels, BLAKE3 seal verified)",
+        "  winner: {} ({} labels, BLAKE3 seal verified, {}-bag convention)",
         winner_path.display(),
-        spec.labels.len()
+        spec.labels.len(),
+        bridge.convention.name()
     );
     let joined = SpecialistLane::join(spec, name, &seat.labels, Cascade { top_k })?;
     // The presented-option bridge (SuiteCtx::key_map): every seat label
@@ -877,6 +893,7 @@ fn run_suite_n<const N: usize>(
     let mut ctx = SuiteCtx::<N> {
         engine,
         lane,
+        conv: bridge.convention,
         nb_view: posture.cfg.nb_view,
         nb_armed,
         bag: Vec::new(),
@@ -1118,6 +1135,7 @@ fn run_suite_n<const N: usize>(
             },
             score_threshold: posture.score_threshold,
             distance_threshold: posture.distance_threshold,
+            bag_convention: bridge.convention.name(),
         },
         registration,
         registered,
@@ -1206,6 +1224,7 @@ fn run_suite_a0_only<const N: usize>(
             },
             score_threshold: posture.score_threshold,
             distance_threshold: posture.distance_threshold,
+            bag_convention: riir_instinct::specialist::BagConvention::Count.name(),
         },
         registration,
         registered: Cand::A0,
@@ -1235,7 +1254,8 @@ fn fusion_overhead_micro<const N: usize>(
     const ITERS: usize = 20_000;
     let probs: Vec<f64> = (0..n).map(|i| (i as f64 * 0.61).cos().abs()).collect();
     let class_of_pos: Vec<usize> = (0..n).collect();
-    riir_instinct::specialist::bag_into(b"alpha beta gamma", &mut ctx.bag, &mut ctx.tok);
+    ctx.conv
+        .bag_into(b"alpha beta gamma", &mut ctx.bag, &mut ctx.tok);
     let a0 = A0Answer {
         probs: &probs,
         pick: 0,
@@ -1846,8 +1866,7 @@ for seat-composing arms, `n_cases` disclosed)."
                 .unwrap_or_default()
         ));
         md.push_str(&format!(
-            "Posture: cap {} · head {:.2} · nb {:.2} · ridge {:.2} ({}) · fused-gate thresholds \
-{:.3}/{:.3}. Questions: {} over {} cases.{}\n\n",
+            "Posture: cap {} · head {:.2} · nb {:.2} · ridge {:.2} ({}) · fused-gate thresholds \\n{:.3}/{:.3} · specialist bag {}. Questions: {} over {} cases.{}\n\n",
             run.posture.effective_cap,
             run.posture.head_scale,
             run.posture.nb_scale,
@@ -1855,6 +1874,7 @@ for seat-composing arms, `n_cases` disclosed)."
             run.posture.nb_view,
             run.posture.score_threshold,
             run.posture.distance_threshold,
+            run.posture.bag_convention,
             run.n_questions,
             run.n_cases,
             if !run.specialist_present {

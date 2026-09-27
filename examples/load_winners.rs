@@ -36,7 +36,15 @@ fn main() {
 
     let mut failures = 0usize;
     for suite in &suites {
-        let path = dir.join(format!("{suite}_winner_v1.bin"));
+        // File + bag convention resolve through the winner bridge (Issue
+        // 579) — the same resolution the arena and the serve lane use.
+        let bridge = riir_instinct::specialist::winner_bridge(suite);
+        let path = dir.join(
+            bridge
+                .file
+                .map(str::to_string)
+                .unwrap_or_else(|| format!("{suite}_winner_v1.bin")),
+        );
         if !path.exists() {
             eprintln!("  {suite}: no winner artifact at {} — export first (riir-train instinct_arm_b)", path.display());
             failures += 1;
@@ -51,11 +59,14 @@ fn main() {
                     .unwrap_or("sample text");
                 let mut bag = Vec::new();
                 let mut scratch = Vec::new();
-                riir_instinct::specialist::bag_into(sample.as_bytes(), &mut bag, &mut scratch);
+                bridge
+                    .convention
+                    .bag_into(sample.as_bytes(), &mut bag, &mut scratch);
                 let pick = m.pick(&bag);
                 println!(
-                    "  {suite}: labels {} · vocab-pinned · pick {pick} = {:?} for {sample:?}",
+                    "  {suite}: labels {} · vocab-pinned · {}-bag · pick {pick} = {:?} for {sample:?}",
                     m.labels.len(),
+                    bridge.convention.name(),
                     m.labels.get(pick).map(String::as_str)
                 );
             }

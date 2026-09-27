@@ -37,7 +37,7 @@ use crate::arsenal::ArsenalManifest;
 use crate::hybrid::{
     A0Answer, Cascade, HybridLane, MAX_TOP_K, PriorFusion, SpecialistLane, prior_fusion_pick,
 };
-use crate::specialist::{bag_into, decode_artifact};
+use crate::specialist::decode_artifact;
 
 /// The cascade width the lane joins with when the serving arm is not H1
 /// (the arena's default `top_k`; H1 arms join at their own width).
@@ -183,6 +183,9 @@ pub struct SuiteServer<const N: usize> {
     /// The join permutation: seat label i ↔ artifact class row
     /// (the identity bridge's position → class map).
     perm: Vec<usize>,
+    /// The input-bag convention the artifact was trained under (Issue
+    /// 579's bridge): every bag this server builds dispatches through it.
+    bag_conv: crate::specialist::BagConvention,
     /// The question template (kind + instructions + qid) the synthesized
     /// per-request case carries — the suite's own single-question shape.
     q_kind: QKind,
@@ -404,10 +407,14 @@ impl<const N: usize> SuiteServer<N> {
 
         // The hoarding gate's vector for this suite (Proposal 001 T5):
         // the corpus centroid over the train pool, folded into the
-        // admission space. Boot-time work — the hot path never touches
-        // it.
-        let centroid =
-            crate::arsenal_ops::corpus_centroid(seat.train.iter().map(|d| d.text.as_str()));
+        // admission space under the suite's OWN bag convention (Issue
+        // 579's bridge — a presence lane's direction is a presence fold).
+        // Boot-time work — the hot path never touches it.
+        let bridge = crate::specialist::winner_bridge(suite);
+        let centroid = crate::arsenal_ops::corpus_centroid_with(
+            bridge.convention,
+            seat.train.iter().map(|d| d.text.as_str()),
+        );
 
         Ok(Self {
             suite,
@@ -420,6 +427,7 @@ impl<const N: usize> SuiteServer<N> {
             labels: seat.labels,
             key_map,
             perm,
+            bag_conv: bridge.convention,
             q_kind,
             q_instructions,
             qid,
@@ -557,8 +565,10 @@ impl<const N: usize> SuiteServer<N> {
         let se = eval_seat(&mut self.engine, std::slice::from_ref(&case), &[state.to_string()])?;
         let qo = &se.cases[0][0];
 
-        // The specialist's bag + per-position class scores.
-        bag_into(state.as_bytes(), &mut self.bag, &mut self.tok);
+        // The specialist's bag + per-position class scores — built under
+        // the artifact's training convention (Issue 579's bridge).
+        self.bag_conv
+            .bag_into(state.as_bytes(), &mut self.bag, &mut self.tok);
         self.pos_spec.clear();
         self.pos_spec.resize(self.pos_class.len(), 0.0);
         self.lane
@@ -773,7 +783,11 @@ impl AnySuiteServer {
         let row = manifest
             .row(suite)
             .ok_or_else(|| format!("suite {suite} is not in the arsenal manifest"))?;
-        let winner_path = winners_dir.join(row.artifact_file(format!("{suite}_winner_v1.bin")));
+        let winner_name = row.artifact_file(format!("{suite}_winner_v1.bin"));
+        // The raw-mode convention coupling (Issue 579): a bridged suite
+        // loads EXACTLY its bridged file, loud refusal otherwise.
+        crate::specialist::check_winner_file(suite, &winner_name)?;
+        let winner_path = winners_dir.join(winner_name);
         macro_rules! seat_arm {
             ($variant:ident, $n:literal) => {{
                 let server = SuiteServer::<$n>::from_seat(suite, seat, &winner_path, arm)?;

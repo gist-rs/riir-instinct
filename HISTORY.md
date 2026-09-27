@@ -1,5 +1,38 @@
 # HISTORY — riir-instinct
 
+## 2026-09-28 — Issue 579 T3: the arena bridge — banking77 serves the nbsvm v2 winner (Bench 012)
+
+Landed the consumer half of riir-train Issue 579 / Bench 612:
+`specialist::winner_bridge` (the per-suite winner FILE + BAG-CONVENTION
+table — the 578 coupling made structural, one home), `presence_bag_into`
+(the train-side `instinct_nbsvm::presence_bag_into(norm=true)` mirror over
+the same reflex tokenizer law), `BagConvention::bag_into` as the single
+dispatch at every bag site (arena `SuiteCtx`, serve `SuiteServer::decide`,
+the hoard-gate `corpus_centroid_with`), and `check_winner_file` — a raw
+boot/swap naming any other artifact for a bridged suite refuses loud.
+banking77 bridges to `banking77_nbsvm_v2.bin` (digest = Bench 612's mint,
+byte-verified here); the five v1 suites stay `<suite>_winner_v1.bin` +
+count bags. The frozen read (n=500,
+`.benchmarks/012_banking77_nbsvm_v2_bridge/`): A0 0.8260 (pinned == the
+published reflex row) · A1 0.8280 · H1 0.8320 · **H2(β=2,nmin=8,τ=8)
+0.8540** — T2 REFUSED at LB95 −0.0013 (advertising law; the same
+uncertified class as ag_news H2 −0.0100 / sst5 A1 −0.0129), G1 face FAIL
+(the fused readout, the ag_news class), G3 PASS. **Serves H2(2,8,8) under
+the owner's best-measured law**: the manifest row (digest + `file`
+override + posture), `PINNED_MANIFEST_DIGEST`, the serve-gates posture
+table, and the deploy.yaml shipping rows all moved in the same change;
+all 11 serve-gate tests green. The train-side holdout edge transferred
+(+2.8 pt on test). The refused v1 file stays on disk for reproduction but
+no longer ships; a banking77 HOSTED-ONLY vessel must be re-minted from v2
+by riir-train before the vessel lane serves this posture. Pin disclosure:
+the harness FAMILIES' site check reds under the reflex sibling's
+in-flight Issue-045 tree (its published bench.json predates the 045
+posture moves) — all NINE dataset suites pinned green (arena == reflex
+`run()` == site) in the same session; the records were written under
+`--skip-pin-a0` with the run-1 log as the pin evidence. Pre-existing at
+HEAD, not this lane: `tests/tetris_critic_parity.rs` carries two doc-list
+clippy errors under `--all-features` (the tetris lane's file).
+
 ## 2026-09-27 — Proposal 001 T8: `arsenal_budget_goat` GOAT PASS — and the gate caught the unsigned-fold defect (Bench 003)
 
 Landed `benches/arsenal_budget_goat.rs` (opt-in `arsenal_goat`,

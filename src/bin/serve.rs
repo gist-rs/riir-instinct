@@ -504,6 +504,9 @@ fn load_lane(
     let name = artifact
         .map(str::to_string)
         .unwrap_or_else(|| row.artifact_file(format!("{suite}_winner_v1.bin")));
+    // The raw-mode convention coupling (Issue 579): a bridged suite loads
+    // EXACTLY its bridged file, loud refusal otherwise.
+    riir_instinct::specialist::check_winner_file(suite, &name)?;
     let path = Path::new(&ctx.winners_dir).join(&name);
     let bytes = read_bounded(&path, cap)?;
     let digest = *blake3::hash(&bytes).as_bytes();
@@ -1298,6 +1301,24 @@ fn swap_edge(stream: &mut TcpStream, srv: &Arc<SrvState>, body: &[u8], cors: Opt
             cors,
         );
         return;
+    }
+    // The raw-mode convention coupling (Issue 579): a bridged suite only
+    // ever swaps in its bridged winner — any other artifact would serve
+    // the suite's bag convention over weights not trained under it.
+    // Vessel files carry their own naming convention and skip this (the
+    // vessel lane is cfg'd; a banking77 vessel must be re-minted from the
+    // v2 artifact by its producer).
+    #[cfg(not(feature = "vessel"))]
+    if let Err(e) = riir_instinct::specialist::check_winner_file(suite, &req.artifact) {
+        json_error(stream, "400 Bad Request", "bad_field", &e, cors);
+        return;
+    }
+    #[cfg(feature = "vessel")]
+    if srv.ctx.vessel.is_none() {
+        if let Err(e) = riir_instinct::specialist::check_winner_file(suite, &req.artifact) {
+            json_error(stream, "400 Bad Request", "bad_field", &e, cors);
+            return;
+        }
     }
     let Some(row) = srv.ctx.manifest.row(suite) else {
         json_error(stream, "404 Not Found", "unknown_suite", "row vanished", cors);

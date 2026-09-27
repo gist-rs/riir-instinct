@@ -106,6 +106,110 @@ pub fn bag_into(text: &[u8], out: &mut Vec<(u32, f32)>, scratch: &mut Vec<u32>) 
     }
 }
 
+/// The L2-normalized sparse PRESENCE bag over [`VOCAB`] buckets: the same
+/// reflex tokenizer events, duplicates COLLAPSED (binary presence — the
+/// NBSVM feature convention), each distinct bucket valued `1/√nnz` (so the
+/// bag is unit length). Sorted, never a HashMap iteration. Cleared first;
+/// allocation-free once warm.
+///
+/// This is riir-train's training-side `instinct_nbsvm::presence_bag_into`
+/// at `norm = true` — the two sides MUST agree or the serving forward
+/// reads a different model than the one trained (Issue 579 / Bench 612's
+/// serving-convention spec). Pinned by the structure test below; the
+/// live cross-check is the arena's A1 row landing at the train-side
+/// holdout level.
+pub fn presence_bag_into(text: &[u8], out: &mut Vec<(u32, f32)>, scratch: &mut Vec<u32>) {
+    riir_reflex::embed::hashed_tokens_into(text, VOCAB, scratch);
+    out.clear();
+    if scratch.is_empty() {
+        return;
+    }
+    scratch.sort_unstable();
+    scratch.dedup();
+    let v = 1.0 / (scratch.len() as f32).sqrt();
+    out.extend(scratch.iter().map(|&b| (b, v)));
+}
+
+/// The input-bag convention an artifact was trained under. The RISP
+/// format cannot carry it (v1 format fixed; the codec is the producer's),
+/// so it is declared HERE, keyed by suite — see [`winner_bridge`].
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum BagConvention {
+    /// L2-normalized COUNT bags — the established v1 winners (Issue 576).
+    Count,
+    /// L2-normalized PRESENCE bags — the Issue 579 nbsvm v2 winner (the
+    /// per-class ratio scaling is folded into the exported weights).
+    Presence,
+}
+
+impl BagConvention {
+    /// Build the bag this convention names. The single dispatch — every
+    /// bag-building call site goes through here so a convention can never
+    /// desync from the artifact it feeds.
+    pub fn bag_into(self, text: &[u8], out: &mut Vec<(u32, f32)>, scratch: &mut Vec<u32>) {
+        match self {
+            Self::Count => bag_into(text, out, scratch),
+            Self::Presence => presence_bag_into(text, out, scratch),
+        }
+    }
+
+    /// The record/manifest spelling.
+    pub fn name(self) -> &'static str {
+        match self {
+            Self::Count => "count",
+            Self::Presence => "presence",
+        }
+    }
+}
+
+/// The per-suite winner bridge — ONE home for the 578 coupling lesson
+/// (winner names + training conventions couple to the consumer; a change
+/// is THIS window's act, never a train-side silent swap).
+///
+/// `file`: `None` = the established `<suite>_winner_v1.bin` convention;
+/// `Some(name)` = the suite's winner carries its own name (the manifest's
+/// raw-mode `file` override must agree — [`check_winner_file`]).
+/// `convention`: the bag the winner's weights were trained under — every
+/// bag-building site for the suite MUST dispatch through it.
+#[derive(Debug, Clone, Copy)]
+pub struct WinnerBridge {
+    pub file: Option<&'static str>,
+    pub convention: BagConvention,
+}
+
+/// Issue 579 / Bench 612: banking77's winner is the nbsvm v2 artifact —
+/// deliberately NOT a `winner_v1` name (that name stays the refused v1
+/// artifact for reproduction), trained over L2-normalized PRESENCE bags.
+/// Every other suite keeps the v1 file + count-bag convention.
+pub fn winner_bridge(suite: &str) -> WinnerBridge {
+    match suite {
+        "banking77" => WinnerBridge {
+            file: Some("banking77_nbsvm_v2.bin"),
+            convention: BagConvention::Presence,
+        },
+        _ => WinnerBridge {
+            file: None,
+            convention: BagConvention::Count,
+        },
+    }
+}
+
+/// The raw-mode coupling check: a suite with a bridged winner file must
+/// load EXACTLY that file — a manifest row (or a swap request) naming any
+/// other artifact would serve the suite's convention over weights that
+/// were not trained under it, silently. RAW MODE ONLY: vessel files carry
+/// the `<suite>_v1.vessel` convention and are checked by nothing here.
+pub fn check_winner_file(suite: &str, file: &str) -> Result<(), String> {
+    match winner_bridge(suite).file {
+        Some(expected) if file != expected => Err(format!(
+            "suite {suite}: artifact {file:?} is not the bridged winner {expected:?} — the \
+             input-convention coupling (Issue 579) forbids serving this suite from any other \
+             raw artifact; update winner_bridge in the same change as the swap"
+        )),
+        _ => Ok(()),
+    }
+}
+
 /// Load + verify one artifact file (bytes from disk — weights are runtime
 /// data, never committed).
 pub fn load_artifact(path: &Path) -> Result<Specialist, String> {
@@ -266,6 +370,70 @@ mod tests {
         let mut ver = bytes.clone();
         ver[4] = 9;
         assert!(decode_artifact(&ver).is_err());
+    }
+
+    /// The train-side `instinct_nbsvm::presence_bag_into(norm = true)`
+    /// mirror test: sorted, unique, each value 1/√nnz, empty text → empty
+    /// bag (the training-side test's own arms, verbatim).
+    #[test]
+    fn presence_bag_is_sorted_unique_and_normed() {
+        let mut out = Vec::new();
+        let mut s = Vec::new();
+        presence_bag_into(b"alpha bravo alpha", &mut out, &mut s);
+        assert!(out.windows(2).all(|w| w[0].0 < w[1].0), "sorted");
+        assert!(!out.is_empty());
+        // "alpha" appears twice but presence collapses it: the bag holds
+        // exactly the DISTINCT events (bigrams included by the tokenizer
+        // law) — its cardinality equals the count bag's.
+        let mut probe = Vec::new();
+        bag_into(b"alpha bravo alpha", &mut probe, &mut s);
+        assert_eq!(out.len(), probe.len(), "presence == the count bag's distinct buckets");
+        let inv = 1.0 / (out.len() as f32).sqrt();
+        assert!(out.iter().all(|(_, v)| (*v - inv).abs() < 1e-7));
+        let norm: f32 = out.iter().map(|(_, v)| v * v).sum();
+        assert!((norm - 1.0).abs() < 1e-5, "unit length");
+        presence_bag_into(b"!!! ...", &mut out, &mut s);
+        assert!(out.is_empty(), "pure punctuation carries no events");
+    }
+
+    /// The bridge table, both directions: banking77 is the v2 presence
+    /// lane; every other arena suite stays on the v1 file + count bags.
+    #[test]
+    fn winner_bridge_pins_the_convention_coupling() {
+        let b = winner_bridge("banking77");
+        assert_eq!(b.file, Some("banking77_nbsvm_v2.bin"));
+        assert_eq!(b.convention, BagConvention::Presence);
+        for suite in [
+            "ag_news",
+            "emotion",
+            "sst5",
+            "massive_intent_en",
+            "xnli_en",
+            "typed_decisions",
+            "prompt_injections",
+            "a_suite_that_never_exists",
+        ] {
+            let w = winner_bridge(suite);
+            assert_eq!(w.file, None, "{suite}: unexpected bridged file");
+            assert_eq!(w.convention, BagConvention::Count, "{suite}: unexpected convention");
+        }
+        // The dispatch routes by convention.
+        let mut a = Vec::new();
+        let mut b2 = Vec::new();
+        let mut s = Vec::new();
+        BagConvention::Count.bag_into(b"alpha bravo alpha", &mut a, &mut s);
+        bag_into(b"alpha bravo alpha", &mut b2, &mut s);
+        assert_eq!(a, b2, "Count dispatches to bag_into");
+        BagConvention::Presence.bag_into(b"alpha bravo alpha", &mut a, &mut s);
+        presence_bag_into(b"alpha bravo alpha", &mut b2, &mut s);
+        assert_eq!(a, b2, "Presence dispatches to presence_bag_into");
+        // The coupling check: the bridged file passes, any other refuses.
+        assert!(check_winner_file("banking77", "banking77_nbsvm_v2.bin").is_ok());
+        let err = check_winner_file("banking77", "banking77_winner_v1.bin")
+            .expect_err("the refused v1 artifact must not load under the v2 convention");
+        assert!(err.contains("banking77_nbsvm_v2.bin"), "{err}");
+        assert!(check_winner_file("ag_news", "ag_news_winner_v1.bin").is_ok());
+        assert!(check_winner_file("ag_news", "anything_else.bin").is_ok(), "unbridged suites are unconstrained");
     }
 
     #[test]

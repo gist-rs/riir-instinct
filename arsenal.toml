@@ -42,22 +42,27 @@
 #
 # ── the serving law (owner verdict 2026-09-27) ──────────────────────
 # The SERVING selector is the BEST MEASURED ARM per suite over the frozen
-# test read (Bench 005, `.benchmarks/005_hybrid_every_suite_measured/`),
+# test read (Bench 005, `.benchmarks/005_hybrid_every_suite_measured/`;
+# banking77 re-read at Bench 012 over the Issue 579 v2 winner),
 # with A0 as a candidate like any other — "pick the best decision" is
 # the product law (owner: "i dont care what arm you attach but it should
 # pick the best decision for me and get good score"). Under this law the
 # served arm is never the WORST arm by construction; where A0 is the
-# argmax (emotion, banking77, xnli) the reflex half IS the best Instinct
+# argmax (emotion, xnli) the reflex half IS the best Instinct
 # has today, and the losing specialists are the open improvement backlog
 # (Issue 008 T4/T5), not a refusal to serve.
 #
 # The T2 strict-superiority gate (paired LB95 > 0) REMAINS as the
 # ADVERTISING law — the reflex-site ✓/✗ row and the certification
 # vocabulary — not as the serving selector. ag_news H2 (+1.5 pt mean,
-# LB95 -0.0100 at n=400) and sst5 A1 (+2.5 pt mean, LB95 -0.0129) serve
-# under best-measured while still uncertified: expected value positive,
-# downside bounded, and the certification path is more questions, not a
-# posture rollback.
+# LB95 -0.0100 at n=400), sst5 A1 (+2.5 pt mean, LB95 -0.0129) and
+# banking77 H2 (+2.8 pt mean, LB95 -0.0013 at n=500, the Issue 579 nbsvm
+# v2 winner over presence bags — Bench 012) serve under best-measured
+# while still uncertified: expected value positive, downside bounded, and
+# the certification path is more questions, not a posture rollback.
+# emotion / xnli serve A0 because A0 IS the argmax there — the losing
+# specialists are the open improvement backlog (Issue 008 T4/T5), not a
+# refusal to serve.
 
 [[vessel]]
 suite   = "ag_news"
@@ -93,9 +98,10 @@ budget  = { load = "eager", max_payload_mb = 16 }
 
 [[vessel]]
 suite   = "banking77"
-digest  = "blake3:611cf0d22e9d45a3f082994994c783e357b96514255825ad8ae95a9328612d94"
+digest  = "blake3:693b0d6c580d035645e2af9338847d7783102be4ca24ff89ec0fd92a25743e37"
 class   = "hosted_only"
-posture = { arm = "A0" }                                          # best measured IS A0 0.8260 (H1 0.8060 / A1 0.7960 lose — specialist backlog)
+file    = "banking77_nbsvm_v2.bin"   # the Issue 579 nbsvm v2 winner (presence-bag convention, winner_bridge) — the v1 winner_v1 file stays on disk for reproduction
+posture = { arm = "H2", beta = 2.0, n_min = 8.0, tau_n = 8.0 }    # best measured 0.8540 vs A0 0.8260 (+2.8 pt; T2 LB95 -0.0013 — uncertified, serves under best-measured; Bench 012)
 pin_keys = []
 budget  = { load = "eager", max_payload_mb = 16 }
 

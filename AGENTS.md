@@ -113,6 +113,29 @@ file .deploy/local/stage/decisions/app-bin   # → ELF 64-bit x86-64
 
 ## Current state
 
+**Bench 012 (2026-09-28) — the Issue 579 T3 arena bridge LANDED: banking77
+serves the nbsvm v2 winner.** The bridge: `specialist::winner_bridge` is
+the ONE home for the per-suite winner file + input-bag convention (the 578
+coupling made structural — `check_winner_file` refuses any raw boot/swap
+naming another artifact for a bridged suite). banking77 →
+`banking77_nbsvm_v2.bin` (digest = Bench 612's mint, byte-verified) over
+L2-normalized PRESENCE bags (`presence_bag_into`, the train-side
+`norm=true` mirror); every bag site (arena, serve, hoard centroid)
+dispatches through `BagConvention`; the five v1 suites stay count-bag.
+The frozen read (n=500, `.benchmarks/012_banking77_nbsvm_v2_bridge/`):
+A0 0.8260 (pinned == published) · A1 0.8280 · H1 0.8320 · **H2(2,8,8)
+0.8540** — served under the best-measured law (manifest row +
+`PINNED_MANIFEST_DIGEST` + posture table moved together; all 11 serve
+gates green), T2 LB95 −0.0013 → uncertified (the ✓/✗ row; the same class
+as ag_news H2 / sst5 A1), G1 face FAIL (fused readout, the ag_news
+class), G3 PASS. The train-side holdout edge transferred (+2.8 pt).
+Deploy rows ship v2 (`deploy.yaml`); a banking77 HOSTED-ONLY vessel must
+be re-minted from v2 by riir-train before the vessel lane carries this
+posture. Pin disclosure: the harness FAMILIES' site check reds under the
+reflex sibling's in-flight Issue-045 tree (published bench.json predates
+it) — all NINE dataset suites pinned green (arena == reflex run() ==
+site) in the same session; records written under `--skip-pin-a0`.
+
 **P1–P5 substantially DONE (2026-09-26/27) — Bench 001 is the hybrid
 GOAT record; P6 landed T1–T3 (the decstat flywheel, Plan 002) with the
 intake leg filed as riir-train Issue 577. The Tetris lane (Issue 009)

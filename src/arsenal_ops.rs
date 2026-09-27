@@ -35,9 +35,7 @@ use katgpt_core::set_admission::{CertificateReport, SetAdmissionConfig, certify_
 
 pub use katgpt_core::set_admission::DIM;
 
-use crate::specialist::bag_into;
-
-// ── T5: the Vendi hoarding gate ─────────────────────────────────────────
+// ── T5: the Vendi hoarding gate ─────────────────────────────────────────────────────────
 
 /// Fold one sparse L2-normalized bag into the 8-dim admission space:
 /// bucket-wise accumulation (`bucket % 8`). Deterministic; the caller
@@ -71,11 +69,25 @@ pub fn fold8(bag: &[(u32, f32)]) -> [f32; DIM] {
 /// (cos ≈ 0) — the near-duplicate signal the gate's contract names, and
 /// the construction that makes the colinearity anchor decidable.
 pub fn corpus_centroid<'a>(texts: impl Iterator<Item = &'a str>) -> [f32; DIM] {
+    corpus_centroid_with(crate::specialist::BagConvention::Count, texts)
+}
+
+/// The convention-aware centroid fold: a presence-bag lane's centroid is
+/// folded from presence bags — the input space its specialist actually
+/// reads — so a lane's admission direction is computed under the same
+/// transform as its serving path (Issue 579's bridge; mixing conventions
+/// across lanes is inherent to cross-suite comparison, both are unit-
+/// length folds into the same [`DIM`] projection, and the hoard gate is
+/// kill-switched either way).
+pub fn corpus_centroid_with<'a>(
+    conv: crate::specialist::BagConvention,
+    texts: impl Iterator<Item = &'a str>,
+) -> [f32; DIM] {
     let mut acc = [0.0_f32; DIM];
     let mut bag = Vec::new();
     let mut tok = Vec::new();
     for text in texts {
-        bag_into(text.as_bytes(), &mut bag, &mut tok);
+        conv.bag_into(text.as_bytes(), &mut bag, &mut tok);
         for &(bucket, w) in &bag {
             // Balanced ±1 from a multiplicative mix of the bucket id —
             // the raw high bit is useless here (ids are uniform over

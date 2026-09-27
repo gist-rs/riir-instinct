@@ -59,7 +59,7 @@ fn embedded_manifest() -> ArsenalManifest {
 /// re-run + frozen-predictions parity update law A6 demands). This is
 /// the TOML analogue of the compile-time posture table it replaced.
 const PINNED_MANIFEST_DIGEST: &str =
-    "blake3:4e63e9d9bfe45d4c9367db79742bfba4cbc792118fed1470ac4d3f204ef8fbdd";
+    "blake3:5d334ec279b047b45ab0edd70841d6bb5f871c255ddb1829007ba18b40694440";
 
 #[test]
 fn arsenal_manifest_bytes_are_pinned_byte_for_byte() {
@@ -78,13 +78,15 @@ fn manifest_posture_rows_are_the_serving_law_verdict() {
     let m = embedded_manifest();
     // The owner's serving law (2026-09-27, "pick the best decision for
     // me"): the SERVED arm is the best measured arm per suite over the
-    // Bench-005 frozen read, A0 included as a candidate. ag_news serves
+    // frozen test read, A0 included as a candidate. ag_news serves
     // H2(0.25,2,2) 0.8975 and sst5 serves A1 0.4217 while still
     // T2-uncertified (the strict-superiority gate stays as the
     // ADVERTISING law — the reflex-site ✓/✗ row — not the serving
-    // selector); emotion / banking77 / xnli serve A0 because A0 IS the
-    // argmax there — the losing specialists are the Issue-008 T4/T5
-    // backlog, not a refusal to serve.
+    // selector); banking77 serves H2(2,8,8) 0.8540 over the Issue 579
+    // nbsvm v2 winner (presence bags, Bench 012) at T2 LB95 -0.0013 —
+    // the same uncertified-under-best-measured class; emotion / xnli
+    // serve A0 because A0 IS the argmax there — the losing specialists
+    // are the Issue-008 T4/T5 backlog, not a refusal to serve.
     let expected: [(&str, Arm, &str); 6] = [
         (
             "ag_news",
@@ -98,7 +100,11 @@ fn manifest_posture_rows_are_the_serving_law_verdict() {
             Arm::H2 { beta: 1.0, n_min: 2.0, tau_n: 8.0 },
             "H2(β=1,nmin=2,τ=8)",
         ),
-        ("banking77", Arm::A0, "A0"),
+        (
+            "banking77",
+            Arm::H2 { beta: 2.0, n_min: 8.0, tau_n: 8.0 },
+            "H2(β=2,nmin=8,τ=8)",
+        ),
         ("xnli_en", Arm::A0, "A0"),
     ];
     assert_eq!(m.rows().len(), 6, "the manifest carries exactly the six rows");
