@@ -1,6 +1,6 @@
 # Issue 009 — Instinct plays Tetris on the arena (a real board, not a text-suite card)
 
-**Status:** OPEN — filed 2026-09-27 (owner direction). The placeholder card is pulled from the arena until this lands. HOW section added 2026-09-27 (training flow: search-distill via expert iteration, chance_puct teacher — verdict AGREE after 2 rounds); T5–T9 gate T7's start. KARC adjudicated same day: refused as drop predictor, added as a T8 modelless readout arm. **T5 MEASURED 2026-09-27 (Bench 006): WIRE-MUST-WIDEN — the five-ordinal spot wire carries at most 0.30 of the champion 1-ply evaluator's ranking (maximal decoder, full v2 state sentence included; 0.5470 demeaned) — the widened wire (raw afterstate, Instinct-only sidecar) is a precondition of the serve path, and its two cross-repo halves (reflex contract sidecar field, reflex-site sender) are the next lands. T6 MEASURED (Bench 007): PASS — the serving-matched teacher beats free Reflex by Δ+977.9 lb95 +969.7 pieces (b1600, paired seeds 1..=20); T7 unblocked. T8's second modelless arm MEASURED (Bench 009): NEGATIVE — the closed-form KARC basis-ridge critic (d=202) loses to b0 at every teacher budget (377.4 vs 907.8 pieces at b1600 targets, 2/6/12); b0 stands as the modelless floor and the trained critic's bar is b0 AND that arm. T7 substrate landed (feature contract + collector + fit + eval lane); training seeds 201..=300 pinned, targets at b1600 minimum.**
+**Status:** OPEN — filed 2026-09-27 (owner direction). The placeholder card is pulled from the arena until this lands. HOW section added 2026-09-27 (training flow: search-distill via expert iteration, chance_puct teacher — verdict AGREE after 2 rounds); T5–T9 gate T7's start. KARC adjudicated same day: refused as drop predictor, added as a T8 modelless readout arm. **T5 MEASURED 2026-09-27 (Bench 006): WIRE-MUST-WIDEN — the five-ordinal spot wire carries at most 0.30 of the champion 1-ply evaluator's ranking (maximal decoder, full v2 state sentence included; 0.5470 demeaned) — the widened wire (raw afterstate, Instinct-only sidecar) is a precondition of the serve path, and its two cross-repo halves (reflex contract sidecar field, reflex-site sender) are the next lands. T6 MEASURED (Bench 007): PASS — the serving-matched teacher beats free Reflex by Δ+977.9 lb95 +969.7 pieces (b1600, paired seeds 1..=20); T7 unblocked. T8's second modelless arm MEASURED (Bench 009): NEGATIVE — the closed-form KARC basis-ridge critic (d=202) loses to b0 at every teacher budget (377.4 vs 907.8 pieces at b1600 targets, 2/6/12); b0 stands as the modelless floor and the trained critic's bar is b0 AND that arm. T7 substrate landed (feature contract + collector + fit + eval lane); training seeds 201..=300 pinned, targets at b1600 minimum. T7 EXECUTED 2026-09-28 (Bench 010): NEGATIVE at round-1 capacity — the trained critic beats the ridge arm in both regimes but loses to b0 (554.6 vs 907.8; 427.3 vs 532.5); no mint/serve; re-open levers are tail-targeted loss or critic-guided search.**
 
 ## Why
 
@@ -197,7 +197,7 @@ land.
       training), 101..=140 (006's held-out), 1..=20 (this bench's eval),
       and 607 — **suggested T7 training set: 201..=300**; the eval/T3 set
       stays 1..=20 + 607-beside.
-- [ ] T7 — **Expert iteration.** Round-0 SFT prior from
+- [-] T7 — **Expert iteration.** Round-0 SFT prior from
       `tetris_oracle_laya_en_v3` (BLAKE3-pinned; NEVER ships — by construction
       it reproduces Reflex, which is T1's recorded negative). Targets =
       search-root Q or a truncated n-step return, sigmoid-normalised (the
@@ -205,19 +205,30 @@ land.
       noisy). 2–3 iterations. Training seeds DISJOINT from seed 607 and the T3
       seeds (a pinned seed is a memorizable piece sequence). lr=0 control arm
       separates a training gain from the fixture prior.
-      **T7 substrate LANDED 2026-09-27 (`.benchmarks/009_tetris_critic_arm`,
-      the T8 second-arm bench): the feature contract (33 raw features over
-      the widened serving input), the teacher-sample collector, the closed-form
-      KARC chebyshev-4 basis-ridge fit (d=202, `katgpt-core/karc_forecaster`),
-      and the eval lane are all in place — a trained critic swaps the readout,
-      not the pipeline. Notes that bind T7's design: (a) mine targets at
-      **b1600 minimum** (b400's Q noise caps the fit — R² 0.32 vs 0.37);
-      (b) val agreement plateaus ~0.66 across λ and budgets for the
-      closed-form linear readout — the trained critic's capacity is the
-      hypothesis under test; (c) the trained critic's bar: strictly beat b0
-      (907.8 / 532.5 pieces on 16@75 / 18@75) AND the ridge arm (377.4 /
-      169.6 at b1600 targets) on the same protocol; (d) serving G2 is
-      trivial (the 1-ply critic p50 is ~6 µs).**
+      **T7 MEASURED 2026-09-28 (`.benchmarks/010_tetris_trained_playoff`; trainer
+      `riir-train crates/riir-train-engine/examples/tetris_critic_trainer`;
+      play-off `benches/tetris_critic_goat --model`, the `LanePolicy::Mlp`
+      arm): NEGATIVE at round-1 capacity — b0 stands.** The trained MLP critic
+      (43→128→128→1, tanh hidden, f64, BCE on teacher q + 0.3×pairwise rank,
+      b1600 dataset, val agree 0.7110 — CLEARS the ridge's 0.66 plateau, the
+      linear-in-basis hypothesis confirmed; R² 0.2765; Arm A law held 0.711
+      vs control 0.378) beats the ridge arm decisively in BOTH regimes
+      (16@75: 554.6 vs 218.6, Δ+304.4 lb95 +96.5; 18@75: 427.3 vs 117.0,
+      Δ+325.9 lb95 +104.4 — also above the ridge's own b1600 cell 377.4) but
+      LOSES to b0 (907.8 / 532.5; trained-vs-b0 lb95 −609.2 / −359.7). The
+      T3 gate (beat b0 AND the ridge, both regimes) FAILS → no mint, no
+      serve wiring; round 2 stays gated. The informative finding:
+      **imitation top-1 agreement is not play strength** — agreement rose
+      0.66→0.71 while play went 218→555, still 350 short of b0; the residual
+      disagreement concentrates in catastrophic placements. A re-open needs
+      a tail-targeted loss or critic-guided search (not more top-1), or a
+      much larger fit (perfect-imitation ceiling ≈ teacher ≈ 985 > 908, so
+      the prize exists). Serve G2 measured anyway: trained p50 0.228
+      ms/decision (1.3% of the 1 ms bar; ridge 0.006 ms). T5's parity
+      contract LANDED + green: `tests/tetris_critic_parity` — the
+      `TrainedMlp::score` serve-side forward replays the trainer bit-exactly
+      (512/512 fixture rows, f64 op order, format v1 with the activation id
+      in the header; model digest `a12f4a69c167b207`).
 - [ ] T8 — **Ablation — the win must come from the trained part.** Baseline =
       1-ply rulebook-champion evaluator fed the SAME (widened) input as the
       trained head (verdict amendment). The trained critic must strictly beat

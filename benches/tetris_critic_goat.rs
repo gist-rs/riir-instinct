@@ -29,8 +29,8 @@
 
 use riir_instinct::stats::paired_upper_bound_f64;
 use riir_instinct::tetris_critic::{
-    AgreeStats, CriticModel, FeatureScale, FitAccumulator, LanePolicy, Sample, agreement_stats,
-    collect_teacher, decision_groups, lane_context, play_lane,
+    AgreeStats, CriticModel, FeatureScale, FitAccumulator, LanePolicy, Sample, TrainedMlp,
+    agreement_stats, collect_teacher, decision_groups, lane_context, play_lane,
 };
 use riir_instinct::tetris_lane::{ArmKind, CHAMPION_ID, Fixtures, GameStats, Regime, Runner};
 use serde_json::{Value, json};
@@ -50,6 +50,11 @@ struct Args {
     threads: usize,
     lambdas: Vec<f64>,
     out: PathBuf,
+    /// riir-train Issue 580 T1's trained head (format-v1 weights file).
+    /// When set, the T7 play-off runs: the Trained arm joins Reflex/B0/Ridge
+    /// and the gate becomes trained-vs-b0 AND trained-vs-ridge, both
+    /// regimes (Issue 009 T7's bar).
+    model: Option<PathBuf>,
 }
 
 fn parse_args() -> Args {
@@ -62,6 +67,7 @@ fn parse_args() -> Args {
         threads: 6,
         lambdas: vec![0.01, 0.03, 0.1, 0.3, 1.0, 3.0, 10.0],
         out: PathBuf::from(".benchmarks/009_tetris_critic_arm"),
+        model: None,
     };
     // cargo bench forwards our args but APPENDS its own target-selection
     // echo (a trailing `--bench` [+ target name]) with no `--` separator;
@@ -105,6 +111,7 @@ fn parse_args() -> Args {
                     .map(|s| s.parse().expect("lambda f64"))
                     .collect();
             }
+            "--model" => a.model = Some(PathBuf::from(val())),
             other => panic!("unknown arg {other:?}"),
         }
         i += 2;
@@ -186,18 +193,21 @@ struct Block {
     groups: Vec<(usize, usize)>,
 }
 
-/// The eval arms (T3 protocol + the T8 gate). JSON keys spell the names
-/// (`reflex_head` / `champion_b0` / `critic_ridge`).
+/// The eval arms (T3 protocol + the T8 gate + Issue 580 T7's trained
+/// play-off). JSON keys spell the names (`reflex_head` / `champion_b0` /
+/// `critic_ridge` / `critic_trained`).
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
 enum EvalArm {
     Reflex,
     B0,
     Critic,
+    Trained,
 }
 
 /// Everything one eval cell needs beyond the arm and the seed list.
 struct EvalCtx<'a> {
     model: &'a CriticModel,
+    trained: Option<&'a TrainedMlp>,
     genome: &'a katgpt_tetris::rulebook::Genome,
     fixtures: &'a Fixtures,
     regime: Regime,
@@ -224,6 +234,19 @@ fn run_cell(arm: EvalArm, ctx: &EvalCtx<'_>, seeds: &[u64]) -> Vec<(u64, GameSta
                         }
                         let seed = seeds[k];
                         let mut policy = LanePolicy::Argmax { model };
+                        let st = play_lane(ctx.genome, seed, regime, cap, &mut policy);
+                        results.lock().expect("results lock").push((seed, st));
+                    }
+                }
+                EvalArm::Trained => {
+                    let trained = ctx.trained.expect("Trained arm without --model");
+                    loop {
+                        let k = next_seed.fetch_add(1, Ordering::Relaxed);
+                        if k >= seeds.len() {
+                            break;
+                        }
+                        let seed = seeds[k];
+                        let mut policy = LanePolicy::Mlp { model: trained };
                         let st = play_lane(ctx.genome, seed, regime, cap, &mut policy);
                         results.lock().expect("results lock").push((seed, st));
                     }
@@ -421,12 +444,31 @@ fn main() {
         final_val_r2
     );
 
-    // ── Phase C: the T3 protocol eval + the T8 gate ────────────────────
+    // ── Issue 580 T7's trained head (the play-off arm) ──────────────────
+    let trained_model = a
+        .model
+        .as_ref()
+        .map(|p| TrainedMlp::from_path(p).unwrap_or_else(|e| panic!("--model {}: {e}", p.display())));
+    if let (Some(tm), Some(p)) = (&trained_model, &a.model) {
+        let raw = std::fs::read(p).expect("read --model weights");
+        let (h1, h2, tanh_hidden) = tm.dims();
+        println!(
+            "trained head loaded: {} · h {}x{} · tanh_hidden {}",
+            TrainedMlp::digest_hex(&raw),
+            h1,
+            h2,
+            tanh_hidden
+        );
+    }
+
+    // ── Phase C: the T3 protocol eval + the T8 gate (+ T7's play-off) ──
     let mut eval: Vec<Value> = Vec::new();
     let mut gate_hit: Option<Value> = None;
+    let mut t7_hits = 0usize;
     for &regime in &a.regimes {
         let ctx = EvalCtx {
             model: &model,
+            trained: trained_model.as_ref(),
             genome: &genome,
             fixtures: &fixtures,
             regime,
@@ -436,11 +478,22 @@ fn main() {
         let base = run_cell(EvalArm::Reflex, &ctx, &eval_seeds);
         let b0 = run_cell(EvalArm::B0, &ctx, &eval_seeds);
         let crit = run_cell(EvalArm::Critic, &ctx, &eval_seeds);
+        let trained = trained_model.as_ref().map(|_| run_cell(EvalArm::Trained, &ctx, &eval_seeds));
         let vs_reflex = paired_vs(&crit, &base);
         let vs_b0 = paired_vs(&crit, &b0);
         let b0_vs_reflex = paired_vs(&b0, &base);
         let crit_sum = summarize(&crit);
         let lb_crit_b0 = vs_b0["paired_lb95"].as_f64().unwrap_or(f64::NEG_INFINITY);
+        // Issue 580 T7's play-off pairs (only with --model).
+        let trained_sum = trained.as_ref().map(|r| summarize(r));
+        let vs_trained_b0 = trained.as_ref().map(|r| paired_vs(r, &b0));
+        let vs_trained_ridge = trained.as_ref().map(|r| paired_vs(r, &crit));
+        let lb_trained_b0 = vs_trained_b0
+            .as_ref()
+            .map(|v| v["paired_lb95"].as_f64().unwrap_or(f64::NEG_INFINITY));
+        let lb_trained_ridge = vs_trained_ridge
+            .as_ref()
+            .map(|v| v["paired_lb95"].as_f64().unwrap_or(f64::NEG_INFINITY));
         println!(
             "{:<14} reflex {:.1} pcs · b0 {:.1} pcs · critic {:.1} pcs · critic p50 {:.3}ms · vs reflex Δ{:+.1} lb95 {:+.1} ({}) · vs b0 Δ{:+.1} lb95 {:+.1} ({})",
             regime.to_string(),
@@ -455,6 +508,20 @@ fn main() {
             lb_crit_b0,
             vs_b0["wtl"].as_str().unwrap_or(""),
         );
+        if let (Some(sum), Some(vb0), Some(vr)) = (&trained_sum, &vs_trained_b0, &vs_trained_ridge) {
+            println!(
+                "{:>14} trained {:.1} pcs · p50 {:.3}ms · vs b0 Δ{:+.1} lb95 {:+.1} ({}) · vs ridge Δ{:+.1} lb95 {:+.1} ({})",
+                "",
+                sum["mean_pieces"].as_f64().unwrap_or(0.0),
+                sum["p50_decision_ms"].as_f64().unwrap_or(0.0),
+                vb0["paired_mean"].as_f64().unwrap_or(0.0),
+                vb0["paired_lb95"].as_f64().unwrap_or(0.0),
+                vb0["wtl"].as_str().unwrap_or(""),
+                vr["paired_mean"].as_f64().unwrap_or(0.0),
+                vr["paired_lb95"].as_f64().unwrap_or(0.0),
+                vr["wtl"].as_str().unwrap_or(""),
+            );
+        }
         // The context seed's own row (excluded from every gate column).
         let ctx_row = |res: &[(u64, GameStats)]| -> Value {
             match res.iter().find(|(s, _)| *s == CONTEXT_SEED) {
@@ -472,6 +539,13 @@ fn main() {
                 "vs_reflex": vs_reflex,
             }));
         }
+        // T7's bar: the trained head must strictly beat b0 AND the ridge,
+        // in BOTH regimes (paired lb95 > 0 each).
+        if let (Some(lb_b0), Some(lb_r)) = (lb_trained_b0, lb_trained_ridge) {
+            if lb_b0 > 0.0 && lb_r > 0.0 {
+                t7_hits += 1;
+            }
+        }
         eval.push(json!({
             "regime": regime.to_string(),
             "arms": {
@@ -482,16 +556,27 @@ fn main() {
             "critic_vs_reflex": vs_reflex,
             "critic_vs_champion_b0": vs_b0,
             "b0_vs_reflex": b0_vs_reflex,
+            "trained": trained_sum,
+            "trained_vs_champion_b0": vs_trained_b0,
+            "trained_vs_critic_ridge": vs_trained_ridge,
             "context_seed607": {
                 "reflex_head": ctx_row(&base),
                 "champion_b0": ctx_row(&b0),
                 "critic_ridge": ctx_row(&crit),
+                "critic_trained": trained.as_ref().map(|r| ctx_row(r)),
             },
         }));
     }
 
     // ── Verdict + record ────────────────────────────────────────────────
-    let verdict = if gate_hit.is_some() {
+    let t7_pass = trained_model.is_some() && t7_hits == a.regimes.len();
+    let verdict = if t7_pass {
+        "T7 GOAT — the trained critic strictly beats b0 AND the ridge arm in every regime \
+         (paired lb95 > 0): the expert-iteration gain is demonstrated; mint + serve (T4/T5) proceed."
+    } else if trained_model.is_some() {
+        "T7 BAR NOT CLEARED — the trained critic does not strictly beat b0 AND the ridge arm \
+         in every regime; b0 stands; the negative is the record (Bench 009's bar governs)."
+    } else if gate_hit.is_some() {
         "MODELLESS CANDIDATE — the closed-form critic strictly beats the b0 baseline \
          (paired lb95 > 0): the modelless path may carry the gain; the trained critic \
          (T7) must beat THIS arm, not just b0, to justify its spend."
@@ -499,7 +584,7 @@ fn main() {
         "MODELLESS ARM DOES NOT CLEAR THE T8 BAR — b0 stands; T7's trained critic must \
          beat b0 AND this arm (the closed-form readout is the arm to beat)."
     };
-    println!("T8-second-arm VERDICT: {verdict}");
+    println!("VERDICT: {verdict}");
 
     let doc = json!({
         "meta": {
@@ -520,6 +605,17 @@ fn main() {
             "regimes": a.regimes.iter().map(|r| r.to_string()).collect::<Vec<_>>(),
             "cap": a.cap,
             "threads": a.threads,
+            "trained_head": a.model.as_ref().map(|p| {
+                let raw = std::fs::read(p).expect("read --model weights");
+                json!({
+                    "path": p.display().to_string(),
+                    "blake3_16": TrainedMlp::digest_hex(&raw),
+                    "dims": trained_model.as_ref().map(|tm| {
+                        let (h1, h2, tanh_hidden) = tm.dims();
+                        json!({"h1": h1, "h2": h2, "tanh_hidden": tanh_hidden})
+                    }),
+                })
+            }),
             "selection": "λ per-sample multiplier swept; chosen by val top-1 agreement with the teacher pick, tiebreak val R², then lowest λ",
             "wall_s": started.elapsed().as_secs_f64(),
         },
@@ -542,6 +638,13 @@ fn main() {
         "eval": eval,
         "gate_hit": gate_hit,
         "gate": "T8-second-arm modelless candidate iff critic vs champion_b0 paired pieces lb95 > 0 on some regime",
+        "t7_gate": if trained_model.is_some() {
+            "T7 GOAT iff trained vs b0 AND trained vs ridge paired pieces lb95 > 0 in EVERY regime"
+        } else {
+            "--model not set: the T7 play-off did not run"
+        },
+        "t7_regime_hits": t7_hits,
+        "t7_pass": t7_pass,
         "verdict": verdict,
     });
     std::fs::create_dir_all(&a.out).expect("create out dir");

@@ -111,6 +111,12 @@ required-features = ["vessel"]
 name = "decstat_gates"
 required-features = ["decstat"]
 
+# The Issue 580 T5 parity gate (train-side scores == serve-side scores).
+# Env-driven: skips loud without TET_CRITIC_MODEL + the parity fixture.
+[[test]]
+name = "tetris_critic_parity"
+required-features = ["tetris"]
+
 # The arsenal GOAT bench (Proposal 001 T8) — whole-target gated; the
 # required-features row keeps a plain `cargo bench` from building it.
 [[bench]]

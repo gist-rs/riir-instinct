@@ -128,11 +128,21 @@ feature arm: beats reflex easily, loses to the b0 champion 1-ply at
 every teacher budget — 377.4 vs 907.8 pieces at b1600 targets, 2/6/12;
 digest byte-identical across worker counts). **b0 stands as the
 modelless floor (907.8 / 532.5 pieces); the trained critic's bar is
-b0 AND the ridge arm (`48b92d26b04f3ecb`).** T7 GO on the landed
-substrate (feature contract + teacher collector + fit + eval lane;
-targets at b1600 minimum, seeds 201..=300); the widened-wire sidecar
-(the reflex contract field + the reflex-site sender) gates the SERVE
-path (T9), not the training.** Master plan:
+b0 AND the ridge arm (`48b92d26b04f3ecb`).** **T7 EXECUTED 2026-09-28
+(Bench 010): NEGATIVE at round-1 capacity — the trained MLP critic
+(43→128→128→1 tanh, riir-train `tetris_critic_trainer`, `8dcc11b0`/
+`083ddc42`) beat the ridge arm decisively in BOTH regimes (554.6 vs
+218.6; 427.3 vs 117.0 — the strongest critic yet; val agreement 0.7110
+cleared the ridge's 0.66 linear plateau) but LOST to b0 (lb95 −609.2 /
+−359.7) → no mint, no serve wiring; round 2 stays gated. The
+transferable lesson: imitation top-1 agreement ≠ play strength (the
+residual disagreement concentrates in catastrophic placements — a
+re-open needs a tail-targeted loss or critic-guided search). Landed
+substrate: the `TrainedMlp` serve-side forward + `LanePolicy::Mlp` +
+the bench `--model` arm + `tests/tetris_critic_parity` (512/512
+bit-exact; serve G2 0.228 ms p50, moot while unserved). The
+widened-wire sidecar (the reflex contract field + the reflex-site
+sender) still gates the SERVE path (T9).** Master plan:
 [`.plans/001_instinct_lane_clippy_flow.md`](.plans/001_instinct_lane_clippy_flow.md).
 
 - **The hybrid composition** (`src/hybrid.rs`): H1 cascade (reflex

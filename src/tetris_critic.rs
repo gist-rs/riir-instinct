@@ -481,6 +481,170 @@ impl CriticModel {
     }
 }
 
+// ── The trained MLP head (Issue 580 T3/T5's serving-side forward) ─────────
+
+/// Weights-file magic (format v1, written by riir-train's
+/// `tetris_critic_trainer` example).
+const TRAINED_MAGIC: &[u8; 8] = b"TETMLP1 ";
+
+/// The trained MLP value critic — riir-train Issue 580 T1's artifact,
+/// served by this module (Issue 009 T9's forward reader).
+///
+/// Input contract (identical to the trainer's): the 33 numerics min-max
+/// scaled through the carried [`FeatureScale`] (train min/max, clip to
+/// [0,1], 2x−1) + one-hot piece (7) + one-hot mode (3) = 43 f64 inputs.
+/// Forward op order (the parity contract — `riir-train
+/// tetris_critic_trainer` replays the SAME sequence and the committed
+/// parity fixture pins it bit-exactly): `z1 = W1·x + b1 → y1 = act(z1) →
+/// z2 = W2·y1 + b2 → y2 = act(z2) → z3 = w3·y2 + b3 → score = σ(z3)`,
+/// every sum ascending its index axis, weights row-major (`W[j·n_in+i]`).
+/// The hidden activation rides the file header (v1: 0 = sigmoid, 1 =
+/// tanh — the trainer measured sigmoid-hidden crawling into the
+/// constant-marginal solution and shipped tanh; the OUTPUT stays sigmoid:
+/// the target is a probability in (0,1)).
+pub struct TrainedMlp {
+    scale: FeatureScale,
+    h1: usize,
+    h2: usize,
+    tanh_hidden: bool,
+    w1: Vec<f64>,
+    b1: Vec<f64>,
+    w2: Vec<f64>,
+    b2: Vec<f64>,
+    w3: Vec<f64>,
+    b3: f64,
+}
+
+impl TrainedMlp {
+    /// Parse the format-v1 weights file bytes.
+    pub fn from_bytes(raw: &[u8]) -> Result<Self, String> {
+        if raw.len() < 28 || raw[0..8] != *TRAINED_MAGIC {
+            return Err("bad magic".into());
+        }
+        let u32_at = |o: usize| {
+            u32::from_le_bytes(raw[o..o + 4].try_into().expect("u32")) as usize
+        };
+        let (n_num, n_pieces, n_modes) = (u32_at(8), u32_at(12), u32_at(16));
+        if (n_num, n_pieces, n_modes) != (33, 7, 3) {
+            return Err(format!("contract drift: {n_num}/{n_pieces}/{n_modes} != 33/7/3"));
+        }
+        let (h1, h2) = (u32_at(20), u32_at(24));
+        let tanh_hidden = match u32_at(28) {
+            0 => false,
+            1 => true,
+            other => return Err(format!("unknown hidden-act id {other}")),
+        };
+        let mut off = 32usize;
+        let take_f64s = |n: usize, off: &mut usize| -> Result<Vec<f64>, String> {
+            let end = *off + n * 8;
+            if end > raw.len() {
+                return Err("truncated weights".into());
+            }
+            let out = (0..n)
+                .map(|k| {
+                    f64::from_le_bytes(raw[*off + k * 8..*off + (k + 1) * 8].try_into().expect("f64"))
+                })
+                .collect();
+            *off = end;
+            Ok(out)
+        };
+        let lo: Vec<f64> = take_f64s(33, &mut off)?;
+        let hi: Vec<f64> = take_f64s(33, &mut off)?;
+        let mut scale_lo = [0.0; feat::NUM];
+        let mut scale_hi = [0.0; feat::NUM];
+        scale_lo.copy_from_slice(&lo);
+        scale_hi.copy_from_slice(&hi);
+        let w1 = take_f64s(h1 * 43, &mut off)?;
+        let b1 = take_f64s(h1, &mut off)?;
+        let w2 = take_f64s(h2 * h1, &mut off)?;
+        let b2 = take_f64s(h2, &mut off)?;
+        let w3 = take_f64s(h2, &mut off)?;
+        if off + 8 > raw.len() {
+            return Err("truncated b3".into());
+        }
+        let b3 = f64::from_le_bytes(raw[off..off + 8].try_into().expect("f64"));
+        Ok(Self {
+            scale: FeatureScale { lo: scale_lo, hi: scale_hi },
+            h1,
+            h2,
+            tanh_hidden,
+            w1,
+            b1,
+            w2,
+            b2,
+            w3,
+            b3,
+        })
+    }
+
+    /// Load from a weights-file path (the bench's `--model` arm).
+    pub fn from_path(path: &std::path::Path) -> Result<Self, String> {
+        let raw = std::fs::read(path).map_err(|e| format!("read {}: {e}", path.display()))?;
+        Self::from_bytes(&raw)
+    }
+
+    /// Scratch length one [`Self::score`] call needs (f64 slots).
+    pub fn scratch_len(&self) -> usize {
+        43 + self.h1 + self.h2
+    }
+
+    /// (h1, h2, tanh_hidden) — provenance disclosure for the record lines.
+    pub fn dims(&self) -> (usize, usize, bool) {
+        (self.h1, self.h2, self.tanh_hidden)
+    }
+
+    /// The critic score of one option (higher = better; only
+    /// within-decision comparisons are meaningful). Allocates nothing.
+    pub fn score(&self, raw: &RawOpt, scratch: &mut [f64]) -> f64 {
+        let (x, rest) = scratch.split_at_mut(43);
+        let (y1, y2) = rest.split_at_mut(self.h1);
+        debug_assert_eq!(y2.len(), self.h2);
+        for (k, dst) in x[..33].iter_mut().enumerate() {
+            *dst = self.scale.scaled(k, raw.num[k]);
+        }
+        for (p, dst) in x[33..40].iter_mut().enumerate() {
+            *dst = f64::from(raw.piece == p as u8);
+        }
+        for (m, dst) in x[40..43].iter_mut().enumerate() {
+            *dst = f64::from(raw.mode == m as u8);
+        }
+        let act = |z: f64| {
+            if self.tanh_hidden {
+                z.tanh()
+            } else {
+                1.0 / (1.0 + (-z).exp())
+            }
+        };
+        for (j, y) in y1.iter_mut().enumerate() {
+            let row = &self.w1[j * 43..(j + 1) * 43];
+            let mut z = self.b1[j];
+            for (i, &xi) in x.iter().enumerate() {
+                z += row[i] * xi;
+            }
+            *y = act(z);
+        }
+        for (k, y) in y2.iter_mut().enumerate() {
+            let row = &self.w2[k * self.h1..(k + 1) * self.h1];
+            let mut z = self.b2[k];
+            for (j, &y1j) in y1.iter().enumerate() {
+                z += row[j] * y1j;
+            }
+            *y = act(z);
+        }
+        let mut z3 = self.b3;
+        for (k, &y2k) in y2.iter().enumerate() {
+            z3 += self.w3[k] * y2k;
+        }
+        1.0 / (1.0 + (-z3).exp())
+    }
+
+    /// BLAKE3 over the whole weights file — the model identity (the
+    /// trainer's recorded `blake3_16`).
+    pub fn digest_hex(raw: &[u8]) -> String {
+        blake3::hash(raw).to_hex()[..16].to_string()
+    }
+}
+
 /// Top-1 agreement + fit-error pieces over grouped samples, against a
 /// CALLER-supplied global mean q (so a multi-block corpus aggregates by
 /// summing [`AgreeStats`]). The argmax runs over each group's OBSERVED
@@ -562,9 +726,12 @@ pub enum LanePolicy<'m> {
     /// Teacher collection: budget-`budget` chance_puct picks; every visited
     /// option's Q recorded through `sink`.
     Teacher { budget: u32, sink: &'m mut Vec<Sample> },
-    /// The fitted critic: 1-ply argmax over per-option critic scores
-    /// (first strict max — the site's argmax convention).
+    /// The fitted closed-form critic: 1-ply argmax over per-option critic
+    /// scores (first strict max — the site's argmax convention).
     Argmax { model: &'m CriticModel },
+    /// The trained MLP head (Issue 580 T3): same 1-ply argmax over the
+    /// serving-side forward. The scratch buffer is f64 (`scratch_len`).
+    Mlp { model: &'m TrainedMlp },
 }
 
 /// One seed, one game, one policy — the T6 game-loop shape (same bag, same
@@ -581,6 +748,7 @@ pub fn play_lane(genome: &Genome, seed: u64, regime: Regime, cap: usize, policy:
     let mut decision_ms: Vec<f64> = Vec::with_capacity(cap.min(4096));
     let mut decision: u32 = 0;
     let mut h_buf: Vec<f32> = vec![0.0; DESIGN_DIM];
+    let mut mlp_buf: Vec<f64> = Vec::new();
 
     while st.pieces < cap {
         let cur = next;
@@ -630,6 +798,25 @@ pub fn play_lane(genome: &Genome, seed: u64, regime: Regime, cap: usize, policy:
                     let (b1, l1) = apply(&board, &p.cells);
                     let raw = raw_opt(&board, p, cur, mode, &b1, l1);
                     let s = model.score(&raw, &mut h_buf);
+                    if s > best_s {
+                        best_s = s;
+                        best = i;
+                    }
+                }
+                best
+            }
+            LanePolicy::Mlp { model } => {
+                let mode = genome.mode_of(&board);
+                let mut best = 0usize;
+                let mut best_s = f64::NEG_INFINITY;
+                let need = model.scratch_len();
+                if mlp_buf.len() < need {
+                    mlp_buf.resize(need, 0.0);
+                }
+                for (i, p) in options.iter().enumerate() {
+                    let (b1, l1) = apply(&board, &p.cells);
+                    let raw = raw_opt(&board, p, cur, mode, &b1, l1);
+                    let s = model.score(&raw, &mut mlp_buf);
                     if s > best_s {
                         best_s = s;
                         best = i;
