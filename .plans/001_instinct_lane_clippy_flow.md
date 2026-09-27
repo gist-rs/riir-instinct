@@ -10,7 +10,7 @@ FAIL — A0 stands as the product posture, xnli keeps A0; A0 == the
 published 052 rows 6/6)**; **P3 T1–T4 ✓ 2026-09-27** (Issue 003: hybrid
 composition + the arena lane + the G0–G6 gate faces; the laya paired
 face PASS; **the reflex-site publish LANDED — the `instinct (hybrid)`
-lane is live in bench.json**); P4–P6 open; Issue 006
+lane is live in bench.json**); P4 done 2026-09-27 (HOSTED-ONLY vessel reader, gates 7/7); P5–P6 open; Issue 006
 RESOLVED 2026-09-27 — the v1 massive anomaly was the ARENA's
 position-vs-index defect (label-space picks compared against
 presented-option gold; `select_arm`'s candidate index re-indexed through
@@ -69,10 +69,21 @@ weights are bytes; mining → settle → corpus → retrain).
       (Issue 006 RESOLVED 2026-09-27: the arena's position-vs-index
       instrument defect — massive was its only possible exposure; the
       fix + the corrected frozen read are Bench 001 v2.)
-- [ ] **P4 — vessels (Issue 001).** HOSTED-ONLY reader over the
-      `reflexer-vessel` format (verify → decrypt → monotonic apply); minting
-      + lineage stay in riir-train; first minting key pinned in the same
-      change that ships the first artifact.
+- [x] **P4 — vessels (Issue 001).** DONE 2026-09-27 — `src/vessel.rs`,
+      the opt-in `vessel` cargo feature (default builds never resolve
+      the format crate): the HOSTED-ONLY reader authenticates with
+      reflexer-vessel's own exported primitives (peek, PinTable key
+      resolution, strict ed25519, blake3 commitment), applies the
+      blake3-XOF confidentiality envelope (nonce + keyed keystream),
+      decodes the RISP artifact with the existing reader, and enforces
+      the monotonic apply gate. Gate taxonomy 7/7 in
+      `tests/vessel_gates.rs` against real minted fixtures (the fixture
+      minter lays out the documented 68-byte header itself; the format
+      crate's HOSTED-ONLY writer is deliberately private).
+      `encrypt_payload` is the published minting contract for
+      riir-train. Minting and lineage remain in riir-train; the first
+      minting key gets pinned in the same change that ships the first
+      artifact.
 - [ ] **P5 — hosted deploy (Issue 002).** `deploy.yaml` for riir-deployer:
       cf-container target (Proposal 014 §hosted plane (b)), stage → verify →
       rolling flip, explicit rollback; secrets via `wrangler secret put` only.

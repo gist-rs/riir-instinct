@@ -9,13 +9,24 @@ blake3 = "1"
 serde_json = "1"
 katgpt-core = { path = "../katgpt-rs/crates/katgpt-core", default-features = false, features = ["best_belief", "sigmoid_calibration"] }
 riir-reflex = { path = "../riir-reflex", default-features = false, features = ["modelless", "nb_scope"] }
-
-[dev-dependencies]
+reflexer-vessel = { path = "../riir-reflexer/crates/reflexer-vessel", optional = true }
+ed25519-dalek = { version = "2", optional = true }
 
 [features]
 default = []
+# The HOSTED-ONLY vessel reader (Plan 001 P4 / Issue 001): the format
+# crate + its ed25519 signature stack. The arena/specialist lanes never
+# resolve it.
+vessel = ["dep:reflexer-vessel", "dep:ed25519-dalek"]
 # The arena's laya paired face (G2): forwards reflex's laya-riir — the
 # metal/tokenizers tree compiles only under this feature.
 arena-laya = ["riir-reflex/laya-riir"]
 
 [workspace]
+
+# The vessel gate taxonomy — whole-file gated, so the required-features
+# row is what keeps a plain `cargo test` from running a green zero
+# (the repo-birth gate discipline).
+[[test]]
+name = "vessel_gates"
+required-features = ["vessel"]

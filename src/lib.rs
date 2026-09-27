@@ -13,6 +13,8 @@
 pub mod specialist;
 pub mod hybrid;
 pub mod stats;
+#[cfg(feature = "vessel")]
+pub mod vessel;
 
 pub use hybrid::{
     A0Answer, Cascade, FusedPick, HybridDecision, HybridLane, MAX_TOP_K, PriorFusion,
@@ -23,3 +25,5 @@ pub use stats::{
     ArmStat, PairedDiff, delta_suite, paired_upper_bound, paired_upper_bound_f64, pareto_rank0,
     select_arm, wilson_bound, wilson_lb,
 };
+#[cfg(feature = "vessel")]
+pub use vessel::{AppliedState, LoadedVessel, VesselLoadError, load_hosted, load_hosted_bytes};

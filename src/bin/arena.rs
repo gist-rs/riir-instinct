@@ -1214,6 +1214,7 @@ fn pin_a0_identity(datasets_dir: &Path, runs: &[SuiteRun]) -> Result<(), String>
         head_select: true,
         nb_select: true,
         clm: false,
+        paw_local: false,
     };
     let (out, errors) = riir_reflex::harness::runner::run(&opts)?;
     if !errors.is_empty() {

@@ -44,9 +44,16 @@ shaped like `../riir-clippy` (private product engine over public katgpt-rs):
 | riir-reflex | `../riir-reflex` | lib dep, features `modelless,nb_scope`; consumed: `embed::hashed_tokens_into` (the ONE tokenizer law — the specialist's training-side `events_into` is the same bytes) + the `nb_scope` tables for the hybrid composition + `harness::{suites, metrics, runner::seat}` (the seat — byte-identical questions + the deployed posture, Issue 003 T3) — measured at P3 T1/T3. **Never a dep on the harness's lane runners** (the arena calls `run()` only for the A0 drift pin) |
 
 Next planned rows (land WITH their first consumer, each measured):
-`riir-infer` (model forward loaders, HOSTED-ONLY lane), `reflexer-vessel`
-(vessel format reader). **Never riir-ai** (this repo sits beside riir-ai,
-not downstream of it). No game crates, no Python, no candle.
+`riir-infer` (model forward loaders, HOSTED-ONLY lane). **Never riir-ai**
+(this repo sits beside riir-ai, not downstream of it). No game crates, no
+Python, no candle.
+
+## Landed rows
+
+| Crate | Location | Condition |
+|---|---|---|
+| reflexer-vessel | `../riir-reflexer/crates/reflexer-vessel` | default features; the vessel FORMAT crate — `peek`/`PinTable`/`commitment_of` only (the reader assembles authenticity from the format crate's own primitives; its `decode` refuses HOSTED-ONLY by its own law, which is exactly why the hosted reader lives here) — measured at P4 T1–T5 (2026-09-27, `tests/vessel_gates.rs`, 7 arms) |
+| ed25519-dalek | crates.io, default features (the format crate pins the same line) | the signature/seal primitive behind reflexer-vessel's own ed25519-STRICT verification + the gate fixtures' minter; no other crypto dep (confidentiality is BLAKE3-XOF keystream, already in-tree) — measured at P4 (2026-09-27) |
 
 ## Standing invariants
 
