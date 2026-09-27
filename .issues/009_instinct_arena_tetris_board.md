@@ -55,7 +55,21 @@ modelless-only board does not carry the gain.
   mean backup) over the rulebook-champion evaluator (`68cae9d382014662` — the
   Bench-891/892 champion riir-reflexer's forward-freeze law already pins) on the
   engine parity-checked against the arena's seed-607 walk (60/60 identical
-  picks).
+  picks). Budget: Bench 205's budget 200 / c_puct 2.5 are GO settings and do
+  NOT transfer — pin from the Bench-892 Tetris regimes
+  (`tetris_08_puct_goat`: budgets 100/400/1600) and re-verify the teacher
+  margin at T6.
+- **History/sequence model: NONE, by construction.** The 7-bag is a uniform
+  random permutation — the ONLY structure in drop history is the current bag's
+  remaining composition, and `chance_puct` already consumes exactly that
+  (samples the remaining-bag distribution at its chance nodes). A learned
+  higher-order predictor over recent drops (LEO-style sequence memory,
+  `QuestLeoScorer` transplant, …) would be fitting the RNG stream — the
+  memorize-the-fixture class; Proposal 042's Phase 0 also closed UNMEASURABLE.
+  If T5's widened wire carries the bag state or a preview, consume it DIRECTLY
+  — exact enumeration of a known distribution beats any predictor of it. The
+  head-to-head ("duel") instrument IS in the design already: paired per-seed
+  win/tie/loss + sign test for selection, never memory.
 - **Serve:** ONE 1-ply afterstate value critic, argmax over the offered options.
   A placement is deterministic, so V(afterstate) IS the per-option critic
   Q(s,a) — Issue 005's value-head category rule holds. Policy+V at 1-ply is
@@ -63,6 +77,13 @@ modelless-only board does not carry the gain.
   student-vs-teacher gap. If 1-ply falls short the next rung is the serve-time
   expectation over the 7 next pieces (~240 head evals, <1 ms) — NEVER
   serve-time PUCT.
+- **GOAT posture:** promotion gate = T3 (strict paired-seed beat) with T8 as
+  the attribution arm; G2/G4 are inherited from chance_puct's own gate
+  (µs latency, alloc-free on a heap-free game) and must be RE-ASSERTED on the
+  Instinct serving path at T9. G1 calibration is NOT binding for pure argmax
+  play with no confidence output — but if this lane ever serves confidence or
+  abstention, the Report-the-Floor rule binds (beat the conformal-naive
+  floor, katgpt-rs Plan 340; the repo AGENTS G1 wording).
 - **Labels:** record as search-distill. Issue 005's H3 (serve-time PUCT over
   chains) stays open and unmeasured — this is NOT an H3 landing.
 - **Elo:** readout/companion only. For a single-player game the direct
