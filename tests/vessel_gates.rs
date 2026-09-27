@@ -171,6 +171,55 @@ fn a_specialist_sized_vessel_loads_whole() {
     assert_eq!(m.labels.len(), 77);
 }
 
+/// The minter's copied constant is pinned equal to the format crate's —
+/// reflexer-vessel is not in riir-train's dep allowlist, so the minter
+/// (borrow-not-dep) copies `MAX_HOSTED_PAYLOAD`; without this pin the
+/// two could drift and the minter would produce vessels the reader
+/// refuses, discovered only at boot. Source-text pin: reads the minter's
+/// source for its const declaration. SKIPs loud on a bare clone without
+/// the sibling checkout.
+#[test]
+fn minter_hosted_cap_matches_the_format_crate() {
+    let minter_src = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../riir-train/crates/riir-train-engine/src/bin/vessel_mint.rs");
+    let Ok(src) = std::fs::read_to_string(&minter_src) else {
+        eprintln!(
+            "SKIP loud: the riir-train sibling is not checked out beside this repo — \
+             the minter cap pin needs its source"
+        );
+        return;
+    };
+    // The const line: `const MAX_HOSTED_PAYLOAD: usize = 1 << 24;`
+    let found = src
+        .lines()
+        .find_map(|l| {
+            let l = l.trim();
+            l.starts_with("const MAX_HOSTED_PAYLOAD")
+                .then(|| l.split('=').nth(1).and_then(|v| {
+                    let v = v.trim().trim_end_matches(';').trim();
+                    if v == "1 << 24" {
+                        Some(1 << 24)
+                    } else {
+                        v.parse::<usize>().ok()
+                    }
+                }))
+                .flatten()
+        })
+        .unwrap_or_else(|| {
+            panic!(
+                "the minter's MAX_HOSTED_PAYLOAD const line vanished — \
+                 the wire contract drifted ({})",
+                minter_src.display()
+            )
+        });
+    assert_eq!(
+        found,
+        reflexer_vessel::MAX_HOSTED_PAYLOAD,
+        "the minter's hosted cap drifted from the format crate — \
+         a minted vessel and the reader would disagree at boot"
+    );
+}
+
 #[test]
 fn a_good_hosted_vessel_loads_whole() {
     let mint = Mint::new(1);
