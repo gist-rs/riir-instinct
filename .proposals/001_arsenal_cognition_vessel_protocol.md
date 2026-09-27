@@ -1,6 +1,6 @@
 # Proposal 001 — the `arsenal` protocol: cognition-vessel selection, serving laws, and the capability axis
 
-**Status:** PROPOSED 2026-09-27 — name `arsenal` OWNER-RATIFIED 2026-09-27; substrate census complete (substrate-first Mode 1, 2026-09-27, two-agent sweep); Claude verdict AGREE (round 3, 2026-09-27). Companion: `../riir-ai/.proposals/048_limelight_cognition_budget.md` (the depth axis; canonical layer-authority map + basic-instinct gate live there). Highwater: `.proposals/.highwater` measured **000** (empty dir) at allocation; bumped to 001 here.
+**Status:** PROPOSED 2026-09-27 — name `arsenal` OWNER-RATIFIED 2026-09-27; substrate census complete (substrate-first Mode 1, 2026-09-27, two-agent sweep); Claude verdict AGREE (round 3, 2026-09-27). **T1+T2 LANDED 2026-09-27** (riir-instinct): `ArsenalManifest` (`src/arsenal.rs`) + the in-repo default `arsenal.toml` (the six Bench-002 rows verbatim + winner digests) + boot validation (digest drift / unknown arm / class-vs-reader-capability / pin resolution — all loud, naming row+field); `serving_posture()` + `REGISTERED_SUITES` DELETED — the manifest is the only selection surface; parity re-pin = `tests/serve_gates.rs` (manifest BLAKE3 byte pin + row-vs-Bench-002 pin + deployment validation gate); frozen-predictions parity gate PASS unchanged; clippy `-D warnings` clean at default + all-features. Companion: `../riir-ai/.proposals/048_limelight_cognition_budget.md` (the depth axis; canonical layer-authority map + basic-instinct gate live there). Highwater: `.proposals/.highwater` measured **000** (empty dir) at allocation; bumped to 001 here.
 
 ## Why now
 
@@ -59,8 +59,8 @@ L2 looks up · **L3 routes** (ns–µs, never loads) · **L4 swaps** (POLICY + t
 
 ## Plan
 
-- [ ] T1 `ArsenalManifest` (TOML) + boot validation + loud drift refusals (riir-instinct; adds the `toml` dep — NOT in Cargo.toml today, which carries only serde/serde_json — so the BOUNDARY.md allowlist row lands in the same commit, beside the "Owns: selection protocol" row)
-- [ ] T2 posture→manifest migration + parity re-pin (serving posture becomes data)
+- [x] T1 `ArsenalManifest` (TOML) + boot validation + loud drift refusals (riir-instinct; adds the `toml` dep — NOT in Cargo.toml today, which carries only serde/serde_json — so the BOUNDARY.md allowlist row lands in the same commit, beside the "Owns: selection protocol" row)
+- [x] T2 posture→manifest migration + parity re-pin (serving posture becomes data)
 - [ ] T3 capability features (reflexer/instinct/reflex)
 - [ ] T4 heads→vessels extraction in riir-reflex (PUBLIC-RELEASE class, lazy load)
 - [ ] T5 budget legs: lazy / wire-triggered eviction (L5-curator release message — no AOI server-side) / Vendi hoarding gate

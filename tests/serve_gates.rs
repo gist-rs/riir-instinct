@@ -1,15 +1,19 @@
-//! The hosted serving gates (Plan 001 P5 / Issue 002).
+//! The hosted serving gates (Plan 001 P5 / Issue 002; the arsenal
+//! re-pin is Proposal 001 T2, law A6).
 //!
-//! Three faces:
+//! Four faces:
 //!
-//! 1. **The posture table pin** — the serving arms are the Bench-002 GOAT
-//!    verdicts, byte-matched to the committed record. Runs everywhere.
-//! 2. **The parity gate** — the served decision for committed test cases
+//! 1. **The manifest byte pin** — the embedded `arsenal.toml` is pinned
+//!    byte-for-byte (BLAKE3): a TOML edit reds exactly like a code edit
+//!    does (law A6 — the posture is DATA now, so the pin moved with it).
+//! 2. **The posture pin** — the manifest's rows ARE the Bench-002 GOAT
+//!    verdicts, arm-by-arm against the frozen record. Runs everywhere.
+//! 3. **The parity gate** — the served decision for committed test cases
 //!    IS the frozen `predictions.json` pick for the same case (the serve
 //!    path is the arena path, never a re-derivation). SKIPs loud when the
 //!    t20k datasets / winner artifacts are absent (a bare clone) — a skip
 //!    is a deferral, never a green.
-//! 3. **The HTTP edge gates** — healthz shape, decide shapes, refusal
+//! 4. **The HTTP edge gates** — healthz shape, decide shapes, refusal
 //!    codes, CORS. The dataless refusals (unknown suite, bad JSON,
 //!    oversized body, CORS) run everywhere; the ready-lane shapes ride
 //!    the data gate.
@@ -19,7 +23,8 @@ use std::net::TcpStream;
 use std::path::PathBuf;
 use std::process::{Child, Command, Stdio};
 
-use riir_instinct::server::{serving_posture, Arm, REGISTERED_SUITES};
+use riir_instinct::arsenal::{ArsenalManifest, ValidateCtx};
+use riir_instinct::server::{Arm, AnySuiteServer};
 
 fn repo_root() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR"))
@@ -37,10 +42,35 @@ fn predictions_path() -> PathBuf {
     repo_root().join(".benchmarks/002_hybrid_052_protocol/predictions.json")
 }
 
-// ── face 1: the posture table pin ─────────────────────────────────────
+fn embedded_manifest() -> ArsenalManifest {
+    ArsenalManifest::embedded_default().expect("the embedded arsenal manifest parses")
+}
+
+// ── face 1: the manifest byte pin (law A6) ─────────────────────────────
+
+/// BLAKE3 over the embedded `arsenal.toml` bytes. Any edit to the
+/// manifest — a posture tweak, a digest bump, a reordered row — changes
+/// the digest and MUST re-pin here in the same change (with the GOAT
+/// re-run + frozen-predictions parity update law A6 demands). This is
+/// the TOML analogue of the compile-time posture table it replaced.
+const PINNED_MANIFEST_DIGEST: &str =
+    "blake3:de687282a21e3f7a1c5ccbc100882609c9700612e2e55ec911808e0693b8d41f";
 
 #[test]
-fn serving_posture_table_is_the_bench_002_goat_verdict() {
+fn arsenal_manifest_bytes_are_pinned_byte_for_byte() {
+    let actual = format!("blake3:{}", ArsenalManifest::embedded_manifest_digest());
+    assert_eq!(
+        actual, PINNED_MANIFEST_DIGEST,
+        "the embedded arsenal.toml changed — re-pin PINNED_MANIFEST_DIGEST and carry the \
+         GOAT re-run + frozen-predictions parity update law A6 demands"
+    );
+}
+
+// ── face 2: the posture pin (the Bench-002 verdict, now as DATA) ─────
+
+#[test]
+fn manifest_posture_rows_are_the_bench_002_goat_verdict() {
+    let m = embedded_manifest();
     let expected: [(&str, Arm, &str); 6] = [
         (
             "ag_news",
@@ -59,16 +89,38 @@ fn serving_posture_table_is_the_bench_002_goat_verdict() {
         ("banking77", Arm::A0, "A0"),
         ("xnli_en", Arm::A0, "A0"),
     ];
+    assert_eq!(m.rows().len(), 6, "the manifest carries exactly the six rows");
     for (suite, arm, name) in expected {
+        let row = m
+            .row(suite)
+            .unwrap_or_else(|| panic!("{suite}: missing from the arsenal manifest"));
+        let parsed = row
+            .to_arm()
+            .unwrap_or_else(|e| panic!("{suite}: posture refused: {e}"));
         assert_eq!(
-            serving_posture(suite),
-            Some(arm),
-            "{suite}: the serving posture drifted from the Bench-002 verdict"
+            parsed, arm,
+            "{suite}: the manifest posture drifted from the Bench-002 verdict"
         );
-        assert_eq!(serving_posture(suite).unwrap().name(), name);
+        assert_eq!(parsed.name(), name, "{suite}: arm display name drifted");
     }
-    assert_eq!(serving_posture("prompt_injections"), None);
-    assert_eq!(REGISTERED_SUITES.len(), 6);
+    assert!(
+        m.row("prompt_injections").is_none(),
+        "a suite with no specialist gained a row"
+    );
+}
+
+/// The deployment half of the manifest pin: validation against the real
+/// artifact dirs. With the winner files present, this is the digest-drift
+/// gate (a re-minted winner reds HERE, naming the row); without them the
+/// file checks skip (the dataless posture) and the schema checks still
+/// run — a skip is a deferral, never a green.
+#[test]
+fn arsenal_manifest_validates_against_the_deployment_dirs() {
+    let m = embedded_manifest();
+    let winners = winners_dir();
+    let ctx = ValidateCtx::raw(&winners);
+    m.validate(&ctx)
+        .unwrap_or_else(|e| panic!("arsenal validation refused: {e}"));
 }
 
 // ── face 2: the parity gate (data-gated, skip loud) ──────────────────
@@ -83,9 +135,10 @@ fn data_present() -> bool {
 fn boot_suite(suite: &'static str) -> Result<riir_instinct::server::AnySuiteServer, String> {
     let datasets = datasets_dir();
     let winners = winners_dir();
+    let manifest = embedded_manifest();
     std::thread::Builder::new()
         .stack_size(64 * 1024 * 1024)
-        .spawn(move || riir_instinct::server::AnySuiteServer::boot(suite, &datasets, &winners))
+        .spawn(move || AnySuiteServer::boot(suite, &datasets, &winners, &manifest))
         .expect("spawn boot thread")
         .join()
         .expect("boot thread panicked")

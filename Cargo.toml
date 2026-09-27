@@ -16,6 +16,10 @@ serde_json = { version = "1", features = ["preserve_order"] }
 # via katgpt-core's non-optional serde — no new package; edge-only by law,
 # the reflex serve posture).
 serde = { version = "1", features = ["derive"] }
+# The arsenal manifest (Proposal 001 T1): TOML parse of `arsenal.toml` —
+# the ONE selection surface for the hosted serving lane (law A5).
+# parse-only: the manifest is read, never written, by this crate.
+toml = { version = "0.8", default-features = false, features = ["parse"] }
 katgpt-core = { path = "../katgpt-rs/crates/katgpt-core", default-features = false, features = ["best_belief", "sigmoid_calibration"] }
 riir-reflex = { path = "../riir-reflex", default-features = false, features = ["modelless", "nb_scope"] }
 reflexer-vessel = { path = "../riir-reflexer/crates/reflexer-vessel", optional = true }

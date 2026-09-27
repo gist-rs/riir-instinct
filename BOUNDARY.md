@@ -23,6 +23,12 @@ shaped like `../riir-clippy` (private product engine over public katgpt-rs):
   refuses): verify → decrypt → apply, whole-snapshot, monotonic
 - the instinct arena rows (harness lane beside modelless / laya) and the
   hosted-lane deploy manifest (`deploy.yaml`, via `../riir-deployer`)
+- the **arsenal selection protocol** (Proposal 001 T1/T2): the
+  `arsenal.toml` manifest — the ONE suite → artifact digest → class →
+  serving posture → pins → budget surface for the hosted serving lane,
+  digest-validated at boot (drift fails loud); the hard-coded posture
+  match table and suite const it replaced are deleted, and the embedded
+  default is pinned byte-for-byte by `tests/serve_gates.rs` (law A6)
 
 ## Does not own
 
@@ -57,6 +63,7 @@ Python, no candle.
 |---|---|---|
 | ed25519-dalek | crates.io, default features (the format crate pins the same line) | the signature/seal primitive behind reflexer-vessel's own ed25519-STRICT verification + the gate fixtures' minter; no other crypto dep (confidentiality is BLAKE3-XOF keystream, already in-tree) — measured at P4 (2026-09-27) |
 | papaya | crates.io | the decstat sink's lock-free counters (version-matched to the riir-auth pin already in this graph); opt-in behind the same `decstat` feature — measured 2026-09-27 |
+| toml | crates.io, `default-features = false`, feature `parse` | the arsenal manifest parser (Proposal 001 T1): schema types + boot validation in `src/arsenal.rs`; parse-only (the manifest is read, never written, by this crate); non-optional (the serving lane always resolves its selection surface) — measured 2026-09-27 |
 
 ## Standing invariants
 

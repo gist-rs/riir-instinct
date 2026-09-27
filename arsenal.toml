@@ -1,0 +1,88 @@
+# arsenal.toml — the ONE selection surface for the hosted serving lane
+# (Proposal 001 T1/T2, law A5): suite → artifact digest → class → serving
+# posture → pins → budget. Digest-validated at boot; drift fails loud and
+# names the offending row + field. The embedded copy of THIS file is the
+# DEFAULT host posture — the frozen Bench-002 GOAT verdicts in raw-winner
+# mode — pinned byte-for-byte by `tests/serve_gates.rs` (law A6): a TOML
+# edit reds exactly like a code edit does. A deployment overrides it with
+# `INSTINCT_ARSENAL=<path>` or `--arsenal <path>` (one manifest per
+# HOST/deployment — a vessel-mode host ships its own rows with the
+# vessels' digests; the embedded digests below are the raw winner files').
+#
+# ── row fields ─────────────────────────────────────────────────────────
+# suite          the served suite (the reflex harness seat name; unique)
+# digest         "blake3:<64 hex>" of the artifact file this row loads —
+#                `<suite>_winner_v1.bin` in raw mode, the minted vessel
+#                file in vessel mode; boot refuses drift, loud
+# class          "hosted_only" — the hosted lane's only class (weights
+#                never leave controlled hardware; a "public_release" row
+#                is refused loud here — the moat law)
+# posture        the serving arm WITH its params (never a bare string):
+#                A0 | A1 | { arm="H1", top_k } | { arm="H2", beta, n_min,
+#                tau_n }. An unknown arm refuses at boot, NEVER defaulted
+#                (law A6); params must match the arm exactly.
+# pin_keys       reflexer-vessel PinTable key ids this row accepts (u32).
+#                Vessel mode requires ≥1 per row, every id must resolve
+#                against the operator pins, and the vessel's mint key-id
+#                must be one of them. Raw mode validates structure only.
+# budget.load    "eager" (boot loads the lane — the posture below) |
+#                "lazy" (T5 lands the lazy/budgeted loader)
+# budget.max_payload_mb   artifact size ceiling, MiB (the hosted cap is 16)
+# file           OPTIONAL artifact filename override (bare filename, no
+#                path separators). Default = the established convention:
+#                `<suite>_winner_v1.bin` raw / `<suite>_v1.vessel` vessel.
+#                No NEW convention is created by this manifest.
+#
+# The six rows are the six specialist suites — reflex's other dataset
+# suites have no specialist and no seat posture, so they get no row.
+
+[[vessel]]
+suite   = "ag_news"
+digest  = "blake3:ec327ac30250205b2b26c6b00976f9fb50bdf44a9bcbb1d87e35c6ca06f5cf33"
+class   = "hosted_only"
+posture = { arm = "H2", beta = 0.25, n_min = 2.0, tau_n = 2.0 }   # G5 PASS — the registered H2 beat both controls
+pin_keys = []
+budget  = { load = "eager", max_payload_mb = 16 }
+
+[[vessel]]
+suite   = "emotion"
+digest  = "blake3:95c9d7f3314ec774d6549f1ff5db95e79146c4201d354b969e37f0d99ffe46eb"
+class   = "hosted_only"
+posture = { arm = "A1" }                                          # G1+G3 PASS
+pin_keys = []
+budget  = { load = "eager", max_payload_mb = 16 }
+
+[[vessel]]
+suite   = "sst5"
+digest  = "blake3:430558d6210737a267249500e0c3df4a0534d344752a1b4dae9a0e6952d2c001"
+class   = "hosted_only"
+posture = { arm = "A1" }                                          # G1+G3 PASS
+pin_keys = []
+budget  = { load = "eager", max_payload_mb = 16 }
+
+[[vessel]]
+suite   = "massive_intent_en"
+digest  = "blake3:7bc3ee385f81abc0f2a91e47f6dca08db37f9fb6cee6d48121b80e3f11378556"
+class   = "hosted_only"
+posture = { arm = "H2", beta = 1.0, n_min = 2.0, tau_n = 8.0 }    # G1+G3 PASS — the honest stratified +4.7 pt over A0
+pin_keys = []
+budget  = { load = "eager", max_payload_mb = 16 }
+
+# G3 FAIL (Bench 002): the instrument's banking77 H1 registration pays up
+# to ~4.7 pt on reflex-won cases at 95% confidence — it stays a published
+# measurement, and A0 is the product posture. Same for xnli_en.
+[[vessel]]
+suite   = "banking77"
+digest  = "blake3:611cf0d22e9d45a3f082994994c783e357b96514255825ad8ae95a9328612d94"
+class   = "hosted_only"
+posture = { arm = "A0" }
+pin_keys = []
+budget  = { load = "eager", max_payload_mb = 16 }
+
+[[vessel]]
+suite   = "xnli_en"
+digest  = "blake3:76bbedfb14031771ea6296f5d5914e08f19281d0c8cf6c6eb3754ac394b76827"
+class   = "hosted_only"
+posture = { arm = "A0" }
+pin_keys = []
+budget  = { load = "eager", max_payload_mb = 16 }

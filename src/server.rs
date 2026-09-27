@@ -7,13 +7,16 @@
 //!
 //! Two laws hold by construction here:
 //!
-//! 1. **The serving posture table is the GOAT product verdict** (Bench
+//! 1. **The serving posture is the GOAT product verdict** (Bench
 //!    002, `.benchmarks/002_hybrid_052_protocol/`), not the registration
 //!    instrument's pick. They disagree exactly once: banking77's cal front
 //!    registered H1, and G3 FAILED it (the hybrid pays up to ~4.7 pt on
 //!    reflex-won cases at 95% confidence) — so the instrument row stays a
 //!    published measurement (the site lane carries it with its ECE) while
-//!    A0 is what serves. Promotion is GOAT-gated; demote the loser.
+//!    A0 is what serves. Promotion is GOAT-gated; demote the loser. The
+//!    verdict rows live in the arsenal manifest (Proposal 001, law A5 —
+//!    the ONE selection surface); the embedded default is pinned
+//!    byte-for-byte by the gates (law A6).
 //! 2. **The served answer must be the measured answer.** The parity gate
 //!    (`tests/serve_gates.rs`) replays committed test cases through
 //!    `decide()` and asserts identity with the frozen `predictions.json`
@@ -30,6 +33,7 @@ use riir_reflex::harness::runner::seat::{
 use riir_reflex::harness::suites::{GoldAnswer, QKind, SuiteCase, SuiteQuestion};
 use riir_reflex::nb_scope::NbView;
 
+use crate::arsenal::ArsenalManifest;
 use crate::hybrid::{
     A0Answer, Cascade, HybridLane, MAX_TOP_K, PriorFusion, SpecialistLane, prior_fusion_pick,
 };
@@ -38,18 +42,6 @@ use crate::specialist::{bag_into, decode_artifact};
 /// The cascade width the lane joins with when the serving arm is not H1
 /// (the arena's default `top_k`; H1 arms join at their own width).
 const DEFAULT_TOP_K: usize = 8;
-
-/// The suites the hosted lane serves — the six specialist suites (the
-/// arena's GOAT set; reflex's other dataset suites have no specialist and
-/// no seat posture registered here).
-pub const REGISTERED_SUITES: [&str; 6] = [
-    "ag_news",
-    "emotion",
-    "sst5",
-    "massive_intent_en",
-    "banking77",
-    "xnli_en",
-];
 
 /// The per-suite serving arm — the GOAT product verdict (module doc, law 1).
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -94,33 +86,6 @@ impl Arm {
             Arm::H1 { top_k } => *top_k,
             _ => DEFAULT_TOP_K,
         }
-    }
-}
-
-/// The serving posture table (module doc, law 1). `None` = not a served
-/// suite.
-#[must_use]
-pub fn serving_posture(suite: &str) -> Option<Arm> {
-    match suite {
-        // G5 PASS — the registered H2 beat both controls on the gap suite.
-        "ag_news" => Some(Arm::H2 {
-            beta: 0.25,
-            n_min: 2.0,
-            tau_n: 2.0,
-        }),
-        // A1 — G1+G3 PASS.
-        "emotion" | "sst5" => Some(Arm::A1),
-        // G1+G3 PASS — the honest stratified +4.7 pt over A0.
-        "massive_intent_en" => Some(Arm::H2 {
-            beta: 1.0,
-            n_min: 2.0,
-            tau_n: 8.0,
-        }),
-        // G3 FAIL (Bench 002): the registered H1 pays up to ~4.7 pt on
-        // reflex-won cases at 95% confidence — A0 stands as the product
-        // posture; the H1 row stays a published measurement.
-        "banking77" | "xnli_en" => Some(Arm::A0),
-        _ => None,
     }
 }
 
@@ -239,14 +204,20 @@ pub struct SuiteServer<const N: usize> {
 impl<const N: usize> SuiteServer<N> {
     /// Boot one suite from a PREPARED seat, loading the specialist from
     /// the raw sealed winner artifact (the pre-vessel posture).
-    pub fn from_seat(suite: &'static str, seat: Seat, winners_dir: &Path) -> Result<Self, String> {
-        let winner_path = winners_dir.join(format!("{suite}_winner_v1.bin"));
-        let winner_bytes = std::fs::read(&winner_path)
+    /// `winner_path` comes from the arsenal row (law A5 — the manifest
+    /// is the selection surface); `arm` is the row's parsed posture.
+    pub fn from_seat(
+        suite: &'static str,
+        seat: Seat,
+        winner_path: &Path,
+        arm: Arm,
+    ) -> Result<Self, String> {
+        let winner_bytes = std::fs::read(winner_path)
             .map_err(|e| format!("read {}: {e}", winner_path.display()))?;
         let winner_blake3 = blake3::hash(&winner_bytes).to_hex()[..16].to_string();
         let spec = decode_artifact(&winner_bytes)
             .map_err(|e| format!("{}: {e}", winner_path.display()))?;
-        Self::from_parts(suite, seat, spec, winner_blake3, WeightSource::RawWinner)
+        Self::from_parts(suite, seat, spec, winner_blake3, WeightSource::RawWinner, arm)
     }
 
     /// Boot one suite from a minted HOSTED-ONLY vessel (the P4 reader:
@@ -263,6 +234,7 @@ impl<const N: usize> SuiteServer<N> {
         pins: &reflexer_vessel::PinTable,
         key: &[u8; 32],
         applied: &crate::vessel::AppliedState,
+        arm: Arm,
     ) -> Result<(Self, VesselFacts), String> {
         let loaded = crate::vessel::load_hosted(vessel_path, pins, key, applied)
             .map_err(|e| format!("{}: {e}", vessel_path.display()))?;
@@ -272,7 +244,14 @@ impl<const N: usize> SuiteServer<N> {
             parent_commitment: loaded.parent_commitment,
         };
         let commitment16 = facts.commitment_hex[..16].to_string();
-        let server = Self::from_parts(suite, seat, loaded.specialist, commitment16, WeightSource::Vessel)?;
+        let server = Self::from_parts(
+            suite,
+            seat,
+            loaded.specialist,
+            commitment16,
+            WeightSource::Vessel,
+            arm,
+        )?;
         Ok((server, facts))
     }
 
@@ -286,9 +265,8 @@ impl<const N: usize> SuiteServer<N> {
         spec: crate::specialist::Specialist,
         weight_id: String,
         source: WeightSource,
+        arm: Arm,
     ) -> Result<Self, String> {
-        let arm =
-            serving_posture(suite).ok_or_else(|| format!("suite {suite} has no serving posture"))?;
         if seat
             .suite
             .cases
@@ -671,21 +649,27 @@ pub enum AnySuiteServer {
 }
 
 impl AnySuiteServer {
+    /// The manifest row's parsed arm for one suite — the shared front of
+    /// every boot path (law A5: the manifest is the only selection
+    /// surface; there is no fallback table behind it).
+    fn posture_of(manifest: &ArsenalManifest, suite: &str) -> Result<Arm, String> {
+        let row = manifest
+            .row(suite)
+            .ok_or_else(|| format!("suite {suite} is not in the arsenal manifest"))?;
+        row.to_arm()
+    }
+
     /// Prepare the seat, then dispatch on its label count (the arena's
     /// `run_suite` dispatch table).
     pub fn boot(
         suite: &'static str,
         datasets_dir: &Path,
         winners_dir: &Path,
+        manifest: &ArsenalManifest,
     ) -> Result<Self, String> {
-        if !REGISTERED_SUITES.contains(&suite) {
-            return Err(format!("suite {suite} is not a registered serving suite"));
-        }
-        if serving_posture(suite).is_none() {
-            return Err(format!("suite {suite} has no serving posture"));
-        }
+        let arm = Self::posture_of(manifest, suite)?;
         let seat = prepare_seat(suite, datasets_dir)?;
-        Self::boot_from_seat(suite, seat, winners_dir)
+        Self::boot_from_seat_arm(suite, seat, winners_dir, manifest, arm)
     }
 
     /// The arity dispatch over an ALREADY-PREPARED seat (the serve
@@ -694,63 +678,70 @@ impl AnySuiteServer {
         suite: &'static str,
         seat: Seat,
         winners_dir: &Path,
+        manifest: &ArsenalManifest,
     ) -> Result<Self, String> {
-        if !REGISTERED_SUITES.contains(&suite) {
-            return Err(format!("suite {suite} is not a registered serving suite"));
-        }
-        if serving_posture(suite).is_none() {
-            return Err(format!("suite {suite} has no serving posture"));
+        let arm = Self::posture_of(manifest, suite)?;
+        Self::boot_from_seat_arm(suite, seat, winners_dir, manifest, arm)
+    }
+
+    fn boot_from_seat_arm(
+        suite: &'static str,
+        seat: Seat,
+        winners_dir: &Path,
+        manifest: &ArsenalManifest,
+        arm: Arm,
+    ) -> Result<Self, String> {
+        let row = manifest
+            .row(suite)
+            .ok_or_else(|| format!("suite {suite} is not in the arsenal manifest"))?;
+        let winner_path = winners_dir.join(row.artifact_file(format!("{suite}_winner_v1.bin")));
+        macro_rules! seat_arm {
+            ($variant:ident, $n:literal) => {{
+                let server = SuiteServer::<$n>::from_seat(suite, seat, &winner_path, arm)?;
+                Ok(AnySuiteServer::$variant(Box::new(server)))
+            }};
         }
         match seat.labels.len() {
-            3 => Ok(AnySuiteServer::S3(Box::new(SuiteServer::from_seat(
-                suite, seat, winners_dir,
-            )?))),
-            4 => Ok(AnySuiteServer::S4(Box::new(SuiteServer::from_seat(
-                suite, seat, winners_dir,
-            )?))),
-            5 => Ok(AnySuiteServer::S5(Box::new(SuiteServer::from_seat(
-                suite, seat, winners_dir,
-            )?))),
-            6 => Ok(AnySuiteServer::S6(Box::new(SuiteServer::from_seat(
-                suite, seat, winners_dir,
-            )?))),
-            59 => Ok(AnySuiteServer::S59(Box::new(SuiteServer::from_seat(
-                suite, seat, winners_dir,
-            )?))),
-            77 => Ok(AnySuiteServer::S77(Box::new(SuiteServer::from_seat(
-                suite, seat, winners_dir,
-            )?))),
+            3 => seat_arm!(S3, 3),
+            4 => seat_arm!(S4, 4),
+            5 => seat_arm!(S5, 5),
+            6 => seat_arm!(S6, 6),
+            59 => seat_arm!(S59, 59),
+            77 => seat_arm!(S77, 77),
             other => Err(format!("suite {suite}: no engine arity for {other} labels")),
         }
     }
 
     /// The vessel boot: the same dispatch, the specialist from a minted
-    /// HOSTED-ONLY vessel (vessel feature only).
+    /// HOSTED-ONLY vessel (vessel feature only). The vessel file is the
+    /// row's artifact (law A5 — no filename convention behind the
+    /// manifest's back).
     #[cfg(feature = "vessel")]
     #[allow(clippy::too_many_arguments)]
     pub fn boot_vessel(
         suite: &'static str,
         seat: Seat,
-        vessel_path: &Path,
+        vessels_dir: &Path,
+        manifest: &ArsenalManifest,
         pins: &reflexer_vessel::PinTable,
         key: &[u8; 32],
         applied: &crate::vessel::AppliedState,
     ) -> Result<(Self, VesselFacts), String> {
-        if !REGISTERED_SUITES.contains(&suite) {
-            return Err(format!("suite {suite} is not a registered serving suite"));
-        }
-        if serving_posture(suite).is_none() {
-            return Err(format!("suite {suite} has no serving posture"));
-        }
+        let arm = Self::posture_of(manifest, suite)?;
+        let row = manifest
+            .row(suite)
+            .ok_or_else(|| format!("suite {suite} is not in the arsenal manifest"))?;
+        let vessel_path = vessels_dir.join(row.artifact_file(format!("{suite}_v1.vessel")));
         macro_rules! vessel_arm {
             ($variant:ident, $n:literal) => {{
                 let (server, facts) = SuiteServer::<$n>::from_vessel(
                     suite,
                     seat,
-                    vessel_path,
+                    &vessel_path,
                     pins,
                     key,
                     applied,
+                    arm,
                 )?;
                 Ok((AnySuiteServer::$variant(Box::new(server)), facts))
             }};

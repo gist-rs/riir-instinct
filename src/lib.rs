@@ -13,6 +13,7 @@
 pub mod specialist;
 pub mod hybrid;
 pub mod stats;
+pub mod arsenal;
 pub mod server;
 #[cfg(feature = "vessel")]
 pub mod vessel;

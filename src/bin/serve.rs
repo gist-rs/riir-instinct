@@ -25,7 +25,8 @@ use std::net::{TcpListener, TcpStream};
 use std::sync::{Arc, Mutex, OnceLock};
 use std::time::Duration;
 
-use riir_instinct::server::{AnySuiteServer, REGISTERED_SUITES};
+use riir_instinct::arsenal::ArsenalManifest;
+use riir_instinct::server::AnySuiteServer;
 
 include!(concat!(env!("OUT_DIR"), "/build_stamp.rs"));
 
@@ -54,7 +55,11 @@ fn main() {
     #[cfg(feature = "vessel")]
     let state_dir =
         std::env::var("INSTINCT_STATE_DIR").unwrap_or_else(|_| ".instinct_state".into());
-    let mut suites: Vec<&'static str> = REGISTERED_SUITES.to_vec();
+    // The arsenal manifest: `INSTINCT_ARSENAL` or `--arsenal <path>`;
+    // absent both, the embedded default (Proposal 001, law A5 — one
+    // manifest per HOST/deployment).
+    let mut arsenal_path: Option<String> = std::env::var("INSTINCT_ARSENAL").ok();
+    let mut suite_filter: Option<Vec<String>> = None;
     let mut i = 1;
     let args: Vec<String> = std::env::args().collect();
     while i < args.len() {
@@ -71,21 +76,165 @@ fn main() {
                 i += 1;
                 bind = args[i].clone();
             }
+            "--arsenal" => {
+                i += 1;
+                arsenal_path = Some(args[i].clone());
+            }
             "--suites" => {
                 i += 1;
-                suites = args[i]
+                // Raw names here; resolved against the manifest below
+                // (an unknown name refuses loud — the manifest is the
+                // only selection surface, there is no table behind it).
+                let names: Vec<String> = args[i]
                     .split(',')
                     .map(str::trim)
                     .filter(|s| !s.is_empty())
-                    .filter_map(|s| REGISTERED_SUITES.iter().copied().find(|r| *r == s))
+                    .map(str::to_string)
                     .collect();
-                if suites.is_empty() {
-                    die("--suites named no registered suite");
+                if names.is_empty() {
+                    die("--suites named no suite");
                 }
+                suite_filter = Some(names);
             }
             other => die(&format!("unknown arg {other}")),
         }
         i += 1;
+    }
+
+    // Vessel mode: INSTINCT_VESSEL_DIR set → the specialists load from
+    // HOSTED-ONLY vessels. Fail-closed configuration: the key and at
+    // least one operator pin are REQUIRED the moment the dir is set — a
+    // half-configured vessel boot must refuse, never fall back to raw
+    // winners (that would be the moat leak the class discipline exists
+    // to prevent, wearing a fallback's clothes). Runs BEFORE the bind:
+    // a misconfigured host never opens a port.
+    #[cfg(feature = "vessel")]
+    let vessel = match (&vessel_dir, &vessel_key_hex) {
+        (Some(dir), Some(key_hex)) => {
+            let key_bytes = decode_hex32(key_hex)
+                .unwrap_or_else(|| die("INSTINCT_VESSEL_KEY_HEX must be 64 hex chars (32 bytes)"));
+            let pins_hex = vessel_pins_hex.as_deref().unwrap_or("");
+            if pins_hex.trim().is_empty() {
+                die("INSTINCT_VESSEL_PINS_HEX is required in vessel mode (id:pubkey hex, comma-\n                    separated) — no compiled-in pins exist, the operator pins the mint key");
+            }
+            let mut keys: Vec<(u32, [u8; 32])> = Vec::new();
+            for pin in pins_hex.split(',') {
+                let pin = pin.trim();
+                if pin.is_empty() {
+                    continue;
+                }
+                let Some((id, hex)) = pin.split_once(':') else {
+                    die(&format!("INSTINCT_VESSEL_PINS_HEX entry {pin:?} is not id:hex"));
+                };
+                let id: u32 = id.trim().parse().unwrap_or_else(|_| {
+                    die(&format!("INSTINCT_VESSEL_PINS_HEX key-id {id:?} is not a number"))
+                });
+                let bytes = decode_hex32(hex.trim()).unwrap_or_else(|| {
+                    die(&format!("INSTINCT_VESSEL_PINS_HEX entry {id} is not 64 hex chars"))
+                });
+                keys.push((id, bytes));
+            }
+            eprintln!(
+                "[riir-instinct] vessel mode: dir {dir} · {} pin(s) · state dir {state_dir}",
+                keys.len()
+            );
+            Some(VesselConfig {
+                dir: dir.into(),
+                key: key_bytes,
+                pins: reflexer_vessel::pins_from_bytes(&keys),
+                state_dir: state_dir.into(),
+            })
+        }
+        (Some(_), None) => die(
+            "INSTINCT_VESSEL_DIR is set without INSTINCT_VESSEL_KEY_HEX — vessel mode is a\n             whole configuration (dir + key + pins), never a partial one",
+        ),
+        (None, Some(_)) => die(
+            "INSTINCT_VESSEL_KEY_HEX is set without INSTINCT_VESSEL_DIR — vessel mode is a\n             whole configuration (dir + key + pins), never a partial one",
+        ),
+        (None, None) => None,
+    };
+    #[cfg(not(feature = "vessel"))]
+    if vessel_dir.is_some() || vessel_key_hex.is_some() {
+        die(
+            "vessel env vars are set but this binary was built WITHOUT the `vessel` feature —\n             rebuild with --features vessel (the reader is opt-in by design)",
+        );
+    }
+    #[cfg(not(feature = "vessel"))]
+    struct VesselConfig;
+    #[cfg(not(feature = "vessel"))]
+    let vessel: Option<VesselConfig> = None;
+    #[cfg(not(feature = "vessel"))]
+    let _ = &vessel;
+
+    // The arsenal manifest (Proposal 001, law A5 — the ONE selection
+    // surface): parse, then validate BEFORE lanes resolve AND before the
+    // bind — a manifest that refuses never opens a port. Drift (artifact
+    // bytes ≠ the pinned digest), an unknown posture arm, a class the
+    // reader cannot honor: all loud here, naming the row + field.
+    let (manifest, arsenal_digest, arsenal_desc): (ArsenalManifest, String, String) =
+        match &arsenal_path {
+            Some(p) => {
+                let text = std::fs::read_to_string(p)
+                    .unwrap_or_else(|e| die(&format!("read arsenal manifest {p}: {e}")));
+                let digest = ArsenalManifest::digest_of(&text);
+                let m = ArsenalManifest::parse(&text)
+                    .unwrap_or_else(|e| die(&format!("arsenal manifest {p}: {e}")));
+                (m, digest, p.clone())
+            }
+            None => (
+                ArsenalManifest::embedded_default()
+                    .unwrap_or_else(|e| die(&format!("embedded arsenal manifest: {e}"))),
+                ArsenalManifest::embedded_manifest_digest(),
+                "embedded default".into(),
+            ),
+        };
+    let manifest = std::sync::Arc::new(manifest);
+    #[cfg(feature = "vessel")]
+    let vctx = match vessel.as_ref() {
+        Some(cfg) => riir_instinct::arsenal::ValidateCtx::vessel(
+            std::path::Path::new(&winners_dir),
+            &cfg.dir,
+            &cfg.pins,
+        ),
+        None => {
+            riir_instinct::arsenal::ValidateCtx::raw(std::path::Path::new(&winners_dir))
+        }
+    };
+    #[cfg(not(feature = "vessel"))]
+    let vctx = riir_instinct::arsenal::ValidateCtx::raw(std::path::Path::new(&winners_dir));
+    manifest.validate(&vctx).unwrap_or_else(|e| {
+        die(&format!(
+            "arsenal manifest ({arsenal_desc}): validation refused: {e}"
+        ))
+    });
+    eprintln!(
+        "[riir-instinct] arsenal: {} row(s) ({arsenal_desc}, digest blake3:{})",
+        manifest.rows().len(),
+        &arsenal_digest[..16]
+    );
+
+    // Suites: the manifest's rows, optionally filtered by --suites (an
+    // unknown name refuses loud). The names leak into 'static here — a
+    // one-time boot allocation for the registry keys, never the hot path.
+    let all_suites: Vec<&'static str> = manifest
+        .suites()
+        .map(|s| -> &'static str { Box::leak(s.to_string().into_boxed_str()) })
+        .collect();
+    let suites: Vec<&'static str> = match &suite_filter {
+        None => all_suites,
+        Some(filter) => filter
+            .iter()
+            .map(|s| {
+                all_suites.iter().copied().find(|r| *r == s).unwrap_or_else(|| {
+                    die(&format!(
+                        "--suites: {s:?} is not in the arsenal manifest ({arsenal_desc})"
+                    ))
+                })
+            })
+            .collect(),
+    };
+    if suites.is_empty() {
+        die("no suites to serve");
     }
 
     let listener = match TcpListener::bind(&bind) {
@@ -157,70 +306,6 @@ fn main() {
         "[riir-instinct] decstat: not compiled (build with --features decstat to enable the contribution lane)"
     );
 
-    // Vessel mode: INSTINCT_VESSEL_DIR set → the specialists load from
-    // HOSTED-ONLY vessels. Fail-closed configuration: the key and at
-    // least one operator pin are REQUIRED the moment the dir is set — a
-    // half-configured vessel boot must refuse, never fall back to raw
-    // winners (that would be the moat leak the class discipline exists
-    // to prevent, wearing a fallback's clothes).
-    #[cfg(feature = "vessel")]
-    let vessel = match (&vessel_dir, &vessel_key_hex) {
-        (Some(dir), Some(key_hex)) => {
-            let key_bytes = decode_hex32(key_hex)
-                .unwrap_or_else(|| die("INSTINCT_VESSEL_KEY_HEX must be 64 hex chars (32 bytes)"));
-            let pins_hex = vessel_pins_hex.as_deref().unwrap_or("");
-            if pins_hex.trim().is_empty() {
-                die("INSTINCT_VESSEL_PINS_HEX is required in vessel mode (id:pubkey hex, comma-\n                    separated) — no compiled-in pins exist, the operator pins the mint key");
-            }
-            let mut keys: Vec<(u32, [u8; 32])> = Vec::new();
-            for pin in pins_hex.split(',') {
-                let pin = pin.trim();
-                if pin.is_empty() {
-                    continue;
-                }
-                let Some((id, hex)) = pin.split_once(':') else {
-                    die(&format!("INSTINCT_VESSEL_PINS_HEX entry {pin:?} is not id:hex"));
-                };
-                let id: u32 = id.trim().parse().unwrap_or_else(|_| {
-                    die(&format!("INSTINCT_VESSEL_PINS_HEX key-id {id:?} is not a number"))
-                });
-                let bytes = decode_hex32(hex.trim()).unwrap_or_else(|| {
-                    die(&format!("INSTINCT_VESSEL_PINS_HEX entry {id} is not 64 hex chars"))
-                });
-                keys.push((id, bytes));
-            }
-            eprintln!(
-                "[riir-instinct] vessel mode: dir {dir} · {} pin(s) · state dir {state_dir}",
-                keys.len()
-            );
-            Some(VesselConfig {
-                dir: dir.into(),
-                key: key_bytes,
-                pins: reflexer_vessel::pins_from_bytes(&keys),
-                state_dir: state_dir.into(),
-            })
-        }
-        (Some(_), None) => die(
-            "INSTINCT_VESSEL_DIR is set without INSTINCT_VESSEL_KEY_HEX — vessel mode is a\n             whole configuration (dir + key + pins), never a partial one",
-        ),
-        (None, Some(_)) => die(
-            "INSTINCT_VESSEL_KEY_HEX is set without INSTINCT_VESSEL_DIR — vessel mode is a\n             whole configuration (dir + key + pins), never a partial one",
-        ),
-        (None, None) => None,
-    };
-    #[cfg(not(feature = "vessel"))]
-    if vessel_dir.is_some() || vessel_key_hex.is_some() {
-        die(
-            "vessel env vars are set but this binary was built WITHOUT the `vessel` feature —\n             rebuild with --features vessel (the reader is opt-in by design)",
-        );
-    }
-    #[cfg(not(feature = "vessel"))]
-    struct VesselConfig;
-    #[cfg(not(feature = "vessel"))]
-    let vessel: Option<VesselConfig> = None;
-    #[cfg(not(feature = "vessel"))]
-    let _ = &vessel;
-
     // The registry: one slot per requested suite. Loader threads fill it;
     // the accept loop answers from it.
     let slots: Arc<Vec<Slot>> = Arc::new(
@@ -238,6 +323,7 @@ fn main() {
         let slots = Arc::clone(&slots);
         let datasets_dir = datasets_dir.clone();
         let winners_dir = winners_dir.clone();
+        let manifest = Arc::clone(&manifest);
         #[cfg(feature = "vessel")]
         let vessel = Arc::clone(&vessel);
         let loader = std::thread::Builder::new()
@@ -250,6 +336,7 @@ fn main() {
                     slot.suite,
                     &datasets_dir,
                     &winners_dir,
+                    &manifest,
                     #[cfg(feature = "vessel")]
                     (*vessel).as_ref(),
                 );
@@ -316,25 +403,30 @@ struct SuiteBoot {
 /// Boot one suite: the vessel path when configured (fail-closed — a
 /// vessel boot that fails names the vessel error and the lane goes
 /// Failed; there is NO raw-winner fallback inside vessel mode), else
-/// the raw sealed winners.
+/// the raw sealed winners. The row comes from the arsenal manifest —
+/// law A5: the manifest is the only selection surface.
 fn boot_suite_slot(
     suite: &'static str,
     datasets_dir: &str,
     winners_dir: &str,
+    manifest: &ArsenalManifest,
     #[cfg(feature = "vessel")] vessel: Option<&VesselConfig>,
 ) -> Result<SuiteBoot, String> {
+    if manifest.row(suite).is_none() {
+        return Err(format!("suite {suite} is not in the arsenal manifest"));
+    }
     let seat = riir_reflex::harness::runner::seat::prepare_seat(
         suite,
         std::path::Path::new(datasets_dir),
     )?;
     #[cfg(feature = "vessel")]
     if let Some(cfg) = vessel {
-        let vessel_path = cfg.dir.join(format!("{suite}_v1.vessel"));
         let applied = read_applied(&cfg.state_dir, suite);
         let (server, facts) = AnySuiteServer::boot_vessel(
             suite,
             seat,
-            &vessel_path,
+            &cfg.dir,
+            manifest,
             &cfg.pins,
             &cfg.key,
             &applied,
@@ -347,7 +439,8 @@ fn boot_suite_slot(
     }
     // The raw-winner path — reached when vessel mode is off (both build
     // postures); the prepared seat is consumed here.
-    let server = AnySuiteServer::boot_from_seat(suite, seat, std::path::Path::new(winners_dir))?;
+    let server =
+        AnySuiteServer::boot_from_seat(suite, seat, std::path::Path::new(winners_dir), manifest)?;
     let meta = server.meta().clone();
     Ok(SuiteBoot { server, meta })
 }
