@@ -129,3 +129,8 @@ required-features = ["tetris_goat"]
 name = "tetris_critic_goat"
 harness = false
 required-features = ["tetris_goat"]
+
+# The T7 dataset export (Issue 580's contract) — whole-target gated.
+[[bin]]
+name = "export_tetris_critic"
+required-features = ["tetris"]

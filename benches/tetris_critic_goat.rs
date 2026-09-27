@@ -30,7 +30,7 @@
 use riir_instinct::stats::paired_upper_bound_f64;
 use riir_instinct::tetris_critic::{
     AgreeStats, CriticModel, FeatureScale, FitAccumulator, LanePolicy, Sample, agreement_stats,
-    decision_groups, lane_context, play_lane,
+    collect_teacher, decision_groups, lane_context, play_lane,
 };
 use riir_instinct::tetris_lane::{ArmKind, CHAMPION_ID, Fixtures, GameStats, Regime, Runner};
 use serde_json::{Value, json};
@@ -184,49 +184,6 @@ fn load_fixtures() -> Fixtures {
 struct Block {
     samples: Vec<Sample>,
     groups: Vec<(usize, usize)>,
-}
-
-/// Teacher collection over one (regime, seed list), threaded across seeds;
-/// per-seed sample blocks merge in seed order (the fit's determinism
-/// premise: the Gram then accumulates in (regime, seed, decision, option)
-/// order).
-fn collect(
-    genome: &katgpt_tetris::rulebook::Genome,
-    regime: Regime,
-    seeds: &[u64],
-    budget: u32,
-    cap: usize,
-    threads: usize,
-) -> (Vec<Sample>, Vec<GameStats>) {
-    let next_seed = AtomicUsize::new(0);
-    let results: std::sync::Mutex<Vec<(u64, GameStats, Vec<Sample>)>> =
-        std::sync::Mutex::new(Vec::with_capacity(seeds.len()));
-    std::thread::scope(|s| {
-        for _ in 0..threads.max(1) {
-            s.spawn(|| {
-                loop {
-                    let k = next_seed.fetch_add(1, Ordering::Relaxed);
-                    if k >= seeds.len() {
-                        break;
-                    }
-                    let seed = seeds[k];
-                    let mut sink: Vec<Sample> = Vec::new();
-                    let mut policy = LanePolicy::Teacher { budget, sink: &mut sink };
-                    let stats = play_lane(genome, seed, regime, cap, &mut policy);
-                    results.lock().expect("results lock").push((seed, stats, sink));
-                }
-            });
-        }
-    });
-    let mut out = results.into_inner().expect("results");
-    out.sort_by_key(|(seed, _, _)| *seed);
-    let mut samples = Vec::new();
-    let mut stats = Vec::new();
-    for (_, st, mut sink) in out {
-        stats.push(st);
-        samples.append(&mut sink);
-    }
-    (samples, stats)
 }
 
 /// The eval arms (T3 protocol + the T8 gate). JSON keys spell the names
@@ -390,8 +347,10 @@ fn main() {
     let mut teacher_pieces: Vec<f64> = Vec::new();
     for &regime in &a.regimes {
         let t0 = Instant::now();
-        let (ts, tstats) = collect(&genome, regime, &train_seeds, a.teacher_budget, a.cap, a.threads);
-        let (vs, vstats) = collect(&genome, regime, &val_seeds, a.teacher_budget, a.cap, a.threads);
+        let (ts, tstats) =
+            collect_teacher(&genome, regime, &train_seeds, a.teacher_budget, a.cap, a.threads);
+        let (vs, vstats) =
+            collect_teacher(&genome, regime, &val_seeds, a.teacher_budget, a.cap, a.threads);
         teacher_pieces.extend(tstats.iter().chain(vstats.iter()).map(|s| s.pieces as f64));
         collection.push(json!({
             "regime": regime.to_string(),

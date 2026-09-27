@@ -661,6 +661,50 @@ pub fn lane_context() -> String {
     format!("champion {CHAMPION_ID} · KARC chebyshev-{CHEB_M} basis-ridge (Plan 308, no delay ring) · design dim {DESIGN_DIM}")
 }
 
+/// Teacher collection over one (regime, seed list), threaded across seeds;
+/// per-seed sample blocks merge in seed order (the fit's determinism
+/// premise: the Gram then accumulates in (regime, seed, decision, option)
+/// order). Shared by the critic bench (fit) and the dataset export bin
+/// (riir-train Issue 580's contract).
+pub fn collect_teacher(
+    genome: &Genome,
+    regime: Regime,
+    seeds: &[u64],
+    budget: u32,
+    cap: usize,
+    threads: usize,
+) -> (Vec<Sample>, Vec<GameStats>) {
+    let next_seed = std::sync::atomic::AtomicUsize::new(0);
+    let results: std::sync::Mutex<Vec<(u64, GameStats, Vec<Sample>)>> =
+        std::sync::Mutex::new(Vec::with_capacity(seeds.len()));
+    std::thread::scope(|s| {
+        for _ in 0..threads.max(1) {
+            s.spawn(|| {
+                loop {
+                    let k = next_seed.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+                    if k >= seeds.len() {
+                        break;
+                    }
+                    let seed = seeds[k];
+                    let mut sink: Vec<Sample> = Vec::new();
+                    let mut policy = LanePolicy::Teacher { budget, sink: &mut sink };
+                    let stats = play_lane(genome, seed, regime, cap, &mut policy);
+                    results.lock().expect("results lock").push((seed, stats, sink));
+                }
+            });
+        }
+    });
+    let mut out = results.into_inner().expect("results");
+    out.sort_by_key(|(seed, _, _)| *seed);
+    let mut samples = Vec::new();
+    let mut stats = Vec::new();
+    for (_, st, mut sink) in out {
+        stats.push(st);
+        samples.append(&mut sink);
+    }
+    (samples, stats)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -678,7 +722,7 @@ mod tests {
             let raw = RawOpt { num, piece: (i % 7) as u8, mode: (i % 3) as u8 };
             let q = 2.0 * raw.num[feat::LANDING_HEIGHT] - raw.num[feat::ERODED_CELLS];
             // Groups of 4 consecutive samples share (seed, decision).
-            Sample { seed: ((i / 4) % 4) as u64, decision: (i / 4) as u32, raw, q, is_pick: i % 4 == 0 }
+            Sample { seed: ((i / 4) % 4) as u64, decision: (i / 4) as u32, raw, q, is_pick: i.is_multiple_of(4) }
         };
         let samples: Vec<Sample> = (0..400).map(mk).collect();
         let groups = decision_groups(&samples);
