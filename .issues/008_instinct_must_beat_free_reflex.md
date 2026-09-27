@@ -72,13 +72,26 @@ and the six harness_* suites.
   (`predictions.json`'s `instrument_pick`/`superiority` fields) + the
   RESULTS.md gate table. Refusals measured: ag_news H2 (+0.0150/−0.0100),
   sst5 A1 (+0.0250/−0.0129), banking77 H1 (−0.0200/−0.0466).
-- [ ] T3 — **publish the SERVED posture, not the registered one** — now
+- [x] T3 — **publish the SERVED posture, not the registered one** — now
   MOOT AS STATED (the T2 gate made registered == served: a refused arm is
   not registered, so there is no unserved arm left to hide). The REMAINING
-  half is the site sync: `scripts/build_hybrid_doc.py` + reflex-site must
+  half was the site sync: `scripts/build_hybrid_doc.py` + reflex-site must
   republish from Bench 004's record so the site row carries the served set
-  (massive only, +4.7 pt certified) instead of the Bench-002 arms. Not done
-  here — reflex-site is a separate checkout another session may hold.
+  (massive only, +4.7 pt certified) instead of the Bench-002 arms.
+  ✅ DONE 2026-09-27 — reflex-site `4ca2ef6`; republished from the Bench-005 record (the freshest
+  read, same serving verdict): the lane doc lives at
+  `.benchmarks/005_hybrid_every_suite_measured/hybrid_lane_doc.json`; the
+  four refused Bench-002 cells are REMOVED from `data/bench.json`
+  (ag_news/emotion/sst5/banking77) and only massive H2 0.8267 remains ==
+  the arsenal. Site-side mechanism: publish_bench.py's `a0_stands` arm
+  (the three-state vocabulary, instinct Issue 010 T3) deletes the
+  incumbent cell when the update doc marks the suite a0_stands — pinned
+  by `case_a0_stands_removes_refused_incumbent_cell` (48/48 green),
+  pairing gate 28/28, chart smoke green post-publish. The TL;DR row now
+  reads from the served set: "ahead of Reflex on 1/1 suites with an
+  Instinct arm (widest: massive_intent_en 82.7% vs 78.0%)" + the no-arm
+  disclosure. Massive's latency publishes UNJUDGED (that run's box load
+  6.26 — the accuracy is the claim).
 - [ ] T4 — **close the two gaps with specialists that clear G3**: emotion
   (vs 0.8850) and banking77 (vs 0.8260; H1 lost up to ~4.7 pt at 95%).
   Training runs in riir-train (`vessel-mint`), on the GPU; not deferred.

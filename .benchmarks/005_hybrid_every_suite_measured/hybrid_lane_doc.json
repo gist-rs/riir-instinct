@@ -1,8 +1,8 @@
 {
  "meta": {
   "host": "m3",
-  "git_sha": "2bfb30f",
-  "date_utc": "2026-09-27T15:47:40Z",
+  "git_sha": "45cb598",
+  "date_utc": "2026-09-27T16:02:22Z",
   "profile": "release",
   "laya_feature": false,
   "lane_note": "instinct hybrid lane: the registered arm's single frozen test read over the reflex harness seat at the current published reflex posture (the Bench-004 re-baseline). Three states per suite (Issue 010): hybrid_arm = a registered non-A0 arm serves; a0_stands = measured, A0 serves (measured_a0 carries the row, reason names why nothing is sold); absent from this doc = never seated. A0-stands is NOT a sale \u2014 the superiority gate (Issue 008 T2) refused or no specialist exists."
