@@ -1212,6 +1212,11 @@ fn pin_a0_identity(datasets_dir: &Path, runs: &[SuiteRun]) -> Result<(), String>
         suites: vec!["xnli_en".to_string()],
         laya_max_questions: 0,
         skip_laya: true,
+        // the cascade lane (sibling reflex Issue 038 T4′ / 042 lever 3) —
+        // off: the drift pin reproduces the plain modelless lane.
+        cascade: false,
+        cascade_worthiness: false,
+        cascade_worthiness_margin: 0.0,
         laya_python: false,
         gliner: false,
         agentjev: false,
