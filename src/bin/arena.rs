@@ -22,6 +22,12 @@
 //! (disclosed, never claimed here).
 //!
 //! Output: `<out>/RESULTS.md` + `predictions.json` + `registration.json`.
+//!
+//! Population (Issue 010 T1): every reflex DATASET suite the seat can
+//! prepare — the six specialist suites carry the full arm grid, and a
+//! suite WITHOUT a winner artifact still runs its honest A0/G0-only
+//! posture (T2: a missing specialist is not a crash; the row's verdict
+//! is `a0_stands`, never a silent absence).
 
 use std::collections::HashMap;
 use std::hint::black_box;
@@ -35,13 +41,18 @@ use riir_reflex::embed::EMBED_DIM;
 use riir_reflex::engine::DecisionEngine;
 use riir_reflex::harness::metrics::{CalibrationPair, conformal_naive_floor, ece_of};
 use riir_reflex::harness::runner::seat::{
-    PostureKnobs, QuestionOut, Seat, SeatEval, build_seat_engine, eval_seat, fit_posture,
-    prepare_seat,
+    PostureKnobs, QuestionOut, Seat, SeatEval, SeatPosture, build_seat_engine, eval_seat,
+    fit_posture, prepare_seat,
 };
 use riir_reflex::harness::suites::{QKind, SuiteCase};
 use riir_reflex::nb_scope::NbView;
 
-/// The GOAT suites: the six riir-train Issue 576 winner artifacts.
+/// The arena population (Issue 010 T1): every reflex DATASET suite. The
+/// first six carry riir-train Issue 576 winner artifacts (the full arm
+/// grid); `typed_decisions` + `prompt_injections` have no specialist —
+/// they run the A0/G0-only posture (T2) and publish their measured
+/// `a0_stands` row. Label-arity dispatch below must cover their train-
+/// derived label counts (3 workflows / 2 noul classes, measured 2026-09-27).
 const SUITES: &[&str] = &[
     "ag_news",
     "emotion",
@@ -49,6 +60,8 @@ const SUITES: &[&str] = &[
     "xnli_en",
     "massive_intent_en",
     "banking77",
+    "typed_decisions",
+    "prompt_injections",
 ];
 /// Reflex already wins these (Bench 051) — G3's non-inferiority duty.
 const REFLEX_WON: &[&str] = &["emotion", "sst5", "massive_intent_en", "banking77"];
@@ -179,7 +192,25 @@ struct LayaFace {
 
 struct SuiteRun {
     suite: String,
+    /// Total QUESTIONS across the test read (the accuracy denominators;
+    /// a multi-question suite counts every question — reflex's own
+    /// hard-metrics convention).
     n_questions: usize,
+    /// Test CASES (a typed_decisions case carries 5 questions).
+    n_cases: usize,
+    /// False = the A0/G0-only posture ran (no winner artifact — Issue 010
+    /// T2): no A1/H1/H2 exist, the fusion micro is N/A, and the row's
+    /// verdict is `a0_stands`.
+    specialist_present: bool,
+    /// The three-state lane verdict (Issue 010 T3): `hybrid_arm` (a
+    /// registered non-A0 arm, gates pass) or `a0_stands` (measured, no
+    /// promotable hybrid arm — refused by the gate or no specialist).
+    verdict: &'static str,
+    /// Why the verdict is `a0_stands` (None when a hybrid arm serves):
+    /// the refusal numbers, an outright A0 registration, or the missing
+    /// specialist. The doc builder publishes it verbatim — a name list
+    /// cannot carry the measurement (Issue 010 root cause 3).
+    a0_note: Option<String>,
     posture: DisclosedPosture,
     registration: Vec<RegRow>,
     /// The arm that SERVES — post-product-gate (Issue 008 T2): the
@@ -332,6 +363,7 @@ fn run_suite(
         seat.train.len()
     );
     match seat.labels.len() {
+        2 => run_suite_n::<2>(name, seat, winners_dir, top_k),
         3 => run_suite_n::<3>(name, seat, winners_dir, top_k),
         4 => run_suite_n::<4>(name, seat, winners_dir, top_k),
         5 => run_suite_n::<5>(name, seat, winners_dir, top_k),
@@ -488,24 +520,62 @@ impl<const N: usize> SuiteCtx<N> {
         }
     }
 
-    /// A0 + H1 over a case set. A0's latency = the reflex solve
-    /// ([`eval_seat`]'s per-case µs); H1's = reflex + its own decision,
-    /// both disclosed.
-    fn eval_a0_h1(&mut self, cases: &[SuiteCase], strs: &[String]) -> Result<(ArmOut, ArmOut), String> {
-        let se: SeatEval = eval_seat(&mut self.engine, cases, strs)?;
-        let n = cases.len();
+    /// A0 over a case set — flattened PER QUESTION (Issue 010: the arena
+    /// population now carries multi-question suites, and reflex's own
+    /// hard-metrics convention scores every question; for the six
+    /// one-question-per-case suites this is byte-identical to the old
+    /// per-case rows). Noul answers arrive already in the [no, yes] gold
+    /// space (the seat's QuestionOut), so pick == gold is the same
+    /// comparison for every kind. Latency stays PER CASE (the seat times
+    /// cases) — `total_durs_us.len()` == cases, disclosed via
+    /// `n_cases`; `contains_seat_solve` names the scope (Issue 007).
+    /// Returns the arm plus the seat eval (H1's raw material).
+    /// No receiver: the caller passes the engine explicitly (it lives in
+    /// this struct, and `self` + `&mut self.engine` would double-borrow).
+    fn eval_a0(
+        engine: &mut DecisionEngine<N, EMBED_DIM>,
+        cases: &[SuiteCase],
+        strs: &[String],
+    ) -> Result<(ArmOut, SeatEval), String> {
+        let se: SeatEval = eval_seat(engine, cases, strs)?;
+        let n_q: usize = cases.iter().map(|c| c.questions.len()).sum();
         let mut a0 = ArmOut {
             name: "A0".into(),
-            correct: Vec::with_capacity(n),
-            picks: Vec::with_capacity(n),
-            probs: Vec::with_capacity(n),
-            confs: Vec::with_capacity(n),
-            escalated: vec![false; n],
-            abstained: Vec::with_capacity(n),
+            correct: Vec::with_capacity(n_q),
+            picks: Vec::with_capacity(n_q),
+            probs: Vec::with_capacity(n_q),
+            confs: Vec::with_capacity(n_q),
+            escalated: vec![false; n_q],
+            abstained: Vec::with_capacity(n_q),
             own_durs_us: se.durs_us.iter().map(|&d| d as f64).collect(),
             total_durs_us: se.durs_us.iter().map(|&d| d as f64).collect(),
             contains_seat_solve: true,
         };
+        for (ci, case) in cases.iter().enumerate() {
+            for (qi, (_q, qo)) in case.questions.iter().zip(&se.cases[ci]).enumerate() {
+                let gold = case.gold[qi].idx;
+                a0.picks.push(qo.pick);
+                a0.correct.push(qo.pick == gold);
+                a0.probs.push(qo.probs.clone());
+                a0.confs.push(qo.conf);
+                a0.abstained.push(qo.abstained);
+            }
+        }
+        Ok((a0, se))
+    }
+
+    /// H1 over a case set from an existing seat eval — the cascade arm
+    /// (reflex pass-through + specialist over survivors). The bridge
+    /// reads each case's FIRST question (`fill_positions`); the strict
+    /// one-non-noul-question-per-case shape is asserted where the
+    /// specialist joins, so per-question rows here == per-case rows.
+    fn eval_h1(
+        &mut self,
+        se: &SeatEval,
+        cases: &[SuiteCase],
+        strs: &[String],
+    ) -> ArmOut {
+        let n = cases.len();
         let mut h1 = ArmOut {
             name: "H1".into(),
             correct: Vec::with_capacity(n),
@@ -521,12 +591,6 @@ impl<const N: usize> SuiteCtx<N> {
         for (ci, case) in cases.iter().enumerate() {
             let gold = case.gold[0].idx;
             let qo: &QuestionOut = &se.cases[ci][0];
-            a0.picks.push(qo.pick);
-            a0.correct.push(qo.pick == gold);
-            a0.probs.push(qo.probs.clone());
-            a0.confs.push(qo.conf);
-            a0.abstained.push(qo.abstained);
-
             let a0_ans = A0Answer {
                 probs: &qo.probs,
                 pick: qo.pick,
@@ -563,7 +627,7 @@ impl<const N: usize> SuiteCtx<N> {
                 qo.conf
             });
         }
-        Ok((a0, h1))
+        h1
     }
 
     /// A1 + the H2 grid over a case set (no reflex solve — the specialist
@@ -683,38 +747,27 @@ fn run_suite_n<const N: usize>(
     winners_dir: &Path,
     top_k: usize,
 ) -> Result<SuiteRun, String> {
-    if seat
-        .suite
-        .cases
-        .iter()
-        .any(|c| c.questions.len() != 1 || c.questions.iter().any(|q| q.kind == QKind::Noul))
-    {
-        return Err(
-            "the arena's shape is one non-noul question per case (true of all six \
-             specialist suites; the assertion keeps a silent shape drift loud)"
-                .into(),
-        );
-    }
-
     // The CURRENT PUBLISHED reflex posture (Issue 008 T1's re-baseline):
-    // head-select + nb-select + ridge-select, registry caps, genome off.
-    // `ridge_select` is the cal-selected NBSVM-ridge lane (reflex Bench
-    // 057): the ladder arms only where the selection slice clears the
-    // house arming bar — emotion selects ridge@8, every other arena
-    // suite selects 0 (byte-identical to off; reflex measured the
-    // full-workspace delta at 0.0000). The 6/6 drift pin below holds
-    // the seat path to reflex's own run() at these knobs, and the pin's
-    // site check holds reflex's rows to the published bench.json — the
-    // published-posture drift that root cause 1 names can no longer
-    // reopen silently.
+    // head-select + nb-select + oc-select + ridge-select, registry caps,
+    // genome off. `ridge_select` is the cal-selected NBSVM-ridge lane
+    // (reflex Bench 057) and `oc_select` the cal-selected option-
+    // conditioned lane (reflex issue 038 T7b): both run their selection
+    // on every suite and DECLINE at the arming bar where the cal slice
+    // does not support them — oc declines on every suite whose train
+    // rows carry no per-question gold events (baseline posture holds,
+    // byte-identical), so typed_decisions is the only suite that arms
+    // oc (published: selected_scale 2.0), emotion the only one that
+    // arms ridge (@8). The 6/6+2 drift pin below holds the seat path to
+    // reflex's own run() at these knobs, and the pin's site check holds
+    // reflex's rows to the published bench.json — the published-posture
+    // drift root cause 1 names can no longer reopen silently. (The pin
+    // CAUGHT this lane: with oc off the arena read typed_decisions
+    // 0.3300 against the published 0.4655 — the oc-armed posture is
+    // what published.)
     let knobs = PostureKnobs {
         head_select: true,
         nb_select: true,
-        // option_cond is enabled on the dep ONLY because reflex's
-        // nb_ridge lane does not compile without it (upstream gap, filed
-        // reflex-side): the oc lane itself stays OFF — typed_decisions,
-        // its only armed suite upstream, is not an arena suite.
-        oc_select: false,
+        oc_select: true,
         ridge_select: true,
         genome_select: false,
         genome_accept_margin: 0.0,
@@ -742,8 +795,43 @@ fn run_suite_n<const N: usize>(
 
     // The specialist: the sealed winner artifact, joined onto the seat's
     // label order (the bijection pin lives in SpecialistLane::join).
+    // Issue 010 T2: a MISSING artifact is not a crash — the suite runs
+    // its honest A0/G0-only posture and publishes its measured
+    // `a0_stands` row. A PRESENT-but-broken artifact stays fatal (a
+    // corrupt seal must never degrade into a quiet A0).
     let winner_path = winners_dir.join(format!("{name}_winner_v1.bin"));
-    let spec = riir_instinct::specialist::load_artifact(&winner_path)?;
+    let spec = match riir_instinct::specialist::load_artifact(&winner_path) {
+        Ok(spec) => Some(spec),
+        Err(_) if !winner_path.is_file() => {
+            eprintln!(
+                "  winner: absent — {} (A0/G0-only posture, Issue 010 T2; verdict a0_stands)",
+                winner_path.display()
+            );
+            None
+        }
+        Err(e) => return Err(e),
+    };
+    let Some(spec) = spec else {
+        return run_suite_a0_only(name, seat, engine, posture);
+    };
+
+    // The specialist bridge's shape law (one non-noul question per case):
+    // the bridge reads a case's FIRST question (`fill_positions`), so the
+    // assertion guards exactly the arm-construction path below. A0-only
+    // suites (no artifact) admit any question shape — their A0 arm is
+    // flattened per question in `eval_a0`.
+    if seat
+        .suite
+        .cases
+        .iter()
+        .any(|c| c.questions.len() != 1 || c.questions.iter().any(|q| q.kind == QKind::Noul))
+    {
+        return Err(
+            "the specialist bridge's shape is one non-noul question per case (true of all \
+             six artifact suites; the assertion keeps a silent shape drift loud)"
+                .into(),
+        );
+    }
     let artifact_labels: Vec<String> = spec.labels.clone();
     eprintln!(
         "  winner: {} ({} labels, BLAKE3 seal verified)",
@@ -792,7 +880,8 @@ fn run_suite_n<const N: usize>(
     };
 
     // ── CAL phase (train-side): the instrument's readings ────────────
-    let (a0_cal, h1_cal) = ctx.eval_a0_h1(&seat.cal_cases, &seat.cal_state_strs)?;
+    let (a0_cal, cal_se) = SuiteCtx::<N>::eval_a0(&mut ctx.engine, &seat.cal_cases, &seat.cal_state_strs)?;
+    let h1_cal = ctx.eval_h1(&cal_se, &seat.cal_cases, &seat.cal_state_strs);
     let (a1_cal, h2s_cal) = ctx.eval_a1_h2(&seat.cal_cases, &seat.cal_state_strs);
     let mut cal_arms: Vec<ArmOut> = Vec::with_capacity(3 + h2s_cal.len());
     cal_arms.push(a0_cal);
@@ -870,10 +959,11 @@ fn run_suite_n<const N: usize>(
         instrument_pick.name()
     );
 
-    // ── THE TEST READ (once; predictions frozen below) ───────────────
+    // ── THE TEST READ (once; predictions frozen below) ─────────────
     let mut test_arms: Vec<ArmOut> = Vec::new();
     {
-        let (a0, h1) = ctx.eval_a0_h1(&seat.suite.cases, &seat.state_strs)?;
+        let (a0, test_se) = SuiteCtx::<N>::eval_a0(&mut ctx.engine, &seat.suite.cases, &seat.state_strs)?;
+        let h1 = ctx.eval_h1(&test_se, &seat.suite.cases, &seat.state_strs);
         let (a1, h2s) = ctx.eval_a1_h2(&seat.suite.cases, &seat.state_strs);
         test_arms.push(a0);
         test_arms.push(a1);
@@ -983,7 +1073,26 @@ fn run_suite_n<const N: usize>(
 
     Ok(SuiteRun {
         suite: name.to_string(),
-        n_questions: seat.suite.cases.len(),
+        n_questions: test_arms
+            .iter()
+            .find(|a| a.name == "A0")
+            .map(|a| a.correct.len())
+            .unwrap_or(seat.suite.cases.len()),
+        n_cases: seat.suite.cases.len(),
+        specialist_present: true,
+        verdict: if registered != Cand::A0 { "hybrid_arm" } else { "a0_stands" },
+        a0_note: if registered == Cand::A0 {
+            Some(match &superiority {
+                Some(s) => format!(
+                    "instrument pick {} refused — paired LB95 {:+.4} (Issue 008 T2)",
+                    s.pick.name(),
+                    s.lb95
+                ),
+                None => "the instrument registered A0 outright".to_string(),
+            })
+        } else {
+            None
+        },
         posture: DisclosedPosture {
             effective_cap: posture.effective_cap,
             head_scale: posture.cfg.head_scale,
@@ -1008,6 +1117,94 @@ fn run_suite_n<const N: usize>(
         g3_delta,
         g5,
         laya,
+    })
+}
+
+/// The A0/G0-only posture (Issue 010 T2): a suite with no winner artifact
+/// still gets its MEASURED row — seated, posture-fitted, single frozen
+/// test read — with the verdict `a0_stands`. No specialist exists, so no
+/// A1/H1/H2 arms are constructed (the registration is [A0] alone, the
+/// instrument pick is A0 by construction, and the product gate has
+/// nothing to refuse). G1 still runs — reflex's own confidence readout
+/// on this suite is a real disclosure, gated by nothing. The hybrid-arm
+/// faces (G3/G5/laya/fusion) are None: the verdict names the posture.
+fn run_suite_a0_only<const N: usize>(
+    name: &str,
+    seat: Seat,
+    mut engine: DecisionEngine<N, EMBED_DIM>,
+    posture: SeatPosture,
+) -> Result<SuiteRun, String> {
+    // ── CAL phase: A0 only ───────────────────────────────────
+    let (a0_cal, _) = SuiteCtx::<N>::eval_a0(&mut engine, &seat.cal_cases, &seat.cal_state_strs)?;
+
+    // ── the test read (once) ─────────────────────────────
+    let (a0, _) = SuiteCtx::<N>::eval_a0(&mut engine, &seat.suite.cases, &seat.state_strs)?;
+    eprintln!(
+        "  test: A0 {:.4} · no hybrid arms — verdict a0_stands (Issue 010 T2)",
+        a0.accuracy()
+    );
+
+    let g1 = g1_face(
+        std::slice::from_ref(&a0_cal),
+        std::slice::from_ref(&a0),
+        &Cand::A0,
+    );
+    if let Some(g) = &g1 {
+        eprintln!(
+            "  G1 (A0 disclosure): raw {:.4} · platt {:.4} · floor {:.4} → {}",
+            g.ece_raw,
+            g.ece_platt,
+            g.ece_floor,
+            if g.pass { "PASS" } else { "FAIL" }
+        );
+    }
+
+    let lcb = katgpt_core::best_belief_score(
+        a0_cal.n_correct(),
+        (a0_cal.correct.len() as u32) - a0_cal.n_correct(),
+        0.05,
+    );
+    let registration = vec![RegRow {
+        cand: Cand::A0,
+        arm: "A0".to_string(),
+        cal_acc: a0_cal.accuracy(),
+        acc_lcb: f64::from(lcb),
+        consult: a0_cal.consult_rate(),
+        p99_us: a0_cal.p99(),
+        rank0: true,
+    }];
+
+    Ok(SuiteRun {
+        suite: name.to_string(),
+        n_questions: a0.correct.len(),
+        n_cases: seat.suite.cases.len(),
+        specialist_present: false,
+        verdict: "a0_stands",
+        a0_note: Some("no specialist artifact (Issue 010 T2)".to_string()),
+        posture: DisclosedPosture {
+            effective_cap: posture.effective_cap,
+            head_scale: posture.cfg.head_scale,
+            nb_scale: posture.cfg.nb_scale,
+            ridge_scale: posture.cfg.ridge_scale,
+            nb_view: match posture.cfg.nb_view {
+                NbView::Bag => "bag",
+                NbView::Pair => "pair",
+            },
+            score_threshold: posture.score_threshold,
+            distance_threshold: posture.distance_threshold,
+        },
+        registration,
+        registered: Cand::A0,
+        superiority: None,
+        test_arms: vec![a0],
+        h1_ns_decision: 0.0,
+        h1_ns_fusion: 0.0,
+        h2_ns_per_option: 0.0,
+        g1,
+        g3: None,
+        g3_delta: None,
+        g5: None,
+        laya: None,
     })
 }
 
@@ -1336,6 +1533,10 @@ fn pin_a0_identity(datasets_dir: &Path, runs: &[SuiteRun]) -> Result<(), String>
         laya_python: false,
         gliner: false,
         agentjev: false,
+        // The OpenThai comparison lane (reflex Plan 003 Phase 2) — off:
+        // their served model is a comparison lane, never the pin's
+        // subject.
+        openthai: false,
         paw: false,
         corpus_cap_override: 0,
         cal_select_caps: vec![],
@@ -1346,14 +1547,15 @@ fn pin_a0_identity(datasets_dir: &Path, runs: &[SuiteRun]) -> Result<(), String>
         clm: false,
         paw_local: false,
         // The Issue-008 T1 re-baseline posture: the cal-selected NBSVM
-        // ridge (reflex Bench 057) — emotion arms @8, the rest decline
-        // by the same arming bar the runner applies.
+        // ridge (reflex Bench 057) AND the cal-selected option-
+        // conditioned lane (reflex issue 038 T7b). Both selections run
+        // per suite and decline at the arming bar / on no gold events —
+        // ridge arms only on emotion, oc only on typed_decisions, each
+        // byte-identical to off elsewhere. (Measured 2026-09-27: with
+        // oc off the pin read typed_decisions 0.3300 vs the published
+        // 0.4655 — the oc-armed posture is what published.)
         ridge_select: true,
-        // option_cond rides the dep for the nb_ridge compile only
-        // (upstream gap, filed reflex-side); the oc lane stays off —
-        // typed_decisions, its only armed suite upstream, is not an
-        // arena suite.
-        oc_select: false,
+        oc_select: true,
         // Issue 038 T5's joint genome walk — off: reflex's published
         // bench rows predate the genome lane (the site rows are the
         // 052/057 postures); turning it on here would be a NEW posture
@@ -1521,6 +1723,10 @@ fn write_predictions(out_dir: &Path, runs: &[SuiteRun]) {
         suites.push(serde_json::json!({
             "suite": run.suite,
             "n_questions": run.n_questions,
+            "n_cases": run.n_cases,
+            "specialist_present": run.specialist_present,
+            "verdict": run.verdict,
+            "a0_note": run.a0_note,
             "registered": run.registered.name(),
             "instrument_pick": run.superiority.as_ref().map(|s| s.pick.name()),
             "superiority": run.superiority.as_ref().map(|s| serde_json::json!({
@@ -1594,11 +1800,15 @@ Issue 003 T4); arms pre-registered on the cal front by the Pareto rank-0 + \
 argmax Beta-LCB instrument; predictions frozen in `predictions.json`.\n\n");
     md.push_str(&format!(
         "Protocol: the seat posture = the CURRENT PUBLISHED reflex posture (Issue 008 T1's \
-re-baseline: `--head-select --nb-select --ridge-select`, registry caps, genome off) fit \
+re-baseline: `--head-select --nb-select --oc-select --ridge-select`, registry caps, genome \
+off — oc and ridge arm only where their cal-slice selection clears the bar: oc on \
+typed_decisions, ridge on emotion, byte-identical to off elsewhere) fit \
 through the SAME code reflex's runner uses (`harness::runner::seat`). The A0 drift pin \
 asserts the arena's A0 accuracy equals reflex's own `run()` row on EVERY arena suite, and \
 — when the reflex-site checkout stands beside the workspace — that reflex's rows equal the \
-PUBLISHED bench.json numbers. H1 top-k = 8 (default). H2 grid: β ∈ {BETA_GRID:?} × n_min ∈ {N_MIN_GRID:?} × \
+PUBLISHED bench.json numbers. Population (Issue 010 T1/T2): every reflex dataset suite — \
+a suite with no winner artifact runs the A0/G0-only posture (verdict a0_stands, never a \
+crash; Issue 010 T2). H1 top-k = 8 (default). H2 grid: β ∈ {BETA_GRID:?} × n_min ∈ {N_MIN_GRID:?} × \
 τ ∈ {TAU_GRID:?} — 45 candidates, train-side only. Product gate (Issue 008 T2): the \
 registered arm must be STRICTLY above the current Reflex row — paired (pick − A0) LB95 > 0 \
 on this frozen test read — else the registration refuses and A0 serves. PICK SPACE (Issue 006, the v2 \
@@ -1606,18 +1816,24 @@ instrument): A0's probs and every gold idx speak the question's PRESENTED-option
 A1/H1/H2 resolve each presented option to its specialist class row (by name for the \
 suites whose keys are the label strings — massive/banking77 — by index under k == N for \
 the fixed-criteria suites), and every hybrid pick is a position, directly comparable with \
-gold. The v1 read scored the label permutation by position and compared label-space picks \
-against position-space gold — invisible wherever the presented set is the full universe, \
-chance-level on massive (20 of 59 + shuffle); its registration also double-indexed \
-`rank0_sorted[select_arm(..)]` (select_arm already returns the candidate index)."
+gold. A0 rows are PER QUESTION (reflex's hard-metrics convention; latency stays per-case \
+for seat-composing arms, `n_cases` disclosed)."
     ));
     md.push_str(&format!("Box state: {box_state}\n\n"));
 
     for run in runs {
         md.push_str(&format!("## {}\n\n", run.suite));
         md.push_str(&format!(
+            "Verdict: **{}**{}.\n\n",
+            run.verdict,
+            run.a0_note
+                .as_ref()
+                .map(|n| format!(" — {n}"))
+                .unwrap_or_default()
+        ));
+        md.push_str(&format!(
             "Posture: cap {} · head {:.2} · nb {:.2} · ridge {:.2} ({}) · fused-gate thresholds \
-{:.3}/{:.3}. Questions: {}.\n\n",
+{:.3}/{:.3}. Questions: {} over {} cases.{}\n\n",
             run.posture.effective_cap,
             run.posture.head_scale,
             run.posture.nb_scale,
@@ -1625,7 +1841,13 @@ chance-level on massive (20 of 59 + shuffle); its registration also double-index
             run.posture.nb_view,
             run.posture.score_threshold,
             run.posture.distance_threshold,
-            run.n_questions
+            run.n_questions,
+            run.n_cases,
+            if !run.specialist_present {
+                " A0/G0-only posture — no specialist artifact (Issue 010 T2)."
+            } else {
+                ""
+            }
         ));
 
         // The registration table (train/cal — the instrument's output).
@@ -1759,12 +1981,19 @@ conformal floor {:.4} → {}\n",
                 if *pass { "PASS" } else { "FAIL" }
             ));
         }
-        md.push_str(&format!(
-            "- **G2 fusion overhead:** H1 fusion-only {:.0} ns/question (bar < 100; the full \
+        if run.specialist_present {
+            md.push_str(&format!(
+                "- **G2 fusion overhead:** H1 fusion-only {:.0} ns/question (bar < 100; the full \
 escalated decision incl. specialist scoring is {:.0} ns/q) · H2 fusion {:.2} ns/option \
 (bar < 100) · absolute p99 in the table\n",
-            run.h1_ns_fusion, run.h1_ns_decision, run.h2_ns_per_option
-        ));
+                run.h1_ns_fusion, run.h1_ns_decision, run.h2_ns_per_option
+            ));
+        } else {
+            md.push_str(
+                "- **G2 fusion overhead:** N/A — no hybrid lane exists (A0/G0-only posture); \
+A0's absolute latency is in the table.\n",
+            );
+        }
         if let Some(l) = &run.laya {
             md.push_str(&format!(
                 "- **G2 laya paired ({} escalated):** lane p50 {:.0} µs vs laya p50 {:.0} µs · \

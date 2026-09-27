@@ -154,6 +154,10 @@ def lane_cell(arm: dict) -> dict:
         },
         "consult_rate": sum(escalated) / n,
         "latency_scope": latency_scope,
+        # Issue 010: a multi-question suite's seat-composing latency rows
+        # are PER CASE, not per question — disclosed so a reader never
+        # divides one by the other.
+        "latency_rows": "cases" if n != len(durs) else "questions",
         "latency_p50_ms": p50,
         "latency_p99_ms": p99,
         "latency_tail_support": tail_support,
@@ -189,8 +193,9 @@ def selftest() -> int:
     """Issue 007 T4: the scope law is pinned by known-answer, not by the
     docstring. An A1/H2 arm must read `arm-only` (name inference), an H1
     arm `seat+arm`, the typed `contains_seat_solve` field must OVER RIDE
-    the name in both directions, an A0-registered suite must be skipped
-    and disclosed, and the replicated harness metrics must match their
+    the name in both directions, an A0-registered suite must carry its
+    MEASURED a0_stands cell + reason (never a bare name list — Issue 010
+    T3), and the replicated harness metrics must match their
     hand-computed values on a deterministic fixture."""
     preds = {"frozen_test_predictions": [
         _run("ag_news", "H2", [_arm("A0", escalated=[], seat=True,
@@ -206,9 +211,17 @@ def selftest() -> int:
                                   **KA)]),
         _run("xnli_en", "H2", [_arm("H2", escalated=[], seat=True,
                                      **KA)]),
+        # Issue 010: an a0_stands suite with a reason — its measured A0
+        # row must be present, not a bare name in a skip list.
+        {**_run("prompt_injections", "A0",
+                [_arm("A0", escalated=[], seat=True, **KA)]),
+         "n_questions": 8, "n_cases": 8,
+         "a0_note": "no specialist artifact (Issue 010 T2)"},
     ]}
     doc = build_doc_from(preds, git_sha="selftest", date_utc="2026-09-27T00:00:00Z")
-    cells = {s["name"]: s["hybrid"] for s in doc["suites"]}
+    by_name = {s["name"]: s for s in doc["suites"]}
+    cells = {name: s["hybrid"] for name, s in by_name.items()
+             if s["verdict"] == "hybrid_arm"}
 
     fails: list[str] = []
 
@@ -216,11 +229,26 @@ def selftest() -> int:
         if not cond:
             fails.append(why)
 
-    # Registered-arm selection + the A0 skip.
+    # Three-state verdicts: the four hybrid cells + the measured A0 cell.
     check(set(cells) == {"ag_news", "emotion", "sst5", "xnli_en"},
-          f"suite set: {sorted(cells)}")
-    check(doc["meta"].get("skipped_suites_a0_registered") == ["banking77"],
-          f"skipped: {doc['meta'].get('skipped_suites_a0_registered')}")
+          f"hybrid_arm suite set: {sorted(cells)}")
+    check(doc["meta"].get("skipped_suites_a0_registered") is None,
+          "the bare skip list must be gone (Issue 010 T3)")
+    pi = by_name.get("prompt_injections")
+    check(pi is not None and pi["verdict"] == "a0_stands",
+          f"prompt_injections verdict: {pi and pi['verdict']}")
+    check(pi is not None and pi["hybrid"] is None,
+          "a0_stands carries no hybrid cell")
+    check(pi is not None and pi["measured_a0"] is not None,
+          "a0_stands carries its measured A0 cell")
+    check(pi is not None and pi["reason"] ==
+          "no specialist artifact (Issue 010 T2)",
+          f"a0_stands reason: {pi and pi['reason']}")
+    if pi is not None and pi["measured_a0"] is not None:
+        check(abs(pi["measured_a0"]["hard"]["accuracy"] - 0.75) < 1e-12,
+              f"measured A0 accuracy {pi['measured_a0']['hard']['accuracy']}")
+        check(pi["measured_a0"]["latency_scope"] == "seat+arm",
+              "measured A0 (A0 arm) reads seat+arm")
 
     # Scope: name inference …
     check(cells["ag_news"]["latency_scope"] == "arm-only",
@@ -260,28 +288,51 @@ def selftest() -> int:
             print(f"FAIL {f}")
         print(f"self-test: {len(fails)} failure(s)")
         return 1
-    print("self-test: PASS (5 fixtures, scope law + known-answer metrics)")
+    print("self-test: PASS (6 fixtures, three-state verdicts + scope law + known-answer metrics)")
     return 0
 
 
 def build_doc_from(preds: dict, git_sha: str, date_utc: str) -> dict:
     """`build_doc` over an already-parsed predictions dict (the self-test
-    seam; the file path halves share the body)."""
+    seam; the file path halves share the body).
+
+    Issue 010 T3 — the doc carries the THREE-STATE vocabulary, per suite:
+    `hybrid_arm` (a registered non-A0 arm, gates pass — today's shape) ·
+    `a0_stands` (seated, single frozen read done, no promotable hybrid
+    arm — carries its MEASURED A0 cell + the reason; the old bare
+    `skipped_suites_a0_registered` name list could not carry a
+    measurement and the site rendered it as never-run) · absent (never
+    seated — the site's `not run`)."""
     suites = []
-    skipped = []
     for run in preds["frozen_test_predictions"]:
         registered = run["registered"]
-        if registered == "A0":
-            skipped.append(run["suite"])
-            continue
-        arm = next(a for a in run["arms"] if a["name"] == registered)
-        suites.append({
+        a0_arm = next((a for a in run["arms"] if a["name"] == "A0"), None)
+        n_questions = run.get("n_questions")
+        n_cases = run.get("n_cases", n_questions)
+        entry = {
             "name": run["suite"],
-            "n_questions": run["n_questions"],
-            # one non-noul question per case — the seat's own assertion
-            "n_cases": run["n_questions"],
-            "hybrid": lane_cell(arm),
-        })
+            "n_questions": n_questions,
+            "n_cases": n_cases,
+            "verdict": None,
+            "hybrid": None,
+            "measured_a0": None,
+            "reason": run.get("a0_note"),
+        }
+        if registered == "A0":
+            # Measured — A0 stands. The A0 arm IS the lane cell here: the
+            # hybrid is reflex on this suite, and the measurement is the
+            # honest content the old skip list dropped.
+            if a0_arm is None:
+                raise ValueError(
+                    f"{run['suite']}: registered A0 but no A0 arm in the record"
+                )
+            entry["verdict"] = "a0_stands"
+            entry["measured_a0"] = lane_cell(a0_arm)
+        else:
+            arm = next(a for a in run["arms"] if a["name"] == registered)
+            entry["verdict"] = "hybrid_arm"
+            entry["hybrid"] = lane_cell(arm)
+        suites.append(entry)
     meta = {
         "host": "m3",
         "git_sha": git_sha,
@@ -291,12 +342,14 @@ def build_doc_from(preds: dict, git_sha: str, date_utc: str) -> dict:
         "lane_note": (
             "instinct hybrid lane: the registered arm's single frozen test "
             "read over the reflex harness seat at the current published "
-            "reflex posture (the Bench-004 re-baseline); a suite whose "
-            "registered arm is A0 carries no hybrid lane"
+            "reflex posture (the Bench-004 re-baseline). Three states per "
+            "suite (Issue 010): hybrid_arm = a registered non-A0 arm serves; "
+            "a0_stands = measured, A0 serves (measured_a0 carries the row, "
+            "reason names why nothing is sold); absent from this doc = never "
+            "seated. A0-stands is NOT a sale — the superiority gate (Issue "
+            "008 T2) refused or no specialist exists."
         ),
     }
-    if skipped:
-        meta["skipped_suites_a0_registered"] = skipped
     return {"meta": meta, "suites": suites}
 
 
@@ -331,11 +384,11 @@ def main() -> int:
     doc = build_doc(args.predictions, git_sha, date_utc)
     args.out.write_text(json.dumps(doc, indent=1) + "\n", encoding="utf-8")
     names = [s["name"] for s in doc["suites"]]
-    skipped = doc["meta"].get("skipped_suites_a0_registered", [])
+    a0 = [s["name"] for s in doc["suites"] if s["verdict"] == "a0_stands"]
     print(f"hybrid lane doc: {args.out}")
     print(f"  suites: {', '.join(names)}")
-    if skipped:
-        print(f"  skipped (A0 registered): {', '.join(skipped)}")
+    if a0:
+        print(f"  a0_stands (measured, not sold): {', '.join(a0)}")
     return 0
 
 
