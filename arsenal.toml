@@ -2,9 +2,9 @@
 # (Proposal 001 T1/T2, law A5): suite → artifact digest → class → serving
 # posture → pins → budget. Digest-validated at boot; drift fails loud and
 # names the offending row + field. The embedded copy of THIS file is the
-# DEFAULT host posture — the Bench-004 GOAT verdicts (the Issue-008 T1
-# re-baseline at the CURRENT published reflex posture + the T2 product
-# gate) in raw-winner mode — pinned byte-for-byte by `tests/serve_gates.rs`
+# DEFAULT host posture — the owner's best-measured-arm serving verdict
+# (2026-09-27, over the Bench-005 frozen read) in raw-winner mode —
+# pinned byte-for-byte by `tests/serve_gates.rs`
 # (law A6): a TOML edit reds exactly like a code edit does. A deployment
 # overrides it with `INSTINCT_ARSENAL=<path>` or `--arsenal <path>` (one
 # manifest per HOST/deployment — a vessel-mode host ships its own rows
@@ -40,19 +40,30 @@
 # The six rows are the six specialist suites — reflex's other dataset
 # suites have no specialist and no seat posture, so they get no row.
 #
-# ── the Bench-004 verdicts (why most rows are A0) ─────────────────────
-# The Issue-008 T2 product gate: the registered arm must be STRICTLY
-# above the current Reflex row — paired (pick − A0) LB95 > 0 on the
-# frozen test read — or the registration refuses and A0 serves. Reflex
-# is free; a tie, or an edge the paired data cannot certify, sells
-# nothing. At the re-baselined base (emotion's ridge@8 lifted reflex to
-# 0.8850 there), exactly ONE hybrid arm certifies: massive's H2.
+# ── the serving law (owner verdict 2026-09-27) ──────────────────────
+# The SERVING selector is the BEST MEASURED ARM per suite over the frozen
+# test read (Bench 005, `.benchmarks/005_hybrid_every_suite_measured/`),
+# with A0 as a candidate like any other — "pick the best decision" is
+# the product law (owner: "i dont care what arm you attach but it should
+# pick the best decision for me and get good score"). Under this law the
+# served arm is never the WORST arm by construction; where A0 is the
+# argmax (emotion, banking77, xnli) the reflex half IS the best Instinct
+# has today, and the losing specialists are the open improvement backlog
+# (Issue 008 T4/T5), not a refusal to serve.
+#
+# The T2 strict-superiority gate (paired LB95 > 0) REMAINS as the
+# ADVERTISING law — the reflex-site ✓/✗ row and the certification
+# vocabulary — not as the serving selector. ag_news H2 (+1.5 pt mean,
+# LB95 -0.0100 at n=400) and sst5 A1 (+2.5 pt mean, LB95 -0.0129) serve
+# under best-measured while still uncertified: expected value positive,
+# downside bounded, and the certification path is more questions, not a
+# posture rollback.
 
 [[vessel]]
 suite   = "ag_news"
 digest  = "blake3:ec327ac30250205b2b26c6b00976f9fb50bdf44a9bcbb1d87e35c6ca06f5cf33"
 class   = "hosted_only"
-posture = { arm = "A0" }                                          # T2 REFUSED H2(0.25,2,2): mean +0.0150, LB95 -0.0100
+posture = { arm = "H2", beta = 0.25, n_min = 2.0, tau_n = 2.0 }      # best measured 0.8975 vs A0 0.8825 (+1.5 pt; T2 LB95 -0.0100 — uncertified, serves under best-measured; certify at T4/T5)
 pin_keys = []
 budget  = { load = "eager", max_payload_mb = 16 }
 
@@ -60,7 +71,7 @@ budget  = { load = "eager", max_payload_mb = 16 }
 suite   = "emotion"
 digest  = "blake3:95c9d7f3314ec774d6549f1ff5db95e79146c4201d354b969e37f0d99ffe46eb"
 class   = "hosted_only"
-posture = { arm = "A0" }                                          # the ridge@8 base outruns A1: reflex 0.8850 vs A1 0.8550 — the instrument picked A0 outright
+posture = { arm = "A0" }                                          # best measured IS A0 0.8850 (A1 0.8550 / H1 0.8775 lose — specialist backlog)
 pin_keys = []
 budget  = { load = "eager", max_payload_mb = 16 }
 
@@ -68,7 +79,7 @@ budget  = { load = "eager", max_payload_mb = 16 }
 suite   = "sst5"
 digest  = "blake3:430558d6210737a267249500e0c3df4a0534d344752a1b4dae9a0e6952d2c001"
 class   = "hosted_only"
-posture = { arm = "A0" }                                          # T2 REFUSED A1: mean +0.0250, LB95 -0.0129 (G3 held — a tie is not a sale)
+posture = { arm = "A1" }                                          # best measured 0.4217 vs A0 0.3967 (+2.5 pt; T2 LB95 -0.0129 — uncertified, serves under best-measured)
 pin_keys = []
 budget  = { load = "eager", max_payload_mb = 16 }
 
@@ -76,7 +87,7 @@ budget  = { load = "eager", max_payload_mb = 16 }
 suite   = "massive_intent_en"
 digest  = "blake3:7bc3ee385f81abc0f2a91e47f6dca08db37f9fb6cee6d48121b80e3f11378556"
 class   = "hosted_only"
-posture = { arm = "H2", beta = 1.0, n_min = 2.0, tau_n = 8.0 }    # T2 PASS: mean +0.0467, LB95 +0.0124 — the ONE certified strictly-above-Reflex arm
+posture = { arm = "H2", beta = 1.0, n_min = 2.0, tau_n = 8.0 }    # best measured 0.8267 vs A0 0.7800 (+4.7 pt) — ALSO T2-certified (LB95 +0.0124)
 pin_keys = []
 budget  = { load = "eager", max_payload_mb = 16 }
 
@@ -84,7 +95,7 @@ budget  = { load = "eager", max_payload_mb = 16 }
 suite   = "banking77"
 digest  = "blake3:611cf0d22e9d45a3f082994994c783e357b96514255825ad8ae95a9328612d94"
 class   = "hosted_only"
-posture = { arm = "A0" }                                          # T2 REFUSED H1: mean -0.0200, LB95 -0.0466 (the Bench-002 G3 FAIL, now the gate's job)
+posture = { arm = "A0" }                                          # best measured IS A0 0.8260 (H1 0.8060 / A1 0.7960 lose — specialist backlog)
 pin_keys = []
 budget  = { load = "eager", max_payload_mb = 16 }
 

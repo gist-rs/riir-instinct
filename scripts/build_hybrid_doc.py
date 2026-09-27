@@ -6,11 +6,19 @@ Reads a `.benchmarks/NNN_*/predictions.json` written by the arena
 `publish_bench.py` consumes (the hybrid lane rides the same merge law as
 every other lane — riir-instinct .issues/003).
 
-Per suite: ONLY the REGISTERED arm becomes the lane cell (the
-pre-registration instrument's pick — never a post-hoc best-of). A suite
-whose registered arm is `A0` carries NO hybrid lane (the hybrid IS reflex
-there; a lane cell would be a duplicate of the modelless row wearing a
-new label).
+Per suite the lane cell is the SERVING arm's measured read — resolved
+from the arsenal manifest (law A5, the ONE selection surface; the
+owner's best-measured-arm serving law, 2026-09-27), never the record's
+T2-era `registered` field. EVERY seated suite carries a cell (the owner
+display law: hiding a measured result reads as "can't handle it" — a
+tie or a loss is shown, labeled, and stays visible as the improvement
+backlog, Issue 008). The cell carries:
+- `serves`  the arm the hosted service answers with (from the manifest)
+- `gate`    the T2 certification state of that arm (certified / uncertified
+            best-measured / served-by-the-reflex-half)
+where the serving arm is A0, the cell IS the measured A0 read (the
+product's answer on that suite — the reflex half is part of the
+Instinct binary, Plan 001 P5).
 
 Statistics replicate the reflex harness metric laws EXACTLY (the same
 functions the arena imports, re-derived here over the frozen picks):
@@ -107,6 +115,54 @@ def pct_nearest_rank(sorted_vals: list[float], pct: float) -> float:
         return float("nan")
     idx = max(0, math.ceil(pct / 100.0 * n) - 1)
     return sorted_vals[min(idx, n - 1)]
+
+
+def h2_record_name(beta: float, n_min: float, tau_n: float) -> str:
+    """The arena's H2 arm-name spelling ("H2(β=0.25,nmin=2,τ=2)") — the
+    :g format trims 2.0 → 2 exactly as Rust's f64 Display does."""
+    return f"H2(β={beta:g},nmin={n_min:g},τ={tau_n:g})"
+
+
+def serving_arms(arsenal_path: Path) -> dict[str, str]:
+    """suite → serving arm record-name, read off the arsenal manifest.
+    A0/A1/H1 map to themselves; H2 renders its params into the record
+    spelling. The manifest is the serving truth (law A5) — the doc
+    displays what the service answers, plus the T2 gate state."""
+    try:
+        import tomllib
+    except ModuleNotFoundError:  # py3.10
+        import tomli as tomllib  # type: ignore
+    raw = tomllib.loads(arsenal_path.read_text(encoding="utf-8"))
+    out: dict[str, str] = {}
+    for row in raw.get("vessel", []):
+        suite = row.get("suite")
+        posture = row.get("posture") or {}
+        arm = posture.get("arm")
+        if not suite or not arm:
+            continue
+        if arm == "H2":
+            out[suite] = h2_record_name(posture["beta"], posture["n_min"],
+                                        posture["tau_n"])
+        else:
+            out[suite] = arm
+    return out
+
+
+def gate_note(suite: str, serving: str, run: dict) -> str:
+    """The T2 gate state of the serving arm, from the frozen record's
+    superiority block — displayed, never hidden (the owner display law):
+    a tie or a loss stays visible as the improvement backlog."""
+    sup = run.get("superiority") or {}
+    if sup.get("pick") == serving and sup.get("passed"):
+        return (f"certified (paired LB95 {sup['lb95']:+.4f}, "
+                f"mean {sup['mean']:+.4f})")
+    if serving == "A0":
+        if run.get("registered") == "A0" and run.get("instrument_pick") in (None, "A0"):
+            return "served by the reflex half — the best measured arm on this suite"
+        return "served by the reflex half (A0 is the argmax)"
+    return (f"best measured, T2-uncertified (paired LB95 "
+            f"{sup.get('lb95', 0.0):+.4f}) — certification is more "
+            f"questions, not a posture rollback")
 
 
 def lane_cell(arm: dict) -> dict:
@@ -206,10 +262,12 @@ def selftest() -> int:
     T3), and the replicated harness metrics must match their
     hand-computed values on a deterministic fixture."""
     preds = {"frozen_test_predictions": [
-        _run("ag_news", "H2", [_arm("A0", escalated=[], seat=True,
-                                     **KA),
-                                _arm("H2", escalated=[False] * 4,
-                                     **KA)]),
+        {**_run("ag_news", "A0",
+                [_arm("A0", escalated=[], seat=True, **KA),
+                 _arm("H2", escalated=[False] * 4, **KA)]),
+         "instrument_pick": "H2", "registered": "A0",
+         "superiority": {"pick": "H2", "mean": 0.015, "lb95": -0.01,
+                         "passed": False}},
         _run("banking77", "A0", [_arm("A0", escalated=[], seat=True,
                                        **KA)]),
         _run("emotion", "H1", [_arm("H1", escalated=[True, False, True,
@@ -232,7 +290,11 @@ def selftest() -> int:
          "n_questions": 8, "n_cases": 4,
          "a0_note": "no specialist artifact (Issue 010 T2)"},
     ]}
-    doc = build_doc_from(preds, git_sha="selftest", date_utc="2026-09-27T00:00:00Z")
+    # The serving law: ag_news serves its best measured arm (H2 — the
+    # T2-refused pick), the rest serve what the record registered.
+    serving = {"ag_news": "H2"}
+    doc = build_doc_from(preds, git_sha="selftest",
+                         date_utc="2026-09-27T00:00:00Z", serving=serving)
     by_name = {s["name"]: s for s in doc["suites"]}
     cells = {name: s["hybrid"] for name, s in by_name.items()
              if s["verdict"] == "hybrid_arm"}
@@ -246,15 +308,31 @@ def selftest() -> int:
     # Three-state verdicts: the four hybrid cells + the measured A0 cell.
     check(set(cells) == {"ag_news", "emotion", "sst5", "xnli_en"},
           f"hybrid_arm suite set: {sorted(cells)}")
-    check(doc["meta"].get("skipped_suites_a0_registered") is None,
-          "the bare skip list must be gone (Issue 010 T3)")
+    # The serving-law display: EVERY seated suite carries a hybrid cell
+    # (the a0_stands suite's cell IS its measured A0 read — the product
+    # answers everywhere, never a hole), carries `serves` + `gate`, and
+    # ag_news displays the SERVING arm (H2, the best measured) even
+    # though the record's registered field still reads A0 (T2-era data).
+    for s in doc["suites"]:
+        check(s["hybrid"] is not None,
+              f"{s['name']}: the serving law display requires a cell")
+        check(s["hybrid"].get("serves"),
+              f"{s['name']}: serves rides the cell")
+        check(s["hybrid"].get("gate"),
+              f"{s['name']}: gate rides the cell")
+    ag = by_name["ag_news"]
+    check(ag["verdict"] == "hybrid_arm" and ag["hybrid"]["serves"] == "H2",
+          f"ag_news serves the best measured arm: {ag['hybrid'].get('serves')}")
+    check("uncertified" in ag["hybrid"]["gate"],
+          f"ag_news gate names the T2 state: {ag['hybrid'].get('gate')}")
     pi = by_name.get("prompt_injections")
     check(pi is not None and pi["verdict"] == "a0_stands",
           f"prompt_injections verdict: {pi and pi['verdict']}")
-    check(pi is not None and pi["hybrid"] is None,
-          "a0_stands carries no hybrid cell")
-    check(pi is not None and pi["measured_a0"] is not None,
-          "a0_stands carries its measured A0 cell")
+    check(pi is not None and pi["hybrid"] is not None
+          and pi["hybrid"]["model"] == "A0"
+          and pi["measured_a0"] is not None
+          and pi["hybrid"]["hard"] == pi["measured_a0"]["hard"],
+          "a0_stands carries its measured A0 read AS the lane cell")
     check(pi is not None and pi["reason"] ==
           "no specialist artifact (Issue 010 T2)",
           f"a0_stands reason: {pi and pi['reason']}")
@@ -318,46 +396,47 @@ def selftest() -> int:
     return 0
 
 
-def build_doc_from(preds: dict, git_sha: str, date_utc: str) -> dict:
+def build_doc_from(preds: dict, git_sha: str, date_utc: str,
+                   serving: dict[str, str] | None = None) -> dict:
     """`build_doc` over an already-parsed predictions dict (the self-test
     seam; the file path halves share the body).
 
-    Issue 010 T3 — the doc carries the THREE-STATE vocabulary, per suite:
-    `hybrid_arm` (a registered non-A0 arm, gates pass — today's shape) ·
-    `a0_stands` (seated, single frozen read done, no promotable hybrid
-    arm — carries its MEASURED A0 cell + the reason; the old bare
-    `skipped_suites_a0_registered` name list could not carry a
-    measurement and the site rendered it as never-run) · absent (never
-    seated — the site's `not run`)."""
+    The SERVING law display (owner verdict 2026-09-27): every seated
+    suite carries its serving arm's cell — resolved from the arsenal
+    manifest via `serving` (suite → arm record-name; None = the record's
+    `registered` field, the T2-era fallback). The verdict vocabulary
+    tracks the SERVING state: `hybrid_arm` = a specialist arm serves,
+    `a0_stands` = the reflex half serves (its measured cell IS the lane
+    cell — the product answers, never a hole). `measured_a0` + `reason`
+    stay for the record."""
     suites = []
     for run in preds["frozen_test_predictions"]:
-        registered = run["registered"]
         a0_arm = next((a for a in run["arms"] if a["name"] == "A0"), None)
         n_questions = run.get("n_questions")
         n_cases = run.get("n_cases", n_questions)
+        suite = run["suite"]
+        serving_name = (serving or {}).get(suite, run.get("registered"))
+        serving_arm = next((a for a in run["arms"] if a["name"] == serving_name),
+                           None)
+        if serving_arm is None:
+            raise ValueError(
+                f"{suite}: serving arm {serving_name!r} has no measured "
+                f"read in the record — the manifest named an unmeasured arm")
         entry = {
-            "name": run["suite"],
+            "name": suite,
             "n_questions": n_questions,
             "n_cases": n_cases,
             "verdict": None,
-            "hybrid": None,
-            "measured_a0": None,
+            "measured_a0": lane_cell(a0_arm) if a0_arm else None,
             "reason": run.get("a0_note"),
         }
-        if registered == "A0":
-            # Measured — A0 stands. The A0 arm IS the lane cell here: the
-            # hybrid is reflex on this suite, and the measurement is the
-            # honest content the old skip list dropped.
-            if a0_arm is None:
-                raise ValueError(
-                    f"{run['suite']}: registered A0 but no A0 arm in the record"
-                )
-            entry["verdict"] = "a0_stands"
-            entry["measured_a0"] = lane_cell(a0_arm)
-        else:
-            arm = next(a for a in run["arms"] if a["name"] == registered)
-            entry["verdict"] = "hybrid_arm"
-            entry["hybrid"] = lane_cell(arm)
+        # serves/gate ride ON the cell (the published slot), so they
+        # travel through publish_bench's cell-path merge untouched.
+        cell = lane_cell(serving_arm)
+        cell["serves"] = serving_name
+        cell["gate"] = gate_note(suite, serving_name, run)
+        entry["hybrid"] = cell
+        entry["verdict"] = "a0_stands" if serving_name == "A0" else "hybrid_arm"
         suites.append(entry)
     meta = {
         "host": "m3",
@@ -366,22 +445,24 @@ def build_doc_from(preds: dict, git_sha: str, date_utc: str) -> dict:
         "profile": "release",
         "laya_feature": False,
         "lane_note": (
-            "instinct hybrid lane: the registered arm's single frozen test "
-            "read over the reflex harness seat at the current published "
-            "reflex posture (the Bench-004 re-baseline). Three states per "
-            "suite (Issue 010): hybrid_arm = a registered non-A0 arm serves; "
-            "a0_stands = measured, A0 serves (measured_a0 carries the row, "
-            "reason names why nothing is sold); absent from this doc = never "
-            "seated. A0-stands is NOT a sale — the superiority gate (Issue "
-            "008 T2) refused or no specialist exists."
+            "instinct hybrid lane: the SERVING arm's single frozen test "
+            "read over the reflex harness seat. Serving law (owner, "
+            "2026-09-27): the best measured arm serves — resolved from "
+            "the arsenal manifest, A0 a candidate like any other; every "
+            "seated suite carries its cell (a tie or a loss is shown, "
+            "labeled via serves/gate, and stays visible as the Issue-008 "
+            "improvement backlog — never hidden). The T2 strict-"
+            "superiority gate remains the ADVERTISING law, not the "
+            "serving selector."
         ),
     }
     return {"meta": meta, "suites": suites}
 
 
-def build_doc(predictions_path: Path, git_sha: str, date_utc: str) -> dict:
+def build_doc(predictions_path: Path, git_sha: str, date_utc: str,
+              serving: dict[str, str] | None = None) -> dict:
     preds = json.loads(predictions_path.read_text(encoding="utf-8"))
-    return build_doc_from(preds, git_sha, date_utc)
+    return build_doc_from(preds, git_sha, date_utc, serving)
 
 
 def main() -> int:
@@ -392,6 +473,9 @@ def main() -> int:
     ap.add_argument("--git-sha", default=None,
                     help="the arena build's sha (default: git rev-parse HEAD)")
     ap.add_argument("--date-utc", default=None)
+    ap.add_argument("--arsenal", type=Path, default=None,
+                    help="the arsenal manifest (the serving truth; "
+                         "default: <repo>/arsenal.toml beside this script)")
     ap.add_argument("--self-test", action="store_true",
                     help="run the Issue-007 known-answer arms and exit")
     args = ap.parse_args()
@@ -407,14 +491,16 @@ def main() -> int:
         ).stdout.strip()
     date_utc = args.date_utc or datetime.now(timezone.utc).strftime(
         "%Y-%m-%dT%H:%M:%SZ")
-    doc = build_doc(args.predictions, git_sha, date_utc)
+    serving = serving_arms(args.arsenal)
+    doc = build_doc(args.predictions, git_sha, date_utc, serving)
     args.out.write_text(json.dumps(doc, indent=1) + "\n", encoding="utf-8")
     names = [s["name"] for s in doc["suites"]]
     a0 = [s["name"] for s in doc["suites"] if s["verdict"] == "a0_stands"]
     print(f"hybrid lane doc: {args.out}")
     print(f"  suites: {', '.join(names)}")
     if a0:
-        print(f"  a0_stands (measured, not sold): {', '.join(a0)}")
+        print(f"  a0_stands (reflex half serves — best measured there): "
+              f"{', '.join(a0)}")
     return 0
 
 

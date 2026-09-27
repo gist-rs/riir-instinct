@@ -6,12 +6,16 @@
 //! 1. **The manifest byte pin** — the embedded `arsenal.toml` is pinned
 //!    byte-for-byte (BLAKE3): a TOML edit reds exactly like a code edit
 //!    does (law A6 — the posture is DATA now, so the pin moved with it).
-//! 2. **The posture pin** — the manifest's rows ARE the Bench-004 GOAT
-//!    verdicts (the Issue-008 T1 re-baseline + T2 product gate), arm-by-arm
+//! 2. **The posture pin** — the manifest's rows ARE the owner's
+//!    best-measured-arm serving verdict (2026-09-27, over the Bench-005
+//!    frozen read; A0 is a candidate like any other arm), arm-by-arm
 //!    against the frozen record. Runs everywhere.
 //! 3. **The parity gate** — the served decision for committed test cases
-//!    IS the frozen `predictions.json` pick for the same case (the serve
-//!    path is the arena path, never a re-derivation). SKIPs loud when the
+//!    IS the frozen `predictions.json` pick of the MANIFEST'S ARM for the
+//!    same case (the serve implements the manifest — law A5's one
+//!    selection surface; the record's `registered` field is the arena's
+//!    T2-era answer, kept only as data). The serve path is the arena
+//!    path, never a re-derivation. SKIPs loud when the
 //!    t20k datasets / winner artifacts are absent (a bare clone) — a skip
 //!    is a deferral, never a green.
 //! 4. **The HTTP edge gates** — healthz shape, decide shapes, refusal
@@ -55,7 +59,7 @@ fn embedded_manifest() -> ArsenalManifest {
 /// re-run + frozen-predictions parity update law A6 demands). This is
 /// the TOML analogue of the compile-time posture table it replaced.
 const PINNED_MANIFEST_DIGEST: &str =
-    "blake3:57dc4f311ce43f0cf2b55c46dd4702dc4c75ccd7b7503b0ab703698b884b33f7";
+    "blake3:4e63e9d9bfe45d4c9367db79742bfba4cbc792118fed1470ac4d3f204ef8fbdd";
 
 #[test]
 fn arsenal_manifest_bytes_are_pinned_byte_for_byte() {
@@ -70,16 +74,25 @@ fn arsenal_manifest_bytes_are_pinned_byte_for_byte() {
 // ── face 2: the posture pin (the Bench-004 verdict, now as DATA) ─────
 
 #[test]
-fn manifest_posture_rows_are_the_rebaseline_goat_verdict() {
+fn manifest_posture_rows_are_the_serving_law_verdict() {
     let m = embedded_manifest();
-    // The Bench-004 verdicts (Issue 008 T1's re-baseline at the CURRENT
-    // published reflex posture + T2's strict-superiority gate): exactly
-    // ONE hybrid arm certifies — massive's H2. The refusals are DATA
-    // (each row's comment carries the paired LB95 that refused it).
+    // The owner's serving law (2026-09-27, "pick the best decision for
+    // me"): the SERVED arm is the best measured arm per suite over the
+    // Bench-005 frozen read, A0 included as a candidate. ag_news serves
+    // H2(0.25,2,2) 0.8975 and sst5 serves A1 0.4217 while still
+    // T2-uncertified (the strict-superiority gate stays as the
+    // ADVERTISING law — the reflex-site ✓/✗ row — not the serving
+    // selector); emotion / banking77 / xnli serve A0 because A0 IS the
+    // argmax there — the losing specialists are the Issue-008 T4/T5
+    // backlog, not a refusal to serve.
     let expected: [(&str, Arm, &str); 6] = [
-        ("ag_news", Arm::A0, "A0"),
+        (
+            "ag_news",
+            Arm::H2 { beta: 0.25, n_min: 2.0, tau_n: 2.0 },
+            "H2(β=0.25,nmin=2,τ=2)",
+        ),
         ("emotion", Arm::A0, "A0"),
-        ("sst5", Arm::A0, "A0"),
+        ("sst5", Arm::A1, "A1"),
         (
             "massive_intent_en",
             Arm::H2 { beta: 1.0, n_min: 2.0, tau_n: 8.0 },
@@ -98,7 +111,7 @@ fn manifest_posture_rows_are_the_rebaseline_goat_verdict() {
             .unwrap_or_else(|e| panic!("{suite}: posture refused: {e}"));
         assert_eq!(
             parsed, arm,
-            "{suite}: the manifest posture drifted from the Bench-004 verdict"
+            "{suite}: the manifest posture drifted from the serving-law verdict"
         );
         assert_eq!(parsed.name(), name, "{suite}: arm display name drifted");
     }
@@ -143,19 +156,19 @@ fn boot_suite(suite: &'static str) -> Result<riir_instinct::server::AnySuiteServ
         .expect("boot thread panicked")
 }
 
-/// The frozen predictions record: suite → (registered arm name, picks).
-/// The frozen predictions record: suite → (registered arm name, picks,
-/// the registered arm's per-case abstention flags — the SERVE's
-/// first-class abstention contract, recorded since Bench 004; an older
-/// record without the field reads as all-answered).
-fn frozen_picks(suite: &str) -> Option<(String, Vec<usize>, Vec<bool>)> {
+/// The frozen predictions record: suite → serving arm's (name, picks,
+/// per-case abstention flags). The ARM is resolved by NAME at the call
+/// site — the manifest posture's arm (the serving law's one selection
+/// surface), never the record's `registered` field, which still carries
+/// the T2-era answer. Abstention recorded since Bench 004; an older
+/// record without the field reads as all-answered.
+fn frozen_picks(suite: &str, arm_name: &str) -> Option<(Vec<usize>, Vec<bool>)> {
     let doc: serde_json::Value =
         serde_json::from_reader(std::fs::File::open(predictions_path()).ok()?).ok()?;
     for s in doc["frozen_test_predictions"].as_array()? {
         if s["suite"].as_str()? == suite {
-            let registered = s["registered"].as_str()?.to_string();
             for arm in s["arms"].as_array()? {
-                if arm["name"].as_str()? == registered {
+                if arm["name"].as_str()? == arm_name {
                     let abstained = arm["abstained"]
                         .as_array()
                         .map(|a| a.iter().map(|b| b.as_bool().unwrap_or(false)).collect())
@@ -164,7 +177,6 @@ fn frozen_picks(suite: &str) -> Option<(String, Vec<usize>, Vec<bool>)> {
                             vec![false; n]
                         });
                     return Some((
-                        registered,
                         arm["picks"]
                             .as_array()?
                             .iter()
@@ -177,6 +189,20 @@ fn frozen_picks(suite: &str) -> Option<(String, Vec<usize>, Vec<bool>)> {
         }
     }
     None
+}
+
+/// The serving posture's arm for one suite, resolved from the embedded
+/// manifest and rendered to its record name (Arm::name is the exact
+/// spelling the arena wrote — "H2(β=0.25,nmin=2,τ=2)" and friends).
+fn serving_arm_name(suite: &str) -> String {
+    let m = embedded_manifest();
+    let row = m
+        .row(suite)
+        .unwrap_or_else(|| panic!("{suite}: missing from the arsenal manifest"));
+    row.to_arm()
+        .unwrap_or_else(|e| panic!("{suite}: posture refused: {e}"))
+        .name()
+        .to_string()
 }
 
 /// The presented option keys of a case, in the case's own order — the
@@ -211,11 +237,13 @@ fn served_decisions_are_the_frozen_goat_picks() {
     let seat = riir_reflex::harness::runner::seat::prepare_seat("ag_news", &datasets_dir())
         .expect("prepare ag_news seat");
     let mut server = boot_suite("ag_news").expect("boot ag_news server");
-    let (registered, picks, abstained) = frozen_picks("ag_news").expect("frozen ag_news record");
+    let serving = serving_arm_name("ag_news");
+    let (picks, abstained) =
+        frozen_picks("ag_news", &serving).expect("frozen ag_news record lacks the serving arm");
     assert_eq!(
-        registered,
+        serving,
         server.meta().arm.name(),
-        "the boot arm must be the frozen registered arm"
+        "the boot arm must be the manifest's serving arm"
     );
 
     // The FIRST 16 test cases, in seat order — the same order the frozen
@@ -264,9 +292,10 @@ fn massive_artifact_known_seat_unknown_option_stays_scorable() {
     )
     .expect("prepare massive seat");
     let mut server = boot_suite("massive_intent_en").expect("boot massive server");
-    let (registered, picks, _abstained) =
-        frozen_picks("massive_intent_en").expect("frozen massive record");
-    assert_eq!(registered, server.meta().arm.name());
+    let serving = serving_arm_name("massive_intent_en");
+    let (picks, _abstained) =
+        frozen_picks("massive_intent_en", &serving).expect("frozen massive record");
+    assert_eq!(serving, server.meta().arm.name());
     assert_eq!(
         server.meta().artifact_labels,
         60,
@@ -508,7 +537,9 @@ fn http_decide_happy_path_with_data() {
     // ANSWERED shape end to end over HTTP.
     let seat = riir_reflex::harness::runner::seat::prepare_seat("ag_news", &datasets_dir())
         .expect("prepare ag_news seat");
-    let (_, _, abstained) = frozen_picks("ag_news").expect("frozen ag_news record");
+    let serving = serving_arm_name("ag_news");
+    let (_, abstained) =
+        frozen_picks("ag_news", &serving).expect("frozen ag_news record");
     let answered = abstained
         .iter()
         .position(|a| !a)
@@ -532,21 +563,31 @@ fn http_decide_happy_path_with_data() {
     let doc: serde_json::Value = serde_json::from_str(&body).expect("decide body parses");
     assert_eq!(doc["lane"], "hybrid");
     assert_eq!(doc["suite"], "ag_news");
-    // ag_news serves A0 (the Bench-004 T2 refusal) — the modelless lane
-    // answers: the response carries the full-arity PROBABILITIES (a real
-    // distribution over the presented options) and NO specialist scores
-    // (the specialist is never consulted).
-    assert_eq!(doc["arm"], "A0", "{body}");
+    // ag_news serves the manifest's arm (the serving law) — resolved live
+    // so the test tracks the manifest, never a hard-coded arm. An A0 lane
+    // answers with the full-arity PROBABILITIES and no specialist scores;
+    // a specialist lane (H2 today) answers with SPECIALIST SCORES + the
+    // fused pick and carries no probability vector.
+    let serving = serving_arm_name("ag_news");
+    assert_eq!(doc["arm"], serving.as_str(), "{body}");
     assert_eq!(doc["abstained"], false, "{body}");
     assert!(doc["pick"].is_string(), "{body}");
-    let probs = doc["probabilities"].as_array().expect("A0 answers with probabilities");
-    assert!(probs.len() == 4, "{body}");
-    assert!(
-        probs.iter().all(|p| p.is_f64()),
-        "A0's probabilities must be numbers: {body}"
-    );
-    assert!(doc["specialist_scores"].is_null(), "{body}");
-    assert_eq!(doc["escalated"], false, "{body}");
+    if serving == "A0" {
+        let probs = doc["probabilities"].as_array().expect("A0 answers with probabilities");
+        assert!(probs.len() == 4, "{body}");
+        assert!(
+            probs.iter().all(|p| p.is_f64()),
+            "A0's probabilities must be numbers: {body}"
+        );
+        assert!(doc["specialist_scores"].is_null(), "{body}");
+        assert_eq!(doc["escalated"], false, "{body}");
+    } else {
+        let scores = doc["specialist_scores"]
+            .as_array()
+            .expect("a specialist arm answers with specialist scores");
+        assert!(scores.iter().all(|s| s.is_f64()), "{body}");
+        assert_eq!(doc["escalated"], true, "{body}");
+    }
     let receipt = &doc["receipt"];
     assert!(receipt["build"].as_str().unwrap().len() == 16, "{body}");
     assert!(receipt["input"].as_str().unwrap().len() == 64, "{body}");
