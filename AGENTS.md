@@ -80,7 +80,8 @@ file .deploy/local/stage/decisions/app-bin   # → ELF 64-bit x86-64
 ## Current state
 
 **P1–P5 substantially DONE (2026-09-26/27) — Bench 001 is the hybrid
-GOAT record; P6 (the flywheel) is open.** Master plan:
+GOAT record; P6 landed T1–T3 (the decstat flywheel, Plan 002) with the
+intake leg filed as riir-train Issue 577.** Master plan:
 [`.plans/001_instinct_lane_clippy_flow.md`](.plans/001_instinct_lane_clippy_flow.md).
 
 - **The hybrid composition** (`src/hybrid.rs`): H1 cascade (reflex

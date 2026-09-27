@@ -104,9 +104,12 @@ weights are bytes; mining → settle → corpus → retrain).
       the frozen Bench-002 predictions (serve path == arena path). The
       CF push itself is owner-adjacent (creds); mainnet is the owner
       ceremony. Gates: `tests/serve_gates.rs` 6/6; suite 28/0.
-- [ ] **P6 — the flywheel (Issue 004).** decstat contribution rows → riir-kat
-      → riir-dapps settle (devnet first) → riir-train corpus → retrain at the
-      measured threshold → new vessel → P5 redeploy. The riir-clippy mining
+- [-] **P6 — the flywheel (Issue 004).** T1–T3 DONE 2026-09-27 (Plan
+      002: decstat capture → riir-kat wire lane `dec` → dapps
+      `/mining/decstats` + `/mining/decstatroot`; live-pushed to devnet
+      epoch 2960; rewards deliberately absent until a priced verification
+      design exists). T4 = the intake/retrain leg, filed as riir-train
+      Issue 577 — blocked on accumulated rows. The riir-clippy mining
       loop, carried for decisions.
 
 ## GOAT gate (every promotion) — the merged Proposal 013 + Plan 001 gate
