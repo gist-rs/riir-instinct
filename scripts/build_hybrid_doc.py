@@ -21,8 +21,13 @@ functions the arena imports, re-derived here over the frozen picks):
                        ties), k = floor(n*0.5).max(1), hits/k
 - mean_confidence    = mean(conf)
 - latency_p50/p99_ms = the arena's nearest-rank percentile over
-                       total_durs_us / 1000 (the composed end-to-end
-                       per-question latency)
+                       total_durs_us / 1000. The SCOPE is per-arm and is
+                       published as `latency_scope` (Issue 007):
+                       "seat+arm" arms (A0/H1 — contains_seat_solve) time
+                       reflex solve + decision, the composed end-to-end;
+                       "arm-only" arms (A1/H2) time their own forward
+                       alone — they do NOT run reflex, so their latency is
+                       NOT end-to-end and must never be read as such.
 - consult_rate       = mean(escalated)
 
 Fields the arena does not produce are OMITTED (never zero-filled): the
@@ -112,6 +117,14 @@ def lane_cell(arm: dict) -> dict:
     n = len(correct)
     if n == 0:
         raise ValueError("registered arm has zero questions — nothing to publish")
+    # The scope law (instinct Issue 007): the published latency cell must
+    # name what it timed. New artifacts carry the arena's typed field;
+    # the Bench-002 record predates it, so the arm name infers there —
+    # A0/H1 compose the reflex seat, A1/H2 time their own forward alone.
+    scope = arm.get("contains_seat_solve")
+    if scope is None:
+        scope = arm["name"] in ("A0", "H1") or arm["name"].startswith("H1")
+    latency_scope = "seat+arm" if scope else "arm-only"
 
     accuracy = sum(correct) / n
     ece = ece_of(list(zip(confs, correct)))
@@ -139,6 +152,7 @@ def lane_cell(arm: dict) -> dict:
             "acc_at_50_coverage": acc50,
         },
         "consult_rate": sum(escalated) / n,
+        "latency_scope": latency_scope,
         "latency_p50_ms": p50,
         "latency_p99_ms": p99,
         "latency_tail_support": tail_support,

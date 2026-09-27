@@ -73,9 +73,14 @@ struct ArmOut {
     /// The arm's OWN per-question work (µs): A0 = the reflex solve, H1 =
     /// its decision alone, A1/H2 = their forward alone.
     own_durs_us: Vec<f64>,
-    /// The composed end-to-end per-question latency (µs): A0 = own; H1 =
-    /// reflex + decision; A1/H2 = own.
+    /// The composed per-question latency (µs). The SCOPE is per-arm and
+    /// named by `contains_seat_solve` (Issue 007): seat-composing arms
+    /// (A0, H1) include the reflex solve; specialist-side arms (A1/H2)
+    /// time their own forward alone — they do not run reflex.
     total_durs_us: Vec<f64>,
+    /// The scope law (Issue 007): does `total_durs_us` include the reflex
+    /// seat solve? "End-to-end" is a claim only a true arm may make.
+    contains_seat_solve: bool,
 }
 
 impl ArmOut {
@@ -458,6 +463,7 @@ impl<const N: usize> SuiteCtx<N> {
             escalated: vec![false; n],
             own_durs_us: se.durs_us.iter().map(|&d| d as f64).collect(),
             total_durs_us: se.durs_us.iter().map(|&d| d as f64).collect(),
+            contains_seat_solve: true,
         };
         let mut h1 = ArmOut {
             name: "H1".into(),
@@ -468,6 +474,7 @@ impl<const N: usize> SuiteCtx<N> {
             escalated: Vec::with_capacity(n),
             own_durs_us: Vec::with_capacity(n),
             total_durs_us: Vec::with_capacity(n),
+            contains_seat_solve: true,
         };
         for (ci, case) in cases.iter().enumerate() {
             let gold = case.gold[0].idx;
@@ -526,6 +533,7 @@ impl<const N: usize> SuiteCtx<N> {
             escalated: vec![true; n],
             own_durs_us: Vec::with_capacity(n),
             total_durs_us: Vec::with_capacity(n),
+            contains_seat_solve: false,
         };
         let mut grid: Vec<GridRow> = BETA_GRID
             .iter()
@@ -614,6 +622,7 @@ impl<const N: usize> SuiteCtx<N> {
                 escalated: vec![true; n],
                 own_durs_us: durs.clone(),
                 total_durs_us: durs,
+                contains_seat_solve: false,
             })
             .collect();
         (a1, arms)
@@ -1281,6 +1290,7 @@ fn write_predictions(out_dir: &Path, runs: &[SuiteRun]) {
                     "escalated": a.escalated,
                     "own_durs_us": a.own_durs_us,
                     "total_durs_us": a.total_durs_us,
+                    "contains_seat_solve": a.contains_seat_solve,
                 })
             })
             .collect();
