@@ -1,5 +1,33 @@
 # HISTORY — riir-instinct
 
+## 2026-09-27 — Issue 007 closed: the missing builder self-test landed, and the committed Bench-002 lane doc predates the scope field
+
+Closing 007 surfaced a checked-but-not-landed task: **T4's builder
+self-test did not exist** — `scripts/build_hybrid_doc.py` carried the
+scope law only as a docstring and the `latency_scope` assignment, with
+no known-answer pin. Landed as `--self-test` (5 fixtures): name
+inference (H2/A1 → `arm-only`, H1 → `seat+arm`), the typed
+`contains_seat_solve` field overriding the name in BOTH directions, the
+A0-registered suite skipped and disclosed, and the replicated harness
+metrics pinned against hand-computed values on a deterministic fixture
+(accuracy 0.75, ece 0.35, acc@50cov 1.0, p50 0.02 ms / p99 0.04 ms /
+tail_support 1, consult_rate per arm). Regression-checked against the
+real Bench-002 `predictions.json`: cell metrics byte-identical to the
+committed doc.
+
+That regression check surfaced the second finding: **the committed
+`.benchmarks/002_hybrid_052_protocol/hybrid_lane_doc.json` was generated
+by the PRE-T2 builder and carries no `latency_scope` at all** — the
+published-site source doc had no scope disclosure to render, so T3's
+site rendering had nothing to show for the hybrid lane until a
+republish. The committed doc is regenerated in place with the CURRENT
+builder, provenance preserved (`--git-sha 0959928 --date-utc
+2026-09-26T23:09:05Z` — the arena build that produced
+`predictions.json`, not the doc-builder commit); the diff is exactly the
+five `latency_scope` fields. The reflex-site republish itself stays with
+the site lane (deferred to the gate-clean whole-run, per that lane's own
+note) — it will now pick the scope up from this doc.
+
 ## 2026-09-27 — Bench 002: the aligned Bench-052-protocol read + the reflex-site hybrid lane publish (Issue 003 T4 closed)
 
 The site publish's comparability blocker is discharged with a measurement,

@@ -39,6 +39,7 @@ vector; the abstain block is a Reflex-lane concept; the repeat-check
 Usage:
     python3 scripts/build_hybrid_doc.py <predictions.json> <out.json>
         [--git-sha <sha>] [--date-utc <iso8601>]
+    python3 scripts/build_hybrid_doc.py --self-test
 """
 
 from __future__ import annotations
@@ -159,8 +160,113 @@ def lane_cell(arm: dict) -> dict:
     }
 
 
-def build_doc(predictions_path: Path, git_sha: str, date_utc: str) -> dict:
-    preds = json.loads(predictions_path.read_text(encoding="utf-8"))
+def _arm(name: str, correct: list[bool], confs: list[float],
+         durs: list[float], escalated: list[bool],
+         seat: bool | None = None) -> dict:
+    arm = {"name": name, "correct": correct, "confs": confs,
+           "total_durs_us": durs, "escalated": escalated}
+    if seat is not None:
+        arm["contains_seat_solve"] = seat
+    return arm
+
+
+def _run(suite: str, registered: str, arms: list[dict], n: int = 4) -> dict:
+    return {"suite": suite, "n_questions": n, "n_cases": n,
+            "registered": registered, "arms": arms}
+
+
+# The shared known-answer arm (4 questions, hand-computed):
+# correct [T,T,F,T] -> accuracy 0.75; confs [.9,.8,.7,.6] each in its own
+# 1/15-wide bin with a 1/4 weight -> ece = .25*(|.9-1|+|.8-1|+|.7-0|+|.6-1|)
+# = 0.35; acc@50cov k=2 top-conf = 2/2 = 1.0; durs [10,20,30,40] us ->
+# p50 0.02 ms (nearest-rank idx 1), p99 0.04 ms (idx 3), tail_support 1.
+KA = dict(correct=[True, True, False, True],
+          confs=[0.9, 0.8, 0.7, 0.6],
+          durs=[10.0, 20.0, 30.0, 40.0])
+
+
+def selftest() -> int:
+    """Issue 007 T4: the scope law is pinned by known-answer, not by the
+    docstring. An A1/H2 arm must read `arm-only` (name inference), an H1
+    arm `seat+arm`, the typed `contains_seat_solve` field must OVER RIDE
+    the name in both directions, an A0-registered suite must be skipped
+    and disclosed, and the replicated harness metrics must match their
+    hand-computed values on a deterministic fixture."""
+    preds = {"frozen_test_predictions": [
+        _run("ag_news", "H2", [_arm("A0", escalated=[], seat=True,
+                                     **KA),
+                                _arm("H2", escalated=[False] * 4,
+                                     **KA)]),
+        _run("banking77", "A0", [_arm("A0", escalated=[], seat=True,
+                                       **KA)]),
+        _run("emotion", "H1", [_arm("H1", escalated=[True, False, True,
+                                                     False],
+                                     **KA)]),
+        _run("sst5", "A1", [_arm("A1", escalated=[], seat=False,
+                                  **KA)]),
+        _run("xnli_en", "H2", [_arm("H2", escalated=[], seat=True,
+                                     **KA)]),
+    ]}
+    doc = build_doc_from(preds, git_sha="selftest", date_utc="2026-09-27T00:00:00Z")
+    cells = {s["name"]: s["hybrid"] for s in doc["suites"]}
+
+    fails: list[str] = []
+
+    def check(cond: bool, why: str) -> None:
+        if not cond:
+            fails.append(why)
+
+    # Registered-arm selection + the A0 skip.
+    check(set(cells) == {"ag_news", "emotion", "sst5", "xnli_en"},
+          f"suite set: {sorted(cells)}")
+    check(doc["meta"].get("skipped_suites_a0_registered") == ["banking77"],
+          f"skipped: {doc['meta'].get('skipped_suites_a0_registered')}")
+
+    # Scope: name inference …
+    check(cells["ag_news"]["latency_scope"] == "arm-only",
+          f"ag_news (H2, inferred): {cells['ag_news']['latency_scope']}")
+    check(cells["emotion"]["latency_scope"] == "seat+arm",
+          f"emotion (H1, inferred): {cells['emotion']['latency_scope']}")
+    # … and the typed field overriding it in BOTH directions.
+    check(cells["sst5"]["latency_scope"] == "arm-only",
+          f"sst5 (A1 typed false): {cells['sst5']['latency_scope']}")
+    check(cells["xnli_en"]["latency_scope"] == "seat+arm",
+          f"xnli_en (H2 typed true): {cells['xnli_en']['latency_scope']}")
+
+    # Known-answer metrics on every cell (all four share KA's numbers).
+    for name, consult in (("ag_news", 0.0), ("emotion", 0.5),
+                          ("sst5", 0.0), ("xnli_en", 0.0)):
+        c = cells[name]
+        check(c["model"] in ("H2", "H1", "A1"), f"{name} model {c['model']}")
+        check(abs(c["hard"]["accuracy"] - 0.75) < 1e-12,
+              f"{name} accuracy {c['hard']['accuracy']}")
+        check(abs(c["hard"]["ece"] - 0.35) < 1e-12,
+              f"{name} ece {c['hard']['ece']}")
+        check(abs(c["hard"]["acc_at_50_coverage"] - 1.0) < 1e-12,
+              f"{name} acc50 {c['hard']['acc_at_50_coverage']}")
+        check(abs(c["hard"]["mean_confidence"] - 0.75) < 1e-12,
+              f"{name} mean_conf {c['hard']['mean_confidence']}")
+        check(abs(c["latency_p50_ms"] - 0.02) < 1e-12,
+              f"{name} p50 {c['latency_p50_ms']}")
+        check(abs(c["latency_p99_ms"] - 0.04) < 1e-12,
+              f"{name} p99 {c['latency_p99_ms']}")
+        check(c["latency_tail_support"] == 1,
+              f"{name} tail_support {c['latency_tail_support']}")
+        check(abs(c["consult_rate"] - consult) < 1e-12,
+              f"{name} consult_rate {c['consult_rate']} != {consult}")
+
+    if fails:
+        for f in fails:
+            print(f"FAIL {f}")
+        print(f"self-test: {len(fails)} failure(s)")
+        return 1
+    print("self-test: PASS (5 fixtures, scope law + known-answer metrics)")
+    return 0
+
+
+def build_doc_from(preds: dict, git_sha: str, date_utc: str) -> dict:
+    """`build_doc` over an already-parsed predictions dict (the self-test
+    seam; the file path halves share the body)."""
     suites = []
     skipped = []
     for run in preds["frozen_test_predictions"]:
@@ -194,14 +300,26 @@ def build_doc(predictions_path: Path, git_sha: str, date_utc: str) -> dict:
     return {"meta": meta, "suites": suites}
 
 
+def build_doc(predictions_path: Path, git_sha: str, date_utc: str) -> dict:
+    preds = json.loads(predictions_path.read_text(encoding="utf-8"))
+    return build_doc_from(preds, git_sha, date_utc)
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("predictions", type=Path)
-    ap.add_argument("out", type=Path)
+    ap.add_argument("predictions", type=Path, nargs="?",
+                    help="the arena's frozen predictions.json")
+    ap.add_argument("out", type=Path, nargs="?")
     ap.add_argument("--git-sha", default=None,
                     help="the arena build's sha (default: git rev-parse HEAD)")
     ap.add_argument("--date-utc", default=None)
+    ap.add_argument("--self-test", action="store_true",
+                    help="run the Issue-007 known-answer arms and exit")
     args = ap.parse_args()
+    if args.self_test:
+        return selftest()
+    if args.predictions is None or args.out is None:
+        ap.error("predictions and out are required (or pass --self-test)")
     git_sha = args.git_sha
     if git_sha is None:
         git_sha = subprocess.run(

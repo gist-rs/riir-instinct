@@ -1,22 +1,33 @@
 # Issue 005 — the Moka+PUCT-style hybrid POC: instinct (model) × reflex (modelless), three compositions + one GOAT gate
 
-**Status:** OPEN — T1–T5 MEASURED 2026-09-27 (Bench 001) except H3
-(excluded with a recorded reason) and the laya/site faces. The GOAT
-verdict per suite: **ag_news promotes H2(β=1,nmin=2,τ=4) — 0.8975 test
-vs A0 0.8625 / A1 0.8875, p50 2 µs, G1+G5 PASS; emotion and sst5
-promote A1 (the specialist alone — 0.8550 and 0.4217 vs A0's 0.5750 and
-0.2017); xnli/massive/banking77 keep A0** (the specialist does not clear
-the modelless lane there — xnli's distilled artifact reads 0.41 vs A0
-0.5167; massive's artifact reads CHANCE and is Issue 006; banking77's
-strong A1 0.796 is reachable only unconfined — H1's top-8 prune loses
-the answer, 0.476). The single frozen test read is spent; predictions
-frozen in `.benchmarks/001_hybrid_goat/predictions.json`. P3's laya row
-still rides `--features arena-laya` (paired escalation face) — not yet
-run. H3 (PUCT over chains): NOT SCORED — its only chain-shaped suite
+**Status:** OPEN — T1–T5 MEASURED; the GOAT verdict stands at the
+ALIGNED Bench-052 protocol (Bench 002, the publishable record — the
+Bench 001 v2 numbers below are superseded; Issue 006's bridge fix
+corrected the v2 instrument): **ag_news promotes H2(β=0.25,nmin=2,τ=2)
+0.8975 (G1 FAIL on the calibration axis — the raw fused readout is
+already calibrated at 0.0133; the raw readout stands); emotion A1
+0.8550 + sst5 A1 0.4217 (G1+G3 PASS); massive H2(β=1,nmin=2,τ=8)
+0.8267 vs A0 0.7800 (+4.7 pt — the v2 "CHANCE/0.42" reading was the old
+first-N sample's unrepresentative A0); banking77 H1 0.8060 @ 46.8%
+consult — G3 FAIL, no promotable hybrid arm, A0 stands; xnli A0
+stands.** The laya paired face RAN (Bench 002: lane sub-2 µs vs laya
+metal 118–187 ms p50 — PASS) and the reflex-site hybrid lane publish
+LANDED (test_publish_bench 22/22; the arena card + #sizes presence
+`0a18105`). The single frozen test read is spent; predictions frozen in
+`.benchmarks/002_hybrid_052_protocol/predictions.json` (Bench 001 v2's
+frozen read is the superseded instrument's). Open faces, both
+data-gated: **H3 (PUCT over chains)** — its only chain-shaped suite
 (typed_decisions) has no trained specialist in the 576 winner set, and
-its value-head category rule bars substituting one; the arm is deferred
-until a typed_decisions specialist exists (also blocked by E0's
-route-terms caveat there).
+its value-head category rule bars substituting one; the arm re-opens
+when a typed_decisions specialist is trained (also blocked by E0's
+route-terms caveat there). **The armed-off/serving faces ride the
+arsenal Proposal 001** (T5/T6 landed; T8's `arsenal_budget_goat` is the
+remaining GOAT leg).
+
+Superseded Bench 001 v2 status, for the record: ag_news H2(β=1,nmin=2,τ=4)
+0.8975 vs A0 0.8625 / A1 0.8875; emotion A1 0.8550, sst5 A1 0.4217 vs
+A0 0.5750 / 0.2017; massive read CHANCE (Issue 006); xnli 0.41 vs A0
+0.5167; predictions frozen in `.benchmarks/001_hybrid_goat/`.
 
 ## Lineage (what the workspace already measured)
 
