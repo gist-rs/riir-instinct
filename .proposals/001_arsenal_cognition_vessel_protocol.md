@@ -63,7 +63,7 @@ L2 looks up · **L3 routes** (ns–µs, never loads) · **L4 swaps** (POLICY + t
 - [x] T1 `ArsenalManifest` (TOML) + boot validation + loud drift refusals (riir-instinct; adds the `toml` dep — NOT in Cargo.toml today, which carries only serde/serde_json — so the BOUNDARY.md allowlist row lands in the same commit, beside the "Owns: selection protocol" row)
 - [x] T2 posture→manifest migration + parity re-pin (serving posture becomes data)
 - [ ] T3 capability features (reflexer/instinct/reflex)
-- [ ] T4 heads→vessels extraction in riir-reflex (PUBLIC-RELEASE class, lazy load)
+- [ ] T4 heads→vessels extraction in riir-reflex (PUBLIC-RELEASE class, lazy load) — DESIGN DECISION (owner, 2026-09-27): PUBLIC-RELEASE vessels are signed by a new reflexer bin `sign` subcommand (the public format repo owns the public-class writer); riir-train `vessel_mint` stays HOSTED-class only
 - [x] T5 budget legs: lazy / wire-triggered eviction (L5-curator release message — no AOI server-side) / Vendi hoarding gate
 - [x] T6 atomic monotonic swap MECHANISM (riir-instinct, reusing reflexer `check_monotonic` — the real precedent; the laya epoch is an analogy only) under the swap POLICY owned game-side (048 L9; interim callers: boot / operator / `MindState` boundaries). Shared epoch-tag contract with 048 T6
 - [ ] T7 laws into reflex/reflexer/instinct AGENTS + disambiguation tables
