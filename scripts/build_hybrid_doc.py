@@ -137,9 +137,17 @@ def lane_cell(arm: dict) -> dict:
     acc50 = sum(1 for i in order[:k] if correct[i]) / k
 
     srt = sorted(durs)
+    m = len(srt)
+    if m == 0:
+        raise ValueError("registered arm has zero latency rows — nothing to publish")
+    # The latency percentiles index the DURS rows, never the question
+    # count: a multi-question suite's seat-composing arm has one durs row
+    # per CASE (n != m — disclosed as latency_rows). The first version
+    # indexed with n and IndexError'd on the first real typed_decisions
+    # record (Bench 005; invisible while every suite was 1q/case).
     p50 = pct_nearest_rank(srt, 50.0) / 1000.0
     p99 = pct_nearest_rank(srt, 99.0) / 1000.0
-    p99_val = srt[min(n - 1, max(0, math.ceil(0.99 * n) - 1))]
+    p99_val = srt[min(m - 1, max(0, math.ceil(0.99 * m) - 1))]
     tail_support = sum(1 for d in durs if d >= p99_val)
 
     return {
@@ -212,10 +220,16 @@ def selftest() -> int:
         _run("xnli_en", "H2", [_arm("H2", escalated=[], seat=True,
                                      **KA)]),
         # Issue 010: an a0_stands suite with a reason — its measured A0
-        # row must be present, not a bare name in a skip list.
+        # row must be present, not a bare name in a skip list. The arm is
+        # the MULTI-QUESTION shape (8 questions, 4 per-case latency rows):
+        # the latency math must index the durs rows, never the question
+        # count (the Bench-005 IndexError class).
         {**_run("prompt_injections", "A0",
-                [_arm("A0", escalated=[], seat=True, **KA)]),
-         "n_questions": 8, "n_cases": 8,
+                [_arm("A0", correct=KA["correct"] * 2,
+                      confs=KA["confs"] * 2,
+                      durs=KA["durs"],
+                      escalated=[], seat=True)]),
+         "n_questions": 8, "n_cases": 4,
          "a0_note": "no specialist artifact (Issue 010 T2)"},
     ]}
     doc = build_doc_from(preds, git_sha="selftest", date_utc="2026-09-27T00:00:00Z")
@@ -245,10 +259,22 @@ def selftest() -> int:
           "no specialist artifact (Issue 010 T2)",
           f"a0_stands reason: {pi and pi['reason']}")
     if pi is not None and pi["measured_a0"] is not None:
-        check(abs(pi["measured_a0"]["hard"]["accuracy"] - 0.75) < 1e-12,
-              f"measured A0 accuracy {pi['measured_a0']['hard']['accuracy']}")
-        check(pi["measured_a0"]["latency_scope"] == "seat+arm",
+        ma = pi["measured_a0"]
+        check(abs(ma["hard"]["accuracy"] - 0.75) < 1e-12,
+              f"measured A0 accuracy {ma['hard']['accuracy']}")
+        check(ma["latency_scope"] == "seat+arm",
               "measured A0 (A0 arm) reads seat+arm")
+        # The multi-question arm: hard.n counts QUESTIONS (8), the
+        # latency rows are CASES (4), and the p50/p99 are computed over
+        # those 4 durs (the Bench-005 IndexError class, pinned).
+        check(ma["hard"]["n"] == 8, f"hard.n counts questions: {ma['hard']['n']}")
+        check(ma["latency_rows"] == "cases", f"latency_rows: {ma['latency_rows']}")
+        check(abs(ma["latency_p50_ms"] - 0.02) < 1e-12,
+              f"multi-q p50 over 4 durs: {ma['latency_p50_ms']}")
+        check(abs(ma["latency_p99_ms"] - 0.04) < 1e-12,
+              f"multi-q p99 over 4 durs: {ma['latency_p99_ms']}")
+        check(ma["latency_tail_support"] == 1,
+              f"multi-q tail_support: {ma['latency_tail_support']}")
 
     # Scope: name inference …
     check(cells["ag_news"]["latency_scope"] == "arm-only",

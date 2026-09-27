@@ -4,7 +4,8 @@
 result in BOTH cases — trained specialist or not). Root causes verified in code
 same day; companion issues: riir-reflex (seat seam refuses the synthetic
 families + code_fixtures), riir-train (specialists for the remaining dataset
-suites).
+suites). **T1/T2/T3 + T5's arena half DONE 2026-09-27 (Bench 005); T4 + the
+republish half await the reflex-site session; T6 awaits the reflex seat seam.**
 
 ## Why
 
@@ -37,30 +38,54 @@ Honest vocabulary the lane must ship: three states, never two —
 
 ## Tasks
 
-- [ ] T1 — Extend the arena population to every reflex DATASET suite: add
+- [-] T1 — Extend the arena population to every reflex DATASET suite: add
       `typed_decisions` + `prompt_injections` (both seatable through
       `prepare_seat` today — they are dataset suites; only this repo's SUITES
       const and the missing specialist artifacts exclude them). Extend the
       label-arity dispatch in `run_suite` if the new suites' label counts fall
-      outside {3,4,5,6,59,77}.
-- [ ] T2 — No-specialist fallback: when `load_artifact` finds no winner
+      outside {3,4,5,6,59,77}. — **DONE 2026-09-27** (SUITES = 8; dispatch
+      gained `<2>` for prompt_injections' noul classes; typed_decisions fits
+      the existing `<3>`; the harness families stay reflex-seat-blocked → T6).
+- [x] T2 — No-specialist fallback: when `load_artifact` finds no winner
       artifact, run the A0/G0-only posture (skip A1/H1/H2 construction — do
       not die), publish the measured row with the verdict
       "A0 stands — no specialist", and keep the A0 identity pin green. The
       arena's die-on-missing-specialist becomes die-on-DATASET-missing (a
       suite the seat cannot build is still fatal; a missing specialist is not).
-- [ ] T3 — `hybrid_lane_doc.json` grows a per-suite measured verdict: suites
+      — **DONE 2026-09-27** (`run_suite_a0_only`; a PRESENT-but-corrupt
+      artifact stays fatal — only a missing file degrades to a0_stands; G1
+      still runs as reflex's own calibration disclosure).
+- [x] T3 — `hybrid_lane_doc.json` grows a per-suite measured verdict: suites
       with a registered hybrid arm keep today's shape; A0-stands suites carry
       their measured A0 row + verdict (replacing the bare
       `skipped_suites_a0_registered` name list — a name list cannot carry the
-      measurement); never-seated suites are simply absent.
+      measurement); never-seated suites are simply absent. — **DONE
+      2026-09-27** (`scripts/build_hybrid_doc.py`: every suite entry carries
+      `verdict: hybrid_arm | a0_stands`, `hybrid` cell or `measured_a0` cell
+      + `reason`; the skip list is gone; self-test 6 fixtures incl. the
+      measured-A0 known-answer arm).
 - [ ] T4 — Reflex-site half (sibling repo, land + cite the SHA here): the
       hybrid card renders the three states above; "measured — A0 stands" is
       NEVER rendered as "not run" (per-card note names the product posture:
       A0 serves, the suite is not sold — Issue 008's gate, visible).
-- [ ] T5 — Re-run the arena at the Bench-052 protocol → `predictions.json` +
+- [-] T5 — Re-run the arena at the Bench-052 protocol → `predictions.json` +
       lane doc → `republish_bench.sh` → curl-verify the card on
-      reflex.gist.rs shows measured rows for every dataset suite.
+      reflex.gist.rs shows measured rows for every dataset suite. — **ARENA
+      HALF DONE 2026-09-27** (Bench 005
+      `.benchmarks/005_hybrid_every_suite_measured/`: the A0 pin 8/8 —
+      arena == reflex run() == PUBLISHED site rows, incl. typed_decisions
+      0.4655 whose published row is the OC-ARMED posture — the pin caught
+      the oc gap, knobs re-baselined to `oc_select: on`, the selection
+      declines byte-identically on the other 7). **SITE HALF BLOCKED HERE**:
+      the reflex-site checkout is outside this session's workspace roots and
+      another session works there — the republish + card render (T4) belongs
+      to the session holding that checkout: build the doc with
+      `python3 scripts/build_hybrid_doc.py
+      .benchmarks/005_hybrid_every_suite_measured/predictions.json
+      <out> --git-sha <the feat(010) sha>` (the builder ships the
+      three-state doc natively), then reflex-site's `republish_bench.sh` +
+      the site's hybrid-card update (three render states; measured-A0 never
+      renders as not-run).
 - [ ] T6 — Harness families + code_fixtures: blocked on the reflex seat seam
       (see companion issue) — when seats exist, they flow through T1/T2 with
       no further instinct-side change. `harness_cache_reuse` stays a recorded

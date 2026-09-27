@@ -137,8 +137,32 @@ intake leg filed as riir-train Issue 577.** Master plan:
   + tie pins) landed 2026-09-27 (`27e9257`). **Superseded as the
   publishable record by Bench 002 below** — its bytes (`.raw/datasets`,
   the old pull) were never comparable with the published lanes.
-- **Bench 004** (`.benchmarks/004_rebaseline_current_reflex/`, the
-  CURRENT record — Issue 008 T1+T2 executed 2026-09-27, supersedes 002
+- **Bench 005** (`.benchmarks/005_hybrid_every_suite_measured/`, Issue 010
+  T1/T2/T3 + T5's arena half, 2026-09-27): the arena population is now
+  EVERY reflex dataset suite — the six specialist suites at the full arm
+  grid + `typed_decisions` + `prompt_injections` at the A0/G0-only
+  posture (no winner artifact → `run_suite_a0_only`; a present-but-
+  corrupt artifact stays fatal). A0 arms are flattened PER QUESTION
+  (reflex's hard-metrics convention — typed_decisions: 2000 q / 400
+  cases; latency stays per-case, `n_cases` disclosed). The lane doc is
+  THREE-STATE (`hybrid_arm` / `a0_stands` with its measured A0 cell +
+  reason / absent = never seated; the bare `skipped_suites_a0_registered`
+  list is gone). **The pin caught a real posture gap**: with oc off the
+  arena read typed_decisions 0.3300 vs the PUBLISHED 0.4655 — the
+  published row is the OC-ARMED posture (`oc_selection` selected_scale
+  2.0, the only suite whose train rows carry per-question gold events);
+  knobs re-baselined to `oc_select: on` (the selection declines
+  byte-identically on the other 7), pin 8/8 green: arena == reflex
+  `run()` == published site rows on every suite incl. typed_decisions
+  0.4655 (abstain 0.602 == published) and prompt_injections 0.7672
+  (116 q, abstain 0.681). Verdicts unchanged from 004 on the six (the
+  sold set is still exactly massive H2); the two new suites are
+  `a0_stands — no specialist`. Reflex at `56e3ddd` (its plan-003 Phase 1
+  Thai-pins commit — tests-only); the site half (doc rebuild +
+  republish + card three-state render) belongs to the session holding
+  the reflex-site checkout (outside this workspace).
+- **Bench 004** (`.benchmarks/004_rebaseline_current_reflex/`, Issue 008
+  T1+T2 executed 2026-09-27, supersedes 002
   as the serving verdict): the arena re-baselined at the CURRENT
   published reflex posture (seat knobs `head+nb+ridge` select — emotion
   arms ridge@8, every other suite's ladder declines at the arming bar,

@@ -1,0 +1,212 @@
+{
+ "meta": {
+  "host": "m3",
+  "git_sha": "2bfb30f",
+  "date_utc": "2026-09-27T15:47:40Z",
+  "profile": "release",
+  "laya_feature": false,
+  "lane_note": "instinct hybrid lane: the registered arm's single frozen test read over the reflex harness seat at the current published reflex posture (the Bench-004 re-baseline). Three states per suite (Issue 010): hybrid_arm = a registered non-A0 arm serves; a0_stands = measured, A0 serves (measured_a0 carries the row, reason names why nothing is sold); absent from this doc = never seated. A0-stands is NOT a sale \u2014 the superiority gate (Issue 008 T2) refused or no specialist exists."
+ },
+ "suites": [
+  {
+   "name": "ag_news",
+   "n_questions": 400,
+   "n_cases": 400,
+   "verdict": "a0_stands",
+   "hybrid": null,
+   "measured_a0": {
+    "lane": "hybrid",
+    "model": "A0",
+    "hard": {
+     "n": 400,
+     "accuracy": 0.8825,
+     "ece": 0.8304792892932893,
+     "mean_confidence": 0.05202071070671081,
+     "acc_at_50_coverage": 0.93
+    },
+    "consult_rate": 0.0,
+    "latency_scope": "seat+arm",
+    "latency_rows": "questions",
+    "latency_p50_ms": 0.163,
+    "latency_p99_ms": 0.292,
+    "latency_tail_support": 5
+   },
+   "reason": "instrument pick H2(\u03b2=0.25,nmin=2,\u03c4=2) refused \u2014 paired LB95 -0.0100 (Issue 008 T2)"
+  },
+  {
+   "name": "emotion",
+   "n_questions": 400,
+   "n_cases": 400,
+   "verdict": "a0_stands",
+   "hybrid": null,
+   "measured_a0": {
+    "lane": "hybrid",
+    "model": "A0",
+    "hard": {
+     "n": 400,
+     "accuracy": 0.885,
+     "ece": 0.8622394363582135,
+     "mean_confidence": 0.022760563641786576,
+     "acc_at_50_coverage": 0.97
+    },
+    "consult_rate": 0.0,
+    "latency_scope": "seat+arm",
+    "latency_rows": "questions",
+    "latency_p50_ms": 0.124,
+    "latency_p99_ms": 0.154,
+    "latency_tail_support": 5
+   },
+   "reason": "the instrument registered A0 outright"
+  },
+  {
+   "name": "sst5",
+   "n_questions": 600,
+   "n_cases": 600,
+   "verdict": "a0_stands",
+   "hybrid": null,
+   "measured_a0": {
+    "lane": "hybrid",
+    "model": "A0",
+    "hard": {
+     "n": 600,
+     "accuracy": 0.39666666666666667,
+     "ece": 0.3848924572269122,
+     "mean_confidence": 0.011774209439754485,
+     "acc_at_50_coverage": 0.46
+    },
+    "consult_rate": 0.0,
+    "latency_scope": "seat+arm",
+    "latency_rows": "questions",
+    "latency_p50_ms": 0.101,
+    "latency_p99_ms": 0.133,
+    "latency_tail_support": 7
+   },
+   "reason": "instrument pick A1 refused \u2014 paired LB95 -0.0129 (Issue 008 T2)"
+  },
+  {
+   "name": "xnli_en",
+   "n_questions": 300,
+   "n_cases": 300,
+   "verdict": "a0_stands",
+   "hybrid": null,
+   "measured_a0": {
+    "lane": "hybrid",
+    "model": "A0",
+    "hard": {
+     "n": 300,
+     "accuracy": 0.5233333333333333,
+     "ece": 0.5026737833023072,
+     "mean_confidence": 0.020659550031026205,
+     "acc_at_50_coverage": 0.6466666666666666
+    },
+    "consult_rate": 0.0,
+    "latency_scope": "seat+arm",
+    "latency_rows": "questions",
+    "latency_p50_ms": 0.094,
+    "latency_p99_ms": 0.119,
+    "latency_tail_support": 5
+   },
+   "reason": "the instrument registered A0 outright"
+  },
+  {
+   "name": "massive_intent_en",
+   "n_questions": 300,
+   "n_cases": 300,
+   "verdict": "hybrid_arm",
+   "hybrid": {
+    "lane": "hybrid",
+    "model": "H2(\u03b2=1,nmin=2,\u03c4=8)",
+    "hard": {
+     "n": 300,
+     "accuracy": 0.8266666666666667,
+     "ece": 0.06070700170483837,
+     "mean_confidence": 0.8355173326634961,
+     "acc_at_50_coverage": 0.9933333333333333
+    },
+    "consult_rate": 1.0,
+    "latency_scope": "arm-only",
+    "latency_rows": "questions",
+    "latency_p50_ms": 0.001333,
+    "latency_p99_ms": 0.002458,
+    "latency_tail_support": 4
+   },
+   "measured_a0": null,
+   "reason": null
+  },
+  {
+   "name": "banking77",
+   "n_questions": 500,
+   "n_cases": 500,
+   "verdict": "a0_stands",
+   "hybrid": null,
+   "measured_a0": {
+    "lane": "hybrid",
+    "model": "A0",
+    "hard": {
+     "n": 500,
+     "accuracy": 0.826,
+     "ece": 0.8015380177684128,
+     "mean_confidence": 0.024461982231587173,
+     "acc_at_50_coverage": 0.972
+    },
+    "consult_rate": 0.0,
+    "latency_scope": "seat+arm",
+    "latency_rows": "questions",
+    "latency_p50_ms": 0.408,
+    "latency_p99_ms": 0.774,
+    "latency_tail_support": 6
+   },
+   "reason": "instrument pick H1 refused \u2014 paired LB95 -0.0466 (Issue 008 T2)"
+  },
+  {
+   "name": "typed_decisions",
+   "n_questions": 2000,
+   "n_cases": 400,
+   "verdict": "a0_stands",
+   "hybrid": null,
+   "measured_a0": {
+    "lane": "hybrid",
+    "model": "A0",
+    "hard": {
+     "n": 2000,
+     "accuracy": 0.4655,
+     "ece": 0.4237521817982197,
+     "mean_confidence": 0.04024781820178032,
+     "acc_at_50_coverage": 0.548
+    },
+    "consult_rate": 0.0,
+    "latency_scope": "seat+arm",
+    "latency_rows": "cases",
+    "latency_p50_ms": 0.598,
+    "latency_p99_ms": 1.919,
+    "latency_tail_support": 5
+   },
+   "reason": "no specialist artifact (Issue 010 T2)"
+  },
+  {
+   "name": "prompt_injections",
+   "n_questions": 116,
+   "n_cases": 116,
+   "verdict": "a0_stands",
+   "hybrid": null,
+   "measured_a0": {
+    "lane": "hybrid",
+    "model": "A0",
+    "hard": {
+     "n": 116,
+     "accuracy": 0.7672413793103449,
+     "ece": 0.674452191282963,
+     "mean_confidence": 0.0927891880273819,
+     "acc_at_50_coverage": 0.896551724137931
+    },
+    "consult_rate": 0.0,
+    "latency_scope": "seat+arm",
+    "latency_rows": "questions",
+    "latency_p50_ms": 0.077,
+    "latency_p99_ms": 0.093,
+    "latency_tail_support": 2
+   },
+   "reason": "no specialist artifact (Issue 010 T2)"
+  }
+ ]
+}
