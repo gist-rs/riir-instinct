@@ -67,7 +67,7 @@ public view + per-epoch commitment root → (later) retrain threshold.
       riir-train `b4898e01` — the first dec epoch is fetched, verified,
       and recorded in the train-side ledger; T3+T4 (the retrain) still
       wait on rows.
-- [ ] Docs: instinct BOUNDARY.md dep row + AGENTS.md sibling table,
+- [x] Docs: instinct BOUNDARY.md dep row + AGENTS.md sibling table,
       dapps lib counts, issue 004 checkboxes.
 
 ## Wire row (T2, the contract)
