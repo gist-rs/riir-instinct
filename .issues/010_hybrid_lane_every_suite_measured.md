@@ -6,6 +6,13 @@ same day; companion issues: riir-reflex (seat seam refuses the synthetic
 families + code_fixtures), riir-train (specialists for the remaining dataset
 suites). **T1/T2/T3 + T5's arena half DONE 2026-09-27 (Bench 005); T4 + the
 republish half await the reflex-site session; T6 awaits the reflex seat seam.**
+**OWED 2026-09-28 (reflex a1980b2): `harness_cache_reuse` now SEATS — reflex
+Issue 045 lifted its LLM-only carve-out and its modelless lane reads 0.9167
+(Bench 072). Add it to the arena SUITES and re-run for its `a0_stands` row
+(the seat's full knob grid arms the cal-selected noul polarity through
+reflex's new synthetic cal-front selection fallback). Deferred past the
+Issue-579 session's specialist-bridge landing — its re-baseline re-publishes
+these arena rows anyway; do not race it.**
 
 ## Why
 
