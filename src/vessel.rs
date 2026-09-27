@@ -178,7 +178,24 @@ pub fn load_hosted(
             path.display()
         )));
     }
-    let buf = std::fs::read(path).map_err(|e| VesselLoadError::Format(e.to_string()))?;
+    // Bounded read: the hosted cap is the format crate's own constant —
+    // a corrupt or hostile file on the vessel path cannot force an
+    // unbounded allocation before `peek` runs (the +1 sees an oversized
+    // file and the refusal carries the length).
+    use std::io::Read as _;
+    let cap = reflexer_vessel::PREFIX_LEN + reflexer_vessel::MAX_HOSTED_PAYLOAD;
+    let mut buf = Vec::new();
+    std::fs::File::open(path)
+        .map_err(|e| VesselLoadError::Format(e.to_string()))?
+        .take(cap as u64 + 1)
+        .read_to_end(&mut buf)
+        .map_err(|e| VesselLoadError::Format(e.to_string()))?;
+    if buf.len() > cap {
+        return Err(VesselLoadError::Format(format!(
+            "{} exceeds the hosted vessel ceiling ({cap} B)",
+            path.display()
+        )));
+    }
     load_hosted_bytes(&buf, pins, key, applied)
 }
 

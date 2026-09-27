@@ -47,6 +47,13 @@ fn main() {
     let mut winners_dir = std::env::var("INSTINCT_WINNERS_DIR")
         .unwrap_or_else(|_| "../riir-train/data/instinct_specialists".into());
     let mut bind = std::env::var("INSTINCT_BIND").unwrap_or_else(|_| "0.0.0.0:8080".into());
+    let vessel_dir = std::env::var("INSTINCT_VESSEL_DIR").ok();
+    let vessel_key_hex = std::env::var("INSTINCT_VESSEL_KEY_HEX").ok();
+    #[cfg(feature = "vessel")]
+    let vessel_pins_hex = std::env::var("INSTINCT_VESSEL_PINS_HEX").ok();
+    #[cfg(feature = "vessel")]
+    let state_dir =
+        std::env::var("INSTINCT_STATE_DIR").unwrap_or_else(|_| ".instinct_state".into());
     let mut suites: Vec<&'static str> = REGISTERED_SUITES.to_vec();
     let mut i = 1;
     let args: Vec<String> = std::env::args().collect();
@@ -97,6 +104,70 @@ fn main() {
         eprintln!("[riir-instinct] CORS: allowed origins — {}", allow.join(", "));
     }
 
+    // Vessel mode: INSTINCT_VESSEL_DIR set → the specialists load from
+    // HOSTED-ONLY vessels. Fail-closed configuration: the key and at
+    // least one operator pin are REQUIRED the moment the dir is set — a
+    // half-configured vessel boot must refuse, never fall back to raw
+    // winners (that would be the moat leak the class discipline exists
+    // to prevent, wearing a fallback's clothes).
+    #[cfg(feature = "vessel")]
+    let vessel = match (&vessel_dir, &vessel_key_hex) {
+        (Some(dir), Some(key_hex)) => {
+            let key_bytes = decode_hex32(key_hex)
+                .unwrap_or_else(|| die("INSTINCT_VESSEL_KEY_HEX must be 64 hex chars (32 bytes)"));
+            let pins_hex = vessel_pins_hex.as_deref().unwrap_or("");
+            if pins_hex.trim().is_empty() {
+                die("INSTINCT_VESSEL_PINS_HEX is required in vessel mode (id:pubkey hex, comma-\n                    separated) — no compiled-in pins exist, the operator pins the mint key");
+            }
+            let mut keys: Vec<(u32, [u8; 32])> = Vec::new();
+            for pin in pins_hex.split(',') {
+                let pin = pin.trim();
+                if pin.is_empty() {
+                    continue;
+                }
+                let Some((id, hex)) = pin.split_once(':') else {
+                    die(&format!("INSTINCT_VESSEL_PINS_HEX entry {pin:?} is not id:hex"));
+                };
+                let id: u32 = id.trim().parse().unwrap_or_else(|_| {
+                    die(&format!("INSTINCT_VESSEL_PINS_HEX key-id {id:?} is not a number"))
+                });
+                let bytes = decode_hex32(hex.trim()).unwrap_or_else(|| {
+                    die(&format!("INSTINCT_VESSEL_PINS_HEX entry {id} is not 64 hex chars"))
+                });
+                keys.push((id, bytes));
+            }
+            eprintln!(
+                "[riir-instinct] vessel mode: dir {dir} · {} pin(s) · state dir {state_dir}",
+                keys.len()
+            );
+            Some(VesselConfig {
+                dir: dir.into(),
+                key: key_bytes,
+                pins: reflexer_vessel::pins_from_bytes(&keys),
+                state_dir: state_dir.into(),
+            })
+        }
+        (Some(_), None) => die(
+            "INSTINCT_VESSEL_DIR is set without INSTINCT_VESSEL_KEY_HEX — vessel mode is a\n             whole configuration (dir + key + pins), never a partial one",
+        ),
+        (None, Some(_)) => die(
+            "INSTINCT_VESSEL_KEY_HEX is set without INSTINCT_VESSEL_DIR — vessel mode is a\n             whole configuration (dir + key + pins), never a partial one",
+        ),
+        (None, None) => None,
+    };
+    #[cfg(not(feature = "vessel"))]
+    if vessel_dir.is_some() || vessel_key_hex.is_some() {
+        die(
+            "vessel env vars are set but this binary was built WITHOUT the `vessel` feature —\n             rebuild with --features vessel (the reader is opt-in by design)",
+        );
+    }
+    #[cfg(not(feature = "vessel"))]
+    struct VesselConfig;
+    #[cfg(not(feature = "vessel"))]
+    let vessel: Option<VesselConfig> = None;
+    #[cfg(not(feature = "vessel"))]
+    let _ = &vessel;
+
     // The registry: one slot per requested suite. Loader threads fill it;
     // the accept loop answers from it.
     let slots: Arc<Vec<Slot>> = Arc::new(
@@ -108,27 +179,40 @@ fn main() {
             })
             .collect(),
     );
+    #[cfg(feature = "vessel")]
+    let vessel: Arc<Option<VesselConfig>> = Arc::new(vessel);
     for idx in 0..slots.len() {
         let slots = Arc::clone(&slots);
         let datasets_dir = datasets_dir.clone();
         let winners_dir = winners_dir.clone();
+        #[cfg(feature = "vessel")]
+        let vessel = Arc::clone(&vessel);
         let loader = std::thread::Builder::new()
             .name(format!("boot-{}", slots[idx].suite))
             .stack_size(LOADER_STACK)
             .spawn(move || {
                 let slot = &slots[idx];
                 let t0 = std::time::Instant::now();
-                match AnySuiteServer::boot(slot.suite, std::path::Path::new(&datasets_dir), std::path::Path::new(&winners_dir)) {
-                    Ok(server) => {
-                        let meta = server.meta().clone();
-                        *slot.state.lock().expect("slot lock") = LaneState::Ready(server);
+                let outcome: Result<SuiteBoot, String> = boot_suite_slot(
+                    slot.suite,
+                    &datasets_dir,
+                    &winners_dir,
+                    #[cfg(feature = "vessel")]
+                    (*vessel).as_ref(),
+                );
+                match outcome {
+                    Ok(boot) => {
+                        *slot.state.lock().expect("slot lock") =
+                            LaneState::Ready(boot.server);
                         eprintln!(
-                            "[riir-instinct] lane {} ready in {:.1}s (arm {}, {} labels, cap {})",
+                            "[riir-instinct] lane {} ready in {:.1}s (arm {}, {} labels, cap {}, \
+                             source {:?})",
                             slot.suite,
                             t0.elapsed().as_secs_f32(),
-                            meta.arm.name(),
-                            meta.labels,
-                            meta.effective_cap
+                            boot.meta.arm.name(),
+                            boot.meta.labels,
+                            boot.meta.effective_cap,
+                            boot.meta.source,
                         );
                     }
                     Err(e) => {
@@ -167,6 +251,124 @@ fn main() {
 fn die(msg: &str) -> ! {
     eprintln!("⛔ serve: {msg}");
     std::process::exit(1);
+}
+
+/// What a successful suite boot hands the registry: the serving server
+/// + its meta (the readiness log line).
+struct SuiteBoot {
+    server: AnySuiteServer,
+    meta: riir_instinct::server::SuiteMeta,
+}
+
+/// Boot one suite: the vessel path when configured (fail-closed — a
+/// vessel boot that fails names the vessel error and the lane goes
+/// Failed; there is NO raw-winner fallback inside vessel mode), else
+/// the raw sealed winners.
+fn boot_suite_slot(
+    suite: &'static str,
+    datasets_dir: &str,
+    winners_dir: &str,
+    #[cfg(feature = "vessel")] vessel: Option<&VesselConfig>,
+) -> Result<SuiteBoot, String> {
+    let seat = riir_reflex::harness::runner::seat::prepare_seat(
+        suite,
+        std::path::Path::new(datasets_dir),
+    )?;
+    #[cfg(feature = "vessel")]
+    if let Some(cfg) = vessel {
+        let vessel_path = cfg.dir.join(format!("{suite}_v1.vessel"));
+        let applied = read_applied(&cfg.state_dir, suite);
+        let (server, facts) = AnySuiteServer::boot_vessel(
+            suite,
+            seat,
+            &vessel_path,
+            &cfg.pins,
+            &cfg.key,
+            &applied,
+        )?;
+        // Persist AFTER the suite is fully up — a boot failure must not
+        // advance the monotonic gate.
+        write_applied(&cfg.state_dir, suite, &facts)?;
+        let meta = server.meta().clone();
+        return Ok(SuiteBoot { server, meta });
+    }
+    // The raw-winner path — reached when vessel mode is off (both build
+    // postures); the prepared seat is consumed here.
+    let server = AnySuiteServer::boot_from_seat(suite, seat, std::path::Path::new(winners_dir))?;
+    let meta = server.meta().clone();
+    Ok(SuiteBoot { server, meta })
+}
+
+/// The vessel-boot configuration (vessel feature only) — dir + key +
+/// pins, always together.
+#[cfg(feature = "vessel")]
+struct VesselConfig {
+    dir: std::path::PathBuf,
+    key: [u8; 32],
+    pins: reflexer_vessel::PinTable,
+    state_dir: std::path::PathBuf,
+}
+
+/// Decode 64 hex chars into 32 bytes (None on any malformed input).
+#[cfg(feature = "vessel")]
+fn decode_hex32(s: &str) -> Option<[u8; 32]> {
+    let s = s.trim();
+    if s.len() != 64 {
+        return None;
+    }
+    let mut out = [0u8; 32];
+    for (i, b) in out.iter_mut().enumerate() {
+        *b = u8::from_str_radix(&s[i * 2..i * 2 + 2], 16).ok()?;
+    }
+    Some(out)
+}
+
+/// The persisted monotonic-apply state for one suite: `<state_dir>/
+/// applied_<suite>.json` — `{"artifact_version": u64, "commitment": hex}`.
+/// Absent/corrupt = genesis (0) — a corrupt state file must NOT read as
+/// a high version (that would refuse every legitimate successor).
+#[cfg(feature = "vessel")]
+fn read_applied(state_dir: &std::path::Path, suite: &str) -> riir_instinct::vessel::AppliedState {
+    let p = state_dir.join(format!("applied_{suite}.json"));
+    #[derive(serde::Deserialize)]
+    struct AppliedFile {
+        artifact_version: u64,
+    }
+    std::fs::read_to_string(&p)
+        .ok()
+        .and_then(|s| serde_json::from_str::<AppliedFile>(&s).ok())
+        .map(|f| riir_instinct::vessel::AppliedState {
+            artifact_version: f.artifact_version,
+        })
+        .unwrap_or(riir_instinct::vessel::AppliedState::GENESIS)
+}
+
+/// Persist the applied state AFTER a fully successful boot.
+#[cfg(feature = "vessel")]
+fn write_applied(
+    state_dir: &std::path::Path,
+    suite: &str,
+    facts: &riir_instinct::server::VesselFacts,
+) -> Result<(), String> {
+    std::fs::create_dir_all(state_dir).map_err(|e| format!("state dir: {e}"))?;
+    let doc = serde_json::json!({
+        "artifact_version": facts.artifact_version,
+        "commitment": facts.commitment_hex,
+        "parent_commitment": hex32(&facts.parent_commitment),
+    });
+    let p = state_dir.join(format!("applied_{suite}.json"));
+    std::fs::write(&p, serde_json::to_string_pretty(&doc).unwrap_or_default())
+        .map_err(|e| format!("write {}: {e}", p.display()))
+}
+
+#[cfg(feature = "vessel")]
+fn hex32(b: &[u8; 32]) -> String {
+    let mut s = String::with_capacity(64);
+    for byte in b {
+        use std::fmt::Write as _;
+        let _ = write!(s, "{byte:02x}");
+    }
+    s
 }
 
 struct Slot {
@@ -405,6 +607,10 @@ fn healthz(slots: &[Slot]) -> String {
         if let LaneState::Ready(server) = &*state {
             let meta = server.meta();
             entry.insert("arm".into(), serde_json::Value::String(meta.arm.name()));
+            entry.insert("source".into(), serde_json::json!(match meta.source {
+                riir_instinct::server::WeightSource::RawWinner => "raw_winner",
+                riir_instinct::server::WeightSource::Vessel => "vessel",
+            }));
             entry.insert("labels".into(), serde_json::json!(meta.labels));
             entry.insert("artifact_labels".into(), serde_json::json!(meta.artifact_labels));
             entry.insert("effective_cap".into(), serde_json::json!(meta.effective_cap));

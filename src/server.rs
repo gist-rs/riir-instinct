@@ -139,9 +139,33 @@ pub struct SuiteMeta {
     pub nb_scale: f32,
     pub score_threshold: f32,
     pub distance_threshold: f32,
-    /// BLAKE3 of the sealed winner artifact file (first 16 hex in the
-    /// healthz disclosure).
+    /// BLAKE3 identity of the loaded weights: the sealed winner FILE's
+    /// digest (raw path) or the vessel's signed-region commitment
+    /// (vessel path), first 16 hex.
     pub winner_blake3: String,
+    /// Where the weights came from.
+    pub source: WeightSource,
+}
+
+/// The weights' provenance (the /healthz disclosure; the receipt law's
+/// artifact half).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum WeightSource {
+    /// The raw `<suite>_winner_v1.bin` artifact (the pre-vessel posture).
+    RawWinner,
+    /// A HOSTED-ONLY vessel (the minted path; lineage in the commitment).
+    Vessel,
+}
+
+/// What the host persists after a successful vessel boot — the monotonic
+/// gate's applied state and the lineage handle (vessel feature only;
+/// the specialist itself is consumed by the serving lane).
+#[cfg(feature = "vessel")]
+#[derive(Debug, Clone)]
+pub struct VesselFacts {
+    pub commitment_hex: String,
+    pub artifact_version: u64,
+    pub parent_commitment: [u8; 32],
 }
 
 /// One served decision (the /decide payload, pre-serialization).
@@ -213,14 +237,56 @@ pub struct SuiteServer<const N: usize> {
 }
 
 impl<const N: usize> SuiteServer<N> {
-    /// Boot one suite from a PREPARED seat (the arity dispatch happens in
-    /// [`AnySuiteServer::boot`], which owns `prepare_seat`).
-    ///
-    /// The preparation steps are the arena's `run_suite_n` prologue,
-    /// verbatim: the deployed Bench-051 posture (head-select + nb-select,
-    /// registry caps), the seat engine, the sealed winner join, and the
-    /// presented-option bridge.
+    /// Boot one suite from a PREPARED seat, loading the specialist from
+    /// the raw sealed winner artifact (the pre-vessel posture).
     pub fn from_seat(suite: &'static str, seat: Seat, winners_dir: &Path) -> Result<Self, String> {
+        let winner_path = winners_dir.join(format!("{suite}_winner_v1.bin"));
+        let winner_bytes = std::fs::read(&winner_path)
+            .map_err(|e| format!("read {}: {e}", winner_path.display()))?;
+        let winner_blake3 = blake3::hash(&winner_bytes).to_hex()[..16].to_string();
+        let spec = decode_artifact(&winner_bytes)
+            .map_err(|e| format!("{}: {e}", winner_path.display()))?;
+        Self::from_parts(suite, seat, spec, winner_blake3, WeightSource::RawWinner)
+    }
+
+    /// Boot one suite from a minted HOSTED-ONLY vessel (the P4 reader:
+    /// verify → class gate → monotonic gate → decrypt → decode). The
+    /// applied state comes from the host's state file (genesis at 0);
+    /// the caller persists the returned [`VesselFacts`] AFTER the suite
+    /// is fully up (never before — a boot failure must not advance the
+    /// gate). The specialist itself is consumed by the join.
+    #[cfg(feature = "vessel")]
+    pub fn from_vessel(
+        suite: &'static str,
+        seat: Seat,
+        vessel_path: &Path,
+        pins: &reflexer_vessel::PinTable,
+        key: &[u8; 32],
+        applied: &crate::vessel::AppliedState,
+    ) -> Result<(Self, VesselFacts), String> {
+        let loaded = crate::vessel::load_hosted(vessel_path, pins, key, applied)
+            .map_err(|e| format!("{}: {e}", vessel_path.display()))?;
+        let facts = VesselFacts {
+            commitment_hex: loaded.commitment_hex.clone(),
+            artifact_version: loaded.artifact_version,
+            parent_commitment: loaded.parent_commitment,
+        };
+        let commitment16 = facts.commitment_hex[..16].to_string();
+        let server = Self::from_parts(suite, seat, loaded.specialist, commitment16, WeightSource::Vessel)?;
+        Ok((server, facts))
+    }
+
+    /// The shared tail of both boot paths: shape guard, posture, engine,
+    /// join, bridge, meta. `weight_id` is the 16-hex identity of the
+    /// loaded weights; `artifact_labels_n` is captured by the caller
+    /// BEFORE the join consumes the specialist.
+    fn from_parts(
+        suite: &'static str,
+        seat: Seat,
+        spec: crate::specialist::Specialist,
+        weight_id: String,
+        source: WeightSource,
+    ) -> Result<Self, String> {
         let arm =
             serving_posture(suite).ok_or_else(|| format!("suite {suite} has no serving posture"))?;
         if seat
@@ -259,14 +325,6 @@ impl<const N: usize> SuiteServer<N> {
         let (engine, _fallbacks) =
             build_seat_engine::<N>(suite, &seat, posture.effective_cap, posture.cfg.clone())?;
 
-        // The sealed winner artifact, joined onto the seat's label order
-        // (the bijection pin lives in SpecialistLane::join).
-        let winner_path = winners_dir.join(format!("{suite}_winner_v1.bin"));
-        let winner_bytes = std::fs::read(&winner_path)
-            .map_err(|e| format!("read {}: {e}", winner_path.display()))?;
-        let winner_blake3 = blake3::hash(&winner_bytes).to_hex()[..16].to_string();
-        let spec = decode_artifact(&winner_bytes)
-            .map_err(|e| format!("{}: {e}", winner_path.display()))?;
         let artifact_labels_n = spec.labels.len();
         let artifact_labels = spec.labels.clone();
         let top_k = arm.join_top_k();
@@ -298,7 +356,8 @@ impl<const N: usize> SuiteServer<N> {
             nb_scale: posture.cfg.nb_scale,
             score_threshold: posture.score_threshold,
             distance_threshold: posture.distance_threshold,
-            winner_blake3,
+            winner_blake3: weight_id,
+            source,
         };
 
         Ok(Self {
@@ -626,6 +685,22 @@ impl AnySuiteServer {
             return Err(format!("suite {suite} has no serving posture"));
         }
         let seat = prepare_seat(suite, datasets_dir)?;
+        Self::boot_from_seat(suite, seat, winners_dir)
+    }
+
+    /// The arity dispatch over an ALREADY-PREPARED seat (the serve
+    /// binary's loader shares the seat between the raw and vessel paths).
+    pub fn boot_from_seat(
+        suite: &'static str,
+        seat: Seat,
+        winners_dir: &Path,
+    ) -> Result<Self, String> {
+        if !REGISTERED_SUITES.contains(&suite) {
+            return Err(format!("suite {suite} is not a registered serving suite"));
+        }
+        if serving_posture(suite).is_none() {
+            return Err(format!("suite {suite} has no serving posture"));
+        }
         match seat.labels.len() {
             3 => Ok(AnySuiteServer::S3(Box::new(SuiteServer::from_seat(
                 suite, seat, winners_dir,
@@ -645,6 +720,48 @@ impl AnySuiteServer {
             77 => Ok(AnySuiteServer::S77(Box::new(SuiteServer::from_seat(
                 suite, seat, winners_dir,
             )?))),
+            other => Err(format!("suite {suite}: no engine arity for {other} labels")),
+        }
+    }
+
+    /// The vessel boot: the same dispatch, the specialist from a minted
+    /// HOSTED-ONLY vessel (vessel feature only).
+    #[cfg(feature = "vessel")]
+    #[allow(clippy::too_many_arguments)]
+    pub fn boot_vessel(
+        suite: &'static str,
+        seat: Seat,
+        vessel_path: &Path,
+        pins: &reflexer_vessel::PinTable,
+        key: &[u8; 32],
+        applied: &crate::vessel::AppliedState,
+    ) -> Result<(Self, VesselFacts), String> {
+        if !REGISTERED_SUITES.contains(&suite) {
+            return Err(format!("suite {suite} is not a registered serving suite"));
+        }
+        if serving_posture(suite).is_none() {
+            return Err(format!("suite {suite} has no serving posture"));
+        }
+        macro_rules! vessel_arm {
+            ($variant:ident, $n:literal) => {{
+                let (server, facts) = SuiteServer::<$n>::from_vessel(
+                    suite,
+                    seat,
+                    vessel_path,
+                    pins,
+                    key,
+                    applied,
+                )?;
+                Ok((AnySuiteServer::$variant(Box::new(server)), facts))
+            }};
+        }
+        match seat.labels.len() {
+            3 => vessel_arm!(S3, 3),
+            4 => vessel_arm!(S4, 4),
+            5 => vessel_arm!(S5, 5),
+            6 => vessel_arm!(S6, 6),
+            59 => vessel_arm!(S59, 59),
+            77 => vessel_arm!(S77, 77),
             other => Err(format!("suite {suite}: no engine arity for {other} labels")),
         }
     }

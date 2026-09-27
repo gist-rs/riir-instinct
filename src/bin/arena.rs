@@ -1218,6 +1218,8 @@ fn pin_a0_identity(datasets_dir: &Path, runs: &[SuiteRun]) -> Result<(), String>
         // issue 038's option-conditioned selection — the baseline posture
         // for the drift pin (the reflex-side default).
         oc_select: false,
+        // the ridge-selection lane (sibling reflex WIP) — likewise off.
+        ridge_select: false,
     };
     let (out, errors) = riir_reflex::harness::runner::run(&opts)?;
     if !errors.is_empty() {

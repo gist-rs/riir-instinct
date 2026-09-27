@@ -124,6 +124,53 @@ fn load(buf: &[u8], pins: &PinTable) -> Result<Specialist, VesselLoadError> {
     load_hosted_bytes(buf, pins, &KEY, &GENESIS).map(|lv| lv.specialist)
 }
 
+/// The specialist-sized vessel: a REAL ~10 MB hosted vessel (the
+/// banking77 winner's class) mints, verifies, decrypts, and loads whole
+/// — the class-aware `MAX_HOSTED_PAYLOAD` cap (reflexer-vessel 049a583)
+/// is what admits it, and the PUBLIC 1 MiB bound is exactly why the old
+/// single-cap world could not ship this artifact. One real large buffer;
+/// every other cap test forges the length instead.
+#[test]
+fn a_specialist_sized_vessel_loads_whole() {
+    let mint = Mint::new(1);
+    // A banking77-shaped RISP fixture at real scale: 77 classes x 2^17
+    // i8 weights + bias + scale rows ≈ 10.09 MB — the winner's exact
+    // shape, assembled in memory (a real mint's payload; never forged).
+    // Seal law per risp_fixture: the BLAKE3 covers the BODY (everything
+    // after magic+version), not the header bytes.
+    let mut body = Vec::new();
+    body.extend_from_slice(b"banking77");
+    body.push(0);
+    body.extend_from_slice(&77u32.to_le_bytes());
+    for i in 0..77u32 {
+        body.extend_from_slice(format!("class_{i:02}").as_bytes());
+        body.push(0);
+    }
+    body.extend_from_slice(&(VOCAB as u32).to_le_bytes());
+    body.extend_from_slice(&vec![0.0f32; 77].iter().flat_map(|f| f.to_le_bytes()).collect::<Vec<u8>>());
+    for _ in 0..77 {
+        body.extend_from_slice(&1.0f32.to_le_bytes()); // scale
+        body.extend_from_slice(&vec![0u8; VOCAB]);     // i8 weights
+    }
+    let mut risp = Vec::with_capacity(body.len() + 5 + 32);
+    risp.extend_from_slice(&ARTIFACT_MAGIC);
+    risp.push(ARTIFACT_VERSION);
+    risp.extend_from_slice(&body);
+    risp.extend_from_slice(blake3::hash(&body).as_bytes());
+    assert!(risp.len() > reflexer_vessel::MAX_PAYLOAD, "fixture must exceed the public cap");
+    assert!(
+        risp.len() <= reflexer_vessel::MAX_HOSTED_PAYLOAD,
+        "fixture must fit the hosted cap"
+    );
+
+    let buf = mint_hosted(&mint, 1, [0; 32], &risp, &KEY);
+    assert_eq!(buf.len(), risp.len() + 16 + 68 + 64);
+    let m = load(&buf, &mint.pins)
+        .expect("a specialist-sized HOSTED-ONLY vessel loads whole under the class-aware cap");
+    assert_eq!(m.suite, "banking77");
+    assert_eq!(m.labels.len(), 77);
+}
+
 #[test]
 fn a_good_hosted_vessel_loads_whole() {
     let mint = Mint::new(1);
