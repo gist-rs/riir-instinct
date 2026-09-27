@@ -8,8 +8,8 @@ Reflex is free. Instinct is the paid lane (trained specialists composed over
 Reflex), so it must EARN its place: ahead of Reflex, in general and/or in a
 named domain. A tie sells nothing. reflex-site now renders the arena row
 from Instinct's side, **"Instinct vs Reflex, accuracy"**, with ✓ only when
-Instinct is STRICTLY ahead on every suite it has an arm for (reflex-site
-`2fc…` / the row law in `assets/arena_tldr.js`). Today it reads ✗.
+Instinct is STRICTLY ahead on every suite it has an arm for (reflex-site `bc7b1a0`, the row law in
+`assets/arena_tldr.js`). Today it reads ✗.
 
 ## Measured (published data/bench.json, 2026-09-27)
 
