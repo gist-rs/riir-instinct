@@ -53,6 +53,13 @@ use riir_reflex::nb_scope::NbView;
 /// they run the A0/G0-only posture (T2) and publish their measured
 /// `a0_stands` row. Label-arity dispatch below must cover their train-
 /// derived label counts (3 workflows / 2 noul classes, measured 2026-09-27).
+/// Issue 010 T6 (2026-09-28): the harness families + `code_fixtures` join
+/// — the reflex Issue-049 seat seam now seats them (marked synthetic);
+/// no winner artifacts exist for them, so they run the A0/G0-only
+/// posture and publish `a0_stands` rows (the expected outcome per 049's
+/// scope note). `harness_cache_reuse` stays OUT (the seat refuses it —
+/// the modelless lane has no KV cache; a modelless answer would be a
+/// fake task), disclosed here and by the seat's own refusal.
 const SUITES: &[&str] = &[
     "ag_news",
     "emotion",
@@ -62,6 +69,12 @@ const SUITES: &[&str] = &[
     "banking77",
     "typed_decisions",
     "prompt_injections",
+    "harness_visibility",
+    "harness_permissions",
+    "harness_tool_fit",
+    "harness_routing",
+    "harness_sensitivity",
+    "code_fixtures",
 ];
 /// Reflex already wins these (Bench 051) — G3's non-inferiority duty.
 const REFLEX_WON: &[&str] = &["emotion", "sst5", "massive_intent_en", "banking77"];
@@ -368,6 +381,7 @@ fn run_suite(
         4 => run_suite_n::<4>(name, seat, winners_dir, top_k),
         5 => run_suite_n::<5>(name, seat, winners_dir, top_k),
         6 => run_suite_n::<6>(name, seat, winners_dir, top_k),
+        8 => run_suite_n::<8>(name, seat, winners_dir, top_k),
         59 => run_suite_n::<59>(name, seat, winners_dir, top_k),
         77 => run_suite_n::<77>(name, seat, winners_dir, top_k),
         n => Err(format!("no engine arity for {n} labels — extend the dispatch")),

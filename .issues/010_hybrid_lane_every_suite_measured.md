@@ -86,12 +86,24 @@ Honest vocabulary the lane must ship: three states, never two —
       three-state doc natively), then reflex-site's `republish_bench.sh` +
       the site's hybrid-card update (three render states; measured-A0 never
       renders as not-run).
-- [ ] T6 — Harness families + code_fixtures: blocked on the reflex seat seam
+- [x] T6 — Harness families + code_fixtures: blocked on the reflex seat seam
       (see companion issue) — when seats exist, they flow through T1/T2 with
       no further instinct-side change. `harness_cache_reuse` stays a recorded
       structural skip for the modelless hybrid (the modelless lane has no KV
       cache; a modelless answer there would be a fake task — reflex Issue 004
       T3), disclosed as such, never silent.
+      **MEASURED 2026-09-28 (`.benchmarks/011_hybrid_families_seated`): DONE**
+      — reflex `03415e5` landed the seat seam (Issue 049 T1–T3: the
+      `synthetic` marker + the five modelless families + code_fixtures;
+      cache_reuse stays refused with the decision named;
+      `tests/harness_seat_gates` 5/5), the arena population gained the six
+      synthetic suites (SUITES + the arity-8 dispatch row — the promised
+      "no further instinct-side change" held), and the full 14-suite arena
+      run published all six as `a0_stands` (A0 0.375–0.500) — exactly 049's
+      scope-note expectation. Regression pin: the eight dataset suites' A0
+      rows reproduced Bench 005 byte-identically. Disclosed: the families'
+      G1 disclosure rows FAIL (tiny cal fronts — they register nothing, the
+      gate binds promotable arms only).
 
 ## Honest scope notes
 
