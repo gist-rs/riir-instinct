@@ -344,10 +344,16 @@ impl<const N: usize> SuiteServer<N> {
         // (oc_select stays off — reflex's issue-038 lane is not the
         // published posture the serving arms were measured at; this repo
         // never enables reflex/option_cond, so the field is cfg'd out of
-        // PostureKnobs here.)
+        // PostureKnobs here.) Genome selection stays off for the same
+        // reason: the serving arms were measured without it, and the
+        // flag-off path is behavior-identical to the frozen Bench 002
+        // posture. Enabling it is the Issue 008 T1 re-baseline, never a
+        // silent posture change under a frozen-picks parity gate.
         let knobs = PostureKnobs {
             head_select: true,
             nb_select: true,
+            genome_select: false,
+            genome_accept_margin: 0.0,
             cal_select_caps: vec![],
         };
         let posture = fit_posture::<N>(suite, &seat, &knobs)?;

@@ -649,10 +649,15 @@ fn run_suite_n<const N: usize>(
     }
 
     // The deployed Bench 051 protocol: head-select + nb-select, registry
-    // caps (no cal-slice cap ladder).
+    // caps (no cal-slice cap ladder). Genome selection stays off — the
+    // arena IS the serve path, the frozen Bench 002 posture measured
+    // without it (flag-off is behavior-identical; Issue 008 T1 owns the
+    // re-baseline that would turn it on).
     let knobs = PostureKnobs {
         head_select: true,
         nb_select: true,
+        genome_select: false,
+        genome_accept_margin: 0.0,
         cal_select_caps: vec![],
     };
     let posture = fit_posture::<N>(name, &seat, &knobs)?;
@@ -1217,6 +1222,10 @@ fn pin_a0_identity(datasets_dir: &Path, runs: &[SuiteRun]) -> Result<(), String>
         cascade: false,
         cascade_worthiness: false,
         cascade_worthiness_margin: 0.0,
+        // Issue 042's gate rate-axis levers — off: the plain T1.6
+        // cal-slice fused fit is the posture the pin reproduces.
+        gate_fit_selection: false,
+        gate_distance_only: false,
         laya_python: false,
         gliner: false,
         agentjev: false,
@@ -1234,6 +1243,11 @@ fn pin_a0_identity(datasets_dir: &Path, runs: &[SuiteRun]) -> Result<(), String>
         oc_select: false,
         // the ridge-selection lane (sibling reflex WIP) — likewise off.
         ridge_select: false,
+        // Issue 038 T5's joint genome walk — off: the published Bench 002
+        // posture carried no genome selection (flag-off is
+        // behavior-identical; Issue 008 T1 owns the re-baseline).
+        genome_select: false,
+        genome_accept_margin: 0.0,
     };
     let (out, errors) = riir_reflex::harness::runner::run(&opts)?;
     if !errors.is_empty() {
