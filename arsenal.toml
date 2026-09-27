@@ -26,7 +26,9 @@
 #                against the operator pins, and the vessel's mint key-id
 #                must be one of them. Raw mode validates structure only.
 # budget.load    "eager" (boot loads the lane — the posture below) |
-#                "lazy" (T5 lands the lazy/budgeted loader)
+#                "lazy" (NOT loaded at boot — the first decision triggers
+#                the load; POST /arsenal/release evicts it back to
+#                unloaded. Enforced by the serve registry, Proposal 001 T5)
 # budget.max_payload_mb   artifact size ceiling, MiB (the hosted cap is 16)
 # file           OPTIONAL artifact filename override (bare filename, no
 #                path separators). Default = the established convention:

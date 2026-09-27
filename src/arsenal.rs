@@ -96,7 +96,9 @@ pub struct PostureSpec {
 #[serde(deny_unknown_fields)]
 pub struct BudgetSpec {
     /// `"eager"` (boot loads the lane — the default manifest's posture) |
-    /// `"lazy"` (validated now; the lazy/budgeted loader is T5).
+    /// `"lazy"` (NOT loaded at boot — the first decision triggers the
+    /// load; the wire release evicts it back to unloaded. Enforced by the
+    /// serve registry, Proposal 001 T5).
     pub load: String,
     /// Artifact size ceiling, MiB (the hosted cap is
     /// [`MAX_HOSTED_PAYLOAD_MB`]).
@@ -344,6 +346,24 @@ impl VesselRow {
     #[must_use]
     pub fn artifact_file(&self, mode_default: String) -> String {
         self.file.clone().unwrap_or(mode_default)
+    }
+
+    /// The pinned digest as raw bytes (`"blake3:<64 hex>"` → `[u8; 32]`)
+    /// — the epoch tag's digest half at boot (Proposal 001 T6: boot
+    /// initializes the applied tag from the manifest). `None` never
+    /// occurs post-`validate` (the format is checked at boot); the seams
+    /// that consume it still handle it honestly.
+    #[must_use]
+    pub fn digest_bytes(&self) -> Option<[u8; 32]> {
+        let hex = self.digest.strip_prefix(DIGEST_TAG)?;
+        if hex.len() != 64 {
+            return None;
+        }
+        let mut out = [0u8; 32];
+        for (i, b) in out.iter_mut().enumerate() {
+            *b = u8::from_str_radix(&hex[i * 2..i * 2 + 2], 16).ok()?;
+        }
+        Some(out)
     }
 
     /// The row's parsed serving arm — the strict posture mapping (an

@@ -14,6 +14,7 @@ pub mod specialist;
 pub mod hybrid;
 pub mod stats;
 pub mod arsenal;
+pub mod arsenal_ops;
 pub mod server;
 #[cfg(feature = "vessel")]
 pub mod vessel;
@@ -27,6 +28,11 @@ pub use hybrid::{
     SpecialistLane, prior_fusion_pick,
 };
 pub use specialist::Specialist;
+pub use arsenal_ops::{
+    EpochApply, EpochTag, HoardRefusal, HoardReport, InstallOutcome, LaneSlot, LaneState,
+    ReleaseOutcome, ReleaseRefusal, SwapRefusal, check_epoch_tag, corpus_centroid, fold8,
+    hoard_check, hoard_gate_armed, hoard_gate_armed_for,
+};
 pub use stats::{
     ArmStat, PairedDiff, delta_suite, paired_upper_bound, paired_upper_bound_f64, pareto_rank0,
     select_arm, wilson_bound, wilson_lb,

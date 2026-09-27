@@ -20,7 +20,9 @@ serde = { version = "1", features = ["derive"] }
 # the ONE selection surface for the hosted serving lane (law A5).
 # parse-only: the manifest is read, never written, by this crate.
 toml = { version = "0.8", default-features = false, features = ["parse"] }
-katgpt-core = { path = "../katgpt-rs/crates/katgpt-core", default-features = false, features = ["best_belief", "sigmoid_calibration"] }
+# `set_admission`: the Vendi certificate + colinearity anchors of the
+# arsenal hoarding gate (Proposal 001 T5) — consumed, never forked.
+katgpt-core = { path = "../katgpt-rs/crates/katgpt-core", default-features = false, features = ["best_belief", "sigmoid_calibration", "set_admission"] }
 riir-reflex = { path = "../riir-reflex", default-features = false, features = ["modelless", "nb_scope"] }
 reflexer-vessel = { path = "../riir-reflexer/crates/reflexer-vessel", optional = true }
 ed25519-dalek = { version = "2", optional = true }

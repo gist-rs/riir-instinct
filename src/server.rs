@@ -199,6 +199,9 @@ pub struct SuiteServer<const N: usize> {
     pos_class: Vec<usize>,
     pos_spec: Vec<f32>,
     pos_nb: Vec<f32>,
+    /// The suite's corpus centroid folded into the admission space (the
+    /// hoarding gate's vector for this suite — Proposal 001 T5).
+    centroid: [f32; crate::arsenal_ops::DIM],
 }
 
 impl<const N: usize> SuiteServer<N> {
@@ -220,6 +223,22 @@ impl<const N: usize> SuiteServer<N> {
         Self::from_parts(suite, seat, spec, winner_blake3, WeightSource::RawWinner, arm)
     }
 
+    /// Boot one suite from ALREADY-READ artifact bytes (the swap path's
+    /// single-read discipline: the bytes are hashed once for the epoch
+    /// tag's digest half and decoded from THOSE bytes — never a
+    /// hash-then-reread window). Same shape as [`Self::from_seat`].
+    pub fn from_bytes(
+        suite: &'static str,
+        seat: Seat,
+        winner_bytes: &[u8],
+        arm: Arm,
+    ) -> Result<Self, String> {
+        let winner_blake3 = blake3::hash(winner_bytes).to_hex()[..16].to_string();
+        let spec =
+            decode_artifact(winner_bytes).map_err(|e| format!("winner artifact: {e}"))?;
+        Self::from_parts(suite, seat, spec, winner_blake3, WeightSource::RawWinner, arm)
+    }
+
     /// Boot one suite from a minted HOSTED-ONLY vessel (the P4 reader:
     /// verify → class gate → monotonic gate → decrypt → decode). The
     /// applied state comes from the host's state file (genesis at 0);
@@ -238,6 +257,38 @@ impl<const N: usize> SuiteServer<N> {
     ) -> Result<(Self, VesselFacts), String> {
         let loaded = crate::vessel::load_hosted(vessel_path, pins, key, applied)
             .map_err(|e| format!("{}: {e}", vessel_path.display()))?;
+        let facts = VesselFacts {
+            commitment_hex: loaded.commitment_hex.clone(),
+            artifact_version: loaded.artifact_version,
+            parent_commitment: loaded.parent_commitment,
+        };
+        let commitment16 = facts.commitment_hex[..16].to_string();
+        let server = Self::from_parts(
+            suite,
+            seat,
+            loaded.specialist,
+            commitment16,
+            WeightSource::Vessel,
+            arm,
+        )?;
+        Ok((server, facts))
+    }
+
+    /// Boot from ALREADY-READ vessel bytes (the swap path's single-read
+    /// discipline — the bytes hashed for the tag are the bytes decoded
+    /// here). Same shape as [`Self::from_vessel`].
+    #[cfg(feature = "vessel")]
+    pub fn from_vessel_bytes(
+        suite: &'static str,
+        seat: Seat,
+        vessel_bytes: &[u8],
+        pins: &reflexer_vessel::PinTable,
+        key: &[u8; 32],
+        applied: &crate::vessel::AppliedState,
+        arm: Arm,
+    ) -> Result<(Self, VesselFacts), String> {
+        let loaded = crate::vessel::load_hosted_bytes(vessel_bytes, pins, key, applied)
+            .map_err(|e| format!("vessel payload: {e}"))?;
         let facts = VesselFacts {
             commitment_hex: loaded.commitment_hex.clone(),
             artifact_version: loaded.artifact_version,
@@ -338,6 +389,13 @@ impl<const N: usize> SuiteServer<N> {
             source,
         };
 
+        // The hoarding gate's vector for this suite (Proposal 001 T5):
+        // the corpus centroid over the train pool, folded into the
+        // admission space. Boot-time work — the hot path never touches
+        // it.
+        let centroid =
+            crate::arsenal_ops::corpus_centroid(seat.train.iter().map(|d| d.text.as_str()));
+
         Ok(Self {
             suite,
             arm,
@@ -362,6 +420,7 @@ impl<const N: usize> SuiteServer<N> {
             pos_class: Vec::new(),
             pos_spec: Vec::new(),
             pos_nb: Vec::new(),
+            centroid,
         })
     }
 
@@ -375,6 +434,13 @@ impl<const N: usize> SuiteServer<N> {
 
     pub fn meta(&self) -> &SuiteMeta {
         &self.meta
+    }
+
+    /// The suite's corpus centroid — the hoarding gate's vector
+    /// (Proposal 001 T5).
+    #[must_use]
+    pub fn centroid(&self) -> [f32; crate::arsenal_ops::DIM] {
+        self.centroid
     }
 
     /// The canonical presented-option order (the seat's label universe).
@@ -712,6 +778,34 @@ impl AnySuiteServer {
         }
     }
 
+    /// The bytes-based dispatch over an ALREADY-PREPARED seat and
+    /// ALREADY-READ artifact bytes — the swap/lazy loader's entry (the
+    /// single-read discipline: the caller hashed these exact bytes for
+    /// the epoch tag). Same shape as [`Self::boot_from_seat`].
+    pub fn boot_bytes(
+        suite: &'static str,
+        seat: Seat,
+        artifact_bytes: &[u8],
+        manifest: &ArsenalManifest,
+    ) -> Result<Self, String> {
+        let arm = Self::posture_of(manifest, suite)?;
+        macro_rules! seat_arm {
+            ($variant:ident, $n:literal) => {{
+                let server = SuiteServer::<$n>::from_bytes(suite, seat, artifact_bytes, arm)?;
+                Ok(AnySuiteServer::$variant(Box::new(server)))
+            }};
+        }
+        match seat.labels.len() {
+            3 => seat_arm!(S3, 3),
+            4 => seat_arm!(S4, 4),
+            5 => seat_arm!(S5, 5),
+            6 => seat_arm!(S6, 6),
+            59 => seat_arm!(S59, 59),
+            77 => seat_arm!(S77, 77),
+            other => Err(format!("suite {suite}: no engine arity for {other} labels")),
+        }
+    }
+
     /// The vessel boot: the same dispatch, the specialist from a minted
     /// HOSTED-ONLY vessel (vessel feature only). The vessel file is the
     /// row's artifact (law A5 — no filename convention behind the
@@ -757,6 +851,45 @@ impl AnySuiteServer {
         }
     }
 
+    /// The bytes-based vessel dispatch — the swap/lazy loader's vessel
+    /// entry (single-read discipline, as [`Self::boot_bytes`]).
+    #[cfg(feature = "vessel")]
+    #[allow(clippy::too_many_arguments)]
+    pub fn boot_vessel_bytes(
+        suite: &'static str,
+        seat: Seat,
+        vessel_bytes: &[u8],
+        manifest: &ArsenalManifest,
+        pins: &reflexer_vessel::PinTable,
+        key: &[u8; 32],
+        applied: &crate::vessel::AppliedState,
+    ) -> Result<(Self, VesselFacts), String> {
+        let arm = Self::posture_of(manifest, suite)?;
+        macro_rules! vessel_arm {
+            ($variant:ident, $n:literal) => {{
+                let (server, facts) = SuiteServer::<$n>::from_vessel_bytes(
+                    suite,
+                    seat,
+                    vessel_bytes,
+                    pins,
+                    key,
+                    applied,
+                    arm,
+                )?;
+                Ok((AnySuiteServer::$variant(Box::new(server)), facts))
+            }};
+        }
+        match seat.labels.len() {
+            3 => vessel_arm!(S3, 3),
+            4 => vessel_arm!(S4, 4),
+            5 => vessel_arm!(S5, 5),
+            6 => vessel_arm!(S6, 6),
+            59 => vessel_arm!(S59, 59),
+            77 => vessel_arm!(S77, 77),
+            other => Err(format!("suite {suite}: no engine arity for {other} labels")),
+        }
+    }
+
     pub fn decide(
         &mut self,
         state: &str,
@@ -780,6 +913,19 @@ impl AnySuiteServer {
             AnySuiteServer::S6(s) => s.meta(),
             AnySuiteServer::S59(s) => s.meta(),
             AnySuiteServer::S77(s) => s.meta(),
+        }
+    }
+
+    /// The suite's corpus centroid — the hoarding gate's vector (T5).
+    #[must_use]
+    pub fn centroid(&self) -> [f32; crate::arsenal_ops::DIM] {
+        match self {
+            AnySuiteServer::S3(s) => s.centroid(),
+            AnySuiteServer::S4(s) => s.centroid(),
+            AnySuiteServer::S5(s) => s.centroid(),
+            AnySuiteServer::S6(s) => s.centroid(),
+            AnySuiteServer::S59(s) => s.centroid(),
+            AnySuiteServer::S77(s) => s.centroid(),
         }
     }
 }

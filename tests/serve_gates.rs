@@ -54,7 +54,7 @@ fn embedded_manifest() -> ArsenalManifest {
 /// re-run + frozen-predictions parity update law A6 demands). This is
 /// the TOML analogue of the compile-time posture table it replaced.
 const PINNED_MANIFEST_DIGEST: &str =
-    "blake3:de687282a21e3f7a1c5ccbc100882609c9700612e2e55ec911808e0693b8d41f";
+    "blake3:219356e01fcaa5010df10b3d76ac4c387ed3b5b201bda9896a6f928a6d2fe089";
 
 #[test]
 fn arsenal_manifest_bytes_are_pinned_byte_for_byte() {
@@ -500,4 +500,268 @@ fn http_decide_happy_path_with_data() {
     assert!(receipt["input"].as_str().unwrap().len() == 64, "{body}");
     assert!(receipt["decision"].as_str().unwrap().len() == 64, "{body}");
     assert!(doc["us"].as_u64().is_some(), "{body}");
+}
+
+// ── face 4: the arsenal budget + swap gates (Proposal 001 T5+T6) ─────
+
+/// The HTTP client with a tunable read timeout (the swap edge loads a
+/// lane — seconds-class — before answering; the 5 s decide timeout would
+/// cut the response off).
+fn http_to(port: u16, req: &str, body: Option<&str>, timeout: u64) -> (u16, String) {
+    let mut s = None;
+    for _ in 0..40 {
+        match TcpStream::connect(("127.0.0.1", port)) {
+            Ok(c) => {
+                s = Some(c);
+                break;
+            }
+            Err(_) => std::thread::sleep(std::time::Duration::from_millis(50)),
+        }
+    }
+    let mut s = s.expect("connect: the server never accepted");
+    s.set_read_timeout(Some(std::time::Duration::from_secs(timeout))).unwrap();
+    let head = match body {
+        Some(b) => format!(
+            "{req}\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{b}",
+            b.len()
+        ),
+        None => format!("{req}\r\nConnection: close\r\n\r\n"),
+    };
+    s.write_all(head.as_bytes()).unwrap();
+    let mut reader = BufReader::new(s);
+    let mut status_line = String::new();
+    reader.read_line(&mut status_line).unwrap();
+    let status = status_line
+        .split_whitespace()
+        .nth(1)
+        .and_then(|c| c.parse::<u16>().ok())
+        .unwrap_or(0);
+    let mut rest = String::new();
+    let _ = reader.read_to_string(&mut rest);
+    let body = rest
+        .split_once("\r\n\r\n")
+        .map(|(_, b)| b.to_string())
+        .unwrap_or(rest);
+    (status, body)
+}
+
+fn spawn_server_cfg(args: &[&str], envs: &[(&str, &str)]) -> ServerProc {
+    let exe = assert_cmd_env("CARGO_BIN_EXE_serve");
+    let listener = std::net::TcpListener::bind("127.0.0.1:0").expect("probe bind");
+    let port = listener.local_addr().unwrap().port();
+    drop(listener);
+    let mut cmd = Command::new(&exe);
+    cmd.arg("--bind").arg(format!("127.0.0.1:{port}"));
+    for a in args {
+        cmd.arg(a);
+    }
+    for (k, v) in envs {
+        cmd.env(k, v);
+    }
+    let child = cmd
+        .stdout(Stdio::null())
+        .stderr(Stdio::null())
+        .spawn()
+        .expect("spawn serve");
+    ServerProc { child, port }
+}
+
+/// Wait for the listener, then for one suite's lane to reach a healthz
+/// state (the boot/lazy-load window). Returns the LAST healthz body on
+/// failure — the diagnostic the assertion shows.
+fn wait_suite_state(port: u16, suite: &str, want: &str, secs: u64) -> Result<(), String> {
+    let needle = format!(r#""{suite}":{{"state":"{want}""#);
+    let mut last = String::new();
+    for _ in 0..(secs * 2) {
+        let (status, body) = http_to(port, "GET /healthz HTTP/1.1", None, 10);
+        last = format!("{status} {body}");
+        if status == 200 && body.contains(&needle) {
+            return Ok(());
+        }
+        std::thread::sleep(std::time::Duration::from_millis(500));
+    }
+    Err(last)
+}
+
+/// The ag_news row of the embedded manifest, flipped to the lazy posture
+/// (the first `budget.load` in the file is ag_news's row).
+fn lazy_ag_news_manifest() -> String {
+    riir_instinct::arsenal::EMBEDDED_MANIFEST.replacen(
+        "budget  = { load = \"eager\", max_payload_mb = 16 }",
+        "budget  = { load = \"lazy\", max_payload_mb = 16 }",
+        1,
+    )
+}
+
+#[test]
+fn arsenal_release_refuses_the_eager_posture() {
+    // Data-independent: the refusal is manifest-level, before any lane
+    // state matters.
+    let srv = spawn_server_cfg(&["--suites", "ag_news"], &[]);
+    assert!(
+        wait_bind(srv.port),
+        "the server never bound"
+    );
+    let (status, body) = http_to(
+        srv.port,
+        "POST /arsenal/release HTTP/1.1",
+        Some(r#"{"suite":"ag_news"}"#),
+        10,
+    );
+    assert_eq!(status, 409, "{body}");
+    assert!(body.contains("\"code\":\"not_lazy\""), "{body}");
+}
+
+fn wait_bind(port: u16) -> bool {
+    for _ in 0..100 {
+        if TcpStream::connect(("127.0.0.1", port)).is_ok() {
+            return true;
+        }
+        std::thread::sleep(std::time::Duration::from_millis(50));
+    }
+    false
+}
+
+/// The lazy cycle (T5): boot NOT loaded → first decision triggers the
+/// load (503 window) → ready → release evicts → re-decision re-triggers.
+#[test]
+fn arsenal_lazy_release_reload_cycle_over_http() {
+    if !data_present() {
+        eprintln!("SKIP loud: datasets/winners absent");
+        return;
+    }
+    let manifest = lazy_ag_news_manifest();
+    assert!(manifest.contains("load = \"lazy\""), "the surgery must flip ag_news's row");
+    let dir = std::env::temp_dir();
+    let path = dir.join(format!("instinct_arsenal_lazy_{}.toml", std::process::id()));
+    std::fs::write(&path, &manifest).expect("write lazy manifest");
+    let manifest_arg = path.to_string_lossy().into_owned();
+    let srv = spawn_server_cfg(
+        &["--suites", "ag_news"],
+        &[("INSTINCT_ARSENAL", manifest_arg.as_str())],
+    );
+    assert!(wait_bind(srv.port), "the server never bound");
+
+    // Boot did NOT load the lazy row.
+    wait_suite_state(srv.port, "ag_news", "unloaded", 10)
+        .unwrap_or_else(|b| panic!("the lazy row must sit unloaded at boot; last healthz: {b}"));
+
+    // The first decision TRIGGERS the load and answers 503.
+    let (status, body) = http_to(
+        srv.port,
+        "POST /decide HTTP/1.1",
+        Some(r#"{"suite":"ag_news","state":"Apple unveils a new M-series chip"}"#),
+        30,
+    );
+    assert_eq!(status, 503, "{body}");
+    assert!(body.contains("\"code\":\"loading\""), "{body}");
+
+    // The window closes; the lane serves.
+    wait_suite_state(srv.port, "ag_news", "ready", 120)
+        .unwrap_or_else(|b| panic!("the lazy load never completed; last healthz: {b}"));
+    let (status, body) = http_to(
+        srv.port,
+        "POST /decide HTTP/1.1",
+        Some(r#"{"suite":"ag_news","state":"Apple unveils a new M-series chip"}"#),
+        30,
+    );
+    assert_eq!(status, 200, "{body}");
+
+    // Release evicts; the tag survives; the next decision re-triggers.
+    let (status, body) = http_to(
+        srv.port,
+        "POST /arsenal/release HTTP/1.1",
+        Some(r#"{"suite":"ag_news"}"#),
+        10,
+    );
+    assert_eq!(status, 200, "{body}");
+    assert!(body.contains("\"status\":\"released\""), "{body}");
+    wait_suite_state(srv.port, "ag_news", "unloaded", 10)
+        .unwrap_or_else(|b| panic!("the released row must read unloaded; last healthz: {b}"));
+    let (status, _) = http_to(
+        srv.port,
+        "POST /decide HTTP/1.1",
+        Some(r#"{"suite":"ag_news","state":"Apple unveils a new M-series chip"}"#),
+        30,
+    );
+    assert_eq!(status, 503, "the re-decision must re-trigger the lazy load");
+    wait_suite_state(srv.port, "ag_news", "ready", 120)
+        .unwrap_or_else(|b| panic!("the reload never completed; last healthz: {b}"));
+    let (status, _) = http_to(
+        srv.port,
+        "POST /decide HTTP/1.1",
+        Some(r#"{"suite":"ag_news","state":"Apple unveils a new M-series chip"}"#),
+        30,
+    );
+    assert_eq!(status, 200);
+    let _ = std::fs::remove_file(&path);
+}
+
+/// The swap gate (T6) over the wire: idempotent no-op / fork refused /
+/// advance installed / downgrade refused — the epoch-tag contract at the
+/// HTTP edge.
+#[test]
+fn arsenal_swap_monotonic_gate_over_http() {
+    if !data_present() || !winners_dir().join("emotion_winner_v1.bin").is_file() {
+        eprintln!("SKIP loud: datasets/winner artifacts absent");
+        return;
+    }
+    let srv = spawn_server_cfg(&["--suites", "ag_news"], &[]);
+    assert!(wait_bind(srv.port), "the server never bound");
+    wait_suite_state(srv.port, "ag_news", "ready", 120)
+        .unwrap_or_else(|b| panic!("the ag_news lane never reached ready; last healthz: {b}"));
+
+    // Idempotent no-op: the boot artifact at epoch 0 IS the applied tag —
+    // answered without any reload.
+    let (status, body) = http_to(
+        srv.port,
+        "POST /arsenal/swap HTTP/1.1",
+        Some(r#"{"suite":"ag_news","artifact":"ag_news_winner_v1.bin","epoch":0}"#),
+        30,
+    );
+    assert_eq!(status, 200, "{body}");
+    assert!(body.contains("\"status\":\"noop\""), "{body}");
+
+    // Fork: epoch 0 with a DIFFERENT artifact's bytes — refused before
+    // any load.
+    let (status, body) = http_to(
+        srv.port,
+        "POST /arsenal/swap HTTP/1.1",
+        Some(r#"{"suite":"ag_news","artifact":"emotion_winner_v1.bin","epoch":0}"#),
+        30,
+    );
+    assert_eq!(status, 409, "{body}");
+    assert!(body.contains("\"code\":\"fork\""), "{body}");
+
+    // Advance: epoch 1, same artifact — the full load runs, then the
+    // atomic install.
+    let (status, body) = http_to(
+        srv.port,
+        "POST /arsenal/swap HTTP/1.1",
+        Some(r#"{"suite":"ag_news","artifact":"ag_news_winner_v1.bin","epoch":1}"#),
+        300,
+    );
+    assert_eq!(status, 200, "{body}");
+    assert!(body.contains("\"status\":\"advanced\""), "{body}");
+    assert!(body.contains("\"epoch\":1"), "{body}");
+    // healthz discloses the advanced tag; the lane still serves.
+    let (_, body) = http_to(srv.port, "GET /healthz HTTP/1.1", None, 10);
+    assert!(body.contains("ag_news\":{\"state\":\"ready\""), "{body}");
+    let (status, body) = http_to(
+        srv.port,
+        "POST /decide HTTP/1.1",
+        Some(r#"{"suite":"ag_news","state":"Apple unveils a new M-series chip"}"#),
+        30,
+    );
+    assert_eq!(status, 200, "{body}");
+
+    // Downgrade: epoch 0 is now behind the applied 1 — refused.
+    let (status, body) = http_to(
+        srv.port,
+        "POST /arsenal/swap HTTP/1.1",
+        Some(r#"{"suite":"ag_news","artifact":"ag_news_winner_v1.bin","epoch":0}"#),
+        30,
+    );
+    assert_eq!(status, 409, "{body}");
+    assert!(body.contains("\"code\":\"downgrade\""), "{body}");
 }
