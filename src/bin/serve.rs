@@ -104,6 +104,59 @@ fn main() {
         eprintln!("[riir-instinct] CORS: allowed origins — {}", allow.join(", "));
     }
 
+    // The decstat capture lane (Plan 002 / Issue 004 T1): consent-gated
+    // decision-outcome stats — Unset never pushes (the `--stats`
+    // semantics). Consent on is a WHOLE configuration: the signing key
+    // is required and a missing one refuses at boot (the vessel-mode
+    // pattern — a half-configured contributor is worse than none).
+    #[cfg(feature = "decstat")]
+    {
+        let consent = riir_instinct::decstat::consent_enabled(
+            std::env::var("RIIR_INSTINCT_STATS").ok().as_deref(),
+        );
+        if consent {
+            let key_path = std::env::var("INSTINCT_ACCOUNT_KEY").unwrap_or_else(|_| {
+                die(
+                    "RIIR_INSTINCT_STATS=on requires INSTINCT_ACCOUNT_KEY=<64-hex seed file> — \
+                     the row is signed with the account key; refusing is the honest posture",
+                )
+            });
+            let key =
+                riir_instinct::decstat::load_signing_key(&key_path).unwrap_or_else(|e| die(&e));
+            let url = std::env::var("INSTINCT_KAT_SERVICE_URL")
+                .unwrap_or_else(|_| riir_instinct::decstat::DEFAULT_SERVICE_URL.into());
+            let machine = std::env::var("INSTINCT_MACHINE_LABEL").unwrap_or_default();
+            let toolchain = format!("rustc {RUSTC_RELEASE}");
+            let sink = Arc::new(riir_instinct::decstat::DecStatSink::new());
+            riir_instinct::decstat::install(Some(Arc::clone(&sink)));
+            match riir_instinct::decstat::spawn_flusher(
+                sink,
+                key,
+                riir_instinct::decstat::FlushConfig {
+                    service_url: url.clone(),
+                    machine,
+                    toolchain,
+                },
+            ) {
+                Ok(_) => eprintln!(
+                    "[riir-instinct] decstat: on — flushing decision stats to {url} every {}s/{} decisions",
+                    riir_instinct::decstat::FLUSH_EVERY_SECS,
+                    riir_instinct::decstat::FLUSH_THRESHOLD
+                ),
+                Err(e) => die(&format!("spawn decstat flusher: {e}")),
+            }
+        } else {
+            riir_instinct::decstat::install(None);
+            eprintln!(
+                "[riir-instinct] decstat: off — decision stats are NOT contributed (set RIIR_INSTINCT_STATS=on + INSTINCT_ACCOUNT_KEY=<seed file> to opt in)"
+            );
+        }
+    }
+    #[cfg(not(feature = "decstat"))]
+    eprintln!(
+        "[riir-instinct] decstat: not compiled (build with --features decstat to enable the contribution lane)"
+    );
+
     // Vessel mode: INSTINCT_VESSEL_DIR set → the specialists load from
     // HOSTED-ONLY vessels. Fail-closed configuration: the key and at
     // least one operator pin are REQUIRED the moment the dir is set — a
@@ -720,6 +773,11 @@ fn decide_edge(stream: &mut TcpStream, slots: &[Slot], body: &[u8], cors: Option
                 &serde_json::to_string(&doc).unwrap_or_else(|_| "{\"error\":\"serialize\"}".into()),
                 cors,
             );
+            // The capture is AFTER the response is written — the decide
+            // path's latency never sees it, and a capture panic (none
+            // expected; the sink is infallible) could not eat a reply.
+            #[cfg(feature = "decstat")]
+            riir_instinct::decstat::record(d.suite, &d.arm, d.abstained);
         }
         Err(e) => {
             // The bridge refusal + empty state + duplicate options — the

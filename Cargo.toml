@@ -20,6 +20,16 @@ katgpt-core = { path = "../katgpt-rs/crates/katgpt-core", default-features = fal
 riir-reflex = { path = "../riir-reflex", default-features = false, features = ["modelless", "nb_scope"] }
 reflexer-vessel = { path = "../riir-reflexer/crates/reflexer-vessel", optional = true }
 ed25519-dalek = { version = "2", optional = true }
+# The decstat wire client + HTTP transport (Plan 002 / Issue 004 T2's
+# landed half): the protocol composer is feature-free in riir-kat; the
+# client/transport tiers ride `kat_transport` (implies `client`). Path
+# sibling — the account_key tier it implies pulls riir-auth →
+# riir-neuron-db, all path deps that already resolve in this layout.
+riir-kat = { path = "../riir-kat", optional = true, default-features = false, features = ["kat_transport"] }
+# The lock-free capture counters (the house rule for the shared map;
+# version-matched to the riir-auth pin already in this graph so one copy
+# compiles).
+papaya = { version = "0.2", optional = true }
 
 [features]
 default = []
@@ -30,6 +40,11 @@ vessel = ["dep:reflexer-vessel", "dep:ed25519-dalek"]
 # The arena's laya paired face (G2): forwards reflex's laya-riir — the
 # metal/tokenizers tree compiles only under this feature.
 arena-laya = ["riir-reflex/laya-riir"]
+# The decstat flywheel capture (Plan 002 / Issue 004 T1): consent-gated
+# decision-outcome stats over the riir-kat wire (lane "dec"). Opt-in —
+# default builds never resolve the wire/transport tree and the /decide
+# path is byte-identical (the record call compiles out).
+decstat = ["dep:riir-kat", "dep:papaya", "dep:ed25519-dalek"]
 
 [workspace]
 
@@ -39,3 +54,7 @@ arena-laya = ["riir-reflex/laya-riir"]
 [[test]]
 name = "vessel_gates"
 required-features = ["vessel"]
+
+[[test]]
+name = "decstat_gates"
+required-features = ["decstat"]

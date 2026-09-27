@@ -16,6 +16,10 @@ pub mod stats;
 pub mod server;
 #[cfg(feature = "vessel")]
 pub mod vessel;
+/// The decstat capture lane (Plan 002 / Issue 004 T1): consent-gated
+/// decision-outcome stats over the riir-kat wire — Unset never pushes.
+#[cfg(feature = "decstat")]
+pub mod decstat;
 
 pub use hybrid::{
     A0Answer, Cascade, FusedPick, HybridDecision, HybridLane, MAX_TOP_K, PriorFusion,
@@ -28,3 +32,5 @@ pub use stats::{
 };
 #[cfg(feature = "vessel")]
 pub use vessel::{AppliedState, LoadedVessel, VesselLoadError, load_hosted, load_hosted_bytes};
+#[cfg(feature = "decstat")]
+pub use decstat::{DecStatSink, FlushConfig, consent_enabled, install, load_signing_key, primitive_tag, record, spawn_flusher};

@@ -54,6 +54,8 @@ Python, no candle.
 |---|---|---|
 | reflexer-vessel | `../riir-reflexer/crates/reflexer-vessel` | default features; the vessel FORMAT crate — `peek`/`PinTable`/`commitment_of` only (the reader assembles authenticity from the format crate's own primitives; its `decode` refuses HOSTED-ONLY by its own law, which is exactly why the hosted reader lives here) — measured at P4 T1–T5 (2026-09-27, `tests/vessel_gates.rs`, 7 arms) |
 | ed25519-dalek | crates.io, default features (the format crate pins the same line) | the signature/seal primitive behind reflexer-vessel's own ed25519-STRICT verification + the gate fixtures' minter; no other crypto dep (confidentiality is BLAKE3-XOF keystream, already in-tree) — measured at P4 (2026-09-27) |
+| riir-kat | `../riir-kat` | `default-features = false`, feature `kat_transport` (implies `client`); the decstat wire client (Plan 002 / Issue 004 T1–T2, lane `dec`): `kat_protocol_decstat` composer + `push_decstat` transport. Opt-in `decstat` cargo feature — default builds never resolve it. Consumed as a CLIENT: no ledger/settlement semantics here (riir-dapps owns those, the boundary row above) — measured 2026-09-27 (`tests/decstat_gates.rs`) |
+| papaya | crates.io | the decstat sink's lock-free counters (version-matched to the riir-auth pin already in this graph); opt-in behind the same `decstat` feature — measured 2026-09-27 |
 
 ## Standing invariants
 

@@ -43,6 +43,9 @@ riir-deployer (cf-container) ◀─ vessel minting ◀─ riir-train ◀─ riir
 /git/riir-train      ← specialists + vessel minting (private)
 /git/riir-deployer   ← deploy orchestration (private)
 /git/riir-dapps      ← settlement (private)
+/git/riir-kat        ← the decstat wire client (opt-in `decstat` feature, Plan 002 / Issue 004:
+                        `kat_protocol_decstat` composer + `push_decstat`; the ledger/settlement
+                        semantics stay in riir-dapps — this is a client-only consumption)
 ```
 
 ## Build commands
