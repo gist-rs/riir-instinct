@@ -83,10 +83,15 @@ weights are bytes; mining → settle → corpus → retrain).
       `tests/vessel_gates.rs` against real minted fixtures (the fixture
       minter lays out the documented 68-byte header itself; the format
       crate's HOSTED-ONLY writer is deliberately private).
-      `encrypt_payload` is the published minting contract for
-      riir-train. Minting and lineage remain in riir-train; the first
-      minting key gets pinned in the same change that ships the first
-      artifact.
+      fixtures. `encrypt_payload` is the published minting contract for
+      riir-train. The minting and lineage halves landed 2026-09-27/28:
+      reflexer-vessel's class-aware cap (reflexer `049a583` —
+      `MAX_HOSTED_PAYLOAD` 16 MiB for HOSTED-ONLY, the public 1 MiB
+      bound untouched), riir-train's `vessel-mint` bin
+      (riir-train `495e9b7d`), the instinct-side bounded read + the
+      serve lane's vessel mode (instinct `cab4b0e`) + the cap-pin gate
+      (instinct `f2fd12a`); the first real artifact — banking77 as one
+      10 MB vessel — was minted and served live (`source: Vessel`).
 - [x] **P5 — hosted deploy (Issue 002).** DONE 2026-09-27: the serving
       binary (`src/bin/serve.rs` — std-only HTTP edge, the decision
       receipt, lanes loading async with healthz live) + the lib serving

@@ -138,10 +138,13 @@ GOAT record; P6 (the flywheel) is open.** Master plan:
   ed25519, blake3 commitment), applies the blake3-XOF confidentiality
   envelope, decodes the RISP artifact, enforces the monotonic apply
   gate; gate taxonomy 7/7 in `tests/vessel_gates.rs` against real
-  minted fixtures. `encrypt_payload` is the published minting contract
-  for riir-train; no vessel exists yet (the minter is the riir-train
-  side) — the serve lane still boots from the raw winner artifacts
-  until the first vessel ships.
+  fixtures. `encrypt_payload` is the published minting contract
+  for riir-train; the first vessels ARE minted — the minter is
+  riir-train's `vessel-mint` bin (`vessel_mint` feature, riir-train
+  `495e9b7d`; the class-aware cap is reflexer `049a583`, the cap-pin
+  gate instinct `f2fd12a`), and the serve lane boots vessel-if-present
+  (`INSTINCT_VESSEL_DIR` + KEY + PINS, monotonic applied-state files,
+  live-verified: banking77 as one 10 MB vessel, `source: Vessel`).
 - **P5 — the hosted serving lane** (`src/server.rs` +
   `src/bin/serve.rs` + `deploy.yaml`, 2026-09-27): the servable binary
   and the cf-container shape (Issue 002, katgpt-rs Proposal 014 §4
