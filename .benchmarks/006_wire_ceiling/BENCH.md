@@ -121,3 +121,39 @@ not an engine change. Consequences:
 - Drift pins inside the probe: champion genome id; the state-key mirror
   (clause-substring checks of `render_state_sentence` over all 21
   board×piece combos); pack round-trips incl. max keys.
+
+## Addendum 2026-09-27 — the demeaned-decoder class (the cross-review's owed run)
+
+The Issue-825 cross-session's review of this bench (verdict REVISE)
+identified a decoder-class gap: `bump(…, *v)` averages ABSOLUTE values,
+whose cell means track how good the whole position is as much as the
+option's rank within it — the fit's RMS residual (≈388) exceeds the
+within-decision value range (≈105–290). The owed arm landed the same day
+in this instrument: `wire-t1d` / `wire-t3d`, cells bumped with
+`value − decision mean` (the per-decision constant cancels in argmax, so
+the demeaned tables target within-point ranking directly), chains
+t1d → lin and t3d → t1d → lin; original arms byte-identical.
+
+Full-run results (same protocol): **wire-t1d agree 0.5470** (mean rank of
+the champ pick 0.978, top-3 89.2%) / wire-t3d 0.5374 — more than double
+wire-t3's 0.3002, confirming the review's diagnosis. Board outcomes:
+t1d 1 420 pts / 83 pieces vs champ 107 638 / 3 153 (ratio 0.013), 103 W /
+13 L / 4 T, sign p < 0.0001. **Both decoder classes fail the gates
+(0.547 ≤ 0.85; ratio ≤ 0.80) — WIRE-MUST-WIDEN is robust across the
+family**, and the Instinct-only sidecar decision stands. Chain usage:
+t1d answers 99.8% from its table rung (dense), t3d 86.2% t3d + 13.6%
+t1d fallback (level-usage line now reported per arm).
+
+The landing correction this addendum owes the original text: the header's
+"the information, not the sampling, is the bound" overstated the first
+read — **the information is the bound; ~half of the first-read gap (0.30
+→ 0.55) was the ESTIMAND** (an absolute-value target, not missing wire
+information). The remaining gap to champion level is real and both
+classes fail the gates.
+
+Also scoped by the same review: the header THEOREM is now stated
+narrowly (it binds additive option+state decoders, not keyed tables);
+the verdict line is judged on the BEST wire arm across both classes,
+with the pre-declared t3 line printed beside it. Instrument SHA: the
+demeaned arms landed at katgpt-rs `5961e0991` (the 0.3002/0.001 numbers
+above reproduce byte-identically on it — verified in the same run).

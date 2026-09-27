@@ -1,0 +1,3862 @@
+{
+  "meta": {
+    "issue": "riir-instinct 009 T6 (+T5 collection)",
+    "recorded_at": "2026-307-11T17:07:51.694Z",
+    "box_load": "23.06 25.20 21.79",
+    "champion_genome_id": "68cae9d382014662",
+    "tetris_head_digest": "8a1d76a05527468c5a9068b4b919685ea06a5020d3e7ca81a52d5477eb8d6032",
+    "teacher_information_rule": "no preview, fresh bag (uniform-7 chance model); chance_puct over the champion evaluator (mode at the decision root); teacher rng = seed ^ 0x05EE_D892",
+    "paired_seeds": "1..=20",
+    "context_seed": 607,
+    "regimes": [
+      "garbage 16@75%",
+      "garbage 18@75%"
+    ],
+    "cap": 1000,
+    "budgets": [
+      0,
+      100,
+      400,
+      1600
+    ],
+    "threads": 10,
+    "stream": "katgpt_tetris::lookahead::Bag (seeded guideline 7-bag; harness-internal — the arena's JS PieceBag pops the same shuffle from the other end, so harness seeds are not JS-walk seeds)",
+    "gate": "T6 PASS iff some teacher budget's paired pieces diff vs reflex-head has lb95 > 0",
+    "wall_s": 37.728178417
+  },
+  "cells": [
+    {
+      "regime": "garbage 16@75%",
+      "arm": "teacher_b0",
+      "arm_name": "teacher-puct b0 (champion eval, no preview, fresh bag)",
+      "mean_pieces": 903.15,
+      "mean_lines": 367.2,
+      "mean_points": 33668.0,
+      "survived": 18,
+      "p50_ms": 0.004459,
+      "wtl_vs_reflex": "20/0/0",
+      "paired_mean": 881.0,
+      "paired_lb95": 752.0862404378323,
+      "per_seed": [
+        [
+          1,
+          {
+            "seed": 1,
+            "pieces": 1000,
+            "lines": 408,
+            "tetrises": 20,
+            "points": 40040,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 0.002667,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          2,
+          {
+            "seed": 2,
+            "pieces": 1000,
+            "lines": 405,
+            "tetrises": 21,
+            "points": 42040,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 0.004583,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          3,
+          {
+            "seed": 3,
+            "pieces": 1000,
+            "lines": 409,
+            "tetrises": 9,
+            "points": 29620,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 0.004583,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          4,
+          {
+            "seed": 4,
+            "pieces": 1000,
+            "lines": 405,
+            "tetrises": 4,
+            "points": 23400,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 0.005584,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          5,
+          {
+            "seed": 5,
+            "pieces": 1000,
+            "lines": 409,
+            "tetrises": 17,
+            "points": 37560,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 0.004875,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          6,
+          {
+            "seed": 6,
+            "pieces": 1000,
+            "lines": 410,
+            "tetrises": 12,
+            "points": 32740,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 0.005667,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          7,
+          {
+            "seed": 7,
+            "pieces": 1000,
+            "lines": 411,
+            "tetrises": 26,
+            "points": 45740,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 0.004834,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          8,
+          {
+            "seed": 8,
+            "pieces": 1000,
+            "lines": 408,
+            "tetrises": 14,
+            "points": 34480,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 0.004458,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          9,
+          {
+            "seed": 9,
+            "pieces": 1000,
+            "lines": 408,
+            "tetrises": 24,
+            "points": 45020,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 0.004666,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          10,
+          {
+            "seed": 10,
+            "pieces": 1000,
+            "lines": 408,
+            "tetrises": 19,
+            "points": 39440,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 0.004417,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          11,
+          {
+            "seed": 11,
+            "pieces": 1000,
+            "lines": 409,
+            "tetrises": 25,
+            "points": 46500,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 0.004292,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          12,
+          {
+            "seed": 12,
+            "pieces": 1000,
+            "lines": 400,
+            "tetrises": 10,
+            "points": 29160,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 0.0045000000000000005,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          13,
+          {
+            "seed": 13,
+            "pieces": 1000,
+            "lines": 406,
+            "tetrises": 21,
+            "points": 40980,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 0.00475,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          14,
+          {
+            "seed": 14,
+            "pieces": 1000,
+            "lines": 404,
+            "tetrises": 21,
+            "points": 41340,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 0.003958,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          15,
+          {
+            "seed": 15,
+            "pieces": 1000,
+            "lines": 407,
+            "tetrises": 19,
+            "points": 38500,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 0.0037500000000000003,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          16,
+          {
+            "seed": 16,
+            "pieces": 1000,
+            "lines": 407,
+            "tetrises": 16,
+            "points": 36680,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 0.004459,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          17,
+          {
+            "seed": 17,
+            "pieces": 29,
+            "lines": 8,
+            "tetrises": 0,
+            "points": 320,
+            "topped_out": true,
+            "decisions": 29,
+            "p50_ms": 0.003417,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          18,
+          {
+            "seed": 18,
+            "pieces": 1000,
+            "lines": 405,
+            "tetrises": 11,
+            "points": 30260,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 0.003875,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          19,
+          {
+            "seed": 19,
+            "pieces": 34,
+            "lines": 10,
+            "tetrises": 0,
+            "points": 420,
+            "topped_out": true,
+            "decisions": 34,
+            "p50_ms": 0.003708,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          20,
+          {
+            "seed": 20,
+            "pieces": 1000,
+            "lines": 407,
+            "tetrises": 18,
+            "points": 39120,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 0.003709,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          607,
+          {
+            "seed": 607,
+            "pieces": 1000,
+            "lines": 405,
+            "tetrises": 15,
+            "points": 35380,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 0.003708,
+            "head_decode_misses": 0
+          }
+        ]
+      ]
+    },
+    {
+      "regime": "garbage 16@75%",
+      "arm": "teacher_b100",
+      "arm_name": "teacher-puct b100 (champion eval, no preview, fresh bag)",
+      "mean_pieces": 1000.0,
+      "mean_lines": 405.5,
+      "mean_points": 37728.0,
+      "survived": 20,
+      "p50_ms": 0.30333299999999996,
+      "wtl_vs_reflex": "20/0/0",
+      "paired_mean": 977.85,
+      "paired_lb95": 969.7410444289648,
+      "per_seed": [
+        [
+          1,
+          {
+            "seed": 1,
+            "pieces": 1000,
+            "lines": 407,
+            "tetrises": 18,
+            "points": 38000,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 0.294375,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          2,
+          {
+            "seed": 2,
+            "pieces": 1000,
+            "lines": 405,
+            "tetrises": 24,
+            "points": 44300,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 0.293708,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          3,
+          {
+            "seed": 3,
+            "pieces": 1000,
+            "lines": 406,
+            "tetrises": 25,
+            "points": 45980,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 0.298209,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          4,
+          {
+            "seed": 4,
+            "pieces": 1000,
+            "lines": 406,
+            "tetrises": 21,
+            "points": 41580,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 0.29725,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          5,
+          {
+            "seed": 5,
+            "pieces": 1000,
+            "lines": 400,
+            "tetrises": 7,
+            "points": 24940,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 0.299667,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          6,
+          {
+            "seed": 6,
+            "pieces": 1000,
+            "lines": 406,
+            "tetrises": 15,
+            "points": 36220,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 0.30333299999999996,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          7,
+          {
+            "seed": 7,
+            "pieces": 1000,
+            "lines": 407,
+            "tetrises": 19,
+            "points": 40400,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 0.29562499999999997,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          8,
+          {
+            "seed": 8,
+            "pieces": 1000,
+            "lines": 402,
+            "tetrises": 10,
+            "points": 30400,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 0.296125,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          9,
+          {
+            "seed": 9,
+            "pieces": 1000,
+            "lines": 408,
+            "tetrises": 13,
+            "points": 33160,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 0.303583,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          10,
+          {
+            "seed": 10,
+            "pieces": 1000,
+            "lines": 403,
+            "tetrises": 19,
+            "points": 38920,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 0.30025,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          11,
+          {
+            "seed": 11,
+            "pieces": 1000,
+            "lines": 410,
+            "tetrises": 24,
+            "points": 45740,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 0.306583,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          12,
+          {
+            "seed": 12,
+            "pieces": 1000,
+            "lines": 407,
+            "tetrises": 17,
+            "points": 36720,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 0.309625,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          13,
+          {
+            "seed": 13,
+            "pieces": 1000,
+            "lines": 402,
+            "tetrises": 20,
+            "points": 39400,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 0.30312500000000003,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          14,
+          {
+            "seed": 14,
+            "pieces": 1000,
+            "lines": 408,
+            "tetrises": 15,
+            "points": 35540,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 0.307084,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          15,
+          {
+            "seed": 15,
+            "pieces": 1000,
+            "lines": 401,
+            "tetrises": 6,
+            "points": 25640,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 0.301959,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          16,
+          {
+            "seed": 16,
+            "pieces": 1000,
+            "lines": 397,
+            "tetrises": 7,
+            "points": 25800,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 0.310375,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          17,
+          {
+            "seed": 17,
+            "pieces": 1000,
+            "lines": 409,
+            "tetrises": 31,
+            "points": 51460,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 0.303792,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          18,
+          {
+            "seed": 18,
+            "pieces": 1000,
+            "lines": 409,
+            "tetrises": 17,
+            "points": 37360,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 0.30987499999999996,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          19,
+          {
+            "seed": 19,
+            "pieces": 1000,
+            "lines": 407,
+            "tetrises": 18,
+            "points": 39860,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 0.304458,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          20,
+          {
+            "seed": 20,
+            "pieces": 1000,
+            "lines": 410,
+            "tetrises": 23,
+            "points": 43140,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 0.306,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          607,
+          {
+            "seed": 607,
+            "pieces": 1000,
+            "lines": 406,
+            "tetrises": 32,
+            "points": 52560,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 0.25549999999999995,
+            "head_decode_misses": 0
+          }
+        ]
+      ]
+    },
+    {
+      "regime": "garbage 16@75%",
+      "arm": "teacher_b400",
+      "arm_name": "teacher-puct b400 (champion eval, no preview, fresh bag)",
+      "mean_pieces": 994.85,
+      "mean_lines": 404.3,
+      "mean_points": 45291.0,
+      "survived": 19,
+      "p50_ms": 1.2855830000000001,
+      "wtl_vs_reflex": "20/0/0",
+      "paired_mean": 972.7,
+      "paired_lb95": 959.2902001865223,
+      "per_seed": [
+        [
+          1,
+          {
+            "seed": 1,
+            "pieces": 1000,
+            "lines": 407,
+            "tetrises": 27,
+            "points": 46960,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 1.280584,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          2,
+          {
+            "seed": 2,
+            "pieces": 1000,
+            "lines": 406,
+            "tetrises": 29,
+            "points": 48620,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 1.267208,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          3,
+          {
+            "seed": 3,
+            "pieces": 1000,
+            "lines": 406,
+            "tetrises": 28,
+            "points": 48280,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 1.278167,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          4,
+          {
+            "seed": 4,
+            "pieces": 1000,
+            "lines": 406,
+            "tetrises": 26,
+            "points": 46520,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 1.272042,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          5,
+          {
+            "seed": 5,
+            "pieces": 1000,
+            "lines": 407,
+            "tetrises": 30,
+            "points": 50320,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 1.275042,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          6,
+          {
+            "seed": 6,
+            "pieces": 1000,
+            "lines": 404,
+            "tetrises": 31,
+            "points": 50300,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 1.274167,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          7,
+          {
+            "seed": 7,
+            "pieces": 1000,
+            "lines": 399,
+            "tetrises": 12,
+            "points": 31840,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 1.2706250000000001,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          8,
+          {
+            "seed": 8,
+            "pieces": 897,
+            "lines": 354,
+            "tetrises": 0,
+            "points": 16060,
+            "topped_out": true,
+            "decisions": 897,
+            "p50_ms": 1.2275,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          9,
+          {
+            "seed": 9,
+            "pieces": 1000,
+            "lines": 408,
+            "tetrises": 14,
+            "points": 35060,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 1.268417,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          10,
+          {
+            "seed": 10,
+            "pieces": 1000,
+            "lines": 408,
+            "tetrises": 26,
+            "points": 47620,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 1.267625,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          11,
+          {
+            "seed": 11,
+            "pieces": 1000,
+            "lines": 409,
+            "tetrises": 26,
+            "points": 46920,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 1.3010840000000001,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          12,
+          {
+            "seed": 12,
+            "pieces": 1000,
+            "lines": 405,
+            "tetrises": 33,
+            "points": 53220,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 1.305083,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          13,
+          {
+            "seed": 13,
+            "pieces": 1000,
+            "lines": 410,
+            "tetrises": 38,
+            "points": 59820,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 1.285833,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          14,
+          {
+            "seed": 14,
+            "pieces": 1000,
+            "lines": 411,
+            "tetrises": 35,
+            "points": 54360,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 1.2855830000000001,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          15,
+          {
+            "seed": 15,
+            "pieces": 1000,
+            "lines": 410,
+            "tetrises": 39,
+            "points": 60620,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 1.302209,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          16,
+          {
+            "seed": 16,
+            "pieces": 1000,
+            "lines": 408,
+            "tetrises": 25,
+            "points": 44780,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 1.2985,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          17,
+          {
+            "seed": 17,
+            "pieces": 1000,
+            "lines": 410,
+            "tetrises": 17,
+            "points": 37440,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 1.29125,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          18,
+          {
+            "seed": 18,
+            "pieces": 1000,
+            "lines": 407,
+            "tetrises": 33,
+            "points": 54080,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 1.3094999999999999,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          19,
+          {
+            "seed": 19,
+            "pieces": 1000,
+            "lines": 403,
+            "tetrises": 18,
+            "points": 37840,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 1.2902090000000002,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          20,
+          {
+            "seed": 20,
+            "pieces": 1000,
+            "lines": 408,
+            "tetrises": 15,
+            "points": 35160,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 1.294667,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          607,
+          {
+            "seed": 607,
+            "pieces": 1000,
+            "lines": 397,
+            "tetrises": 5,
+            "points": 23460,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 0.9959999999999999,
+            "head_decode_misses": 0
+          }
+        ]
+      ]
+    },
+    {
+      "regime": "garbage 16@75%",
+      "arm": "teacher_b1600",
+      "arm_name": "teacher-puct b1600 (champion eval, no preview, fresh bag)",
+      "mean_pieces": 1000.0,
+      "mean_lines": 406.65,
+      "mean_points": 50799.0,
+      "survived": 20,
+      "p50_ms": 5.0526670000000005,
+      "wtl_vs_reflex": "20/0/0",
+      "paired_mean": 977.85,
+      "paired_lb95": 969.7410444289648,
+      "per_seed": [
+        [
+          1,
+          {
+            "seed": 1,
+            "pieces": 1000,
+            "lines": 402,
+            "tetrises": 24,
+            "points": 43400,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 5.076458,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          2,
+          {
+            "seed": 2,
+            "pieces": 1000,
+            "lines": 404,
+            "tetrises": 37,
+            "points": 57240,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 5.0526670000000005,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          3,
+          {
+            "seed": 3,
+            "pieces": 1000,
+            "lines": 405,
+            "tetrises": 34,
+            "points": 53780,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 5.077958,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          4,
+          {
+            "seed": 4,
+            "pieces": 1000,
+            "lines": 407,
+            "tetrises": 29,
+            "points": 49800,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 5.064833,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          5,
+          {
+            "seed": 5,
+            "pieces": 1000,
+            "lines": 410,
+            "tetrises": 27,
+            "points": 47540,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 5.086958,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          6,
+          {
+            "seed": 6,
+            "pieces": 1000,
+            "lines": 402,
+            "tetrises": 21,
+            "points": 41180,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 5.07875,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          7,
+          {
+            "seed": 7,
+            "pieces": 1000,
+            "lines": 409,
+            "tetrises": 42,
+            "points": 62100,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 5.050584000000001,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          8,
+          {
+            "seed": 8,
+            "pieces": 1000,
+            "lines": 405,
+            "tetrises": 37,
+            "points": 57860,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 5.107041,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          9,
+          {
+            "seed": 9,
+            "pieces": 1000,
+            "lines": 408,
+            "tetrises": 35,
+            "points": 56120,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 5.0682920000000005,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          10,
+          {
+            "seed": 10,
+            "pieces": 1000,
+            "lines": 411,
+            "tetrises": 39,
+            "points": 59400,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 5.0326249999999995,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          11,
+          {
+            "seed": 11,
+            "pieces": 1000,
+            "lines": 410,
+            "tetrises": 22,
+            "points": 41900,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 5.030083,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          12,
+          {
+            "seed": 12,
+            "pieces": 1000,
+            "lines": 405,
+            "tetrises": 32,
+            "points": 52480,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 5.0445,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          13,
+          {
+            "seed": 13,
+            "pieces": 1000,
+            "lines": 410,
+            "tetrises": 32,
+            "points": 53460,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 5.030375,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          14,
+          {
+            "seed": 14,
+            "pieces": 1000,
+            "lines": 410,
+            "tetrises": 31,
+            "points": 52800,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 5.039,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          15,
+          {
+            "seed": 15,
+            "pieces": 1000,
+            "lines": 407,
+            "tetrises": 37,
+            "points": 57160,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 5.031417,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          16,
+          {
+            "seed": 16,
+            "pieces": 1000,
+            "lines": 410,
+            "tetrises": 31,
+            "points": 51360,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 5.039916,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          17,
+          {
+            "seed": 17,
+            "pieces": 1000,
+            "lines": 410,
+            "tetrises": 34,
+            "points": 54440,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 5.091,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          18,
+          {
+            "seed": 18,
+            "pieces": 1000,
+            "lines": 407,
+            "tetrises": 26,
+            "points": 45820,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 5.065208,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          19,
+          {
+            "seed": 19,
+            "pieces": 1000,
+            "lines": 400,
+            "tetrises": 32,
+            "points": 53180,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 5.040084,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          20,
+          {
+            "seed": 20,
+            "pieces": 1000,
+            "lines": 401,
+            "tetrises": 6,
+            "points": 24960,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 5.008125000000001,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          607,
+          {
+            "seed": 607,
+            "pieces": 1000,
+            "lines": 410,
+            "tetrises": 37,
+            "points": 57840,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 3.958584,
+            "head_decode_misses": 0
+          }
+        ]
+      ]
+    },
+    {
+      "regime": "garbage 16@75%",
+      "arm": "champion_search",
+      "arm_name": "champion-search d3 (served posture, preview + bag)",
+      "mean_pieces": 1000.0,
+      "mean_lines": 408.5,
+      "mean_points": 72754.0,
+      "survived": 20,
+      "p50_ms": 0.7245,
+      "wtl_vs_reflex": "20/0/0",
+      "paired_mean": 977.85,
+      "paired_lb95": 969.7410444289648,
+      "per_seed": [
+        [
+          1,
+          {
+            "seed": 1,
+            "pieces": 1000,
+            "lines": 411,
+            "tetrises": 56,
+            "points": 76000,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 0.669125,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          2,
+          {
+            "seed": 2,
+            "pieces": 1000,
+            "lines": 405,
+            "tetrises": 59,
+            "points": 78800,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 0.706708,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          3,
+          {
+            "seed": 3,
+            "pieces": 1000,
+            "lines": 407,
+            "tetrises": 49,
+            "points": 68760,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 0.674875,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          4,
+          {
+            "seed": 4,
+            "pieces": 1000,
+            "lines": 411,
+            "tetrises": 58,
+            "points": 77680,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 0.71875,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          5,
+          {
+            "seed": 5,
+            "pieces": 1000,
+            "lines": 407,
+            "tetrises": 55,
+            "points": 75140,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 0.733375,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          6,
+          {
+            "seed": 6,
+            "pieces": 1000,
+            "lines": 405,
+            "tetrises": 51,
+            "points": 71060,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 0.706375,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          7,
+          {
+            "seed": 7,
+            "pieces": 1000,
+            "lines": 407,
+            "tetrises": 45,
+            "points": 64820,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 0.673833,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          8,
+          {
+            "seed": 8,
+            "pieces": 1000,
+            "lines": 407,
+            "tetrises": 51,
+            "points": 71240,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 0.709834,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          9,
+          {
+            "seed": 9,
+            "pieces": 1000,
+            "lines": 408,
+            "tetrises": 52,
+            "points": 72140,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 0.712333,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          10,
+          {
+            "seed": 10,
+            "pieces": 1000,
+            "lines": 410,
+            "tetrises": 50,
+            "points": 70040,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 0.7322919999999999,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          11,
+          {
+            "seed": 11,
+            "pieces": 1000,
+            "lines": 410,
+            "tetrises": 54,
+            "points": 74260,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 0.762083,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          12,
+          {
+            "seed": 12,
+            "pieces": 1000,
+            "lines": 408,
+            "tetrises": 54,
+            "points": 73580,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 0.7354580000000001,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          13,
+          {
+            "seed": 13,
+            "pieces": 1000,
+            "lines": 407,
+            "tetrises": 58,
+            "points": 78780,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 0.7364999999999999,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          14,
+          {
+            "seed": 14,
+            "pieces": 1000,
+            "lines": 409,
+            "tetrises": 53,
+            "points": 73860,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 0.7366659999999999,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          15,
+          {
+            "seed": 15,
+            "pieces": 1000,
+            "lines": 411,
+            "tetrises": 43,
+            "points": 63440,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 0.780125,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          16,
+          {
+            "seed": 16,
+            "pieces": 1000,
+            "lines": 409,
+            "tetrises": 46,
+            "points": 65520,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 0.7245,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          17,
+          {
+            "seed": 17,
+            "pieces": 1000,
+            "lines": 410,
+            "tetrises": 54,
+            "points": 74740,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 0.760292,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          18,
+          {
+            "seed": 18,
+            "pieces": 1000,
+            "lines": 410,
+            "tetrises": 54,
+            "points": 74280,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 0.7635,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          19,
+          {
+            "seed": 19,
+            "pieces": 1000,
+            "lines": 408,
+            "tetrises": 54,
+            "points": 73740,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 0.6815,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          20,
+          {
+            "seed": 20,
+            "pieces": 1000,
+            "lines": 410,
+            "tetrises": 57,
+            "points": 77200,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 0.698167,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          607,
+          {
+            "seed": 607,
+            "pieces": 1000,
+            "lines": 411,
+            "tetrises": 47,
+            "points": 67720,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 0.230583,
+            "head_decode_misses": 0
+          }
+        ]
+      ]
+    },
+    {
+      "regime": "garbage 16@75%",
+      "arm": "reflex_head",
+      "arm_name": "reflex-head (Bench 881 decoded arm)",
+      "mean_pieces": 22.15,
+      "mean_lines": 6.0,
+      "mean_points": 360.0,
+      "survived": 0,
+      "p50_ms": 0.010375,
+      "wtl_vs_reflex": "0/0/0",
+      "paired_mean": 0.0,
+      "paired_lb95": 0.0,
+      "per_seed": [
+        [
+          1,
+          {
+            "seed": 1,
+            "pieces": 16,
+            "lines": 4,
+            "tetrises": 0,
+            "points": 200,
+            "topped_out": true,
+            "decisions": 16,
+            "p50_ms": 0.012208,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          2,
+          {
+            "seed": 2,
+            "pieces": 12,
+            "lines": 1,
+            "tetrises": 0,
+            "points": 40,
+            "topped_out": true,
+            "decisions": 12,
+            "p50_ms": 0.011041,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          3,
+          {
+            "seed": 3,
+            "pieces": 15,
+            "lines": 3,
+            "tetrises": 0,
+            "points": 140,
+            "topped_out": true,
+            "decisions": 15,
+            "p50_ms": 0.00675,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          4,
+          {
+            "seed": 4,
+            "pieces": 15,
+            "lines": 3,
+            "tetrises": 0,
+            "points": 300,
+            "topped_out": true,
+            "decisions": 15,
+            "p50_ms": 0.012875,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          5,
+          {
+            "seed": 5,
+            "pieces": 11,
+            "lines": 2,
+            "tetrises": 0,
+            "points": 80,
+            "topped_out": true,
+            "decisions": 11,
+            "p50_ms": 0.016958,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          6,
+          {
+            "seed": 6,
+            "pieces": 27,
+            "lines": 9,
+            "tetrises": 1,
+            "points": 1420,
+            "topped_out": true,
+            "decisions": 27,
+            "p50_ms": 0.012458,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          7,
+          {
+            "seed": 7,
+            "pieces": 9,
+            "lines": 1,
+            "tetrises": 0,
+            "points": 40,
+            "topped_out": true,
+            "decisions": 9,
+            "p50_ms": 0.010832999999999999,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          8,
+          {
+            "seed": 8,
+            "pieces": 28,
+            "lines": 8,
+            "tetrises": 0,
+            "points": 360,
+            "topped_out": true,
+            "decisions": 28,
+            "p50_ms": 0.010792,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          9,
+          {
+            "seed": 9,
+            "pieces": 52,
+            "lines": 17,
+            "tetrises": 0,
+            "points": 920,
+            "topped_out": true,
+            "decisions": 52,
+            "p50_ms": 0.009375,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          10,
+          {
+            "seed": 10,
+            "pieces": 31,
+            "lines": 9,
+            "tetrises": 0,
+            "points": 420,
+            "topped_out": true,
+            "decisions": 31,
+            "p50_ms": 0.009667,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          11,
+          {
+            "seed": 11,
+            "pieces": 22,
+            "lines": 6,
+            "tetrises": 0,
+            "points": 280,
+            "topped_out": true,
+            "decisions": 22,
+            "p50_ms": 0.009208000000000001,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          12,
+          {
+            "seed": 12,
+            "pieces": 9,
+            "lines": 0,
+            "tetrises": 0,
+            "points": 0,
+            "topped_out": true,
+            "decisions": 9,
+            "p50_ms": 0.010375,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          13,
+          {
+            "seed": 13,
+            "pieces": 14,
+            "lines": 3,
+            "tetrises": 0,
+            "points": 140,
+            "topped_out": true,
+            "decisions": 14,
+            "p50_ms": 0.011,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          14,
+          {
+            "seed": 14,
+            "pieces": 7,
+            "lines": 0,
+            "tetrises": 0,
+            "points": 0,
+            "topped_out": true,
+            "decisions": 7,
+            "p50_ms": 0.008,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          15,
+          {
+            "seed": 15,
+            "pieces": 15,
+            "lines": 3,
+            "tetrises": 0,
+            "points": 140,
+            "topped_out": true,
+            "decisions": 15,
+            "p50_ms": 0.0045000000000000005,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          16,
+          {
+            "seed": 16,
+            "pieces": 12,
+            "lines": 3,
+            "tetrises": 0,
+            "points": 120,
+            "topped_out": true,
+            "decisions": 12,
+            "p50_ms": 0.013583,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          17,
+          {
+            "seed": 17,
+            "pieces": 7,
+            "lines": 0,
+            "tetrises": 0,
+            "points": 0,
+            "topped_out": true,
+            "decisions": 7,
+            "p50_ms": 0.004791,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          18,
+          {
+            "seed": 18,
+            "pieces": 53,
+            "lines": 19,
+            "tetrises": 0,
+            "points": 1160,
+            "topped_out": true,
+            "decisions": 53,
+            "p50_ms": 0.007542,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          19,
+          {
+            "seed": 19,
+            "pieces": 11,
+            "lines": 2,
+            "tetrises": 0,
+            "points": 80,
+            "topped_out": true,
+            "decisions": 11,
+            "p50_ms": 0.008375,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          20,
+          {
+            "seed": 20,
+            "pieces": 77,
+            "lines": 27,
+            "tetrises": 0,
+            "points": 1360,
+            "topped_out": true,
+            "decisions": 77,
+            "p50_ms": 0.005542,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          607,
+          {
+            "seed": 607,
+            "pieces": 10,
+            "lines": 1,
+            "tetrises": 0,
+            "points": 40,
+            "topped_out": true,
+            "decisions": 10,
+            "p50_ms": 0.008333,
+            "head_decode_misses": 0
+          }
+        ]
+      ]
+    },
+    {
+      "regime": "garbage 18@75%",
+      "arm": "teacher_b0",
+      "arm_name": "teacher-puct b0 (champion eval, no preview, fresh bag)",
+      "mean_pieces": 558.6,
+      "mean_lines": 227.3,
+      "mean_points": 20196.0,
+      "survived": 11,
+      "p50_ms": 0.004333,
+      "wtl_vs_reflex": "18/1/1",
+      "paired_mean": 544.75,
+      "paired_lb95": 327.9014937136137,
+      "per_seed": [
+        [
+          1,
+          {
+            "seed": 1,
+            "pieces": 1000,
+            "lines": 407,
+            "tetrises": 19,
+            "points": 38860,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 0.003625,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          2,
+          {
+            "seed": 2,
+            "pieces": 35,
+            "lines": 12,
+            "tetrises": 0,
+            "points": 520,
+            "topped_out": true,
+            "decisions": 35,
+            "p50_ms": 0.003417,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          3,
+          {
+            "seed": 3,
+            "pieces": 1000,
+            "lines": 407,
+            "tetrises": 5,
+            "points": 24120,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 0.004125,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          4,
+          {
+            "seed": 4,
+            "pieces": 3,
+            "lines": 0,
+            "tetrises": 0,
+            "points": 0,
+            "topped_out": true,
+            "decisions": 3,
+            "p50_ms": 0.002417,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          5,
+          {
+            "seed": 5,
+            "pieces": 60,
+            "lines": 22,
+            "tetrises": 0,
+            "points": 960,
+            "topped_out": true,
+            "decisions": 60,
+            "p50_ms": 0.003417,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          6,
+          {
+            "seed": 6,
+            "pieces": 1000,
+            "lines": 408,
+            "tetrises": 25,
+            "points": 45200,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 0.0047079999999999995,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          7,
+          {
+            "seed": 7,
+            "pieces": 1000,
+            "lines": 409,
+            "tetrises": 22,
+            "points": 42380,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 0.004667,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          8,
+          {
+            "seed": 8,
+            "pieces": 24,
+            "lines": 8,
+            "tetrises": 0,
+            "points": 340,
+            "topped_out": true,
+            "decisions": 24,
+            "p50_ms": 0.003584,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          9,
+          {
+            "seed": 9,
+            "pieces": 1000,
+            "lines": 405,
+            "tetrises": 22,
+            "points": 42400,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 0.004792,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          10,
+          {
+            "seed": 10,
+            "pieces": 1000,
+            "lines": 410,
+            "tetrises": 17,
+            "points": 36820,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 0.0047079999999999995,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          11,
+          {
+            "seed": 11,
+            "pieces": 1000,
+            "lines": 411,
+            "tetrises": 20,
+            "points": 41460,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 0.00475,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          12,
+          {
+            "seed": 12,
+            "pieces": 9,
+            "lines": 2,
+            "tetrises": 0,
+            "points": 100,
+            "topped_out": true,
+            "decisions": 9,
+            "p50_ms": 0.0037500000000000003,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          13,
+          {
+            "seed": 13,
+            "pieces": 1000,
+            "lines": 409,
+            "tetrises": 13,
+            "points": 33660,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 0.0048330000000000005,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          14,
+          {
+            "seed": 14,
+            "pieces": 6,
+            "lines": 1,
+            "tetrises": 0,
+            "points": 40,
+            "topped_out": true,
+            "decisions": 6,
+            "p50_ms": 0.002,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          15,
+          {
+            "seed": 15,
+            "pieces": 18,
+            "lines": 6,
+            "tetrises": 0,
+            "points": 280,
+            "topped_out": true,
+            "decisions": 18,
+            "p50_ms": 0.0025830000000000002,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          16,
+          {
+            "seed": 16,
+            "pieces": 1000,
+            "lines": 412,
+            "tetrises": 9,
+            "points": 29480,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 0.0045000000000000005,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          17,
+          {
+            "seed": 17,
+            "pieces": 4,
+            "lines": 0,
+            "tetrises": 0,
+            "points": 0,
+            "topped_out": true,
+            "decisions": 4,
+            "p50_ms": 0.004416,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          18,
+          {
+            "seed": 18,
+            "pieces": 1000,
+            "lines": 406,
+            "tetrises": 12,
+            "points": 33120,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 0.004333,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          19,
+          {
+            "seed": 19,
+            "pieces": 13,
+            "lines": 4,
+            "tetrises": 0,
+            "points": 160,
+            "topped_out": true,
+            "decisions": 13,
+            "p50_ms": 0.004875,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          20,
+          {
+            "seed": 20,
+            "pieces": 1000,
+            "lines": 407,
+            "tetrises": 13,
+            "points": 34020,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 0.004125,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          607,
+          {
+            "seed": 607,
+            "pieces": 10,
+            "lines": 2,
+            "tetrises": 0,
+            "points": 80,
+            "topped_out": true,
+            "decisions": 10,
+            "p50_ms": 0.0035,
+            "head_decode_misses": 0
+          }
+        ]
+      ]
+    },
+    {
+      "regime": "garbage 18@75%",
+      "arm": "teacher_b100",
+      "arm_name": "teacher-puct b100 (champion eval, no preview, fresh bag)",
+      "mean_pieces": 561.05,
+      "mean_lines": 228.75,
+      "mean_points": 23055.0,
+      "survived": 11,
+      "p50_ms": 0.313084,
+      "wtl_vs_reflex": "17/2/1",
+      "paired_mean": 547.2,
+      "paired_lb95": 330.5335807076518,
+      "per_seed": [
+        [
+          1,
+          {
+            "seed": 1,
+            "pieces": 1000,
+            "lines": 411,
+            "tetrises": 19,
+            "points": 39220,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 0.313084,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          2,
+          {
+            "seed": 2,
+            "pieces": 50,
+            "lines": 18,
+            "tetrises": 0,
+            "points": 780,
+            "topped_out": true,
+            "decisions": 50,
+            "p50_ms": 0.244375,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          3,
+          {
+            "seed": 3,
+            "pieces": 1000,
+            "lines": 410,
+            "tetrises": 29,
+            "points": 49640,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 0.315792,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          4,
+          {
+            "seed": 4,
+            "pieces": 3,
+            "lines": 0,
+            "tetrises": 0,
+            "points": 0,
+            "topped_out": true,
+            "decisions": 3,
+            "p50_ms": 0.11029199999999999,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          5,
+          {
+            "seed": 5,
+            "pieces": 1000,
+            "lines": 411,
+            "tetrises": 25,
+            "points": 47380,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 0.318125,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          6,
+          {
+            "seed": 6,
+            "pieces": 1000,
+            "lines": 407,
+            "tetrises": 27,
+            "points": 46360,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 0.320292,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          7,
+          {
+            "seed": 7,
+            "pieces": 1000,
+            "lines": 409,
+            "tetrises": 16,
+            "points": 36640,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 0.316541,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          8,
+          {
+            "seed": 8,
+            "pieces": 4,
+            "lines": 0,
+            "tetrises": 0,
+            "points": 0,
+            "topped_out": true,
+            "decisions": 4,
+            "p50_ms": 0.139458,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          9,
+          {
+            "seed": 9,
+            "pieces": 1000,
+            "lines": 410,
+            "tetrises": 18,
+            "points": 38460,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 0.316875,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          10,
+          {
+            "seed": 10,
+            "pieces": 1000,
+            "lines": 409,
+            "tetrises": 21,
+            "points": 41400,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 0.319125,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          11,
+          {
+            "seed": 11,
+            "pieces": 83,
+            "lines": 31,
+            "tetrises": 0,
+            "points": 1280,
+            "topped_out": true,
+            "decisions": 83,
+            "p50_ms": 0.29750000000000004,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          12,
+          {
+            "seed": 12,
+            "pieces": 16,
+            "lines": 4,
+            "tetrises": 0,
+            "points": 160,
+            "topped_out": true,
+            "decisions": 16,
+            "p50_ms": 0.209958,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          13,
+          {
+            "seed": 13,
+            "pieces": 13,
+            "lines": 4,
+            "tetrises": 0,
+            "points": 160,
+            "topped_out": true,
+            "decisions": 13,
+            "p50_ms": 0.24883400000000003,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          14,
+          {
+            "seed": 14,
+            "pieces": 10,
+            "lines": 2,
+            "tetrises": 0,
+            "points": 80,
+            "topped_out": true,
+            "decisions": 10,
+            "p50_ms": 0.136125,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          15,
+          {
+            "seed": 15,
+            "pieces": 1000,
+            "lines": 408,
+            "tetrises": 13,
+            "points": 32960,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 0.314458,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          16,
+          {
+            "seed": 16,
+            "pieces": 1000,
+            "lines": 407,
+            "tetrises": 19,
+            "points": 39320,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 0.316542,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          17,
+          {
+            "seed": 17,
+            "pieces": 5,
+            "lines": 1,
+            "tetrises": 0,
+            "points": 40,
+            "topped_out": true,
+            "decisions": 5,
+            "p50_ms": 0.089125,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          18,
+          {
+            "seed": 18,
+            "pieces": 1000,
+            "lines": 410,
+            "tetrises": 22,
+            "points": 42180,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 0.313584,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          19,
+          {
+            "seed": 19,
+            "pieces": 37,
+            "lines": 13,
+            "tetrises": 0,
+            "points": 540,
+            "topped_out": true,
+            "decisions": 37,
+            "p50_ms": 0.209084,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          20,
+          {
+            "seed": 20,
+            "pieces": 1000,
+            "lines": 410,
+            "tetrises": 23,
+            "points": 44500,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 0.249291,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          607,
+          {
+            "seed": 607,
+            "pieces": 6,
+            "lines": 1,
+            "tetrises": 0,
+            "points": 40,
+            "topped_out": true,
+            "decisions": 6,
+            "p50_ms": 0.23525,
+            "head_decode_misses": 0
+          }
+        ]
+      ]
+    },
+    {
+      "regime": "garbage 18@75%",
+      "arm": "teacher_b400",
+      "arm_name": "teacher-puct b400 (champion eval, no preview, fresh bag)",
+      "mean_pieces": 753.05,
+      "mean_lines": 307.55,
+      "mean_points": 34496.0,
+      "survived": 15,
+      "p50_ms": 1.1943329999999999,
+      "wtl_vs_reflex": "20/0/0",
+      "paired_mean": 739.2,
+      "paired_lb95": 549.1307916231846,
+      "per_seed": [
+        [
+          1,
+          {
+            "seed": 1,
+            "pieces": 1000,
+            "lines": 411,
+            "tetrises": 25,
+            "points": 46960,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 1.199917,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          2,
+          {
+            "seed": 2,
+            "pieces": 1000,
+            "lines": 408,
+            "tetrises": 25,
+            "points": 45520,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 1.195959,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          3,
+          {
+            "seed": 3,
+            "pieces": 1000,
+            "lines": 408,
+            "tetrises": 32,
+            "points": 53160,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 1.197584,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          4,
+          {
+            "seed": 4,
+            "pieces": 7,
+            "lines": 1,
+            "tetrises": 0,
+            "points": 40,
+            "topped_out": true,
+            "decisions": 7,
+            "p50_ms": 0.31666700000000003,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          5,
+          {
+            "seed": 5,
+            "pieces": 1000,
+            "lines": 409,
+            "tetrises": 28,
+            "points": 49540,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 1.202292,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          6,
+          {
+            "seed": 6,
+            "pieces": 1000,
+            "lines": 411,
+            "tetrises": 19,
+            "points": 39180,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 1.212084,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          7,
+          {
+            "seed": 7,
+            "pieces": 25,
+            "lines": 9,
+            "tetrises": 0,
+            "points": 360,
+            "topped_out": true,
+            "decisions": 25,
+            "p50_ms": 0.854208,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          8,
+          {
+            "seed": 8,
+            "pieces": 1000,
+            "lines": 410,
+            "tetrises": 24,
+            "points": 45280,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 1.1943329999999999,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          9,
+          {
+            "seed": 9,
+            "pieces": 1000,
+            "lines": 409,
+            "tetrises": 31,
+            "points": 52620,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 1.200208,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          10,
+          {
+            "seed": 10,
+            "pieces": 1000,
+            "lines": 402,
+            "tetrises": 14,
+            "points": 35140,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 1.20075,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          11,
+          {
+            "seed": 11,
+            "pieces": 1000,
+            "lines": 409,
+            "tetrises": 23,
+            "points": 43060,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 1.2049999999999998,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          12,
+          {
+            "seed": 12,
+            "pieces": 1000,
+            "lines": 408,
+            "tetrises": 31,
+            "points": 51620,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 1.215834,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          13,
+          {
+            "seed": 13,
+            "pieces": 1000,
+            "lines": 408,
+            "tetrises": 23,
+            "points": 43900,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 1.1264580000000002,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          14,
+          {
+            "seed": 14,
+            "pieces": 9,
+            "lines": 2,
+            "tetrises": 0,
+            "points": 80,
+            "topped_out": true,
+            "decisions": 9,
+            "p50_ms": 0.45166599999999996,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          15,
+          {
+            "seed": 15,
+            "pieces": 1000,
+            "lines": 413,
+            "tetrises": 18,
+            "points": 39240,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 1.104417,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          16,
+          {
+            "seed": 16,
+            "pieces": 1000,
+            "lines": 412,
+            "tetrises": 34,
+            "points": 54340,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 1.1225829999999999,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          17,
+          {
+            "seed": 17,
+            "pieces": 5,
+            "lines": 1,
+            "tetrises": 0,
+            "points": 40,
+            "topped_out": true,
+            "decisions": 5,
+            "p50_ms": 0.417,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          18,
+          {
+            "seed": 18,
+            "pieces": 1000,
+            "lines": 406,
+            "tetrises": 19,
+            "points": 39080,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 1.12625,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          19,
+          {
+            "seed": 19,
+            "pieces": 15,
+            "lines": 4,
+            "tetrises": 0,
+            "points": 160,
+            "topped_out": true,
+            "decisions": 15,
+            "p50_ms": 0.7030409999999999,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          20,
+          {
+            "seed": 20,
+            "pieces": 1000,
+            "lines": 410,
+            "tetrises": 29,
+            "points": 50600,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 1.120333,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          607,
+          {
+            "seed": 607,
+            "pieces": 6,
+            "lines": 1,
+            "tetrises": 0,
+            "points": 40,
+            "topped_out": true,
+            "decisions": 6,
+            "p50_ms": 0.823125,
+            "head_decode_misses": 0
+          }
+        ]
+      ]
+    },
+    {
+      "regime": "garbage 18@75%",
+      "arm": "teacher_b1600",
+      "arm_name": "teacher-puct b1600 (champion eval, no preview, fresh bag)",
+      "mean_pieces": 802.05,
+      "mean_lines": 326.8,
+      "mean_points": 43436.0,
+      "survived": 16,
+      "p50_ms": 5.084875,
+      "wtl_vs_reflex": "19/1/0",
+      "paired_mean": 788.2,
+      "paired_lb95": 612.1865614866795,
+      "per_seed": [
+        [
+          1,
+          {
+            "seed": 1,
+            "pieces": 1000,
+            "lines": 411,
+            "tetrises": 37,
+            "points": 58180,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 5.104584,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          2,
+          {
+            "seed": 2,
+            "pieces": 1000,
+            "lines": 405,
+            "tetrises": 41,
+            "points": 61960,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 5.102167000000001,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          3,
+          {
+            "seed": 3,
+            "pieces": 1000,
+            "lines": 406,
+            "tetrises": 35,
+            "points": 55620,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 5.107583,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          4,
+          {
+            "seed": 4,
+            "pieces": 3,
+            "lines": 0,
+            "tetrises": 0,
+            "points": 0,
+            "topped_out": true,
+            "decisions": 3,
+            "p50_ms": 1.6123750000000001,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          5,
+          {
+            "seed": 5,
+            "pieces": 1000,
+            "lines": 409,
+            "tetrises": 41,
+            "points": 62080,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 5.147417,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          6,
+          {
+            "seed": 6,
+            "pieces": 1000,
+            "lines": 409,
+            "tetrises": 29,
+            "points": 49120,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 5.1335,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          7,
+          {
+            "seed": 7,
+            "pieces": 1000,
+            "lines": 409,
+            "tetrises": 27,
+            "points": 47860,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 5.100416,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          8,
+          {
+            "seed": 8,
+            "pieces": 1000,
+            "lines": 408,
+            "tetrises": 39,
+            "points": 58740,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 5.084875,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          9,
+          {
+            "seed": 9,
+            "pieces": 1000,
+            "lines": 409,
+            "tetrises": 38,
+            "points": 59460,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 5.091583,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          10,
+          {
+            "seed": 10,
+            "pieces": 24,
+            "lines": 8,
+            "tetrises": 0,
+            "points": 340,
+            "topped_out": true,
+            "decisions": 24,
+            "p50_ms": 3.280292,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          11,
+          {
+            "seed": 11,
+            "pieces": 1000,
+            "lines": 410,
+            "tetrises": 36,
+            "points": 57460,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 5.11,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          12,
+          {
+            "seed": 12,
+            "pieces": 1000,
+            "lines": 403,
+            "tetrises": 41,
+            "points": 61580,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 5.10475,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          13,
+          {
+            "seed": 13,
+            "pieces": 1000,
+            "lines": 412,
+            "tetrises": 30,
+            "points": 50700,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 4.542958,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          14,
+          {
+            "seed": 14,
+            "pieces": 9,
+            "lines": 2,
+            "tetrises": 0,
+            "points": 80,
+            "topped_out": true,
+            "decisions": 9,
+            "p50_ms": 1.953125,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          15,
+          {
+            "seed": 15,
+            "pieces": 1000,
+            "lines": 403,
+            "tetrises": 32,
+            "points": 52600,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 4.564917,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          16,
+          {
+            "seed": 16,
+            "pieces": 1000,
+            "lines": 408,
+            "tetrises": 25,
+            "points": 45060,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 4.556167,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          17,
+          {
+            "seed": 17,
+            "pieces": 5,
+            "lines": 1,
+            "tetrises": 0,
+            "points": 40,
+            "topped_out": true,
+            "decisions": 5,
+            "p50_ms": 1.736375,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          18,
+          {
+            "seed": 18,
+            "pieces": 1000,
+            "lines": 408,
+            "tetrises": 33,
+            "points": 53660,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 4.558999999999999,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          19,
+          {
+            "seed": 19,
+            "pieces": 1000,
+            "lines": 407,
+            "tetrises": 26,
+            "points": 45680,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 4.556875,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          20,
+          {
+            "seed": 20,
+            "pieces": 1000,
+            "lines": 408,
+            "tetrises": 29,
+            "points": 48500,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 4.507125,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          607,
+          {
+            "seed": 607,
+            "pieces": 6,
+            "lines": 1,
+            "tetrises": 0,
+            "points": 40,
+            "topped_out": true,
+            "decisions": 6,
+            "p50_ms": 3.567042,
+            "head_decode_misses": 0
+          }
+        ]
+      ]
+    },
+    {
+      "regime": "garbage 18@75%",
+      "arm": "champion_search",
+      "arm_name": "champion-search d3 (served posture, preview + bag)",
+      "mean_pieces": 900.85,
+      "mean_lines": 369.05,
+      "mean_points": 64441.0,
+      "survived": 18,
+      "p50_ms": 0.7609579999999999,
+      "wtl_vs_reflex": "20/0/0",
+      "paired_mean": 887.0,
+      "paired_lb95": 754.6664841511422,
+      "per_seed": [
+        [
+          1,
+          {
+            "seed": 1,
+            "pieces": 1000,
+            "lines": 411,
+            "tetrises": 44,
+            "points": 64460,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 0.722667,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          2,
+          {
+            "seed": 2,
+            "pieces": 1000,
+            "lines": 410,
+            "tetrises": 52,
+            "points": 72500,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 0.8129580000000001,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          3,
+          {
+            "seed": 3,
+            "pieces": 1000,
+            "lines": 409,
+            "tetrises": 47,
+            "points": 66960,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 0.738292,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          4,
+          {
+            "seed": 4,
+            "pieces": 1000,
+            "lines": 411,
+            "tetrises": 58,
+            "points": 77780,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 0.746375,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          5,
+          {
+            "seed": 5,
+            "pieces": 1000,
+            "lines": 412,
+            "tetrises": 52,
+            "points": 72420,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 0.7811250000000001,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          6,
+          {
+            "seed": 6,
+            "pieces": 1000,
+            "lines": 408,
+            "tetrises": 52,
+            "points": 72060,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 0.751625,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          7,
+          {
+            "seed": 7,
+            "pieces": 1000,
+            "lines": 409,
+            "tetrises": 47,
+            "points": 66720,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 0.754959,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          8,
+          {
+            "seed": 8,
+            "pieces": 7,
+            "lines": 1,
+            "tetrises": 0,
+            "points": 40,
+            "topped_out": true,
+            "decisions": 7,
+            "p50_ms": 0.372666,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          9,
+          {
+            "seed": 9,
+            "pieces": 1000,
+            "lines": 407,
+            "tetrises": 60,
+            "points": 80360,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 0.727291,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          10,
+          {
+            "seed": 10,
+            "pieces": 1000,
+            "lines": 411,
+            "tetrises": 56,
+            "points": 75940,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 0.773,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          11,
+          {
+            "seed": 11,
+            "pieces": 1000,
+            "lines": 411,
+            "tetrises": 48,
+            "points": 68120,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 0.710667,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          12,
+          {
+            "seed": 12,
+            "pieces": 1000,
+            "lines": 407,
+            "tetrises": 51,
+            "points": 70740,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 0.799083,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          13,
+          {
+            "seed": 13,
+            "pieces": 1000,
+            "lines": 412,
+            "tetrises": 52,
+            "points": 71980,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 0.811584,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          14,
+          {
+            "seed": 14,
+            "pieces": 10,
+            "lines": 2,
+            "tetrises": 0,
+            "points": 80,
+            "topped_out": true,
+            "decisions": 10,
+            "p50_ms": 0.388958,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          15,
+          {
+            "seed": 15,
+            "pieces": 1000,
+            "lines": 413,
+            "tetrises": 50,
+            "points": 70480,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 0.7609579999999999,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          16,
+          {
+            "seed": 16,
+            "pieces": 1000,
+            "lines": 407,
+            "tetrises": 54,
+            "points": 74820,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 0.825125,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          17,
+          {
+            "seed": 17,
+            "pieces": 1000,
+            "lines": 409,
+            "tetrises": 49,
+            "points": 68880,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 0.799584,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          18,
+          {
+            "seed": 18,
+            "pieces": 1000,
+            "lines": 411,
+            "tetrises": 48,
+            "points": 68480,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 0.812,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          19,
+          {
+            "seed": 19,
+            "pieces": 1000,
+            "lines": 411,
+            "tetrises": 52,
+            "points": 71700,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 0.8044169999999999,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          20,
+          {
+            "seed": 20,
+            "pieces": 1000,
+            "lines": 409,
+            "tetrises": 54,
+            "points": 74300,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 0.760459,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          607,
+          {
+            "seed": 607,
+            "pieces": 1000,
+            "lines": 411,
+            "tetrises": 58,
+            "points": 78380,
+            "topped_out": false,
+            "decisions": 1000,
+            "p50_ms": 0.765042,
+            "head_decode_misses": 0
+          }
+        ]
+      ]
+    },
+    {
+      "regime": "garbage 18@75%",
+      "arm": "reflex_head",
+      "arm_name": "reflex-head (Bench 881 decoded arm)",
+      "mean_pieces": 13.85,
+      "mean_lines": 4.25,
+      "mean_points": 261.0,
+      "survived": 0,
+      "p50_ms": 0.007167,
+      "wtl_vs_reflex": "0/0/0",
+      "paired_mean": 0.0,
+      "paired_lb95": 0.0,
+      "per_seed": [
+        [
+          1,
+          {
+            "seed": 1,
+            "pieces": 20,
+            "lines": 7,
+            "tetrises": 0,
+            "points": 320,
+            "topped_out": true,
+            "decisions": 20,
+            "p50_ms": 0.006291000000000001,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          2,
+          {
+            "seed": 2,
+            "pieces": 6,
+            "lines": 1,
+            "tetrises": 0,
+            "points": 40,
+            "topped_out": true,
+            "decisions": 6,
+            "p50_ms": 0.005584,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          3,
+          {
+            "seed": 3,
+            "pieces": 11,
+            "lines": 3,
+            "tetrises": 0,
+            "points": 140,
+            "topped_out": true,
+            "decisions": 11,
+            "p50_ms": 0.003,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          4,
+          {
+            "seed": 4,
+            "pieces": 3,
+            "lines": 0,
+            "tetrises": 0,
+            "points": 0,
+            "topped_out": true,
+            "decisions": 3,
+            "p50_ms": 0.003125,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          5,
+          {
+            "seed": 5,
+            "pieces": 13,
+            "lines": 4,
+            "tetrises": 0,
+            "points": 200,
+            "topped_out": true,
+            "decisions": 13,
+            "p50_ms": 0.004334,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          6,
+          {
+            "seed": 6,
+            "pieces": 24,
+            "lines": 9,
+            "tetrises": 1,
+            "points": 1580,
+            "topped_out": true,
+            "decisions": 24,
+            "p50_ms": 0.007167,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          7,
+          {
+            "seed": 7,
+            "pieces": 6,
+            "lines": 1,
+            "tetrises": 0,
+            "points": 40,
+            "topped_out": true,
+            "decisions": 6,
+            "p50_ms": 0.004333,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          8,
+          {
+            "seed": 8,
+            "pieces": 4,
+            "lines": 0,
+            "tetrises": 0,
+            "points": 0,
+            "topped_out": true,
+            "decisions": 4,
+            "p50_ms": 0.0045000000000000005,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          9,
+          {
+            "seed": 9,
+            "pieces": 41,
+            "lines": 15,
+            "tetrises": 0,
+            "points": 820,
+            "topped_out": true,
+            "decisions": 41,
+            "p50_ms": 0.007375,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          10,
+          {
+            "seed": 10,
+            "pieces": 9,
+            "lines": 2,
+            "tetrises": 0,
+            "points": 80,
+            "topped_out": true,
+            "decisions": 9,
+            "p50_ms": 0.008791,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          11,
+          {
+            "seed": 11,
+            "pieces": 26,
+            "lines": 9,
+            "tetrises": 0,
+            "points": 400,
+            "topped_out": true,
+            "decisions": 26,
+            "p50_ms": 0.009542,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          12,
+          {
+            "seed": 12,
+            "pieces": 15,
+            "lines": 4,
+            "tetrises": 0,
+            "points": 180,
+            "topped_out": true,
+            "decisions": 15,
+            "p50_ms": 0.005582999999999999,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          13,
+          {
+            "seed": 13,
+            "pieces": 18,
+            "lines": 6,
+            "tetrises": 0,
+            "points": 240,
+            "topped_out": true,
+            "decisions": 18,
+            "p50_ms": 0.007500000000000001,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          14,
+          {
+            "seed": 14,
+            "pieces": 4,
+            "lines": 0,
+            "tetrises": 0,
+            "points": 0,
+            "topped_out": true,
+            "decisions": 4,
+            "p50_ms": 0.009333000000000001,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          15,
+          {
+            "seed": 15,
+            "pieces": 9,
+            "lines": 2,
+            "tetrises": 0,
+            "points": 100,
+            "topped_out": true,
+            "decisions": 9,
+            "p50_ms": 0.008624999999999999,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          16,
+          {
+            "seed": 16,
+            "pieces": 11,
+            "lines": 3,
+            "tetrises": 0,
+            "points": 120,
+            "topped_out": true,
+            "decisions": 11,
+            "p50_ms": 0.007459,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          17,
+          {
+            "seed": 17,
+            "pieces": 3,
+            "lines": 0,
+            "tetrises": 0,
+            "points": 0,
+            "topped_out": true,
+            "decisions": 3,
+            "p50_ms": 0.007666999999999999,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          18,
+          {
+            "seed": 18,
+            "pieces": 25,
+            "lines": 10,
+            "tetrises": 0,
+            "points": 580,
+            "topped_out": true,
+            "decisions": 25,
+            "p50_ms": 0.0095,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          19,
+          {
+            "seed": 19,
+            "pieces": 9,
+            "lines": 3,
+            "tetrises": 0,
+            "points": 120,
+            "topped_out": true,
+            "decisions": 9,
+            "p50_ms": 0.003292,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          20,
+          {
+            "seed": 20,
+            "pieces": 20,
+            "lines": 6,
+            "tetrises": 0,
+            "points": 260,
+            "topped_out": true,
+            "decisions": 20,
+            "p50_ms": 0.0049169999999999995,
+            "head_decode_misses": 0
+          }
+        ],
+        [
+          607,
+          {
+            "seed": 607,
+            "pieces": 7,
+            "lines": 1,
+            "tetrises": 0,
+            "points": 40,
+            "topped_out": true,
+            "decisions": 7,
+            "p50_ms": 0.002833,
+            "head_decode_misses": 0
+          }
+        ]
+      ]
+    }
+  ],
+  "t5_input_contract": [
+    {
+      "source": "reflex_head",
+      "regime": "garbage 16@75%",
+      "aggregate": {
+        "n_decisions": 1307,
+        "n_options": 18894,
+        "n_sig_sum": 14038,
+        "ceiling_agree": 1250,
+        "ceiling_loss_sum": 1432.4999999999964,
+        "ceiling_loss_max": 57.29999999999973,
+        "actual_pick_agree": 666,
+        "actual_pick_loss_sum": 17489.400000000016,
+        "actual_pick_loss_max": 140.0999999999999,
+        "wg_spread_rows": 922,
+        "wg_spread_sum": 33295.19999999999,
+        "wg_spread_le_1pct": 395,
+        "wg_spread_le_10pct": 478,
+        "policy_rows": 0,
+        "policy_ceiling_agree": 0,
+        "policy_ceiling_loss_sum": 0.0
+      }
+    },
+    {
+      "source": "teacher_b400",
+      "regime": "garbage 16@75%",
+      "aggregate": {
+        "n_decisions": 32691,
+        "n_options": 748488,
+        "n_sig_sum": 559178,
+        "ceiling_agree": 31258,
+        "ceiling_loss_sum": 21683.11500000001,
+        "ceiling_loss_max": 128.20000000000005,
+        "actual_pick_agree": 28215,
+        "actual_pick_loss_sum": 6744.125000000001,
+        "actual_pick_loss_max": 33.799999999999955,
+        "wg_spread_rows": 29018,
+        "wg_spread_sum": 936272.6349999983,
+        "wg_spread_le_1pct": 3844,
+        "wg_spread_le_10pct": 7613,
+        "policy_rows": 178,
+        "policy_ceiling_agree": 172,
+        "policy_ceiling_loss_sum": 0.5088667273521423
+      }
+    },
+    {
+      "source": "reflex_head",
+      "regime": "garbage 18@75%",
+      "aggregate": {
+        "n_decisions": 1756,
+        "n_options": 20005,
+        "n_sig_sum": 15654,
+        "ceiling_agree": 1660,
+        "ceiling_loss_sum": 1255.6999999999969,
+        "ceiling_loss_max": 54.200000000000045,
+        "actual_pick_agree": 1005,
+        "actual_pick_loss_sum": 14133.999999999998,
+        "actual_pick_loss_max": 116.0,
+        "wg_spread_rows": 1138,
+        "wg_spread_sum": 30690.600000000028,
+        "wg_spread_le_1pct": 628,
+        "wg_spread_le_10pct": 749,
+        "policy_rows": 0,
+        "policy_ceiling_agree": 0,
+        "policy_ceiling_loss_sum": 0.0
+      }
+    },
+    {
+      "source": "teacher_b400",
+      "regime": "garbage 18@75%",
+      "aggregate": {
+        "n_decisions": 24113,
+        "n_options": 551821,
+        "n_sig_sum": 410962,
+        "ceiling_agree": 23155,
+        "ceiling_loss_sum": 13975.605000000005,
+        "ceiling_loss_max": 129.4000000000001,
+        "actual_pick_agree": 20913,
+        "actual_pick_loss_sum": 4714.250000000002,
+        "actual_pick_loss_max": 40.10000000000002,
+        "wg_spread_rows": 21497,
+        "wg_spread_sum": 714275.8799999993,
+        "wg_spread_le_1pct": 2745,
+        "wg_spread_le_10pct": 5582,
+        "policy_rows": 157,
+        "policy_ceiling_agree": 155,
+        "policy_ceiling_loss_sum": 0.023279011249542236
+      }
+    }
+  ],
+  "context_empty_seed607_cap300": {
+    "reflex_head": {
+      "seed": 607,
+      "pieces": 44,
+      "lines": 4,
+      "tetrises": 0,
+      "points": 180,
+      "topped_out": true,
+      "decisions": 44,
+      "p50_ms": 0.007125,
+      "head_decode_misses": 0
+    },
+    "teacher_b400": {
+      "seed": 607,
+      "pieces": 300,
+      "lines": 115,
+      "tetrises": 10,
+      "points": 16440,
+      "topped_out": false,
+      "decisions": 300,
+      "p50_ms": 0.97475,
+      "head_decode_misses": 0
+    },
+    "champion_search": {
+      "seed": 607,
+      "pieces": 300,
+      "lines": 116,
+      "tetrises": 15,
+      "points": 21160,
+      "topped_out": false,
+      "decisions": 300,
+      "p50_ms": 0.197834,
+      "head_decode_misses": 0
+    }
+  }
+}

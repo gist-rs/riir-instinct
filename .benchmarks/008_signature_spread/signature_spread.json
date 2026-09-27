@@ -1,0 +1,162 @@
+{
+  "meta": {
+    "issue": "riir-instinct 009 T6 (+T5 collection)",
+    "recorded_at": "2026-307-11T17:07:51.694Z",
+    "box_load": "23.06 25.20 21.79",
+    "champion_genome_id": "68cae9d382014662",
+    "tetris_head_digest": "8a1d76a05527468c5a9068b4b919685ea06a5020d3e7ca81a52d5477eb8d6032",
+    "teacher_information_rule": "no preview, fresh bag (uniform-7 chance model); chance_puct over the champion evaluator (mode at the decision root); teacher rng = seed ^ 0x05EE_D892",
+    "paired_seeds": "1..=20",
+    "context_seed": 607,
+    "regimes": [
+      "garbage 16@75%",
+      "garbage 18@75%"
+    ],
+    "cap": 1000,
+    "budgets": [
+      0,
+      100,
+      400,
+      1600
+    ],
+    "threads": 10,
+    "stream": "katgpt_tetris::lookahead::Bag (seeded guideline 7-bag; harness-internal \u2014 the arena's JS PieceBag pops the same shuffle from the other end, so harness seeds are not JS-walk seeds)",
+    "gate": "T6 PASS iff some teacher budget's paired pieces diff vs reflex-head has lb95 > 0",
+    "wall_s": 37.728178417
+  },
+  "note": "T5 companion slice of the teacher-check runs (007). Garbage cells from the cap-1000 run; empty-board cells from the cap-300 supplementary run (same seeds 1..20 + 607).",
+  "t5_input_contract": [
+    {
+      "source": "reflex_head",
+      "regime": "garbage 16@75%",
+      "aggregate": {
+        "n_decisions": 1307,
+        "n_options": 18894,
+        "n_sig_sum": 14038,
+        "ceiling_agree": 1250,
+        "ceiling_loss_sum": 1432.4999999999964,
+        "ceiling_loss_max": 57.29999999999973,
+        "actual_pick_agree": 666,
+        "actual_pick_loss_sum": 17489.400000000016,
+        "actual_pick_loss_max": 140.0999999999999,
+        "wg_spread_rows": 922,
+        "wg_spread_sum": 33295.19999999999,
+        "wg_spread_le_1pct": 395,
+        "wg_spread_le_10pct": 478,
+        "policy_rows": 0,
+        "policy_ceiling_agree": 0,
+        "policy_ceiling_loss_sum": 0.0
+      }
+    },
+    {
+      "source": "teacher_b400",
+      "regime": "garbage 16@75%",
+      "aggregate": {
+        "n_decisions": 32691,
+        "n_options": 748488,
+        "n_sig_sum": 559178,
+        "ceiling_agree": 31258,
+        "ceiling_loss_sum": 21683.11500000001,
+        "ceiling_loss_max": 128.20000000000005,
+        "actual_pick_agree": 28215,
+        "actual_pick_loss_sum": 6744.125000000001,
+        "actual_pick_loss_max": 33.799999999999955,
+        "wg_spread_rows": 29018,
+        "wg_spread_sum": 936272.6349999983,
+        "wg_spread_le_1pct": 3844,
+        "wg_spread_le_10pct": 7613,
+        "policy_rows": 178,
+        "policy_ceiling_agree": 172,
+        "policy_ceiling_loss_sum": 0.5088667273521423
+      }
+    },
+    {
+      "source": "reflex_head",
+      "regime": "garbage 18@75%",
+      "aggregate": {
+        "n_decisions": 1756,
+        "n_options": 20005,
+        "n_sig_sum": 15654,
+        "ceiling_agree": 1660,
+        "ceiling_loss_sum": 1255.6999999999969,
+        "ceiling_loss_max": 54.200000000000045,
+        "actual_pick_agree": 1005,
+        "actual_pick_loss_sum": 14133.999999999998,
+        "actual_pick_loss_max": 116.0,
+        "wg_spread_rows": 1138,
+        "wg_spread_sum": 30690.600000000028,
+        "wg_spread_le_1pct": 628,
+        "wg_spread_le_10pct": 749,
+        "policy_rows": 0,
+        "policy_ceiling_agree": 0,
+        "policy_ceiling_loss_sum": 0.0
+      }
+    },
+    {
+      "source": "teacher_b400",
+      "regime": "garbage 18@75%",
+      "aggregate": {
+        "n_decisions": 24113,
+        "n_options": 551821,
+        "n_sig_sum": 410962,
+        "ceiling_agree": 23155,
+        "ceiling_loss_sum": 13975.605000000005,
+        "ceiling_loss_max": 129.4000000000001,
+        "actual_pick_agree": 20913,
+        "actual_pick_loss_sum": 4714.250000000002,
+        "actual_pick_loss_max": 40.10000000000002,
+        "wg_spread_rows": 21497,
+        "wg_spread_sum": 714275.8799999993,
+        "wg_spread_le_1pct": 2745,
+        "wg_spread_le_10pct": 5582,
+        "policy_rows": 157,
+        "policy_ceiling_agree": 155,
+        "policy_ceiling_loss_sum": 0.023279011249542236
+      }
+    },
+    {
+      "source": "reflex_head",
+      "regime": "empty",
+      "aggregate": {
+        "n_decisions": 2504,
+        "n_options": 48264,
+        "n_sig_sum": 28252,
+        "ceiling_agree": 1774,
+        "ceiling_loss_sum": 63389.56,
+        "ceiling_loss_max": 538.3999999999999,
+        "actual_pick_agree": 727,
+        "actual_pick_loss_sum": 181927.42,
+        "actual_pick_loss_max": 504.5999999999999,
+        "wg_spread_rows": 2177,
+        "wg_spread_sum": 345143.5950000001,
+        "wg_spread_le_1pct": 329,
+        "wg_spread_le_10pct": 422,
+        "policy_rows": 0,
+        "policy_ceiling_agree": 0,
+        "policy_ceiling_loss_sum": 0.0
+      }
+    },
+    {
+      "source": "teacher_b400",
+      "regime": "empty",
+      "aggregate": {
+        "n_decisions": 9900,
+        "n_options": 228909,
+        "n_sig_sum": 169793,
+        "ceiling_agree": 9434,
+        "ceiling_loss_sum": 5224.265000000003,
+        "ceiling_loss_max": 86.03,
+        "actual_pick_agree": 8467,
+        "actual_pick_loss_sum": 1731.5800000000015,
+        "actual_pick_loss_max": 33.0,
+        "wg_spread_rows": 8772,
+        "wg_spread_sum": 286174.1899999999,
+        "wg_spread_le_1pct": 1172,
+        "wg_spread_le_10pct": 2409,
+        "policy_rows": 14,
+        "policy_ceiling_agree": 14,
+        "policy_ceiling_loss_sum": 0.0
+      }
+    }
+  ]
+}

@@ -137,7 +137,30 @@ land.
       already shows the full-feature 1-ply champion is very strong under
       serving information (3153 pieces / 1256 lines avg on held garbage
       seeds), so the T6 separating-regime bar is reachable.
-- [ ] T6 — **Teacher check, serving-matched, BEFORE any distillation.**
+      **CROSS-MEASURED same day (`.benchmarks/008_signature_spread`, a
+      second instrument, run concurrently — the Issue-825 class, resolved
+      by cross-reading both instruments + a Claude verdict round):** the
+      5-tuple pools value-different options in ~89% of teacher-play
+      decisions (mean max within-group spread ≈ 29 pts), yet the
+      per-decision max-oracle still reaches the eval argmax 95% of the
+      time — pooling costs ≤ ~4–6 pick points, so 006's decoder loss is
+      dominated by CONTEXT loss (the wire cannot tell which signature
+      group wins in a new decision). Consistent with 006; the spread
+      record's first draft read the oracle as "no-widening" and was
+      re-scoped (a ceiling computed WITH the full board is not a wire
+      ceiling).
+      **Demeaned-decoder addendum (the verdict round's owed run, landed
+      katgpt-rs `5961e0991`):** 006's tables averaged ABSOLUTE values —
+      a target that tracks position goodness as much as option rank. The
+      demeaned-table class (cells bumped with value − decision mean;
+      `wire-t1d`/`wire-t3d`) more than doubles the best agreement:
+      **0.5470** (t1d; mean rank of the champ pick 0.978, top-3 89.2%) vs
+      t3's 0.3002 — **~half of the first-read gap was the ESTIMAND, not
+      missing wire information; the information is still the bound** —
+      and 0.547 remains ≤ the 0.85 MUST-WIDEN gate, board ratio 0.013,
+      sign p < 0.0001. Both decoder classes fail; WIRE-MUST-WIDEN is
+      robust across the family.
+- [x] T6 — **Teacher check, serving-matched, BEFORE any distillation.**
       chance_puct over the rulebook champion must STRICTLY beat free Reflex's
       board on held-out seeds in a separating regime (garbage starts of the
       Bench-892 16:75/18:75 class, or no-cap + score — a saturated
@@ -148,6 +171,32 @@ land.
       teacher: a board's value averages over the preview anyway.) A teacher
       that cannot win under serving information makes T7 pointless — this
       check fails cheaply before GPU time.
+      **LANDED 2026-09-27 (`.benchmarks/007_tetris_teacher_check`;
+      harness `src/tetris_lane.rs` + `benches/tetris_teacher_check`,
+      feature `tetris_goat`): PASS — T7 UNBLOCKED.** Teacher = chance_puct
+      over the champion evaluator, no preview + fresh bag (uniform-7
+      chance), budgets 0/100/400/1600 (c1.5 k8 — the 08-goat posture, NOT
+      Bench 205's Go settings), paired seeds 1..=20, seed 607 beside
+      (excluded from every gate column), teacher rng seed ^ 0x05EE_D892.
+      Garbage 16@75 cap 1000: reflex-head 22.1 pieces/g (0/20 survive) vs
+      teacher b1600 1 000.0 pieces/g 20/20 — paired Δ+977.9, lb95 +969.7
+      (house instrument `stats::paired_upper_bound_f64`). Garbage 18@75:
+      Δ+788.2, lb95 +612.2, W/T/L 19/1/0; the budget ladder separates
+      (559 → 561 → 753 → 802). Empty-board context (cap 300): reflex
+      67.4 pieces/g, 0/20 to cap (seed 607 tops out at 44); teacher b400
+      20/20. **Even b0 — the bare 1-ply champion evaluator, T8's baseline
+      shape — wins 18–20/0/1**, so the T8 bar is now concrete: the trained
+      critic must beat that b0 row fed the WIDENED input. Per-spot p50
+      disclosed (b1600 ~5 ms in-process; the T9 serving posture is 1-ply
+      ~µs — G2/G4 re-asserted there).
+      **Information rule (pinned):** this teacher ran on a FRESH BAG — less
+      than the widened wire will carry (grid + piece + bag remainder); the
+      T7 teacher consumes the bag remainder once the sidecar ships. A
+      teacher that wins on less wins all the more on more.
+      **Seed pins for T7:** training seeds must avoid ALL of 1..=40 (006's
+      training), 101..=140 (006's held-out), 1..=20 (this bench's eval),
+      and 607 — **suggested T7 training set: 201..=300**; the eval/T3 set
+      stays 1..=20 + 607-beside.
 - [ ] T7 — **Expert iteration.** Round-0 SFT prior from
       `tetris_oracle_laya_en_v3` (BLAKE3-pinned; NEVER ships — by construction
       it reproduces Reflex, which is T1's recorded negative). Targets =

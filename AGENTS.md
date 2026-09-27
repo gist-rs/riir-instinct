@@ -115,7 +115,16 @@ file .deploy/local/stage/decisions/app-bin   # → ELF 64-bit x86-64
 
 **P1–P5 substantially DONE (2026-09-26/27) — Bench 001 is the hybrid
 GOAT record; P6 landed T1–T3 (the decstat flywheel, Plan 002) with the
-intake leg filed as riir-train Issue 577.** Master plan:
+intake leg filed as riir-train Issue 577. The Tetris lane (Issue 009)
+is measured through T6: T5 WIRE-MUST-WIDEN (Bench 006 + the demeaned
+decoder addendum, katgpt-rs `5961e0991`; companion instrument Bench
+008 — the pooled signature costs ≤ ~4–6 pick points, the decoder loss
+is context loss), T6 PASS (Bench 007 — the no-preview/fresh-bag teacher
+beats reflex lb95 +969.7 / +612.2 on paired seeds 1..=20, 607 beside;
+even the b0 1-ply row wins 18–20/0/1, and THAT row is T8's bar). T7
+unblocked on measurements; it waits on the widened-wire sidecar (the
+reflex contract field + the reflex-site sender); training seeds
+201..=300.** Master plan:
 [`.plans/001_instinct_lane_clippy_flow.md`](.plans/001_instinct_lane_clippy_flow.md).
 
 - **The hybrid composition** (`src/hybrid.rs`): H1 cascade (reflex

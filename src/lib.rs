@@ -22,6 +22,11 @@ pub mod vessel;
 /// decision-outcome stats over the riir-kat wire — Unset never pushes.
 #[cfg(feature = "decstat")]
 pub mod decstat;
+/// The Tetris lane (Issue 009 T5+T6): the serving-matched teacher check +
+/// the serving-input-contract measurement, over the katgpt-rs tetris
+/// substrate (the shared engine; never a fourth one).
+#[cfg(feature = "tetris")]
+pub mod tetris_lane;
 
 pub use hybrid::{
     A0Answer, Cascade, FusedPick, HybridDecision, HybridLane, MAX_TOP_K, PriorFusion,

@@ -1192,6 +1192,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "katgpt-tetris"
+version = "0.1.0"
+dependencies = [
+ "blake3",
+ "fastrand",
+ "rayon",
+]
+
+[[package]]
 name = "katgpt-types"
 version = "0.2.1"
 dependencies = [
@@ -1807,7 +1816,9 @@ version = "0.1.0"
 dependencies = [
  "blake3",
  "ed25519-dalek",
+ "fastrand",
  "katgpt-core",
+ "katgpt-tetris",
  "papaya",
  "reflexer-vessel",
  "riir-kat",
