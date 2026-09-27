@@ -51,6 +51,10 @@ arena-laya = ["riir-reflex/laya-riir"]
 # default builds never resolve the wire/transport tree and the /decide
 # path is byte-identical (the record call compiles out).
 decstat = ["dep:riir-kat", "dep:papaya", "dep:ed25519-dalek"]
+# The arsenal budget legs' GOAT bench (Proposal 001 T8): gates nothing in
+# the lib — it selects `benches/arsenal_budget_goat` so the default
+# `cargo test`/`cargo bench` never pays its corpus-boot cost.
+arsenal_goat = []
 
 [workspace]
 
@@ -87,3 +91,10 @@ required-features = ["vessel"]
 [[test]]
 name = "decstat_gates"
 required-features = ["decstat"]
+
+# The arsenal GOAT bench (Proposal 001 T8) — whole-target gated; the
+# required-features row keeps a plain `cargo bench` from building it.
+[[bench]]
+name = "arsenal_budget_goat"
+harness = false
+required-features = ["arsenal_goat"]

@@ -52,17 +52,41 @@ pub fn fold8(bag: &[(u32, f32)]) -> [f32; DIM] {
     acc
 }
 
-/// A suite's corpus centroid: the sum of per-doc `bag_into` vectors over
-/// the suite's train corpus, folded into the admission space. Zero for an
-/// empty corpus (the gate then refuses to judge — see [`hoard_check`]).
+/// A suite's corpus centroid: the signed simhash fold of per-doc
+/// `bag_into` vectors over the suite's train corpus, projected into the
+/// admission space ([`DIM`]). Zero for an empty corpus (the gate then
+/// refuses to judge — see [`hoard_check`]).
+///
+/// **The sign is load-bearing (the Bench-003 GOAT finding):** each bag
+/// entry's weight is multiplied by a deterministic ±1 derived from its
+/// own bucket id (a token-level simhash fold). The UNSIGNED fold this
+/// replaced sums bucket proportions, and every English corpus's bucket
+/// histogram reads ≈ uniform — every suite's centroid landed within the
+/// 0.95 colinearity cap of every other's (measured: the armed gate
+/// admitted 0/6 real suites, each refused as a near-duplicate of the
+/// first loaded), which inverts the gate: mirrors and strangers are
+/// indistinguishable. With the signed fold, the same corpus (a mirror)
+/// reproduces the identical token set and stays colinear (cos → 1),
+/// while distinct corpora produce independent ±1 sums that decorrelate
+/// (cos ≈ 0) — the near-duplicate signal the gate's contract names, and
+/// the construction that makes the colinearity anchor decidable.
 pub fn corpus_centroid<'a>(texts: impl Iterator<Item = &'a str>) -> [f32; DIM] {
     let mut acc = [0.0_f32; DIM];
     let mut bag = Vec::new();
     let mut tok = Vec::new();
     for text in texts {
         bag_into(text.as_bytes(), &mut bag, &mut tok);
-        for (i, v) in fold8(&bag).into_iter().enumerate() {
-            acc[i] += v;
+        for &(bucket, w) in &bag {
+            // Balanced ±1 from a multiplicative mix of the bucket id —
+            // the raw high bit is useless here (ids are uniform over
+            // VOCAB = 2¹⁷, so bit 31 is always 0), and a mixed bit is
+            // robust to structure in the hash's low bits.
+            let sign = if ((bucket.wrapping_mul(0x9E37_79B1) >> 16) & 1) == 0 {
+                1.0
+            } else {
+                -1.0
+            };
+            acc[(bucket as usize) % DIM] += sign * w;
         }
     }
     acc

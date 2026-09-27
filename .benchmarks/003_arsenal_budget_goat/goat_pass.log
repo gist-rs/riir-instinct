@@ -1,0 +1,22 @@
+PROVENANCE: host m3 (Apple M3 Max, 16 cores)
+PROVENANCE: 15:59  up 12 days,  3:17, 4 users, load averages: 6.50 5.31 4.96
+PROVENANCE: power: Now drawing from 'AC Power'
+PROVENANCE: power: -InternalBattery-0 (id=22020195)	100%; charged; 0:00 remaining present: true
+PROVENANCE: profile release · iters: 20 validate · 1000 registry · 600 hoard k5 · 600 hoard k64 · 20000 slot reads · 200 quiescent decides · 12-swap hammer × 3 readers
+G-A init: manifest parse+validate p50 12690 µs / p99 13949 µs (bar p99 ≤ 1000 ms) — PASS
+G-A init: lazy registry (6 slots) p50 0 µs / p99 0 µs (bar p99 ≤ 1 ms) — PASS
+G-A init: EAGER six-lane boot total 19610 ms (the lazy posture defers this) — per lane: ag_news 1041 ms, emotion 719 ms, sst5 522 ms, massive_intent_en 2888 ms, banking77 13176 ms, xnli_en 1260 ms
+G-B routing: hoard_check k=5 (real six, round-robin) p50 3250 ns / p99 4292 ns (bar p99 ≤ 100 µs, admits 600/600) — PASS
+G-B routing: hoard_check k=64 (synthetic; 600/600 admitted, the rest certificate-collapsed — the gate answered either way) p50 5583 ns / p99 7375 ns — PASS
+G-B routing: slot Ready-read p50 0 ns / p99 42 ns (bar p99 ≤ 10 µs) — PASS
+G-C swap: 335063 decisions served across 12 installs, 0 decision errors, 0 torn reads (bar: 0/0, ≥1000 served) — PASS; contended decide p50 145875 ns / p99 173667 ns; swap install p50 2498 ms / p99 21069 ms (disclosed)
+G-C decide: banking77 (77 labels) quiescent p50 347250 ns (347.25 µs) / p99 366292 ns (366.29 µs) over 200 — disclosed (Bench 002 gated the fusion axis; this is the served ceiling)
+G-D identity:   ag_news: admitted (vendi 2.878 / floor 1.200, k 6, judged true)
+G-D identity:   emotion: admitted (vendi 2.878 / floor 1.200, k 6, judged true)
+G-D identity:   sst5: admitted (vendi 2.878 / floor 1.200, k 6, judged true)
+G-D identity:   massive_intent_en: admitted (vendi 2.878 / floor 1.200, k 6, judged true)
+G-D identity:   banking77: admitted (vendi 2.878 / floor 1.200, k 6, judged true)
+G-D identity:   xnli_en: admitted (vendi 2.878 / floor 1.200, k 6, judged true)
+G-D identity: PASS — kill-switch literal re-pinned (only exactly "0" disarms); armed admits 6/6 real centroids (bit-identical verdicts ×2); disarmed admits unconditionally — the serving outcome set (all six up) is identical either way
+
+✓ arsenal_budget_goat: GOAT PASS — 7 gates

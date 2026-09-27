@@ -33,6 +33,39 @@ riir-deployer (cf-container) ◀─ vessel minting ◀─ riir-train ◀─ riir
    the same test split, read once; demote the loser.
 4. **Weights never committed**; HOSTED-ONLY never leaves controlled hardware.
 
+## The arsenal laws (Proposal 001; canonical text lives THERE)
+
+The serving lane's selection surface is the **manifest** (`arsenal.toml`,
+embedded by default; `INSTINCT_ARSENAL`/`--arsenal` override) — no hard-coded
+posture tables or filename conventions behind it. The short form of each law
+(the proposal owns the full wording):
+
+- **A1 bytes-are-runtime, capability-is-compile-time** (vessels only).
+- **A2 never blend** — selection is monotonic atomic hot-swap of whole
+  artifacts (`check_epoch_tag`: advance / idempotent / fork refused /
+  downgrade refused; `LaneSlot` installs whole under the slot lock — a
+  decision observes one whole server, never a torn read).
+- **A3 coarse vessels, cheap routing, no dyn on the decide path** — the
+  hoarding gate rides `katgpt-core::set_admission`; the centroid is the
+  SIGNED simhash fold of the train corpus (`corpus_centroid` — the unsigned
+  variant made every corpus a near-duplicate of every other, Bench 003's
+  GOAT finding; do not revert it).
+- **A5 the manifest is the only selection surface**; boot drift fails loud.
+- **A6 posture rows are pinned in both media** — `tests/serve_gates.rs`
+  pins the manifest's BLAKE3 digest; a TOML edit reds like a code edit.
+- **A7 lazy + budgeted, evicted by wire signal** — `budget.load = "lazy"`
+  rows boot `Unloaded`, the first decision loads (503 window covers it);
+  `POST /arsenal/release` evicts (epoch kept); `POST /arsenal/swap` swaps
+  monotonic (both loopback-only). Kill-switch `RIIR_INSTINCT_HOARD_GATE=0`
+  (the exact literal) disarms the hoarding gate.
+- **A8 no runtime minting** (riir-train mints); **A9 same-engine-class
+  only**; **A10 moat** (PUBLIC-RELEASE carries no GAME-IP content).
+
+The budget legs' GOAT gate is `cargo bench --bench arsenal_budget_goat
+--features arsenal_goat` (Bench 003) — re-run it after any centroid, gate,
+or manifest change; it refuses (exit 1) without the datasets/winners,
+never a green zero.
+
 ## Sibling layout
 
 ```
@@ -55,6 +88,7 @@ cargo check
 cargo clippy --all-targets -- -D warnings
 cargo test                                   # the gate suite (serve gates skip loud without data)
 cargo run --release --bin arena              # the GOAT run (writes .benchmarks/<out>/)
+cargo bench --bench arsenal_budget_goat --features arsenal_goat   # the arsenal budget GOAT (Bench 003)
 
 # The hosted serving lane (P5, Issue 002):
 cargo run --release --bin serve -- --bind 127.0.0.1:8091 --suites ag_news,massive_intent_en
