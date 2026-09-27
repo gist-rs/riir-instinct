@@ -27,6 +27,11 @@ pub mod decstat;
 /// substrate (the shared engine; never a fourth one).
 #[cfg(feature = "tetris")]
 pub mod tetris_lane;
+/// The Tetris value-critic arm (Issue 009 T8's modelless second arm + T7's
+/// substrate): the Plan-308 KARC basis-ridge readout over the teacher's
+/// search-root Q, plus the sample-collection lane loop.
+#[cfg(feature = "tetris")]
+pub mod tetris_critic;
 
 pub use hybrid::{
     A0Answer, Cascade, FusedPick, HybridDecision, HybridLane, MAX_TOP_K, PriorFusion,

@@ -1,6 +1,6 @@
 # Issue 009 — Instinct plays Tetris on the arena (a real board, not a text-suite card)
 
-**Status:** OPEN — filed 2026-09-27 (owner direction). The placeholder card is pulled from the arena until this lands. HOW section added 2026-09-27 (training flow: search-distill via expert iteration, chance_puct teacher — verdict AGREE after 2 rounds); T5–T9 gate T7's start. KARC adjudicated same day: refused as drop predictor, added as a T8 modelless readout arm. **T5 MEASURED 2026-09-27 (Bench 006): WIRE-MUST-WIDEN — the five-ordinal spot wire carries at most 0.30 of the champion 1-ply evaluator's ranking (maximal decoder, full v2 state sentence included); the widened wire (raw afterstate, Instinct-only sidecar) is a precondition of T7, and its two cross-repo halves (reflex contract sidecar field, reflex-site sender) are the next lands.**
+**Status:** OPEN — filed 2026-09-27 (owner direction). The placeholder card is pulled from the arena until this lands. HOW section added 2026-09-27 (training flow: search-distill via expert iteration, chance_puct teacher — verdict AGREE after 2 rounds); T5–T9 gate T7's start. KARC adjudicated same day: refused as drop predictor, added as a T8 modelless readout arm. **T5 MEASURED 2026-09-27 (Bench 006): WIRE-MUST-WIDEN — the five-ordinal spot wire carries at most 0.30 of the champion 1-ply evaluator's ranking (maximal decoder, full v2 state sentence included; 0.5470 demeaned) — the widened wire (raw afterstate, Instinct-only sidecar) is a precondition of the serve path, and its two cross-repo halves (reflex contract sidecar field, reflex-site sender) are the next lands. T6 MEASURED (Bench 007): PASS — the serving-matched teacher beats free Reflex by Δ+977.9 lb95 +969.7 pieces (b1600, paired seeds 1..=20); T7 unblocked. T8's second modelless arm MEASURED (Bench 009): NEGATIVE — the closed-form KARC basis-ridge critic (d=202) loses to b0 at every teacher budget (377.4 vs 907.8 pieces at b1600 targets, 2/6/12); b0 stands as the modelless floor and the trained critic's bar is b0 AND that arm. T7 substrate landed (feature contract + collector + fit + eval lane); training seeds 201..=300 pinned, targets at b1600 minimum.**
 
 ## Why
 
@@ -205,6 +205,19 @@ land.
       noisy). 2–3 iterations. Training seeds DISJOINT from seed 607 and the T3
       seeds (a pinned seed is a memorizable piece sequence). lr=0 control arm
       separates a training gain from the fixture prior.
+      **T7 substrate LANDED 2026-09-27 (`.benchmarks/009_tetris_critic_arm`,
+      the T8 second-arm bench): the feature contract (33 raw features over
+      the widened serving input), the teacher-sample collector, the closed-form
+      KARC chebyshev-4 basis-ridge fit (d=202, `katgpt-core/karc_forecaster`),
+      and the eval lane are all in place — a trained critic swaps the readout,
+      not the pipeline. Notes that bind T7's design: (a) mine targets at
+      **b1600 minimum** (b400's Q noise caps the fit — R² 0.32 vs 0.37);
+      (b) val agreement plateaus ~0.66 across λ and budgets for the
+      closed-form linear readout — the trained critic's capacity is the
+      hypothesis under test; (c) the trained critic's bar: strictly beat b0
+      (907.8 / 532.5 pieces on 16@75 / 18@75) AND the ridge arm (377.4 /
+      169.6 at b1600 targets) on the same protocol; (d) serving G2 is
+      trivial (the 1-ply critic p50 is ~6 µs).**
 - [ ] T8 — **Ablation — the win must come from the trained part.** Baseline =
       1-ply rulebook-champion evaluator fed the SAME (widened) input as the
       trained head (verdict amendment). The trained critic must strictly beat
@@ -220,6 +233,19 @@ land.
       (same vessel serving, closed-form weights, no expert iteration). Note
       the readout upgrade does NOT escape T5: the reflex head's ceiling is the
       5-coarse-class input, not the ridge shape.
+      **Second arm MEASURED 2026-09-27 (`.benchmarks/009_tetris_critic_arm`;
+      harness `src/tetris_critic.rs` + `benches/tetris_critic_goat`, feature
+      `tetris_goat`): NEGATIVE for the modelless path — b0 stands.** The
+      closed-form KARC chebyshev-4 basis-ridge critic (d=202; mode×champion-set
+      interactions generalize the FSM; fit on the teacher's sigmoid-normalised
+      search-root Q; λ selected on val 281..=300 by top-1 agreement) beats free
+      Reflex easily but loses to b0 at both teacher budgets: 16@75 b0 907.8 vs
+      critic 218.6 (b400 targets) / 377.4 (b1600 targets), 2/2/16 and 2/6/12;
+      18@75 the same shape. b0's row reproduces T6 at 20/0/0 vs reflex
+      (Δ+881.0 lb95 +752.1) — a cross-bench consistency pin. Determinism:
+      digest + all eval numbers byte-identical across worker counts. The
+      trained critic's bar is now concrete: strictly beat b0 AND this arm
+      (digest `48b92d26b04f3ecb`). T7 GO — see the notes on T7 above.
 - [ ] T9 — **Mint + serve.** riir-train trains + mints the PUBLIC-RELEASE
       vessel (Proposal 001 A4/A10 — no game-IP content) via `vessel-mint`;
       file the training run as its own riir-train issue. Instinct serves the

@@ -36,12 +36,16 @@ riir-kat = { path = "../riir-kat", optional = true, default-features = false, fe
 # version-matched to the riir-auth pin already in this graph so one copy
 # compiles).
 papaya = { version = "0.2", optional = true }
-# The tetris lane (Issue 009 T5/T6): the katgpt-rs substrate module — the
+# The Tetris lane (Issue 009 T5/T6): the katgpt-rs substrate module — the
 # board sim + seeded 7-bag + garbage starts + the frozen Bench-892 champion
 # genome (the same crate public reflexer consumes under the same leaf law;
 # NOT a game runtime — the boundary's "no game crates" row targets
 # riir-ai's game stack). Opt-in behind `tetris`; fastrand is
 # version-matched to the katgpt-rs pin ("2") so one copy compiles.
+# katgpt-core/karc_forecaster: the T8 modelless arm's fit substrate — the
+# Plan-308 KARC basis (ChebyshevBasis) + chunked Gram + the
+# ridge_solve_direct_f64 re-export (default-on upstream; here opt-in with
+# the lane).
 katgpt-tetris = { path = "../katgpt-rs/crates/katgpt-tetris", optional = true }
 fastrand = { version = "2", optional = true }
 
@@ -66,9 +70,9 @@ arsenal_goat = []
 # The Tetris lane (Issue 009 T5/T6): the measurement harness module + the
 # chance_puct teacher. Opt-in — default builds never resolve the tetris
 # substrate, and the /decide path is byte-identical.
-tetris = ["dep:katgpt-tetris", "dep:fastrand", "katgpt-core/chance_puct"]
-# The teacher-check bench target (007): selects `benches/
-# tetris_teacher_check` behind the lane feature.
+tetris = ["dep:katgpt-tetris", "dep:fastrand", "katgpt-core/chance_puct", "katgpt-core/karc_forecaster"]
+# The teacher-check bench target (007) + the critic-arm bench target
+# (009): select their bench targets behind the lane feature.
 tetris_goat = ["tetris"]
 
 [workspace]
@@ -117,5 +121,11 @@ required-features = ["arsenal_goat"]
 # The tetris teacher-check bench (Issue 009 T6) — whole-target gated.
 [[bench]]
 name = "tetris_teacher_check"
+harness = false
+required-features = ["tetris_goat"]
+
+# The tetris critic-arm bench (Issue 009 T8 second arm) — whole-target gated.
+[[bench]]
+name = "tetris_critic_goat"
 harness = false
 required-features = ["tetris_goat"]

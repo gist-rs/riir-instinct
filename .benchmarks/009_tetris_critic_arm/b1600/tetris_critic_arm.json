@@ -1,0 +1,239 @@
+{
+  "meta": {
+    "issue": "riir-instinct 009 T8 second modelless arm (KARC basis-ridge critic) + T7 substrate",
+    "recorded_at": "2026-307-11T17:53:39.450Z",
+    "box_load": "12.86 11.35 8.46",
+    "champion_genome_id": "68cae9d382014662",
+    "fit": "champion 68cae9d382014662 · KARC chebyshev-4 basis-ridge (Plan 308, no delay ring) · design dim 202",
+    "teacher": "chance_puct budget 1600 (T6 posture: no preview, fresh bag, mode at the decision root, rng = seed ^ 0x5eed892)",
+    "train_seeds": "201..=280",
+    "val_seeds": "281..=300",
+    "eval_seeds": "1..=20 paired + 607 beside (excluded from every gate column)",
+    "seed_disjointness": "train/val avoid 006's training (1..=40) + held-out (101..=140), the eval 1..=20, and 607",
+    "regimes": [
+      "garbage 16@75%",
+      "garbage 18@75%"
+    ],
+    "cap": 1000,
+    "threads": 10,
+    "selection": "λ per-sample multiplier swept; chosen by val top-1 agreement with the teacher pick, tiebreak val R², then lowest λ",
+    "wall_s": 143.893802541
+  },
+  "collection": [
+    {
+      "regime": "garbage 16@75%",
+      "train_samples": 630522,
+      "val_samples": 152096,
+      "teacher_mean_pieces": {
+        "train": 985.6625,
+        "val": 950.85
+      },
+      "wall_s": 67.609698709
+    },
+    {
+      "regime": "garbage 18@75%",
+      "train_samples": 438412,
+      "val_samples": 128165,
+      "teacher_mean_pieces": {
+        "train": 686.825,
+        "val": 802.05
+      },
+      "wall_s": 43.56554725
+    }
+  ],
+  "n_train_samples": 1068934,
+  "n_val_samples": 280261,
+  "model": {
+    "digest": "48b92d26b04f3ecb",
+    "design_dim": 202,
+    "chosen_lambda_mult": 0.3,
+    "n_final": 1349195,
+    "train_agreement": 0.6658692304241862,
+    "train_r2": 0.36634804702840806,
+    "val_agreement": 0.6610183996576808,
+    "val_r2": 0.36757969960559866
+  },
+  "lambda_sweep": [
+    {
+      "lambda_mult": 0.01,
+      "val_agreement": 0.6430466409927257,
+      "val_r2": 0.5639389150742914,
+      "train_r2": 0.563029796657015
+    },
+    {
+      "lambda_mult": 0.03,
+      "val_agreement": 0.6390814434460134,
+      "val_r2": 0.5323627221536689,
+      "train_r2": 0.5316247561059256
+    },
+    {
+      "lambda_mult": 0.1,
+      "val_agreement": 0.6484096419911568,
+      "val_r2": 0.46913154495970844,
+      "train_r2": 0.4683009593356625
+    },
+    {
+      "lambda_mult": 0.3,
+      "val_agreement": 0.6609328198545144,
+      "val_r2": 0.3675250632918251,
+      "train_r2": 0.36637830432297425
+    },
+    {
+      "lambda_mult": 1.0,
+      "val_agreement": 0.660790186849237,
+      "val_r2": 0.2171432603171749,
+      "train_r2": 0.2157299694413941
+    },
+    {
+      "lambda_mult": 3.0,
+      "val_agreement": 0.6217087434032235,
+      "val_r2": 0.08959465163065694,
+      "train_r2": 0.0882180984132439
+    },
+    {
+      "lambda_mult": 10.0,
+      "val_agreement": 0.43357580944230495,
+      "val_r2": -0.024031860294899232,
+      "train_r2": -0.026229618377656916
+    }
+  ],
+  "eval": [
+    {
+      "regime": "garbage 16@75%",
+      "arms": {
+        "reflex_head": {
+          "mean_pieces": 21.571428571428573,
+          "mean_lines": 5.761904761904762,
+          "mean_points": 344.76190476190476,
+          "survived": 0,
+          "of": 21,
+          "p50_decision_ms": 0.010832999999999999
+        },
+        "champion_b0": {
+          "mean_pieces": 907.7619047619048,
+          "mean_lines": 369.0,
+          "mean_points": 33749.52380952381,
+          "survived": 19,
+          "of": 21,
+          "p50_decision_ms": 0.0045000000000000005
+        },
+        "critic_ridge": {
+          "mean_pieces": 377.42857142857144,
+          "mean_lines": 150.95238095238096,
+          "mean_points": 6660.952380952381,
+          "survived": 6,
+          "of": 21,
+          "p50_decision_ms": 0.005708
+        }
+      },
+      "critic_vs_reflex": {
+        "n_paired": 20,
+        "paired_mean": 371.7,
+        "paired_lb95": 185.8266291280731,
+        "wtl": "18/0/2"
+      },
+      "critic_vs_champion_b0": {
+        "n_paired": 20,
+        "paired_mean": -509.3,
+        "paired_lb95": -714.7486871061459,
+        "wtl": "2/6/12"
+      },
+      "b0_vs_reflex": {
+        "n_paired": 20,
+        "paired_mean": 881.0,
+        "paired_lb95": 752.0862404378323,
+        "wtl": "20/0/0"
+      },
+      "context_seed607": {
+        "reflex_head": {
+          "pieces": 10,
+          "lines": 1,
+          "points": 40,
+          "topped_out": true
+        },
+        "champion_b0": {
+          "pieces": 1000,
+          "lines": 405,
+          "points": 35380,
+          "topped_out": false
+        },
+        "critic_ridge": {
+          "pieces": 49,
+          "lines": 16,
+          "points": 700,
+          "topped_out": true
+        }
+      }
+    },
+    {
+      "regime": "garbage 18@75%",
+      "arms": {
+        "reflex_head": {
+          "mean_pieces": 13.523809523809524,
+          "mean_lines": 4.095238095238095,
+          "mean_points": 250.47619047619048,
+          "survived": 0,
+          "of": 21,
+          "p50_decision_ms": 0.007666000000000001
+        },
+        "champion_b0": {
+          "mean_pieces": 532.4761904761905,
+          "mean_lines": 216.57142857142858,
+          "mean_points": 19238.095238095237,
+          "survived": 11,
+          "of": 21,
+          "p50_decision_ms": 0.004291
+        },
+        "critic_ridge": {
+          "mean_pieces": 169.57142857142858,
+          "mean_lines": 66.42857142857143,
+          "mean_points": 2968.5714285714284,
+          "survived": 0,
+          "of": 21,
+          "p50_decision_ms": 0.0053750000000000004
+        }
+      },
+      "critic_vs_reflex": {
+        "n_paired": 20,
+        "paired_mean": 163.7,
+        "paired_lb95": 51.21373047763875,
+        "wtl": "16/1/3"
+      },
+      "critic_vs_champion_b0": {
+        "n_paired": 20,
+        "paired_mean": -381.05,
+        "paired_lb95": -636.0361040059914,
+        "wtl": "6/1/13"
+      },
+      "b0_vs_reflex": {
+        "n_paired": 20,
+        "paired_mean": 544.75,
+        "paired_lb95": 327.9014937136137,
+        "wtl": "18/1/1"
+      },
+      "context_seed607": {
+        "reflex_head": {
+          "pieces": 7,
+          "lines": 1,
+          "points": 40,
+          "topped_out": true
+        },
+        "champion_b0": {
+          "pieces": 10,
+          "lines": 2,
+          "points": 80,
+          "topped_out": true
+        },
+        "critic_ridge": {
+          "pieces": 10,
+          "lines": 2,
+          "points": 80,
+          "topped_out": true
+        }
+      }
+    }
+  ],
+  "gate_hit": null,
+  "gate": "T8-second-arm modelless candidate iff critic vs champion_b0 paired pieces lb95 > 0 on some regime",
+  "verdict": "MODELLESS ARM DOES NOT CLEAR THE T8 BAR — b0 stands; T7's trained critic must beat b0 AND this arm (the closed-form readout is the arm to beat)."
+}
