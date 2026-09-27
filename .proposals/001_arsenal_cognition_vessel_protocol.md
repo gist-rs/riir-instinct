@@ -1,6 +1,6 @@
 # Proposal 001 — the `arsenal` protocol: cognition-vessel selection, serving laws, and the capability axis
 
-**Status:** PROPOSED 2026-09-27 — name `arsenal` pending owner ratification; substrate census complete (substrate-first Mode 1, 2026-09-27, two-agent sweep); Claude verdict AGREE (round 3, 2026-09-27). Companion: `../riir-ai/.proposals/048_limelight_cognition_budget.md` (the depth axis; canonical layer-authority map + basic-instinct gate live there). Highwater: `.proposals/.highwater` measured **000** (empty dir) at allocation; bumped to 001 here.
+**Status:** PROPOSED 2026-09-27 — name `arsenal` OWNER-RATIFIED 2026-09-27; substrate census complete (substrate-first Mode 1, 2026-09-27, two-agent sweep); Claude verdict AGREE (round 3, 2026-09-27). Companion: `../riir-ai/.proposals/048_limelight_cognition_budget.md` (the depth axis; canonical layer-authority map + basic-instinct gate live there). Highwater: `.proposals/.highwater` measured **000** (empty dir) at allocation; bumped to 001 here.
 
 ## Why now
 
