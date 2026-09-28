@@ -463,6 +463,30 @@ struct SuiteCtx<const N: usize> {
 /// confs, per-question µs).
 type GridRow = (Cand, Vec<usize>, Vec<bool>, Vec<f64>, Vec<f64>);
 
+/// A question's presented option names, in presentation order — the
+/// choice's criteria OBJECT keys, the score's criteria ARRAY levels, and
+/// the noul pair (the fixed `[false, true]` rendering mapped onto
+/// [`NOUL_PAIR`]). The one extraction both [`SuiteCtx::fill_positions`]
+/// and the context seat's coverage gate read, so the two cannot drift.
+fn presented_keys(q: &SuiteQuestion) -> Vec<String> {
+    if q.kind == QKind::Noul {
+        return NOUL_PAIR.iter().map(|s| (*s).to_string()).collect();
+    }
+    if let Some(obj) = q.criteria.as_object() {
+        obj.keys().cloned().collect()
+    } else if let Some(levels) = q.criteria.as_array() {
+        levels
+            .iter()
+            .map(|v| match v {
+                serde_json::Value::String(s) => s.clone(),
+                other => other.to_string(),
+            })
+            .collect()
+    } else {
+        Vec::new()
+    }
+}
+
 impl<const N: usize> SuiteCtx<N> {
     /// Fill the per-question position maps from the question's presented
     /// criteria keys, in the object's own order — the exact iteration
@@ -505,25 +529,16 @@ impl<const N: usize> SuiteCtx<N> {
             }
             return;
         }
-        // The presented options, in presentation order — a choice's
-        // criteria OBJECT keys, or a score's criteria ARRAY levels (the
-        // engine's `Outcome::Score { level }` indexes the array).
-        let keys: Vec<String> = if let Some(obj) = q.criteria.as_object() {
-            obj.keys().cloned().collect()
-        } else if let Some(levels) = q.criteria.as_array() {
-            levels
-                .iter()
-                .map(|v| match v {
-                    serde_json::Value::String(s) => s.clone(),
-                    other => other.to_string(),
-                })
-                .collect()
-        } else {
+        // The presented options, in presentation order (see
+        // [`presented_keys`] — the one extraction, shared with the
+        // context seat's coverage gate).
+        let keys = presented_keys(q);
+        if keys.is_empty() {
             panic!(
                 "case {case_id}: criteria must be an object (choice), an array (score), \
                  or Null (noul)",
             );
-        };
+        }
         let all_named = keys.iter().all(|key| self.key_map.contains_key(key));
         if all_named {
             for key in &keys {
@@ -909,7 +924,7 @@ fn run_suite_n<const N: usize>(
         Err(e) => return Err(e),
     };
     let Some(spec) = spec else {
-        return run_suite_a0_only(name, seat, engine, posture);
+        return run_suite_a0_only(name, seat, engine, posture, "no specialist artifact (Issue 010 T2)");
     };
 
     // The specialist bridge's shape law (Plan 003, relaxed from
@@ -935,6 +950,58 @@ fn run_suite_n<const N: usize>(
         spec.labels.len(),
         bridge.convention.name()
     );
+    // The seat↔artifact join form (Plan 003's bridge), decided once: a
+    // name-joinable suite or the positional noul pair joins Named; a
+    // fully disjoint seat joins Context (typed_decisions' workflow names
+    // — sentinel class rows, every answer through the presented-option
+    // bridge).
+    let join_form = riir_instinct::hybrid::seat_join(&seat.labels, &spec.labels);
+    use riir_instinct::hybrid::SeatJoin;
+    // The context seat's template-coverage gate (Plan 003, found by the
+    // 014 read's first attempt): a context-joined suite answers ONLY
+    // through by-name resolution, so every presented key of every
+    // question — cal AND test — must be an artifact class row. The train
+    // side's distractor-universe law covers the TRAIN pool's presented
+    // keys; the reflex test templates can present keys the train pool
+    // never carried (typed_decisions: the security_incidents family and
+    // others — measured 30% of test questions, all four workflows). An
+    // unseatable artifact is not a crash and not a fished partial read:
+    // the suite falls back to its honest A0-only posture with the gap
+    // named (Issue 010 T2's posture, with a sharper reason).
+    if let SeatJoin::Context = &join_form {
+        let artifact_set: std::collections::HashSet<&str> =
+            artifact_labels.iter().map(String::as_str).collect();
+        let mut missing: std::collections::BTreeSet<String> = Default::default();
+        let mut missing_cases = 0usize;
+        let total_cases = seat.suite.cases.len() + seat.cal_cases.len();
+        for case in seat.suite.cases.iter().chain(&seat.cal_cases) {
+            let mut case_missing = false;
+            for q in &case.questions {
+                for key in presented_keys(q) {
+                    if !artifact_set.contains(key.as_str()) {
+                        missing.insert(key);
+                        case_missing = true;
+                    }
+                }
+            }
+            if case_missing {
+                missing_cases += 1;
+            }
+        }
+        if missing_cases > 0 {
+            let note = format!(
+                "winner present but UNSEATABLE — {missing_cases} of {total_cases} case(s) \
+                 present option key(s) with no artifact class row (template drift vs the \
+                 train pool; {} distinct key(s), e.g. {:?}); the context seat answers only \
+                 by name (Plan 003), so the specialist cannot seat — Issue 010 T2's \
+                 A0-only posture with this reason",
+                missing.len(),
+                missing.iter().take(4).collect::<Vec<_>>()
+            );
+            eprintln!("  {note}");
+            return run_suite_a0_only(name, seat, engine, posture, &note);
+        }
+    }
     // The seat↔artifact label join (Plan 003's bridge): name-joinable
     // suites pass through; the positional int spelling joins the unified
     // [no, yes] pair by position (the key map below keys off the JOINED
@@ -943,12 +1010,12 @@ fn run_suite_n<const N: usize>(
     // (typed_decisions' workflow names — sentinel class rows, every
     // answer through the presented-option bridge).
     let context_joined;
-    let joined = match riir_instinct::hybrid::seat_join(&seat.labels, &spec.labels) {
-        riir_instinct::hybrid::SeatJoin::Named(labels) => {
+    let joined = match join_form {
+        SeatJoin::Named(labels) => {
             context_joined = false;
             SpecialistLane::join(spec, name, &labels, Cascade { top_k })?
         }
-        riir_instinct::hybrid::SeatJoin::Context => {
+        SeatJoin::Context => {
             context_joined = true;
             SpecialistLane::join_context(spec, name, &seat.labels, Cascade { top_k })?
         }
@@ -1257,6 +1324,7 @@ fn run_suite_a0_only<const N: usize>(
     seat: Seat,
     mut engine: DecisionEngine<N, EMBED_DIM>,
     posture: SeatPosture,
+    reason: &str,
 ) -> Result<SuiteRun, String> {
     // ── CAL phase: A0 only ───────────────────────────────────
     let (a0_cal, _) = SuiteCtx::<N>::eval_a0(&mut engine, &seat.cal_cases, &seat.cal_state_strs)?;
@@ -1304,7 +1372,7 @@ fn run_suite_a0_only<const N: usize>(
         n_cases: seat.suite.cases.len(),
         specialist_present: false,
         verdict: "a0_stands",
-        a0_note: Some("no specialist artifact (Issue 010 T2)".to_string()),
+        a0_note: Some(reason.to_string()),
         posture: DisclosedPosture {
             effective_cap: posture.effective_cap,
             head_scale: posture.cfg.head_scale,
