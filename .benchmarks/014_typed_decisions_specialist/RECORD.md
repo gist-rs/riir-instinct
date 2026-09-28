@@ -50,7 +50,7 @@ G1 (A0 disclosure): raw 0.4238 · platt 0.0055 · floor 0.2072 → PASS.
 
 The artifact needs retraining over a train pool that covers the reflex
 TEMPLATE key set (or the distractor law extended from the templates, not
-the pool): riir-train Issue 580. Until then typed_decisions has no serving
+the pool): riir-train Issue 581. Until then typed_decisions has no serving
 row (`typed_decisions` asserted ABSENT from the manifest in serve-gates,
 both directions) and ships nowhere (`deploy.yaml`).
 
