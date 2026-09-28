@@ -98,12 +98,13 @@ inherited precedent, disclosed here so it cannot be misread later.
 
 ## Serving truth
 
-- The manifest carries **no typed row** in this landing (the boot-shape
-  blocker above; an inert-but-boot-breaking row is the 014 lesson's
-  mirror — the refusal must be loud, not deferred into a red boot).
-- When Issue 011 lands: the row is `A1` (the registered arm; H1's edge
-  is measured noise), digest `blake3:7f7a39e1…`, and the lane doc cell
-  flips to serves-A1 with this record's numbers.
+**SUPERSEDED same-day by the Issue 011 landing** (the record above
+stands as the decision evidence): the multi-question serve extension
+landed, and the manifest now carries the EIGHTH row — typed_decisions
+serves **A1** (digest `blake3:7f7a39e1…`, `PINNED_MANIFEST_DIGEST`
+re-pinned, the posture table 7→8, `deploy.yaml` ships the winner + the
+full-pool dataset dir). The parity gate replays this record's frozen
+A1 picks per question; the serve's history lives in instinct HISTORY.
 - reflex's own cap fix (the +10.7 pt modelless A0 gain) is filed as
   **riir-reflex Issue 052** — worth landing whichever way the specialist
   went.

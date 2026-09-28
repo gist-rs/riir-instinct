@@ -306,8 +306,8 @@
         "latency_p50_ms": 0.504,
         "latency_p99_ms": 1.8,
         "latency_tail_support": 5,
-        "serves": null,
-        "gate": "best measured AND T2-certified (Bench 015) — but the serve path’s one-question-per-case shape guard refuses typed’s 5-question sets at boot; the serving row lands with the multi-question serve extension (riir-instinct Issue 011) and until then the reflex half serves (published A0 0.4655)"
+        "serves": "A1",
+        "gate": "best measured AND T2-certified (Bench 015); serves A1 through the multi-question contract (Issue 011, landed) — the seat corpus ships from the full-pool datasets dir"
       },
       "per_workflow": {
         "agent_trace_observability": {

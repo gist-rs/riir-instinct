@@ -1,5 +1,49 @@
 # HISTORY — riir-instinct
 
+## 2026-09-28 — the 581 lane lands end to end: typed_decisions seats, certifies, and SERVES (Bench 015 + Issue 011)
+
+The one-day arc, three repos, every gate measured:
+
+- **Root cause (riir-train `d59d3984`, Bench 614)**: Bench 014's
+  "template drift" was a FETCH-CAP ARTIFACT — reflex's fetch took 800 of
+  typed_decisions' 1200 train rows; the 300 security_incidents train
+  rows sat behind the cap. The owner-gated T1 shape call was adjudicated
+  by a Claude verdict round (2 rounds, REVISE→AGREE): shape (b) — REAL
+  rows — with the reviewer's additions adopted (snapshot byte-identity
+  12/12, disjointness 0 collisions over three hashes, an A0′ arm on the
+  same data, and registration gated on max(A0, A0′)). Retrained at
+  610's config over 1200 rows / 49 classes: case 0.5813 vs majority
+  0.4875, event 0.6350 vs lr0 0.0200 — re-minted
+  `typed_decisions_armA_v1.bin` (blake3 `7f7a39e1935f8665…`). Issue 581
+  closed; reflex's own cap fix filed (riir-reflex Issue 052 — a +10.7 pt
+  MODELESS A0 gain for their lane).
+- **The consumer read (Bench 015, `745d157`)**: control run first — 014
+  reproduced byte-identically. Then the extended dir: A0′ 0.5725 · A1
+  0.6300 (registered) · H1 0.6335 (paired noise vs A1, LB95 −0.0048).
+  T2-certified against BOTH A0 legs (vs A0′ +0.0373; vs the published
+  0.4655 +0.1432); G1 PASS. The honest breakdown is in the record: the
+  pooled win is not mainly the new workflow (invoice A0′ BEATS A1), and
+  rare keys collapse to the majority class. Latency rows taken at load
+  8.06 — disclosed, directional only.
+- **The serving extension (Issue 011, `e599ecc`)**: the serve path's
+  one-question shape guard could not boot the suite (and `--suites`
+  defaults to all manifest rows — a row would have broken the default
+  boot). The `decision_wire` law ("one state, ALL questions answered in
+  one call") decided the shape: `SuiteServer::decide_multi` (one
+  multi-question case through the same eval_seat path; state bagged
+  once; the noul resolve JOIN-FORM-aware — Named keeps the positional
+  law, a Context join resolves NOUL_PAIR by name, an empty presentation
+  takes the fixed rendering), the ServeContract axis on `winner_bridge`,
+  the HTTP `questions` form beside the byte-compatible legacy body, and
+  the manifest's EIGHTH row (A1) with the digest/dig/posture/deploy
+  pins moved together. Validation: serve_gates 14/14 (the typed parity
+  gate replays 12×5 questions against the 015 frozen picks), lib 49/49,
+  all-features 60/60, clippy clean both postures, live smoke green
+  (5 decisions in one call; the single-question form refuses 422
+  bridge_undefined).
+- **Issue 011 removed per noise-reduction** — this record + the code
+  pins carry it.
+
 ## 2026-09-28 — issue-file hygiene: 001 / 002 / 004 removed (work verifiably landed, records durable)
 
 One action per the fleet noise-reduction rule; the files were the last
