@@ -5,7 +5,9 @@ result in BOTH cases — trained specialist or not). Root causes verified in cod
 same day; companion issues: riir-reflex (seat seam refuses the synthetic
 families + code_fixtures), riir-train (specialists for the remaining dataset
 suites). **T1/T2/T3 + T5's arena half DONE 2026-09-27 (Bench 005); T4 + the
-republish half await the reflex-site session; T6 awaits the reflex seat seam.**
+site republish VERIFIED DONE 2026-09-28 (reflex-site `74b49e4`, curl-verified
+live; residual = the owner-gated pool/engine divergence, see below); T6 DONE
+2026-09-28 (Bench 011).**
 **DONE 2026-09-28 (Bench 016, `.benchmarks/016_cache_reuse_seated/`): the
 OWED item LANDED** — `harness_cache_reuse` joined the arena SUITES (the
 arena's default datasets dir is the frozen t20k pool, now documented as
@@ -19,9 +21,31 @@ the other 14 suites reproduced their published rows byte-identically
 H2(nbsvm v2) 0.8540, typed A1 0.6300, prompt A1 0.8534). Records written
 under `--skip-pin-a0` — the site leg reds on the six stale Bench-002-era
 rows in the reflex-site checkout's `data/bench.json` (+ typed's pre-078
-row); the republish is the reflex-site lane's work, disclosed in the
-record. The lane doc is rebuilt; T4 (the site render half) still awaits
-the reflex-site session.**
+rows); the republish is the reflex-site lane's work, disclosed in the
+record. The lane doc is rebuilt.
+**T4/T5 SITE HALF VERIFIED 2026-09-28 (this session): DONE.** The
+reflex-site lane landed it — data seated at reflex-site `74b49e4` (every
+hybrid row `source_run 4070711`: typed serves A1 0.63, banking77 H2(v2)
+0.854, prompt A1 0.8534, cache_reuse seated A0 0.9167), **live-verified
+by curl** (https://reflex.gist.rs/data/bench.json carries all 15 rows),
+and the render half is healthy (reflex-site chart_render_smoke +
+bench_page_smoke PASS; the arena text-suite card stays PULLED per Issue
+009 owner direction, so the three states render in the /bench/ tables +
+TL;DR, never as "not run" — thai_* are the only absent hybrid rows and
+instinct never seated them).
+**RESIDUAL (disclosed, owner-gated): cross-lane pool/engine divergence.**
+The site's modelless rows are reflex HEAD `c464a8a` on the CANONICAL
+`.raw/datasets` pool (reflex Bench 076: the 072-era count-table-ladder
+engine move, deliberate, per-cell stamped — dataset suites moved DOWN,
+families UP), while the hybrid rows are the t20k-seat values. The per-
+suite Instinct-vs-Reflex juxtaposition therefore compares across (pool ×
+engine). Aligning them = re-pointing this repo's arena pool, which the
+arena's own record declares a RE-BASELINE DECISION (owner-gated, "never
+a cleanup") — not a publish defect. The A0-pin site leg reds on exactly
+this divergence; `--skip-pin-a0` stays the documented posture with this
+reason until the owner picks: (a) re-baseline the arena to canonical +
+reflex HEAD, or (b) keep t20k frozen and accept the pin's site leg as a
+pool-mismatch advisory (relabel, don't silence).**
 
 ## Why
 
@@ -80,10 +104,14 @@ Honest vocabulary the lane must ship: three states, never two —
       `verdict: hybrid_arm | a0_stands`, `hybrid` cell or `measured_a0` cell
       + `reason`; the skip list is gone; self-test 6 fixtures incl. the
       measured-A0 known-answer arm).
-- [ ] T4 — Reflex-site half (sibling repo, land + cite the SHA here): the
+- [x] T4 — Reflex-site half (sibling repo, land + cite the SHA here): the
       hybrid card renders the three states above; "measured — A0 stands" is
       NEVER rendered as "not run" (per-card note names the product posture:
       A0 serves, the suite is not sold — Issue 008's gate, visible).
+      — **DONE, VERIFIED 2026-09-28**: seated at reflex-site `74b49e4`
+      (all 15 hybrid rows `source_run 4070711`), live-verified by curl,
+      chart_render_smoke + bench_page_smoke PASS. Residual owner-gated
+      pool divergence disclosed in the Status block.
 - [-] T5 — Re-run the arena at the Bench-052 protocol → `predictions.json` +
       lane doc → `republish_bench.sh` → curl-verify the card on
       reflex.gist.rs shows measured rows for every dataset suite. — **ARENA
@@ -102,6 +130,9 @@ Honest vocabulary the lane must ship: three states, never two —
       three-state doc natively), then reflex-site's `republish_bench.sh` +
       the site's hybrid-card update (three render states; measured-A0 never
       renders as not-run).
+      — **SITE HALF DONE, VERIFIED 2026-09-28**: reflex-site `74b49e4`
+      published the 016 doc; live curl shows every seated suite's hybrid
+      row on reflex.gist.rs; smokes PASS.
 - [x] T6 — Harness families + code_fixtures: blocked on the reflex seat seam
       (see companion issue) — when seats exist, they flow through T1/T2 with
       no further instinct-side change. `harness_cache_reuse` stays a recorded
