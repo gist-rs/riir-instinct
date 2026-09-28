@@ -129,7 +129,7 @@ land.
       **Design decision recorded (per this task's own instruction): the
       wire widens INSTINCT-ONLY** — the Instinct `/decide` request carries
       the raw afterstate (grid rows + piece + bag remainder) as a sidecar
-      beside the unchanged 5-class text; the modelless lane, v0.2.x
+      sidecar beside the unchanged 5-class text; the modelless lane, v0.2.x
       serving, and every fixture/pin stay byte-identical. Owed lands:
       the reflex contract's optional sidecar field + the reflex-site
       sender/board-card half (T4's session). T6 (teacher check,
@@ -137,6 +137,15 @@ land.
       already shows the full-feature 1-ply champion is very strong under
       serving information (3153 pieces / 1256 lines avg on held garbage
       seeds), so the T6 separating-regime bar is reachable.
+      **REFLEX HALF LANDED 2026-09-28 (riir-reflex `0c9fcab`): the
+      `/decide` wire carries the named optional `sidecar` member —
+      parse-and-ignore on the modelless lane (byte-identical answers
+      pinned with/without + permissive garbage shapes + malformed-body
+      still 400s; README wire doc updated). Permissive by contract: this
+      half does NOT pin the afterstate schema — the consuming side pins
+      it when T9's serving lane lands. Remaining halves: the instinct
+      sidecar acceptance/consumption (T1/T9) + the reflex-site sender
+      (T4's session).**
       **CROSS-MEASURED same day (`.benchmarks/008_signature_spread`, a
       second instrument, run concurrently — the Issue-825 class, resolved
       by cross-reading both instruments + a Claude verdict round):** the
