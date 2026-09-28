@@ -445,6 +445,12 @@ struct SuiteCtx<const N: usize> {
     /// label permutation by position instead is the instrument defect
     /// that read massive at chance).
     key_map: HashMap<String, (usize, usize)>,
+    /// The seat labels are CONTEXT (Plan 003's `SeatJoin::Context` —
+    /// typed_decisions' workflow names): the identity-by-count resolve is
+    /// disabled (a presented-key count against an unrelated label count
+    /// is meaningless) and every key must resolve BY NAME — a miss is
+    /// template drift against the distractor-universe law, loud.
+    context_joined: bool,
     /// Seat label idx → artifact class row (the join permutation).
     perm: Vec<usize>,
     pos_label: Vec<usize>,
@@ -525,7 +531,7 @@ impl<const N: usize> SuiteCtx<N> {
                 self.pos_label.push(li);
                 self.pos_class.push(cls);
             }
-        } else if keys.len() == self.perm.len() {
+        } else if !self.context_joined && keys.len() == self.perm.len() {
             for (li, &cls) in self.perm.iter().enumerate() {
                 self.pos_label.push(li);
                 self.pos_class.push(cls);
@@ -536,6 +542,14 @@ impl<const N: usize> SuiteCtx<N> {
                 .filter(|k| !self.key_map.contains_key(*k))
                 .cloned()
                 .collect();
+            if self.context_joined {
+                panic!(
+                    "case {case_id}: a presented key has no artifact class row — the seat is \
+                     context-joined (Plan 003), every key must resolve by name, and the \
+                     distractor-universe law covers every train-presented key; \
+                     unmatched {unmatched:?} is template drift"
+                );
+            }
             panic!(
                 "case {case_id}: presented options neither all name seat labels nor match the \
                  label count ({}) — the specialist bridge is undefined; \
@@ -921,20 +935,39 @@ fn run_suite_n<const N: usize>(
         spec.labels.len(),
         bridge.convention.name()
     );
-    // The seat↔artifact label join (Plan 003's noul bridge): name-joinable
-    // suites pass through; a noul-only suite whose seat labels are the
-    // positional int spelling joins the unified [no, yes] pair by position
-    // — the key map below keys off the JOINED labels, so prompt_injections'
-    // two noul positions carry real seat indices (live NB evidence).
-    let join_labels = riir_instinct::hybrid::noul_join_labels(&seat.labels, &spec.labels);
-    let joined = SpecialistLane::join(spec, name, &join_labels, Cascade { top_k })?;
+    // The seat↔artifact label join (Plan 003's bridge): name-joinable
+    // suites pass through; the positional int spelling joins the unified
+    // [no, yes] pair by position (the key map below keys off the JOINED
+    // labels, so prompt_injections' two noul positions carry real seat
+    // indices — live NB evidence); a fully disjoint seat joins as CONTEXT
+    // (typed_decisions' workflow names — sentinel class rows, every
+    // answer through the presented-option bridge).
+    let context_joined;
+    let joined = match riir_instinct::hybrid::seat_join(&seat.labels, &spec.labels) {
+        riir_instinct::hybrid::SeatJoin::Named(labels) => {
+            context_joined = false;
+            SpecialistLane::join(spec, name, &labels, Cascade { top_k })?
+        }
+        riir_instinct::hybrid::SeatJoin::Context => {
+            context_joined = true;
+            SpecialistLane::join_context(spec, name, &seat.labels, Cascade { top_k })?
+        }
+    };
     // The presented-option bridge (SuiteCtx::key_map): every JOINED seat
-    // label → (its own index, its artifact class row).
-    let mut key_map: HashMap<String, (usize, usize)> = join_labels
-        .iter()
-        .enumerate()
-        .map(|(li, l)| (l.clone(), (li, joined.perm[li])))
-        .collect();
+    // label → (its own index, its artifact class row); a context seat
+    // contributes NO seat-label entries (their class rows are sentinels —
+    // nothing presents them), the artifact's own labels join at the
+    // sentinel seat index (NaN NB evidence; the specialist still scores
+    // the class row it trained).
+    let mut key_map: HashMap<String, (usize, usize)> = if context_joined {
+        HashMap::new()
+    } else {
+        seat.labels
+            .iter()
+            .enumerate()
+            .map(|(li, l)| (l.clone(), (li, joined.perm[li])))
+            .collect()
+    };
     // Artifact-known labels the SEAT never offers (the t20k massive test
     // split carries 59 of the artifact's 60 intents): legitimate presented
     // options on the train-derived cal front (and at serving time). The
@@ -961,6 +994,7 @@ fn run_suite_n<const N: usize>(
         in_scores: vec![0.0; N],
         nb_scratch: Vec::new(),
         key_map,
+        context_joined,
         perm,
         pos_label: Vec::new(),
         pos_class: Vec::new(),

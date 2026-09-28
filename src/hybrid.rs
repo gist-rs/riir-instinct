@@ -142,44 +142,72 @@ impl Cascade {
 /// carry the pair as ordinary labels).
 pub const NOUL_PAIR: [&str; 2] = ["no", "yes"];
 
-/// The noul bridge's seat half (Plan 003): the label list to join a seat
-/// with. Name-joinable suites pass through untouched (typed_decisions'
-/// workflow seats join by name; its noul questions resolve through the
-/// artifact-known labels in the key map instead). A noul-only suite whose
-/// seat labels are the modelless positional int spelling (`"0"`, `"1"` —
-/// reflex's prompt_injections seat; the harness's noul rendering is the
-/// fixed `[false, true]`, gold idx p speaks it, and the train side's
-/// dataset map label p → [`NOUL_PAIR`][p] is the same correspondence)
-/// joins the unified pair BY POSITION: seat label `"p"` and pair entry p
-/// denote the same class, so the returned labels are the pair and the
-/// resulting `perm`/key map carry real seat indices for the two noul
-/// positions (their NB evidence stays live). When NEITHER form joins, the
-/// seat labels pass through unchanged and [`SpecialistLane::join`] is the
-/// single refusal site (its "seat label not in the artifact" error, with
-/// the drift context).
+/// The seat↔artifact join form (Plan 003's bridge — which of the three
+/// seat label shapes a suite presents, decided from the two label sets
+/// alone).
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum SeatJoin {
+    /// Join by the returned names — the seat labels verbatim (the six
+    /// legacy suites, typed_decisions excluded) or the unified noul pair
+    /// in place of the positional int spelling (prompt_injections; the
+    /// harness's noul rendering is the fixed `[false, true]`, gold idx p
+    /// speaks it, and the train side's dataset map label p →
+    /// [`NOUL_PAIR`][p] is the same correspondence).
+    Named(Vec<String>),
+    /// The seat's labels are CONTEXT (typed_decisions' workflow names —
+    /// the modelless engine's domain space): NO seat label resolves to a
+    /// class row, `perm` carries sentinels, and every specialist answer
+    /// flows through the per-question presented-option bridge
+    /// (`fill_positions`' by-name rule) — never through `perm`. The
+    /// identity-by-count resolve is DISABLED for these suites (the count
+    /// of presented keys against the label count is meaningless when the
+    /// two spaces are unrelated); an unmatched presented key refuses loud
+    /// (the train side's distractor-universe law covers every
+    /// train-presented key, so a miss is template drift).
+    Context,
+}
+
+/// Decide the join form for a seat (Plan 003). Name-joinable seats and
+/// the positional noul pair yield [`SeatJoin::Named`]; a seat whose labels
+/// are ALL absent from the artifact yields [`SeatJoin::Context`]. Two
+/// drift shapes deliberately fall through to [`SeatJoin::Named`] with the
+/// seat labels unchanged, so [`SpecialistLane::join`] is the single
+/// refusal site: a PARTIAL overlap (some seat labels resolve, some don't
+/// — the join's "seat label not in the artifact" error carries the
+/// context), and the positional int spelling whose artifact lacks the
+/// unified pair (a producer-contract break — never read as context).
 #[must_use]
-pub fn noul_join_labels(seat_labels: &[String], artifact_labels: &[String]) -> Vec<String> {
+pub fn seat_join(seat_labels: &[String], artifact_labels: &[String]) -> SeatJoin {
+    let int_spelling = seat_labels
+        .iter()
+        .enumerate()
+        .all(|(i, l)| l == &i.to_string());
     if seat_labels.iter().all(|l| artifact_labels.contains(l)) {
-        return seat_labels.to_vec();
+        return SeatJoin::Named(seat_labels.to_vec());
     }
     let positional = seat_labels.len() == NOUL_PAIR.len()
-        && seat_labels
-            .iter()
-            .enumerate()
-            .all(|(i, l)| l == &i.to_string())
+        && int_spelling
         && NOUL_PAIR
             .iter()
             .all(|n| artifact_labels.iter().any(|a| a == n));
     if positional {
-        return NOUL_PAIR.iter().map(|s| (*s).to_string()).collect();
+        return SeatJoin::Named(NOUL_PAIR.iter().map(|s| (*s).to_string()).collect());
     }
-    seat_labels.to_vec()
+    if !int_spelling && seat_labels.iter().all(|l| !artifact_labels.contains(l)) {
+        return SeatJoin::Context;
+    }
+    SeatJoin::Named(seat_labels.to_vec())
 }
 
 /// A loaded specialist joined onto a seat's label order. `perm[label]` is
 /// the specialist's class row for that label — a bijection asserted at
 /// construction (the join pin; a silent permutation here would move every
-/// class, the riir-train 576 writer-defect class).
+/// class, the riir-train 576 writer-defect class) — or the
+/// [`usize::MAX`] sentinel for a CONTEXT-joined seat
+/// ([`SeatJoin::Context`]: the labels are the modelless engine's domain
+/// space, not the specialist's answer space; nothing in the arm paths
+/// reads `perm` for such a seat, and [`Self::scores_label_into`] maps the
+/// sentinel to NaN where only timing reads it).
 #[derive(Debug, Clone)]
 pub struct SpecialistLane {
     pub spec: Specialist,
@@ -236,7 +264,8 @@ impl SpecialistLane {
         let ignored = used.iter().filter(|&&u| !u).count();
         if ignored > 0 {
             eprintln!(
-                "  [join] {suite}: artifact carries {ignored} label(s) the seat never \n                 offers — unmapped, never survivors"
+                "  [join] {suite}: artifact carries {ignored} label(s) the seat never \
+                 offers — unmapped, never survivors"
             );
         }
         Ok(Self {
@@ -246,12 +275,62 @@ impl SpecialistLane {
         })
     }
 
+    /// The CONTEXT join ([`SeatJoin::Context`], Plan 003): the seat's
+    /// labels are the modelless engine's domain space (typed_decisions'
+    /// workflow names), never the specialist's answer space — `perm[li]`
+    /// is the label's class row where one exists and the
+    /// [`usize::MAX`] sentinel where none does (asserted: the seat must
+    /// be FULLY disjoint from the artifact — a partial overlap is drift,
+    /// and [`Self::join`]'s refusal is the loud answer). Every specialist
+    /// answer flows through the per-question presented-option bridge; the
+    /// seat-label pin deliberately does not apply.
+    pub fn join_context(
+        spec: Specialist,
+        suite: &str,
+        seat_labels: &[String],
+        cascade: Cascade,
+    ) -> Result<Self, String> {
+        if spec.suite != suite {
+            return Err(format!(
+                "join_context: artifact suite {:?} != seat suite {suite:?}",
+                spec.suite
+            ));
+        }
+        if seat_labels
+            .iter()
+            .any(|l| spec.labels.iter().any(|a| a == l))
+        {
+            return Err(format!(
+                "join_context: seat label(s) of {suite} resolve to artifact class rows — \
+                 a partial overlap is drift, not context; use the name join"
+            ));
+        }
+        eprintln!(
+            "  [join] {suite}: context seat — {} label(s) carry sentinel class rows; \
+             every answer resolves through the presented-option bridge",
+            seat_labels.len()
+        );
+        Ok(Self {
+            spec,
+            perm: vec![usize::MAX; seat_labels.len()],
+            cascade,
+        })
+    }
+
     /// The specialist's class scores for LABEL-order indices into `out`
-    /// (len must equal the label count). Zero-alloc.
+    /// (len must equal the label count). A context-joined sentinel row
+    /// ([`SeatJoin::Context`]) scores NaN — no class exists; the callers
+    /// are timing paths (the fusion micro) and label-space readouts, and
+    /// NaN's comparisons-as-false make the argmax law degrade to the
+    /// first position rather than read a phantom class. Zero-alloc.
     pub fn scores_label_into(&self, bag: &[(u32, f32)], out: &mut [f32]) {
         assert_eq!(out.len(), self.perm.len(), "scores out of shape");
         for (o, &li) in out.iter_mut().zip(self.perm.iter()) {
-            *o = self.spec.score_class(bag, li);
+            *o = if li == usize::MAX {
+                f32::NAN
+            } else {
+                self.spec.score_class(bag, li)
+            };
         }
     }
 
@@ -642,38 +721,37 @@ mod tests {
             .is_err());
     }
 
-    /// The noul seat bridge (Plan 003): name-joinable seats pass through
-    /// untouched; the positional int spelling over the unified pair joins
-    /// the pair; anything else passes through unchanged so the join stays
-    /// the single refusal site.
+    /// The seat join forms (Plan 003): named passthrough; the positional
+    /// int spelling over the unified pair; the context seat (fully
+    /// disjoint labels); and the two drift shapes passing through
+    /// unchanged so the join stays the single refusal site.
     #[test]
-    fn noul_join_labels_passthrough_positional_and_refusal() {
-        // Passthrough: typed_decisions' workflow seat joins by name.
-        let seat = vec!["wf_a".to_string(), "wf_b".to_string(), "wf_c".to_string()];
-        let artifact = vec![
-            "no".to_string(),
-            "wf_a".to_string(),
-            "yes".to_string(),
-            "wf_b".to_string(),
-            "wf_c".to_string(),
-        ];
-        assert_eq!(noul_join_labels(&seat, &artifact), seat);
+    fn seat_join_named_positional_context_and_refusal() {
+        // Named passthrough: labels all present in the artifact.
+        let seat = vec!["wf_a".to_string(), "wf_b".to_string()];
+        let artifact = vec!["no".to_string(), "wf_a".to_string(), "yes".to_string(), "wf_b".to_string()];
+        assert_eq!(seat_join(&seat, &artifact), SeatJoin::Named(seat.clone()));
         // Positional: prompt_injections' int spelling over the pair.
         let seat = vec!["0".to_string(), "1".to_string()];
         let artifact = vec!["no".to_string(), "yes".to_string()];
         assert_eq!(
-            noul_join_labels(&seat, &artifact),
-            vec!["no".to_string(), "yes".to_string()]
+            seat_join(&seat, &artifact),
+            SeatJoin::Named(vec!["no".to_string(), "yes".to_string()])
         );
-        // Int spelling but NO pair in the artifact → unchanged (join
-        // refuses with its own drift error).
-        let artifact = vec!["a".to_string(), "b".to_string()];
-        assert_eq!(noul_join_labels(&seat, &artifact), seat);
-        // Three int labels — noul renders exactly two positions, so the
-        // positional arm never fires → unchanged.
-        let seat = vec!["0".to_string(), "1".to_string(), "2".to_string()];
+        // Context: typed_decisions' workflow seat — fully disjoint from
+        // the option-key artifact.
+        let seat = vec!["wf_a".to_string(), "wf_b".to_string()];
+        let artifact = vec!["no".to_string(), "execute_refund".to_string(), "yes".to_string()];
+        assert_eq!(seat_join(&seat, &artifact), SeatJoin::Context);
+        // Partial overlap → unchanged (join refuses with drift context).
+        let seat = vec!["wf_a".to_string(), "no".to_string()];
         let artifact = vec!["no".to_string(), "yes".to_string()];
-        assert_eq!(noul_join_labels(&seat, &artifact), seat);
+        assert_eq!(seat_join(&seat, &artifact), SeatJoin::Named(seat));
+        // Int spelling but NO pair in the artifact — a producer-contract
+        // break, never context → unchanged (join refuses).
+        let seat = vec!["0".to_string(), "1".to_string()];
+        let artifact = vec!["a".to_string(), "b".to_string()];
+        assert_eq!(seat_join(&seat, &artifact), SeatJoin::Named(seat));
     }
 
     /// H1: an abstaining question escalates; with top_k = 1 the survivor

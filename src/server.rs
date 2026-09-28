@@ -381,23 +381,36 @@ impl<const N: usize> SuiteServer<N> {
         let artifact_labels_n = spec.labels.len();
         let artifact_labels = spec.labels.clone();
         let top_k = arm.join_top_k();
-        // The seat↔artifact label join (Plan 003's noul bridge — the
-        // arena's run_suite_n law verbatim): name-joinable suites pass
-        // through; the positional int spelling joins the unified pair.
-        let join_labels = crate::hybrid::noul_join_labels(&seat.labels, &spec.labels);
-        let joined = SpecialistLane::join(spec, suite, &join_labels, Cascade { top_k })?;
+        // The seat↔artifact label join (Plan 003's bridge — the arena's
+        // run_suite_n law verbatim): named (incl. the positional noul
+        // pair) or the context join; a partial overlap refuses in the
+        // join.
+        let joined = match crate::hybrid::seat_join(&seat.labels, &spec.labels) {
+            crate::hybrid::SeatJoin::Named(labels) => {
+                SpecialistLane::join(spec, suite, &labels, Cascade { top_k })?
+            }
+            crate::hybrid::SeatJoin::Context => {
+                SpecialistLane::join_context(spec, suite, &seat.labels, Cascade { top_k })?
+            }
+        };
+        let context_joined = joined.perm.contains(&usize::MAX);
         let perm: Vec<usize> = joined.perm.clone();
 
         // The presented-option bridge (the arena's SuiteCtx::key_map):
         // every JOINED seat label → (its own index, its artifact class
-        // row); the artifact-known labels the seat never offers join at
-        // the sentinel (NaN NB evidence; the specialist still scores the
+        // row); a context seat contributes no seat-label entries. The
+        // artifact-known labels the seat never offers join at the
+        // sentinel (NaN NB evidence; the specialist still scores the
         // class row it trained).
-        let mut key_map: HashMap<String, (usize, usize)> = join_labels
-            .iter()
-            .enumerate()
-            .map(|(li, l)| (l.clone(), (li, joined.perm[li])))
-            .collect();
+        let mut key_map: HashMap<String, (usize, usize)> = if context_joined {
+            HashMap::new()
+        } else {
+            seat.labels
+                .iter()
+                .enumerate()
+                .map(|(li, l)| (l.clone(), (li, joined.perm[li])))
+                .collect()
+        };
         for (ci, name) in artifact_labels.iter().enumerate() {
             key_map.entry(name.clone()).or_insert((usize::MAX, ci));
         }
@@ -541,7 +554,7 @@ impl<const N: usize> SuiteServer<N> {
                     self.pos_label.push(li);
                     self.pos_class.push(cls);
                 }
-            } else if options.len() == self.perm.len() {
+            } else if !self.perm.contains(&usize::MAX) && options.len() == self.perm.len() {
                 for (li, &cls) in self.perm.iter().enumerate() {
                     self.pos_label.push(li);
                     self.pos_class.push(cls);
