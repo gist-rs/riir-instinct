@@ -95,7 +95,9 @@ fn manifest_posture_rows_are_the_serving_law_verdict() {
     // raw ECE 0.0824 beats the conformal floor). typed_decisions serves
     // A1 0.6300 over the Issue 581 re-mint (Bench 614's full-pool
     // retrain, Bench 015's read): T2-certified against BOTH A0 legs (vs
-    // A0' 0.5725 LB95 +0.0373; vs the published A0 0.4655 LB95 +0.1432;
+    // A0' 0.5725 LB95 +0.0373; vs the then-published A0 0.4655 LB95
+    // +0.1432 — the capped-pool row; the Issue-052 extension moved
+    // reflex's published modelless row to 0.5725 (reflex Bench 078);
     // G1 PASS) — the multi-question serve contract (Issue 011), so its
     // seat corpus ships from the full-pool datasets dir (deploy.yaml).
     let expected: [(&str, Arm, &str); 8] = [

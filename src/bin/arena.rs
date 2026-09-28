@@ -860,14 +860,16 @@ fn run_suite_n<const N: usize>(
     // does not support them — oc declines on every suite whose train
     // rows carry no per-question gold events (baseline posture holds,
     // byte-identical), so typed_decisions is the only suite that arms
-    // oc (published: selected_scale 2.0), emotion the only one that
+    // oc (published: cal-selected — oc@2 on the capped pool, oc@4 at
+    // the Issue-052 extended pool), emotion the only one that
     // arms ridge (@8). The 6/6+2 drift pin below holds the seat path to
     // reflex's own run() at these knobs, and the pin's site check holds
-    // reflex's rows to the published bench.json — the published-posture
+    // reflex's rows to the published bench.json — the published posture
     // drift root cause 1 names can no longer reopen silently. (The pin
     // CAUGHT this lane: with oc off the arena read typed_decisions
-    // 0.3300 against the published 0.4655 — the oc-armed posture is
-    // what published.)
+    // 0.3300 against the published 0.4655 (the capped-pool row; the
+    // Issue-052 extension moved the published modelless row to 0.5725
+    // — reflex Bench 078) — the oc-armed posture is what published.)
     let knobs = PostureKnobs {
         head_select: true,
         nb_select: true,
@@ -1746,8 +1748,9 @@ fn pin_a0_identity(datasets_dir: &Path, runs: &[SuiteRun], suites: &[&str]) -> R
         // per suite and decline at the arming bar / on no gold events —
         // ridge arms only on emotion, oc only on typed_decisions, each
         // byte-identical to off elsewhere. (Measured 2026-09-27: with
-        // oc off the pin read typed_decisions 0.3300 vs the published
-        // 0.4655 — the oc-armed posture is what published.)
+        // oc off the pin read typed_decisions 0.3300 vs the then-
+        // published 0.4655 — reflex Bench 078 moved that row to 0.5725
+        // at the Issue-052 corpus extension.)
         ridge_select: true,
         oc_select: true,
         // Issue 038 T5's joint genome walk — off: reflex's published
