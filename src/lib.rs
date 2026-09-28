@@ -16,6 +16,10 @@ pub mod stats;
 pub mod arsenal;
 pub mod arsenal_ops;
 pub mod server;
+/// The frozen-artifact staleness probe (Issue 012 / Plan 005): the soft
+/// early-warning readout beside the hard pick-parity gate. Report-only —
+/// nothing here serves, swaps, or writes state.
+pub mod staleness;
 #[cfg(feature = "vessel")]
 pub mod vessel;
 /// The decstat capture lane (Plan 002 / Issue 004 T1): consent-gated
@@ -38,6 +42,7 @@ pub use hybrid::{
     SeatJoin, SpecialistLane, prior_fusion_pick, seat_join,
 };
 pub use specialist::Specialist;
+pub use staleness::{PairReport, PairSide, ProbeItem, ProbeSet, SuiteProbe, FIRE_GOLD_DELTA, compare_pair};
 pub use arsenal_ops::{
     EpochApply, EpochTag, HoardRefusal, HoardReport, InstallOutcome, LaneSlot, LaneState,
     ReleaseOutcome, ReleaseRefusal, SwapRefusal, check_epoch_tag, corpus_centroid, fold8,

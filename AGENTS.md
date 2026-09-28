@@ -113,6 +113,34 @@ file .deploy/local/stage/decisions/app-bin   # → ELF 64-bit x86-64
 
 ## Current state
 
+**Bench 022 + Plan 005 (2026-09-29) — the frozen-artifact staleness probe
+LANDED (Issue 012, resolved + removed): the soft early-warning readout beside
+the hard pick-parity gate — arXiv:2609.30652's fixed-trace probe, modelless
+form, at the ARTIFACT plane (the specialist sigmoid score is the surface
+serving inherits). `src/staleness.rs` (pure, ungated: ProbeSet + BLAKE3
+digest, per-item gold Δ / pick-flip / margin-Δ divergence, the pre-registered
+fire rule `flips>0 OR mean|Δgold|≥0.02`, `compare_pair` = the probe AND the
+pre-swap impact report — same measurement, different intent) +
+`examples/staleness_probe.rs` (build/run) + the committed fixture
+`tests/fixtures/staleness_probe_set.json` (192 items, label-stratified
+round-robin — first-N is wrong on the clustered banking77 mirror; digest
+`98a683969c285f157a3d81de7ffbdabebfac77873ce57eaa4b33ffe298d20f93`; probe
+time reads NO dataset dir) + `tests/staleness_gates.rs` (6 count-pinned
+tests, skip-loud without material). MEASURED (`.benchmarks/022`): **NOT
+dead-by-domination** — the real Bench-012 bridge drift (banking77 v1 count →
+v2 presence) reads 13/64 pick flips, mean |Δgold| 0.240, max 0.852 → FIRED;
+byte-identical pairs (v2-vs-self canary + the emotion armA==winner control)
+read EXACTLY 0.0 everywhere; the ag_news candidate pair reads divergent too
+(1/64) — a swap's blast radius is measurable BEFORE the monotonic apply.
+Each artifact scored under its OWN bag convention (v1=count, v2=presence —
+scoring v1 under presence would read a model that never existed). REPORT-ONLY
+by law; deferred (gated on a real refresh decision): the arsenal_ops swap-path
+hook + the overlay-refresh policy arm (issue part 3; the plan's T6).
+`.benchmarks/.highwater` repaired 0015→0022 (it was STALE — dirs 016..021
+landed without a bump); en-route took the pre-existing-at-HEAD
+`server.rs` needless_borrow one-liner in passing (would have red the
+`-D warnings` gate).
+
 **Bench 019+020 (2026-09-28) — the Issue-005 option-conditioned margin
 ARMED and SERVING: typed_decisions serves the certified H2(β=0.5,
 nmin=2,τ=2) 0.6475** (was A1 0.6300). The margin source is reflex

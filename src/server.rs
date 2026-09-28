@@ -886,7 +886,7 @@ impl<const N: usize> SuiteServer<N> {
                             } else {
                                 self.pos_options.extend_from_slice(options);
                             }
-                            self.gather_positions_oc(&q.qid);
+                            self.gather_positions_oc(q.qid);
                             &self.pos_nb
                         } else if self.nb_armed {
                             self.pos_label.clear();
