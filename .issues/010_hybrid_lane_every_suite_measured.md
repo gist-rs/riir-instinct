@@ -6,13 +6,22 @@ same day; companion issues: riir-reflex (seat seam refuses the synthetic
 families + code_fixtures), riir-train (specialists for the remaining dataset
 suites). **T1/T2/T3 + T5's arena half DONE 2026-09-27 (Bench 005); T4 + the
 republish half await the reflex-site session; T6 awaits the reflex seat seam.**
-**OWED 2026-09-28 (reflex a1980b2): `harness_cache_reuse` now SEATS — reflex
-Issue 045 lifted its LLM-only carve-out and its modelless lane reads 0.9167
-(Bench 072). Add it to the arena SUITES and re-run for its `a0_stands` row
-(the seat's full knob grid arms the cal-selected noul polarity through
-reflex's new synthetic cal-front selection fallback). Deferred past the
-Issue-579 session's specialist-bridge landing — its re-baseline re-publishes
-these arena rows anyway; do not race it.**
+**DONE 2026-09-28 (Bench 016, `.benchmarks/016_cache_reuse_seated/`): the
+OWED item LANDED** — `harness_cache_reuse` joined the arena SUITES (the
+arena's default datasets dir is the frozen t20k pool, now documented as
+such — re-pointing it is a re-baseline decision, never a cleanup; one run
+against reflex's canonical `.raw/datasets` pool matched no published record
+and was discarded, the hazard written down at the default). A0 0.9167 ==
+reflex `run()` == Bench 072, verdict `a0_stands`; the noul polarity armed
+through the synthetic cal-front selection fallback exactly as predicted;
+the other 14 suites reproduced their published rows byte-identically
+(incl. the serving arms: massive H2 0.8267 certified, banking77
+H2(nbsvm v2) 0.8540, typed A1 0.6300, prompt A1 0.8534). Records written
+under `--skip-pin-a0` — the site leg reds on the six stale Bench-002-era
+rows in the reflex-site checkout's `data/bench.json` (+ typed's pre-078
+row); the republish is the reflex-site lane's work, disclosed in the
+record. The lane doc is rebuilt; T4 (the site render half) still awaits
+the reflex-site session.**
 
 ## Why
 

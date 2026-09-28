@@ -285,12 +285,13 @@ struct DisclosedPosture {
 
 fn main() {
     let args: Vec<String> = std::env::args().collect();
-    // reflex's DEFAULT_DATASETS_DIR (".raw/datasets") is the canonical
-    // pool — the t20k mirror beside it can lag (typed_decisions re-fetched
-    // at the full 1200-row pool only in the canonical dir, Bench 078; an
-    // arena run on the stale mirror read the pre-lift row). Divergence
-    // between the two dirs is what the A0 pin exists to catch.
-    let mut datasets_dir = PathBuf::from("../riir-reflex/.raw/datasets");
+    // The datasets dir is the FROZEN Bench-005 re-baseline pool — every
+    // published arena row (Bench 005/011/012/015) is measured on these
+    // bytes. reflex's canonical ".raw/datasets" is a DIFFERENT pool (its
+    // re-fetches moved rows: ag_news 0.8625 / emotion 0.77 / sst5 0.2017
+    // there vs 0.8825 / 0.885 / 0.3967 here). Re-pointing this default is
+    // a re-baseline decision, never a cleanup.
+    let mut datasets_dir = PathBuf::from("../riir-reflex/.raw/datasets_t20k");
     let mut winners_dir = PathBuf::from("../riir-train/data/instinct_specialists");
     let mut out_dir = PathBuf::from(".benchmarks/001_hybrid_goat");
     let mut top_k = 8usize;

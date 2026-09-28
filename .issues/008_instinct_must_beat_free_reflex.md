@@ -105,6 +105,14 @@ and the six harness_* suites.
   Training runs in riir-train (`vessel-mint`), on the GPU; not deferred.
   Filed: riir-train Issue 579 (the v2 bar + the 576 protocol + the
   teacher-quality lever warnings).
+  **HALF DONE 2026-09-28 (Bench 012): the banking77 half LANDED** — the
+  Issue 579 nbsvm v2 winner serves H2(β=2,nmin=8,τ=8) 0.8540 vs A0 0.8260
+  (+2.8 pt; T2 LB95 −0.0013, uncertified — serves under best-measured,
+  the arsenal row + `PINNED_MANIFEST_DIGEST` moved together, 11/11 serve
+  gates green); the train-side holdout edge transferred (+2.8 pt). A
+  banking77 HOSTED-ONLY vessel must be re-minted from v2 by riir-train
+  before the vessel lane carries this posture. **Emotion remains open**
+  (A1 0.8550 vs A0 0.8850 — the specialist backlog).
 - [ ] T5 — **coverage**: arms for the 9 unsold suites, starting with the
   ones where Reflex is weakest and a specialist has the most room
   (code_fixtures 0.25, harness_visibility 0.375, sst5-class tasks), and the

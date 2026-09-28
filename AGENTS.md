@@ -113,6 +113,27 @@ file .deploy/local/stage/decisions/app-bin   # → ELF 64-bit x86-64
 
 ## Current state
 
+**Bench 016 (2026-09-28) — `harness_cache_reuse` SEATED (Issue 010's OWED
+item): the arena population is 15 suites, every reflex dataset suite now
+carries a measured row.** A0 0.9167 == reflex `run()` == Bench 072,
+verdict `a0_stands` (no specialist artifact); the noul polarity armed
+through the seat's synthetic cal-front selection fallback. The other 14
+suites reproduced their published rows byte-identically, serving arms
+included (massive H2 0.8267 T2-certified, banking77 H2 nbsvm-v2 0.8540,
+typed A1 0.6300, prompt A1 0.8534). Records under `--skip-pin-a0` — the
+pin's SITE leg reds on the six stale Bench-002-era rows in the
+reflex-site checkout's `data/bench.json` (+ typed's pre-078 row); that
+republish is the reflex-site lane's work and stays the open half of Issue
+010 T4. Two instrument facts written down: the arena's default datasets
+dir is the FROZEN Bench-005 re-baseline pool (`datasets_t20k`) —
+re-pointing it is a re-baseline decision, never a cleanup (one run of
+this bench against reflex's canonical `.raw/datasets` pool matched no
+published record and was discarded); and `typed_decisions` in that pool
+still reads the stale 800-row pull (0.4655 == the site row) — the
+full-pool lane is Bench 015's scratch-dir read until the canonical pool
+is re-baselined and republished. Lane doc rebuilt at
+`016_…/hybrid_lane_doc.json` (the reflex-site session's input).
+
 **Benches 013+014 (2026-09-28) — the Issue 578 noul bridge LANDED:
 prompt_injections serves the T2-certified A1; typed_decisions refuses
 (unseatable).** Plan 003's bridge (`.plans/003_noul_bridge_578_specialists.md`,
