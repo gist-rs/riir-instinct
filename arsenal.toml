@@ -129,6 +129,6 @@ budget  = { load = "eager", max_payload_mb = 16 }
 suite   = "typed_decisions"
 digest  = "blake3:7f7a39e1935f8665beaf61106a84a65a0066a73fe3eee4ad7638fda0f776f2f0"   # riir-train Issue 581 / Bench 614's re-mint over the FULL 1200-row train pool
 class   = "hosted_only"
-posture = { arm = "A1" }                                          # best measured AND T2-certified vs BOTH A0 legs (Bench 015: 0.6300 vs A0' 0.5725, paired LB95 +0.0373; vs the published A0 0.4655, LB95 +0.1432; G1 PASS). H1's 0.6335 test edge is paired noise (LB95 -0.0048). Serves the MULTI-QUESTION contract (Issue 011) — the seat's corpus ships from the full-pool datasets dir (deploy.yaml)
+posture = { arm = "H2", beta = 0.5, n_min = 2.0, tau_n = 2.0 }    # best measured 0.6475 vs A0' 0.5725 (+7.5 pt, T2 LB95 +0.0580 PASS) AND vs the certified A1 0.6300 (+1.75 pt, paired LB95 +0.0062 PASS) AND vs H1 (+1.4 pt, LB95 +0.0034) — Bench 020's full-pool read; G1 PASS (platt 0.0095 vs floor 0.1701). The margin source is the option-conditioned (qid, option) tables (reflex issue 038 T7b + `oc()`, riir-instinct Issue 005's precondition — typed's options are state-field values the domain tables never speak)
 pin_keys = []
 budget  = { load = "eager", max_payload_mb = 16 }

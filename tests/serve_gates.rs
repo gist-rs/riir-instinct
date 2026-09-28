@@ -60,7 +60,7 @@ fn embedded_manifest() -> ArsenalManifest {
 /// re-run + frozen-predictions parity update law A6 demands). This is
 /// the TOML analogue of the compile-time posture table it replaced.
 const PINNED_MANIFEST_DIGEST: &str =
-    "blake3:1dd16be7e9a78e5593beb5eedf83b14dfa654f5efcbe59f3038d3611a63a90f7";
+    "blake3:839a7d68fcc86d8c5074d54155aff13e5ea63cdaef1b8f895f52a2b67206fcea";
 
 #[test]
 fn arsenal_manifest_bytes_are_pinned_byte_for_byte() {
@@ -93,13 +93,14 @@ fn manifest_posture_rows_are_the_serving_law_verdict() {
     // POSITIVE (+0.0082) — T2-CERTIFIED, the massive class, at n=116;
     // its G1 face is a disclosed FAIL (Platt hurts the 2-class sigmoid;
     // raw ECE 0.0824 beats the conformal floor). typed_decisions serves
-    // A1 0.6300 over the Issue 581 re-mint (Bench 614's full-pool
-    // retrain, Bench 015's read): T2-certified against BOTH A0 legs (vs
-    // A0' 0.5725 LB95 +0.0373; vs the then-published A0 0.4655 LB95
-    // +0.1432 — the capped-pool row; the Issue-052 extension moved
-    // reflex's published modelless row to 0.5725 (reflex Bench 078);
-    // G1 PASS) — the multi-question serve contract (Issue 011), so its
-    // seat corpus ships from the full-pool datasets dir (deploy.yaml).
+    // the certified full-pool H2 0.6475 (Bench 020's read over the Issue
+    // 581 re-mint, the multi-question contract Issue 011): T2-certified
+    // against BOTH legs — vs A0' 0.5725 (LB95 +0.0580) and vs the
+    // specialist A1 0.6300 (+1.75 pt, paired LB95 +0.0062 — the
+    // Issue-005 option-conditioned margin arm; the margin source is the
+    // (qid, option) tables via reflex's `oc()`) — and vs H1 (+1.4 pt,
+    // LB95 +0.0034); G1 PASS (platt 0.0095 vs floor 0.1701) — its seat
+    // corpus ships from the full-pool datasets dir (deploy.yaml).
     let expected: [(&str, Arm, &str); 8] = [
         (
             "ag_news",
@@ -120,7 +121,11 @@ fn manifest_posture_rows_are_the_serving_law_verdict() {
         ),
         ("xnli_en", Arm::A0, "A0"),
         ("prompt_injections", Arm::A1, "A1"),
-        ("typed_decisions", Arm::A1, "A1"),
+        (
+            "typed_decisions",
+            Arm::H2 { beta: 0.5, n_min: 2.0, tau_n: 2.0 },
+            "H2(β=0.5,nmin=2,τ=2)",
+        ),
     ];
     assert_eq!(
         m.rows().len(),
@@ -527,16 +532,20 @@ fn prompt_injections_serves_the_frozen_a1_picks() {
 }
 
 /// The typed_decisions multi-question serve parity (Issue 011 T5, the
-/// Bench-015 record's picks): the serve path replays the first test
+/// Bench-020 record's picks): the serve path replays the first test
 /// cases' FULL question sets through `decide_multi` and asserts identity
-/// with the 015 frozen A1 picks, per question (the arena's enumeration:
+/// with the 020 frozen H2 picks, per question (the arena's enumeration:
 /// case order × question order). Reads the FULL-POOL datasets dir (the
 /// measured posture's seat corpus — Bench 015's extended dir; the cal
 /// front is byte-identical to the canonical one, the corpus is what
 /// differs). Noul questions present NO options — the fixed rendering
-/// speaks them (the same law the frozen picks were scored under).
+/// speaks them (the same law the frozen picks were scored under). The
+/// serving arm is the certified full-pool H2 (Bench 020: 0.6475 vs A0'
+/// 0.5725 T2 LB95 +0.0580, vs A1 +1.75 pt LB95 +0.0062 — the Issue-005
+/// option-conditioned margin arm; the margin source is the (qid, option)
+/// tables, `oc()`), so the parity arm is the manifest's H2.
 #[test]
-fn typed_decisions_serves_the_frozen_a1_picks() {
+fn typed_decisions_serves_the_frozen_h2_picks() {
     let full_pool = repo_root().join("../riir-train/.raw/datasets_typed_full");
     let winner = winners_dir().join("typed_decisions_winner_v1.bin");
     if !full_pool.join("typed_decisions").is_dir() || !winner.is_file() {
@@ -545,11 +554,11 @@ fn typed_decisions_serves_the_frozen_a1_picks() {
         );
         return;
     }
-    let record = repo_root().join(".benchmarks/015_typed_full_pool_consumer/predictions.json");
-    let Some((picks, _abstained)) = frozen_picks_from(&record, "typed_decisions", "A1") else {
+    let record = repo_root().join(".benchmarks/020_typed_h2_full_pool/predictions.json");
+    let Some((picks, _abstained)) = frozen_picks_from(&record, "typed_decisions", "H2(β=0.5,nmin=2,τ=2)") else {
         panic!(
-            "the 015 frozen record is absent or lacks the A1 arm — the serving posture's \
-             parity source; re-run the 015 read"
+            "the 020 frozen record is absent or lacks the H2 arm — the serving posture's \
+             parity source; re-run the 020 read"
         );
     };
     let datasets = full_pool.clone();
@@ -567,7 +576,7 @@ fn typed_decisions_serves_the_frozen_a1_picks() {
         .join()
         .expect("boot thread panicked")
         .expect("boot typed_decisions server");
-    assert_eq!(server.meta().arm.name(), "A1");
+    assert_eq!(server.meta().arm.name(), "H2(β=0.5,nmin=2,τ=2)");
 
     let seat =
         riir_reflex::harness::runner::seat::prepare_seat("typed_decisions", &full_pool)
@@ -621,7 +630,7 @@ fn typed_decisions_serves_the_frozen_a1_picks() {
             assert_eq!(
                 d.pick_index,
                 Some(picks[qi]),
-                "question {qi} (case {}): served pick drifted from the frozen 015 pick",
+                "question {qi} (case {}): served pick drifted from the frozen 020 H2 pick",
                 case.id
             );
             assert!(!d.abstained, "question {qi}: A1 abstained");

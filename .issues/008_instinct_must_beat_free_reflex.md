@@ -117,6 +117,12 @@ and the six harness_* suites.
   ones where Reflex is weakest and a specialist has the most room
   (code_fixtures 0.25, harness_visibility 0.375, sst5-class tasks), and the
   typed_decisions / prompt_injections suites that products actually route.
+  **PROGRESS 2026-09-28: typed + prompt both SERVE (prompt A1 0.8534
+  T2-certified, Bench 013; typed H2 0.6475 certified against every leg,
+  Bench 020 — the Issue-005 oc-margin arm). The remaining no-arm suites:
+  xnli_en, code_fixtures, and the six harness families (the families are
+  synthetic-authored — a specialist there needs a data-design decision
+  first, never a silent run).**
 - [ ] T6 — **a general-domain arm**: one specialist whose fused read beats
   Reflex on a majority of suites without per-suite tuning, so "Instinct beats
   Reflex" holds as a general claim and not only per domain.

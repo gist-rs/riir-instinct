@@ -19,11 +19,23 @@ frozen read is the superseded instrument's). Open faces, both
 data-gated: **H3 (PUCT over chains)** — its only chain-shaped suite
 (typed_decisions) NOW HAS a trained specialist (riir-train Issue 581's
 full-pool retrain + Bench 015's multi-question serve extension: A1
-0.6300 serves, T2-certified), so the specialist precondition is MET —
-what remains is E0's route-terms caveat (typed's options are state-field
-values, so the nb_scope margin term m_i never activates; arming H2/H3
-there needs the option-conditioned scorer first). The arm re-opens when
-that scorer exists; the specialist half is done. **The armed-off/serving faces rode the
+0.6300 serves, T2-certified), so the specialist precondition is MET.
+**H2 LANDED 2026-09-28 (Benches 019+020, `reflex b5cf4b0`): the
+option-conditioned scorer EXISTS — it is reflex issue 038 T7b's
+`(qid, option)` count tables, exposed to the seat through the `oc()`
+accessor + `seen_count` evidence bitmap — and the typed H2 arm is
+MEASURED and SERVING: full-pool H2(β=0.5,nmin=2,τ=2) 0.6475 vs A0'
+0.5725 (T2 LB95 +0.0580 PASS), vs the specialist A1 +1.75 pt (paired
+LB95 +0.0062 PASS — the attribution standard met), vs H1 +1.4 pt
+(LB95 +0.0034), G1 PASS. The manifest row moved A1 → H2; the serve
+gate replays the frozen H2 picks (14/14). The t20k read (Bench 019,
+the full-suite regression: every other published row byte-identical)
+read the same arm shape at 0.6370 with the A1 edge thin (LB95 −0.0011)
+— the full pool is the serving posture. The E0 route-terms caveat is
+RESOLVED for H2: the margin's table family is the (qid, option) one,
+not the domain tables. H3 (PUCT over chains) remains open — its
+prior/value inputs now exist (p' from the serving H2; the specialist
+row as value), the tree search itself is unbuilt.** **The armed-off/serving faces rode the
 arsenal Proposal 001 — CLOSED: T8's `arsenal_budget_goat` passed 7/7
 (Bench 003, 2026-09-27; the signed-centroid defect it caught fixed in
 the same landing).**

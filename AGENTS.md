@@ -113,6 +113,21 @@ file .deploy/local/stage/decisions/app-bin   # → ELF 64-bit x86-64
 
 ## Current state
 
+**Bench 019+020 (2026-09-28) — the Issue-005 option-conditioned margin
+ARMED and SERVING: typed_decisions serves the certified H2(β=0.5,
+nmin=2,τ=2) 0.6475** (was A1 0.6300). The margin source is reflex
+issue 038 T7b's `(qid, option)` count tables, exposed to the seat via
+reflex `b5cf4b0` (`oc()` + `seen_count` — Issue 005's H2/H3
+precondition). Bench 020 (full pool): certified against EVERY leg —
+vs A0' 0.5725 (T2 LB95 +0.0580), vs A1 +1.75 pt (LB95 +0.0062 — the
+first arm to beat its own specialist at LB95 > 0), vs H1 +1.4 pt
+(LB95 +0.0034); G1 PASS. Bench 019 (the 15-suite regression): every
+other published row byte-identical. Serving landed: the manifest row
+A1 → H2, digest re-pinned, the serve-gate parity replays the frozen
+H2 picks (14/14) — and the parity gate CAUGHT the serve engine
+silently carrying `oc_select: false` (a pure-A1 fusion would have
+served wearing the H2 name; the knobs now mirror the arena's).
+
 **Bench 016 (2026-09-28) — `harness_cache_reuse` SEATED (Issue 010's OWED
 item): the arena population is 15 suites, every reflex dataset suite now
 carries a measured row.** A0 0.9167 == reflex `run()` == Bench 072,

@@ -194,6 +194,11 @@ pub struct SuiteServer<const N: usize> {
     lane: HybridLane,
     nb_view: NbView,
     nb_armed: bool,
+    /// Option-conditioned margin armed (reflex issue 038 T7b tables
+    /// present — typed_decisions' posture): the H2 margin source is the
+    /// (qid, option) tables, the arena's `oc_armed` law mirrored at the
+    /// serve seam so the served fusion IS the registered one.
+    oc_armed: bool,
     labels: Vec<String>,
     /// Presented-option key → (seat label idx, artifact class row). The
     /// seat-label sentinel `usize::MAX` marks the artifact-known,
@@ -218,6 +223,11 @@ pub struct SuiteServer<const N: usize> {
     h1_scores: [f32; MAX_TOP_K],
     in_scores: Vec<f32>,
     nb_scratch: Vec<u32>,
+    /// Option-conditioned per-option in-scores scratch (oc-armed suites).
+    oc_in: Vec<Option<f32>>,
+    /// The served question's presented options scratch (the oc gather's
+    /// position-aligned key list; copied per request — request-owned).
+    pos_options: Vec<String>,
     pos_label: Vec<usize>,
     pos_spec: Vec<f32>,
     pos_nb: Vec<f32>,
@@ -399,11 +409,11 @@ impl<const N: usize> SuiteServer<N> {
         };
 
         // The CURRENT PUBLISHED reflex posture (Issue 008 T1's
-        // re-baseline): head-select + nb-select + ridge-select, registry
-        // caps, genome off — byte-identical knobs to the arena's
-        // (`run_suite_n`), so the serve path stays the arena path.
-        // `ridge_select` is the cal-selected NBSVM-ridge lane (reflex
-        // Bench 057): emotion arms @8, every other suite's ladder
+        // re-baseline): head-select + nb-select + OC-select + ridge-
+        // select, registry caps, genome off — byte-identical knobs to the
+        // arena's (`run_suite_n`), so the serve path stays the arena
+        // path. `ridge_select` is the cal-selected NBSVM-ridge lane
+        // (reflex Bench 057): emotion arms @8, every other suite's ladder
         // declines at the arming bar (selected 0.0 — byte-identical to
         // off, reflex's full-workspace delta 0.0000). Boot cost: the
         // emotion ladder ≈ +5 s, the wide suites' ≈ +40–60 s (Bench 057's
@@ -411,12 +421,18 @@ impl<const N: usize> SuiteServer<N> {
         // posture, never a fork from the arena's. Genome selection stays
         // off: reflex's published bench rows predate that lane — turning
         // it on would serve a posture no published row carries.
+        // ⚠ oc_select was FALSE until Bench 020 (an upstream-gap note
+        // said "the oc lane stays off"): typed's REGISTERED H2 arm fuses
+        // over the (qid, option) tables, so the serve engine must carry
+        // them — a seat without the oc tables would serve a pure-A1
+        // fusion wearing the H2 name (the drift the serve-gate parity
+        // caught at its first H2 replay). The knob declines byte-
+        // identically on every suite whose train rows carry no gold
+        // events (typed is the only armer — the published posture).
         let knobs = PostureKnobs {
             head_select: true,
             nb_select: true,
-            // option_cond rides the dep for the nb_ridge compile only
-            // (upstream gap, filed reflex-side); the oc lane stays off.
-            oc_select: false,
+            oc_select: true,
             ridge_select: true,
             genome_select: false,
             genome_accept_margin: 0.0,
@@ -494,6 +510,7 @@ impl<const N: usize> SuiteServer<N> {
             meta,
             nb_view: posture.cfg.nb_view,
             nb_armed: posture.cfg.nb_scale > 0.0 && engine.nb_scope().is_some(),
+            oc_armed: posture.cfg.oc_scale > 0.0 && engine.oc().is_some(),
             engine,
             lane: HybridLane::Specialist(joined),
             labels: seat.labels,
@@ -509,6 +526,8 @@ impl<const N: usize> SuiteServer<N> {
             h1_scores: [0.0; MAX_TOP_K],
             in_scores: vec![0.0; N],
             nb_scratch: Vec::new(),
+            oc_in: Vec::new(),
+            pos_options: Vec::new(),
             pos_label: Vec::new(),
             pos_spec: Vec::new(),
             pos_nb: Vec::new(),
@@ -779,7 +798,7 @@ impl<const N: usize> SuiteServer<N> {
 
         let arm = self.arm;
         let mut decisions = Vec::with_capacity(questions.len());
-        for (qi, _q) in questions.iter().enumerate() {
+        for (qi, q) in questions.iter().enumerate() {
             let qo = &outs[qi];
             let pos_class = &all_classes[qi];
             let options = &all_options[qi];
@@ -842,8 +861,34 @@ impl<const N: usize> SuiteServer<N> {
                         n_min,
                         tau_n,
                     } => {
-                        let (n_seen, n_tok) = self.gather_nb(state);
-                        let inscores: &[f32] = if self.nb_armed {
+                        let (n_seen, n_tok) = self.gather_evidence(state);
+                        // The margin gather mirrors the arena's law: the
+                        // oc-armed posture reads the (qid, option) tables
+                        // over the PRESENTED options (position-aligned —
+                        // `options` IS the presentation order the
+                        // positions were built from); the nb-armed label
+                        // space stands otherwise. One of the two always
+                        // holds for a registered H2 arm (the registration
+                        // read had a margin source).
+                        let inscores: &[f32] = if self.oc_armed {
+                            self.pos_options.clear();
+                            if q.kind == QKind::Noul {
+                                // The oc tables spell noul options
+                                // "no"/"yes" (the event law,
+                                // `typed_gold_events`); the presented
+                                // fixed rendering is ["false","true"] —
+                                // position-aligned 1:1, so the LOOKUP keys
+                                // translate and the positions do not move
+                                // (the arena's pos_keys = NOUL_PAIR, the
+                                // exact same spellings in the same order).
+                                self.pos_options
+                                    .extend(["no".to_string(), "yes".to_string()]);
+                            } else {
+                                self.pos_options.extend_from_slice(options);
+                            }
+                            self.gather_positions_oc(&q.qid);
+                            &self.pos_nb
+                        } else if self.nb_armed {
                             self.pos_label.clear();
                             self.pos_label.extend_from_slice(&all_labels[qi]);
                             self.gather_positions_nb();
@@ -888,23 +933,33 @@ impl<const N: usize> SuiteServer<N> {
 
     /// The count tables' evidence for this state (label space) + the
     /// token count — the H2 fusion's gate inputs. Mirrors the arena's
-    /// eval_a1_h2 read.
-    fn gather_nb(&mut self, state: &str) -> (usize, usize) {
-        if !self.nb_armed {
+    /// eval_a1_h2 read. The oc-armed margin reads the (qid, option)
+    /// family's OWN evidence stream (the same seen-bitmap resolution over
+    /// the event docs that family was fitted on).
+    fn gather_evidence(&mut self, state: &str) -> (usize, usize) {
+        if !self.oc_armed && !self.nb_armed {
             return (0, 0);
         }
-        let tables = self
-            .engine
-            .nb_scope()
-            .expect("nb_armed without tables — the posture lied");
         riir_reflex::nb_scope::view_tokens_into(
             self.nb_view,
             state.as_bytes(),
             &mut self.nb_scratch,
         );
-        tables.in_scores(&self.nb_scratch, &mut self.in_scores);
-        let seen = tables.seen_count(&self.nb_scratch);
-        (seen, self.nb_scratch.len())
+        let n_tok = self.nb_scratch.len();
+        if self.oc_armed {
+            let oc = self
+                .engine
+                .oc()
+                .expect("oc_armed without tables — the posture lied");
+            (oc.seen_count(&self.nb_scratch), n_tok)
+        } else {
+            let tables = self
+                .engine
+                .nb_scope()
+                .expect("nb_armed without tables — the posture lied");
+            tables.in_scores(&self.nb_scratch, &mut self.in_scores);
+            (tables.seen_count(&self.nb_scratch), n_tok)
+        }
     }
 
     /// Label-space NB in-scores → presented-position space. A sentinel
@@ -918,6 +973,30 @@ impl<const N: usize> SuiteServer<N> {
                 f32::NAN
             } else {
                 self.in_scores[li]
+            };
+        }
+    }
+
+    /// Option-conditioned gather (the oc-armed margin source — typed_
+    /// decisions): per-option in-scores over the state tokens, position-
+    /// aligned through `pos_options` (the presented options, in
+    /// presentation order — the exact list the positions were built
+    /// from). A presented key with no fitted (qid, option) table reads
+    /// NaN — the same no-evidence mark, so an unfitted option mutes and
+    /// never rivals. The arena's `gather_positions_oc`, mirrored.
+    fn gather_positions_oc(&mut self, qid: &str) {
+        let Some(oc) = self.engine.oc() else {
+            panic!("oc gather without tables — the posture lied");
+        };
+        self.oc_in.clear();
+        self.oc_in.resize(self.pos_options.len(), None);
+        oc.in_scores(qid, &self.pos_options, &self.nb_scratch, &mut self.oc_in);
+        self.pos_nb.clear();
+        self.pos_nb.resize(self.oc_in.len(), 0.0);
+        for (o, slot) in self.pos_nb.iter_mut().zip(self.oc_in.iter()) {
+            *o = match slot {
+                Some(s) => *s,
+                None => f32::NAN,
             };
         }
     }

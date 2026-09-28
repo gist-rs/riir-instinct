@@ -442,12 +442,27 @@ struct SuiteCtx<const N: usize> {
     conv: riir_instinct::specialist::BagConvention,
     nb_view: NbView,
     nb_armed: bool,
+    /// Option-conditioned margin armed (reflex issue 038 T7b tables
+    /// present — typed_decisions' posture): the H2 margin source becomes
+    /// the (qid, option) tables, because the option set is state-field
+    /// values the DOMAIN tables never speak (Issue 005's H2/H3
+    /// precondition). Takes precedence over `nb_armed` when both hold:
+    /// the margin's rivals must be the presented options — the pick
+    /// space — which is exactly the oc family's resolution.
+    oc_armed: bool,
     bag: Vec<(u32, f32)>,
     tok: Vec<u32>,
     survivors: [(usize, f64); MAX_TOP_K],
     h1_scores: [f32; MAX_TOP_K],
     in_scores: Vec<f32>,
     nb_scratch: Vec<u32>,
+    /// The presented option keys of the CURRENT question, in presentation
+    /// order — stashed by [`SuiteCtx::fill_positions`] so the oc gather
+    /// reads the exact list the positions were built from (never a second
+    /// extraction that could drift).
+    pos_keys: Vec<String>,
+    /// Option-conditioned per-option in-scores scratch (oc-armed suites).
+    oc_in: Vec<Option<f32>>,
     /// Presented-option bridge, built once per suite: criteria key →
     /// (seat label idx, artifact class row). The engine's answer space is
     /// the question's presented criteria keys — `engine_request`'s
@@ -529,6 +544,9 @@ impl<const N: usize> SuiteCtx<N> {
         self.pos_label.clear();
         self.pos_class.clear();
         if q.kind == QKind::Noul {
+            self.pos_keys.clear();
+            self.pos_keys
+                .extend(NOUL_PAIR.iter().map(|s| (*s).to_string()));
             for name in NOUL_PAIR {
                 let Some(&(li, cls)) = self.key_map.get(name) else {
                     panic!(
@@ -543,7 +561,10 @@ impl<const N: usize> SuiteCtx<N> {
         }
         // The presented options, in presentation order (see
         // [`presented_keys`] — the one extraction, shared with the
-        // context seat's coverage gate).
+        // context seat's coverage gate). The vector MOVES into
+        // `pos_keys` (presented_keys allocates it either way; the stash
+        // is what [`SuiteCtx::gather_positions_oc`] reads, so the oc
+        // margin can never drift from the positions it must align with).
         let keys = presented_keys(q);
         if keys.is_empty() {
             panic!(
@@ -551,20 +572,22 @@ impl<const N: usize> SuiteCtx<N> {
                  or Null (noul)",
             );
         }
-        let all_named = keys.iter().all(|key| self.key_map.contains_key(key));
+        self.pos_keys = keys;
+        let all_named = self.pos_keys.iter().all(|key| self.key_map.contains_key(key));
         if all_named {
-            for key in &keys {
+            for key in &self.pos_keys {
                 let (li, cls) = self.key_map[key];
                 self.pos_label.push(li);
                 self.pos_class.push(cls);
             }
-        } else if !self.context_joined && keys.len() == self.perm.len() {
+        } else if !self.context_joined && self.pos_keys.len() == self.perm.len() {
             for (li, &cls) in self.perm.iter().enumerate() {
                 self.pos_label.push(li);
                 self.pos_class.push(cls);
             }
         } else {
-            let unmatched: Vec<String> = keys
+            let unmatched: Vec<String> = self
+                .pos_keys
                 .iter()
                 .filter(|k| !self.key_map.contains_key(*k))
                 .cloned()
@@ -623,6 +646,39 @@ impl<const N: usize> SuiteCtx<N> {
                 f32::NAN
             } else {
                 in_scores[li]
+            };
+        }
+    }
+
+    /// Option-conditioned gather (the oc-armed margin source — typed_
+    /// decisions): per-option in-scores over the state tokens, position-
+    /// aligned through `pos_keys` (fill_positions stashed the exact list
+    /// the positions were built from). A presented key with no fitted
+    /// (qid, option) table reads NaN — the same no-evidence mark as the
+    /// NB gather's sentinel, so an unfitted option mutes and never rivals
+    /// (the noul pair on a question whose gold events spell differently,
+    /// a distractor key outside the train template's option set).
+    fn gather_positions_oc(&mut self, qid: &str) {
+        let SuiteCtx {
+            engine,
+            pos_keys,
+            nb_scratch,
+            oc_in,
+            pos_nb,
+            ..
+        } = self;
+        let Some(oc) = engine.oc() else {
+            panic!("oc gather without tables — the posture lied");
+        };
+        oc_in.clear();
+        oc_in.resize(pos_keys.len(), None);
+        oc.in_scores(qid, pos_keys, nb_scratch, oc_in);
+        pos_nb.clear();
+        pos_nb.resize(oc_in.len(), 0.0);
+        for (o, slot) in pos_nb.iter_mut().zip(oc_in.iter()) {
+            *o = match slot {
+                Some(s) => *s,
+                None => f32::NAN,
             };
         }
     }
@@ -784,15 +840,26 @@ impl<const N: usize> SuiteCtx<N> {
             let state = strs[ci].as_bytes();
             // The frozen count tables' evidence for this state (read-only;
             // state-level — identical for every question of the case).
-            let (n_seen, n_tok): (usize, usize) = if self.nb_armed {
-                let tables = self
-                    .engine
-                    .nb_scope()
-                    .expect("nb_armed without tables — the posture lied");
+            // The oc-armed margin reads the (qid, option) family's own
+            // evidence stream: the same seen-bitmap resolution over the
+            // event docs that family was fitted on.
+            let (n_seen, n_tok): (usize, usize) = if self.oc_armed || self.nb_armed {
                 riir_reflex::nb_scope::view_tokens_into(self.nb_view, state, &mut self.nb_scratch);
-                tables.in_scores(&self.nb_scratch, &mut self.in_scores);
-                let seen = tables.seen_count(&self.nb_scratch);
-                (seen, self.nb_scratch.len())
+                let n_tok = self.nb_scratch.len();
+                if self.oc_armed {
+                    let oc = self
+                        .engine
+                        .oc()
+                        .expect("oc_armed without tables — the posture lied");
+                    (oc.seen_count(&self.nb_scratch), n_tok)
+                } else {
+                    let tables = self
+                        .engine
+                        .nb_scope()
+                        .expect("nb_armed without tables — the posture lied");
+                    tables.in_scores(&self.nb_scratch, &mut self.in_scores);
+                    (tables.seen_count(&self.nb_scratch), n_tok)
+                }
             } else {
                 (0, 0)
             };
@@ -814,7 +881,10 @@ impl<const N: usize> SuiteCtx<N> {
                 a1.own_durs_us.push(fwd_us);
                 a1.total_durs_us.push(fwd_us);
 
-                let inscores: &[f32] = if self.nb_armed {
+                let inscores: &[f32] = if self.oc_armed {
+                    self.gather_positions_oc(&q.qid);
+                    &self.pos_nb
+                } else if self.nb_armed {
                     self.gather_positions_nb();
                     &self.pos_nb
                 } else {
@@ -1061,6 +1131,15 @@ fn run_suite_n<const N: usize>(
     let perm: Vec<usize> = joined.perm.clone();
     let lane = HybridLane::Specialist(joined);
     let nb_armed = posture.cfg.nb_scale > 0.0 && engine.nb_scope().is_some();
+    let oc_armed = posture.cfg.oc_scale > 0.0 && engine.oc().is_some();
+    if oc_armed {
+        eprintln!(
+            "  oc margin: armed (scale {:.2}, {} fitted keys) — the H2 margin source \
+             is the (qid, option) tables (Issue 005)",
+            posture.cfg.oc_scale,
+            engine.oc().map(|t| t.len()).unwrap_or(0)
+        );
+    }
 
     let mut ctx = SuiteCtx::<N> {
         engine,
@@ -1068,12 +1147,15 @@ fn run_suite_n<const N: usize>(
         conv: bridge.convention,
         nb_view: posture.cfg.nb_view,
         nb_armed,
+        oc_armed,
         bag: Vec::new(),
         tok: Vec::new(),
         survivors: [(0usize, 0.0f64); MAX_TOP_K],
         h1_scores: [0.0f32; MAX_TOP_K],
         in_scores: vec![0.0; N],
         nb_scratch: Vec::new(),
+        pos_keys: Vec::new(),
+        oc_in: Vec::new(),
         key_map,
         context_joined,
         perm,
