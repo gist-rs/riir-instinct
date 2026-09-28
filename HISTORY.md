@@ -1,5 +1,27 @@
 # HISTORY — riir-instinct
 
+## 2026-09-28 — issue-file hygiene: 001 / 002 / 004 removed (work verifiably landed, records durable)
+
+One action per the fleet noise-reduction rule; the files were the last
+copies of records already carried elsewhere:
+
+- **001 (HOSTED-ONLY vessel reader)** — CLOSED 09-27, all T1–T5 landed
+  (`src/vessel.rs` + `tests/vessel_gates.rs` 7/7, opt-in feature `vessel`).
+  Durable record: AGENTS.md "P4 — the HOSTED-ONLY vessel reader".
+- **002 (hosted instinct lane via riir-deployer)** — T1–T4 landed 09-27
+  (`deploy.yaml` cf-container with the 12 `files:` rows, zigbuild x86_64,
+  the local e2e verified end to end: plan → stage → docker run → six lanes
+  ready → live decisions with receipts; the real CF push is the
+  owner-adjacent step BY DESIGN — devnet first, mainnet the owner
+  ceremony). Durable record: AGENTS.md "P5 — the hosted serving lane".
+- **004 (decstat flywheel)** — T1–T3 landed 09-27 (wire `9da822b` →
+  capture `3a1eb09` → store/route `c285435`; live-pushed to devnet epoch
+  2960 the same day); T4 (riir-train intake) is tracked at its canonical
+  home, riir-train Issue 577 — nothing here pointed at it that 577 does
+  not. Durable record: AGENTS.md "P6 landed T1–T3".
+
+Full narrative of each removed file: `git log --follow -- .issues/<file>`.
+
 ## 2026-09-28 — Issue 579 T3: the arena bridge — banking77 serves the nbsvm v2 winner (Bench 012)
 
 Landed the consumer half of riir-train Issue 579 / Bench 612:
