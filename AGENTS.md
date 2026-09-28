@@ -220,7 +220,26 @@ substrate: the `TrainedMlp` serve-side forward + `LanePolicy::Mlp` +
 the bench `--model` arm + `tests/tetris_critic_parity` (512/512
 bit-exact; serve G2 0.228 ms p50, moot while unserved). The
 widened-wire sidecar (the reflex contract field + the reflex-site
-sender) still gates the SERVE path (T9).** Master plan:
+sender) still gates the SERVE path (T9; the reflex contract half
+LANDED — reflex `0c9fcab`'s named optional sidecar field,
+parse-and-ignore byte-identical).** **T7 rounds 2–3 EXECUTED 2026-09-28
+(Benches 017 + 018, both single-lever reads on the same seeds): round 2
+— the tail-targeted loss (`--rank-gap 1.0 --bce-tail 4.0`, digest
+`66069784fb0fadd1`) went BACKWARDS (play 554.6→173.5, agreement
+0.711→0.627; the pair over-fit the low-q tail; the levers were
+confounded — isolation first if revisited). Round 3 — the larger fit
+(`--hidden 256,256`, digest `bf9464925be910d8`, everything else
+round-1) is the STRONGEST critic yet: agreement 0.7574 (trainer T2
+gate INTERESTING for the first time), play 743.9/455.7 vs b0
+907.8/532.5 — the ridge half passes in both regimes, the b0 half
+still fails but the W/T/L moved to 1/14/5 (ties where it survives as
+long as b0; the catastrophic-pick deficit is down to ~25% of games).
+Width→play is monotone across rounds 1/2/3; b0 stands, no mint.
+Round-4 levers priced: 512×512 (~4–5 h) or critic-guided search (the
+~240-eval next-piece expectation is TIGHT against G2 at 0.84 ms —
+budget re-derivation before building). The eval seeds have been read
+four times (009/010/017/018), every read a pre-registered lever,
+every negative recorded.** Master plan:
 [`.plans/001_instinct_lane_clippy_flow.md`](.plans/001_instinct_lane_clippy_flow.md).
 
 - **The hybrid composition** (`src/hybrid.rs`): H1 cascade (reflex
