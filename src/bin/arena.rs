@@ -58,9 +58,14 @@ use riir_reflex::nb_scope::NbView;
 /// — the reflex Issue-049 seat seam now seats them (marked synthetic);
 /// no winner artifacts exist for them, so they run the A0/G0-only
 /// posture and publish `a0_stands` rows (the expected outcome per 049's
-/// scope note). `harness_cache_reuse` stays OUT (the seat refuses it —
-/// the modelless lane has no KV cache; a modelless answer would be a
-/// fake task), disclosed here and by the seat's own refusal.
+/// scope note). `harness_cache_reuse` joins (Issue 010's OWED item,
+/// unblocked 2026-09-28: reflex Issue 045 REVERSED the old LLM-only
+/// carve-out — the seat no longer refuses it; the family is text-decidable
+/// ("does the described prefix still cover the described next turn") and
+/// ships its authored corpus + cal, the cal-selected noul polarity being
+/// the lever that arms it; reflex Bench 072 measured the modelless lane
+/// at 0.9167). No winner artifact exists for it, so it runs the A0/G0-only
+/// posture and publishes an `a0_stands` row.
 const SUITES: &[&str] = &[
     "ag_news",
     "emotion",
@@ -75,6 +80,7 @@ const SUITES: &[&str] = &[
     "harness_tool_fit",
     "harness_routing",
     "harness_sensitivity",
+    "harness_cache_reuse",
     "code_fixtures",
 ];
 /// Reflex already wins these (Bench 051) — G3's non-inferiority duty.
@@ -279,7 +285,12 @@ struct DisclosedPosture {
 
 fn main() {
     let args: Vec<String> = std::env::args().collect();
-    let mut datasets_dir = PathBuf::from("../riir-reflex/.raw/datasets_t20k");
+    // reflex's DEFAULT_DATASETS_DIR (".raw/datasets") is the canonical
+    // pool — the t20k mirror beside it can lag (typed_decisions re-fetched
+    // at the full 1200-row pool only in the canonical dir, Bench 078; an
+    // arena run on the stale mirror read the pre-lift row). Divergence
+    // between the two dirs is what the A0 pin exists to catch.
+    let mut datasets_dir = PathBuf::from("../riir-reflex/.raw/datasets");
     let mut winners_dir = PathBuf::from("../riir-train/data/instinct_specialists");
     let mut out_dir = PathBuf::from(".benchmarks/001_hybrid_goat");
     let mut top_k = 8usize;
