@@ -47,6 +47,7 @@ use std::time::Duration;
 
 use katgpt_core::set_admission::SetAdmissionConfig;
 use riir_instinct::arsenal::ArsenalManifest;
+use riir_reflex::harness::suites::QKind;
 use riir_instinct::arsenal_ops::{
     EpochApply, EpochTag, LaneSlot, LaneState, SwapRefusal, check_epoch_tag, hoard_check,
     hoard_gate_armed,
@@ -1022,6 +1023,23 @@ fn decide_edge(stream: &mut TcpStream, srv: &Arc<SrvState>, body: &[u8], cors: O
         suite: String,
         state: String,
         options: Option<Vec<String>>,
+        /// The multi-question contract (Issue 011, the `decision_wire`
+        /// law: one state, ALL questions answered in one call). Mutually
+        /// exclusive with `options` — a body carrying both is ambiguous
+        /// and refuses.
+        questions: Option<Vec<WireQuestion>>,
+    }
+    #[derive(serde::Deserialize)]
+    struct WireQuestion {
+        id: String,
+        /// "choice" | "score" | "noul" (the harness `QKind` vocabulary).
+        kind: String,
+        #[serde(default)]
+        instructions: String,
+        /// A noul question may carry NO options — the fixed [false, true]
+        /// rendering speaks it.
+        #[serde(default)]
+        options: Vec<String>,
     }
     let parsed: Result<DecideReq, _> = serde_json::from_slice(body);
     let req = match parsed {
@@ -1031,6 +1049,51 @@ fn decide_edge(stream: &mut TcpStream, srv: &Arc<SrvState>, body: &[u8], cors: O
             return;
         }
     };
+    if req.options.is_some() && req.questions.is_some() {
+        json_error(
+            stream,
+            "400 Bad Request",
+            "bad_field",
+            "ambiguous body: `options` and `questions` are two different contracts — send one",
+            cors,
+        );
+        return;
+    }
+    /// One wire question resolved to its serve form: (id, kind,
+    /// instructions, options). A type alias — the tuple rides the
+    /// borrow checker, not the reader.
+    type WireTuple<'a> = (&'a str, &'a str, &'a str, Vec<String>);
+    let wire_questions: Option<Vec<WireTuple<'_>>> = req
+        .questions
+        .as_ref()
+        .map(|qs| {
+            qs.iter()
+                .map(|q| {
+                    (
+                        q.id.as_str(),
+                        q.kind.as_str(),
+                        q.instructions.as_str(),
+                        q.options.clone(),
+                    )
+                })
+                .collect()
+        });
+    if let Some(questions) = &wire_questions {
+        for (id, kind, _, _) in questions {
+            if !matches!(*kind, "choice" | "score" | "noul") {
+                json_error(
+                    stream,
+                    "400 Bad Request",
+                    "bad_field",
+                    &format!(
+                        "question {id:?}: unknown kind {kind:?} — the wire speaks \"choice\" | \"score\" | \"noul\""
+                    ),
+                    cors,
+                );
+                return;
+            }
+        }
+    }
     let Some((idx, slot)) = srv.slots.iter().enumerate().find(|(_, s)| s.suite == req.suite)
     else {
         let registered: Vec<&str> = srv.slots.iter().map(|s| s.suite).collect();
@@ -1093,8 +1156,40 @@ fn decide_edge(stream: &mut TcpStream, srv: &Arc<SrvState>, body: &[u8], cors: O
         }
         LaneState::Unloaded { .. } => unreachable!("the lazy trigger above consumed Unloaded"),
     };
-    match server.decide(&req.state, req.options.as_deref()) {
-        Ok(d) => {
+    // The contract dispatch (Issue 011): a `questions` body is the
+    // multi-question form; the legacy `options`/bare body stays the
+    // single-question form byte-for-byte. The responses share one shape
+    // per decision; the multi form wraps them in a top-level `decisions`
+    // array (each element carries the same fields + receipt the single
+    // form returns).
+    let result = match (&wire_questions, req.options.as_deref()) {
+        (Some(wire), None) => {
+            let served: Vec<riir_instinct::server::ServedQuestion<'_>> = wire
+                .iter()
+                .map(|(id, kind, instructions, options)| {
+                    riir_instinct::server::ServedQuestion {
+                        qid: id,
+                        kind: match *kind {
+                            "choice" => QKind::Choice,
+                            "score" => QKind::Score,
+                            _ => QKind::Noul,
+                        },
+                        instructions,
+                        options,
+                    }
+                })
+                .collect();
+            server
+                .decide_multi(&req.state, &served)
+                .map(MultiDecision::Many)
+        }
+        (None, _) => server
+            .decide(&req.state, req.options.as_deref())
+            .map(MultiDecision::One),
+        (Some(_), Some(_)) => unreachable!("the ambiguous body refused above"),
+    };
+    match result {
+        Ok(MultiDecision::One(d)) => {
             let doc = serde_json::json!({
                 "suite": d.suite,
                 "arm": d.arm,
@@ -1128,12 +1223,63 @@ fn decide_edge(stream: &mut TcpStream, srv: &Arc<SrvState>, body: &[u8], cors: O
             #[cfg(feature = "decstat")]
             riir_instinct::decstat::record(d.suite, &d.arm, d.abstained);
         }
+        Ok(MultiDecision::Many(decisions)) => {
+            let wire = wire_questions.as_deref().unwrap_or_default();
+            let docs: Vec<serde_json::Value> = decisions
+                .iter()
+                .zip(wire)
+                .map(|(d, (id, _, _, _))| {
+                    serde_json::json!({
+                        "suite": d.suite,
+                        "arm": d.arm,
+                        "lane": "hybrid",
+                        "question_id": id,
+                        "options": d.options,
+                        "pick": d.pick,
+                        "pick_index": d.pick_index,
+                        "probabilities": d.probabilities,
+                        "specialist_scores": d.specialist_scores,
+                        "confidence": d.confidence,
+                        "escalated": d.escalated,
+                        "abstained": d.abstained,
+                        "us": d.us,
+                        "receipt": {
+                            "build": fingerprint(),
+                            "features": COMPILED_FEATURES,
+                            "input": input_blake3(&req.state, &d.options),
+                            "decision": decision_blake3(d),
+                            "lane": "hybrid",
+                        },
+                    })
+                })
+                .collect();
+            let doc = serde_json::json!({
+                "suite": req.suite,
+                "lane": "hybrid",
+                "n_decisions": decisions.len(),
+                "decisions": docs,
+            });
+            respond(
+                stream,
+                "200 OK",
+                &serde_json::to_string(&doc).unwrap_or_else(|_| "{\"error\":\"serialize\"}".into()),
+                cors,
+            );
+            #[cfg(feature = "decstat")]
+            for d in &decisions {
+                riir_instinct::decstat::record(d.suite, &d.arm, d.abstained);
+            }
+        }
         Err(e) => {
             // The bridge refusal + empty state + duplicate options — the
             // caller's shape errors (422); everything else is lane state.
-            let (status, code) = if e.starts_with("presented options neither") {
+            let (status, code) = if e.starts_with("presented options neither")
+                || e.starts_with("question ")
+                || e.starts_with("suite ") && e.contains("noul")
+                || e.contains("multi-question contract")
+            {
                 ("422 Unprocessable Entity", "bridge_undefined")
-            } else if e == "empty state" {
+            } else if e == "empty state" || e == "empty question set" {
                 ("400 Bad Request", "empty_state")
             } else {
                 ("422 Unprocessable Entity", "bad_request")
@@ -1141,6 +1287,14 @@ fn decide_edge(stream: &mut TcpStream, srv: &Arc<SrvState>, body: &[u8], cors: O
             json_error(stream, status, code, &e, cors);
         }
     }
+}
+
+/// The /decide dispatch's two answer shapes — the legacy single decision
+/// and the multi-question contract's answer set (same per-decision
+/// fields).
+enum MultiDecision {
+    One(riir_instinct::server::ServedDecision),
+    Many(Vec<riir_instinct::server::ServedDecision>),
 }
 
 /// The T5 wire release (the L5 curator's message — a wire-only server

@@ -1,10 +1,11 @@
 # Issue 011 — the multi-question serve extension (typed_decisions' serving row)
 
-**Status:** OPEN — filed 2026-09-28. Unblock path for Bench 015's
-serving half: the retrained typed_decisions specialist is seated and
-T2-certified against BOTH A0 legs (A1 0.6300 vs A0′ 0.5725 LB95 +0.0373;
-vs the published A0 0.4655 LB95 +0.1432; G1 PASS), but the serve path
-cannot boot the suite, so the manifest carries no typed row yet.
+**Status:** CLOSED — landed 2026-09-28, same day as filing. Unblock path
+for Bench 015's serving half: the retrained typed_decisions specialist is
+seated and T2-certified against BOTH A0 legs (A1 0.6300 vs A0′ 0.5725
+LB95 +0.0373; vs the published A0 0.4655 LB95 +0.1432; G1 PASS), but the
+serve path cannot boot the suite, so the manifest carries no typed row
+yet.
 
 ## The blocker (measured)
 
@@ -30,43 +31,55 @@ per-question squeeze and not a case[0]-only partial serve.
 
 ## Tasks
 
-- [ ] T1 — `SuiteServer::decide_multi(&mut self, state, questions:
-      &[(qid, QKind, instructions, options)]) -> Result<Vec<ServedDecision>,
-      String>`: synthesize ONE multi-question `SuiteCase` (the arena's
-      eval shape — `SuiteCase` already carries question sets), bag the
-      state ONCE, resolve each question's presented keys through the same
-      key-map bridge (context suites: by NAME only — identity-by-count is
-      undefined when the label spaces are disjoint; refuse loud), arm
-      dispatch per question (A0 from the shared eval, A1 argmax over that
-      question's positions, H1/H2 per question). The single-question
-      `decide` becomes the N=1 form over the same path (byte-identical
-      existing behavior — the parity gates hold it).
-- [ ] T2 — the HTTP edge: `POST /decide` accepts
-      `{"suite", "state", "questions": [{id, kind, instructions,
-      options}...]}` beside today's single-question body (old shape stays
-      byte-compatible; a body with neither form refuses loud with the
-      codes table's `bad_field`).
-- [ ] T3 — relax `from_parts`' shape guard for suites whose serve
-      contract is the multi-question form (typed_decisions): the guard
-      stays for the one-question suites; a suite-level declaration (the
-      winner_bridge is the natural home — a `serves: MultiQuestion` field)
-      picks the contract, so no heuristic reads the case shapes.
-- [ ] T4 — the serving row: `arsenal.toml` gains the typed row (A1,
-      digest `blake3:7f7a39e1935f8665beaf61106a84a65a0066a73fe3eee4ad7638fda0f776f2f0`
-      = Bench 614's mint — byte-verify at edit time; the artifact is
-      data-side, re-minting moves the pin); `PINNED_MANIFEST_DIGEST`
-      re-pin; the serve_gates posture table 7→8 with the typed assertion
-      flipped from ABSENT to the A1 posture + the Bench-015 reason;
-      `deploy.yaml` ships the winner + the FULL-pool dataset dir
-      (`../riir-train/.raw/datasets_typed_full/typed_decisions` — the
+- [x] T1 — `SuiteServer::decide_multi(&mut self, state, questions:
+      &[ServedQuestion]) -> Result<Vec<ServedDecision>, String>`: ONE
+      multi-question `SuiteCase` through the same `eval_seat` path (A0's
+      per-question bytes are the arena's), state bagged ONCE, each
+      question's presented keys through the key-map bridge. Noul resolve
+      is JOIN-FORM-aware: Named joins keep the single-question contract's
+      positional law byte-for-byte; a Context join resolves NOUL_PAIR
+      ("no"/"yes") BY NAME (the arena's fill_positions law — positional
+      over a context perm would hit sentinels), and an EMPTY noul
+      presentation takes the fixed [false, true] rendering (the
+      decision_wire law). Single-question `decide` is the N=1 wrapper
+      (template strings cloned out of self); MultiQuestion suites refuse
+      it loud. AnySuiteServer::decide_multi forwards.
+- [x] T2 — the HTTP edge: `POST /decide` accepts `{suite, state,
+      questions: [{id, kind, instructions, options?}...]}`; the legacy
+      body stays byte-compatible; `options` + `questions` together is a
+      400 bad_field; an unknown kind is a 400 bad_field; the multi
+      response is `{suite, lane, n_decisions, decisions: [...]}` with
+      per-decision receipts (question_id echoed); decstat records per
+      decision.
+- [x] T3 — `from_parts`' shape guard split by the bridge's NEW
+      `ServeContract` axis (`winner_bridge` — one home beside the file +
+      bag coupling): SingleQuestion keeps the old guard; MultiQuestion
+      asserts the suite actually carries multi-question cases (the
+      declaration must not outlive the shape). typed_decisions is the
+      one MultiQuestion suite; the bridge test pins all three forms.
+- [x] T4 — the serving row: arsenal.toml's EIGHTH row (A1, digest
+      `blake3:7f7a39e1935f8665beaf61106a84a65a0066a73fe3eee4ad7638fda0f776f2f0`
+      = Bench 614's mint, byte-verified); `PINNED_MANIFEST_DIGEST`
+      re-pinned (`blake3:1dd16be7…`); the serve_gates posture table 7→8
+      with the typed assertion flipped from ABSENT to the A1 posture;
+      `deploy.yaml` ships the winner + the FULL-pool dataset dir (the
       measured posture's seat corpus; the cal front is byte-identical to
       the canonical one).
-- [ ] T5 — parity gate: the serve path replays committed test cases'
-      question sets through `decide_multi` and asserts identity with the
-      015 frozen per-question A1 picks (the
-      `prompt_injections_serves_the_frozen_a1_picks` shape, per-question
-      form); plus a wire test for the new request shape and the old-shape
-      byte-compat arm.
+- [x] T5 — parity gate: `typed_decisions_serves_the_frozen_a1_picks`
+      replays 12 test cases' FULL question sets (60 questions) through
+      `decide_multi` and asserts identity with the 015 frozen A1 picks —
+      green. Plus the bridge-contract test, the 8-row manifest test, and
+      a LIVE end-to-end smoke (serve binary on the full-pool dir: 5
+      decisions in one call, noul positional, the single-question form
+      refuses 422 bridge_undefined).
+
+## Validation (the landing run)
+
+serve_gates 14/14 (incl. the new parity gate, 982s — the typed seat
+boots twice) · lib 49/49 default · 60/60 lib all-features · clippy
+`-D`-clean default + all-features · full `cargo test --all-features`
+battery green (94 passed, zero FAILED; the two seat-booting gates
+dominate the wall).
 
 ## Honest scope notes
 

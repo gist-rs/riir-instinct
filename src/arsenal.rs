@@ -565,7 +565,7 @@ mod tests {
     }
 
     #[test]
-    fn embedded_default_parses_with_the_seven_suites() {
+    fn embedded_default_parses_with_the_eight_suites() {
         let m = ArsenalManifest::embedded_default().expect("embedded manifest parses");
         let suites: Vec<&str> = m.suites().collect();
         assert_eq!(
@@ -577,12 +577,11 @@ mod tests {
                 "massive_intent_en",
                 "banking77",
                 "xnli_en",
-                "prompt_injections"
+                "prompt_injections",
+                "typed_decisions"
             ]
         );
-        assert_eq!(m.rows().len(), 7);
-        // The unseatable typed_decisions artifact gains no row (Bench 014).
-        assert!(!m.suites().any(|s| s == "typed_decisions"));
+        assert_eq!(m.rows().len(), 8);
     }
 
     #[test]

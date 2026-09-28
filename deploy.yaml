@@ -36,12 +36,11 @@ artifacts:
 outputs:
   # The binary (the triple appears in `from` — the plan's tripwire rule).
   - { path: serve, from: "{target_dir}/x86_64-unknown-linux-gnu/release/serve" }
-  # The seven sealed winner artifacts (riir-train Issue 576 winners + the
-  # Issue 578 prompt_injections winner, Plan 003's noul bridge; typed_
-  # decisions' Issue 578 artifact is unseatable — the 014 record's
-  # refusal — and ships nowhere). The BLAKE3 seal is verified at lane
-  # boot. Exact rows, never the parent dir — the dir also carries the
-  # armA variants, which do not ship.
+  # The eight sealed winner artifacts (riir-train Issue 576 winners + the
+  # Issue 578 prompt_injections winner, Plan 003's noul bridge + the Issue
+  # 581 typed_decisions re-mint, Bench 015's certified posture). The
+  # BLAKE3 seal is verified at lane boot. Exact rows, never the parent
+  # dir — the dir also carries the armA variants, which do not ship.
   - { path: winners/ag_news_winner_v1.bin, from: ../riir-train/data/instinct_specialists/ag_news_winner_v1.bin }
   - { path: winners/emotion_winner_v1.bin, from: ../riir-train/data/instinct_specialists/emotion_winner_v1.bin }
   - { path: winners/sst5_winner_v1.bin, from: ../riir-train/data/instinct_specialists/sst5_winner_v1.bin }
@@ -49,9 +48,13 @@ outputs:
   - { path: winners/banking77_nbsvm_v2.bin, from: ../riir-train/data/instinct_specialists/banking77_nbsvm_v2.bin }   # Issue 579 v2 (presence-bag convention) — the refused v1 file no longer ships
   - { path: winners/xnli_en_winner_v1.bin, from: ../riir-train/data/instinct_specialists/xnli_en_winner_v1.bin }
   - { path: winners/prompt_injections_winner_v1.bin, from: ../riir-train/data/instinct_specialists/prompt_injections_winner_v1.bin }   # Issue 578 (Bench 611, noul bridge) — serves A1, Bench 013
-  # The seven dataset suites the seat boots from (the t20k bytes the
-  # published lanes carry — the Bench 002 alignment law). Soft dir rows:
-  # per-file hashes recorded + verified, order-stable walk.
+  - { path: winners/typed_decisions_winner_v1.bin, from: ../riir-train/data/instinct_specialists/typed_decisions_winner_v1.bin }   # Issue 581 (Bench 614 full-pool re-mint) — serves A1, Bench 015; the multi-question contract (Issue 011)
+  # The eight dataset suites the seat boots from. SEVEN of them are the
+  # t20k bytes the published lanes carry (the Bench 002 alignment law);
+  # typed_decisions ships the FULL-POOL dir instead — the 581 retrain's
+  # measured posture (the arena's A0' read; the cal front is byte-
+  # identical, the corpus carries the four unfetched pages). Soft dir
+  # rows: per-file hashes recorded + verified, order-stable walk.
   - { path: datasets/ag_news, from: ../riir-reflex/.raw/datasets_t20k/ag_news, soft: true }
   - { path: datasets/emotion, from: ../riir-reflex/.raw/datasets_t20k/emotion, soft: true }
   - { path: datasets/sst5, from: ../riir-reflex/.raw/datasets_t20k/sst5, soft: true }
@@ -59,6 +62,7 @@ outputs:
   - { path: datasets/banking77, from: ../riir-reflex/.raw/datasets_t20k/banking77, soft: true }
   - { path: datasets/xnli_en, from: ../riir-reflex/.raw/datasets_t20k/xnli_en, soft: true }
   - { path: datasets/prompt_injections, from: ../riir-reflex/.raw/datasets_t20k/prompt_injections, soft: true }
+  - { path: datasets/typed_decisions, from: ../riir-train/.raw/datasets_typed_full/typed_decisions, soft: true }   # Issue 581's full-pool dir (Bench 614/015) — NOT reflex's 800-row envelope
 
 targets:
   decisions:
@@ -81,6 +85,7 @@ targets:
       - { from: winners/banking77_nbsvm_v2.bin, to: data/winners/banking77_nbsvm_v2.bin }
       - { from: winners/xnli_en_winner_v1.bin, to: data/winners/xnli_en_winner_v1.bin }
       - { from: winners/prompt_injections_winner_v1.bin, to: data/winners/prompt_injections_winner_v1.bin }
+      - { from: winners/typed_decisions_winner_v1.bin, to: data/winners/typed_decisions_winner_v1.bin }
       - { from: datasets/ag_news, to: data/datasets/ag_news }
       - { from: datasets/emotion, to: data/datasets/emotion }
       - { from: datasets/sst5, to: data/datasets/sst5 }
@@ -88,6 +93,7 @@ targets:
       - { from: datasets/banking77, to: data/datasets/banking77 }
       - { from: datasets/xnli_en, to: data/datasets/xnli_en }
       - { from: datasets/prompt_injections, to: data/datasets/prompt_injections }
+      - { from: datasets/typed_decisions, to: data/datasets/typed_decisions }
 
 destinations:
   local: { targets: [decisions] }

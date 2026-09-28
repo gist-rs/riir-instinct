@@ -30,6 +30,7 @@ use std::process::{Child, Command, Stdio};
 
 use riir_instinct::arsenal::{ArsenalManifest, ValidateCtx};
 use riir_instinct::server::{Arm, AnySuiteServer};
+use riir_reflex::harness::suites::QKind;
 
 fn repo_root() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR"))
@@ -59,7 +60,7 @@ fn embedded_manifest() -> ArsenalManifest {
 /// re-run + frozen-predictions parity update law A6 demands). This is
 /// the TOML analogue of the compile-time posture table it replaced.
 const PINNED_MANIFEST_DIGEST: &str =
-    "blake3:a0a520e262afbceca0244b292c032306f37fb667dfebaa2b8a61755ff79dd0f9";
+    "blake3:1dd16be7e9a78e5593beb5eedf83b14dfa654f5efcbe59f3038d3611a63a90f7";
 
 #[test]
 fn arsenal_manifest_bytes_are_pinned_byte_for_byte() {
@@ -91,11 +92,13 @@ fn manifest_posture_rows_are_the_serving_law_verdict() {
     // (Plan 003's noul bridge, Bench 013): +8.6 pt with the paired LB95
     // POSITIVE (+0.0082) — T2-CERTIFIED, the massive class, at n=116;
     // its G1 face is a disclosed FAIL (Platt hurts the 2-class sigmoid;
-    // raw ECE 0.0824 beats the conformal floor). typed_decisions gains
-    // NO row: its Issue 578 artifact is UNSEATABLE (100/500 test cases
-    // present option keys with no class row — the 014 record's refusal),
-    // so there is nothing to serve.
-    let expected: [(&str, Arm, &str); 7] = [
+    // raw ECE 0.0824 beats the conformal floor). typed_decisions serves
+    // A1 0.6300 over the Issue 581 re-mint (Bench 614's full-pool
+    // retrain, Bench 015's read): T2-certified against BOTH A0 legs (vs
+    // A0' 0.5725 LB95 +0.0373; vs the published A0 0.4655 LB95 +0.1432;
+    // G1 PASS) — the multi-question serve contract (Issue 011), so its
+    // seat corpus ships from the full-pool datasets dir (deploy.yaml).
+    let expected: [(&str, Arm, &str); 8] = [
         (
             "ag_news",
             Arm::H2 { beta: 0.25, n_min: 2.0, tau_n: 2.0 },
@@ -115,11 +118,12 @@ fn manifest_posture_rows_are_the_serving_law_verdict() {
         ),
         ("xnli_en", Arm::A0, "A0"),
         ("prompt_injections", Arm::A1, "A1"),
+        ("typed_decisions", Arm::A1, "A1"),
     ];
     assert_eq!(
         m.rows().len(),
-        7,
-        "the manifest carries exactly the seven rows"
+        8,
+        "the manifest carries exactly the eight rows"
     );
     for (suite, arm, name) in expected {
         let row = m
@@ -135,8 +139,8 @@ fn manifest_posture_rows_are_the_serving_law_verdict() {
         assert_eq!(parsed.name(), name, "{suite}: arm display name drifted");
     }
     assert!(
-        m.row("typed_decisions").is_none(),
-        "the unseatable typed_decisions artifact gained a serving row (the 014 refusal)"
+        m.row("typed_decisions").is_some(),
+        "the typed_decisions serving row vanished — Bench 015's certified posture must keep it"
     );
 }
 
@@ -518,6 +522,116 @@ fn prompt_injections_serves_the_frozen_a1_picks() {
         );
         assert!(d.us < 100_000, "case {ci}: outside the modelless tier");
     }
+}
+
+/// The typed_decisions multi-question serve parity (Issue 011 T5, the
+/// Bench-015 record's picks): the serve path replays the first test
+/// cases' FULL question sets through `decide_multi` and asserts identity
+/// with the 015 frozen A1 picks, per question (the arena's enumeration:
+/// case order × question order). Reads the FULL-POOL datasets dir (the
+/// measured posture's seat corpus — Bench 015's extended dir; the cal
+/// front is byte-identical to the canonical one, the corpus is what
+/// differs). Noul questions present NO options — the fixed rendering
+/// speaks them (the same law the frozen picks were scored under).
+#[test]
+fn typed_decisions_serves_the_frozen_a1_picks() {
+    let full_pool = repo_root().join("../riir-train/.raw/datasets_typed_full");
+    let winner = winners_dir().join("typed_decisions_winner_v1.bin");
+    if !full_pool.join("typed_decisions").is_dir() || !winner.is_file() {
+        eprintln!(
+            "SKIP loud: the full-pool datasets dir / the typed_decisions winner absent"
+        );
+        return;
+    }
+    let record = repo_root().join(".benchmarks/015_typed_full_pool_consumer/predictions.json");
+    let Some((picks, _abstained)) = frozen_picks_from(&record, "typed_decisions", "A1") else {
+        panic!(
+            "the 015 frozen record is absent or lacks the A1 arm — the serving posture's \
+             parity source; re-run the 015 read"
+        );
+    };
+    let datasets = full_pool.clone();
+    let mut server = std::thread::Builder::new()
+        .stack_size(64 * 1024 * 1024)
+        .spawn(move || {
+            riir_instinct::server::AnySuiteServer::boot(
+                "typed_decisions",
+                &datasets,
+                &winners_dir_for_tests(),
+                &embedded_manifest(),
+            )
+        })
+        .expect("spawn boot thread")
+        .join()
+        .expect("boot thread panicked")
+        .expect("boot typed_decisions server");
+    assert_eq!(server.meta().arm.name(), "A1");
+
+    let seat =
+        riir_reflex::harness::runner::seat::prepare_seat("typed_decisions", &full_pool)
+            .expect("prepare seat for the parity cases");
+    let mut qi = 0usize;
+    let n_cases = 12.min(seat.suite.cases.len());
+    assert!(n_cases >= 8, "parity sample too small: {n_cases}");
+    for (ci, case) in seat.suite.cases.iter().enumerate().take(n_cases) {
+        assert!(!case.questions.is_empty());
+        let options_per_question: Vec<Vec<String>> = case
+            .questions
+            .iter()
+            .map(|q| {
+                if q.kind == QKind::Noul {
+                    Vec::new()
+                } else {
+                    match &q.criteria {
+                        serde_json::Value::Object(m) => m.keys().cloned().collect(),
+                        serde_json::Value::Array(a) => a
+                            .iter()
+                            .map(|v| match v {
+                                serde_json::Value::String(s) => s.clone(),
+                                other => other.to_string(),
+                            })
+                            .collect(),
+                        _ => panic!("case {}: criteria shape drift", case.id),
+                    }
+                }
+            })
+            .collect();
+        let served: Vec<riir_instinct::server::ServedQuestion<'_>> = case
+            .questions
+            .iter()
+            .zip(options_per_question.iter())
+            .map(|(q, options)| riir_instinct::server::ServedQuestion {
+                qid: q.qid.as_str(),
+                kind: q.kind,
+                instructions: q.instructions.as_str(),
+                options: options.as_slice(),
+            })
+            .collect();
+        let decisions = server
+            .decide_multi(&seat.state_strs[ci], &served)
+            .unwrap_or_else(|e| panic!("case {}: decide_multi failed: {e}", case.id));
+        assert_eq!(decisions.len(), case.questions.len());
+        for d in &decisions {
+            assert!(
+                qi < picks.len(),
+                "question {qi}: the parity sample outran the frozen record"
+            );
+            assert_eq!(
+                d.pick_index,
+                Some(picks[qi]),
+                "question {qi} (case {}): served pick drifted from the frozen 015 pick",
+                case.id
+            );
+            assert!(!d.abstained, "question {qi}: A1 abstained");
+            assert!(d.us < 100_000, "question {qi}: outside the modelless tier");
+            qi += 1;
+        }
+    }
+    assert!(qi >= 40, "parity covered too few questions: {qi}");
+}
+
+fn winners_dir_for_tests() -> std::path::PathBuf {
+    winners_dir()
 }
 
 // ── face 3: the HTTP edge gates ──────────────────────────────────────

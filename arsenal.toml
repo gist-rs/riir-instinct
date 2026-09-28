@@ -37,12 +37,12 @@
 #                `<suite>_winner_v1.bin` raw / `<suite>_v1.vessel` vessel.
 #                No NEW convention is created by this manifest.
 #
-# The seven rows are the specialist suites — reflex's other dataset
-# suites have no specialist and no seat posture, so they get no row
-# (typed_decisions' Issue 578 artifact is UNSEATABLE — 100/500 test cases
-# present option keys with no class row, a train-pool coverage gap; the
-# 014 record carries the refusal and the suite stays A0-only arena-side
-# with no serving row).
+# The eight rows are the specialist suites — reflex's other dataset
+# suites have no specialist and no seat posture, so they get no row.
+# (typed_decisions' Issue 578 artifact was UNSEATABLE — Bench 014's
+# refusal — retrained over the full 1200-row pool in riir-train Issue 581
+# / Bench 614 and seated+certified in Bench 015; its serving row is the
+# multi-question contract's, Issue 011.)
 #
 # ── the serving law (owner verdict 2026-09-27) ──────────────────────
 # The SERVING selector is the BEST MEASURED ARM per suite over the frozen
@@ -122,5 +122,13 @@ suite   = "prompt_injections"
 digest  = "blake3:ee0b4eb4336299b21347a2816ed93fb50ee6b6642d2c86bb05915caf037cddd3"   # the Issue 578 T2 artifact (Bench 611's mint digest, winner name per Plan 003 T4)
 class   = "hosted_only"
 posture = { arm = "A1" }                                          # best measured AND T2-certified (Bench 013: 0.8534 vs A0 0.7672, +8.6 pt, paired LB95 +0.0082 > 0 at n=116; G1 disclosed FAIL — Platt hurts the 2-class sigmoid, raw ECE 0.0824 beats the floor)
+pin_keys = []
+budget  = { load = "eager", max_payload_mb = 16 }
+
+[[vessel]]
+suite   = "typed_decisions"
+digest  = "blake3:7f7a39e1935f8665beaf61106a84a65a0066a73fe3eee4ad7638fda0f776f2f0"   # riir-train Issue 581 / Bench 614's re-mint over the FULL 1200-row train pool
+class   = "hosted_only"
+posture = { arm = "A1" }                                          # best measured AND T2-certified vs BOTH A0 legs (Bench 015: 0.6300 vs A0' 0.5725, paired LB95 +0.0373; vs the published A0 0.4655, LB95 +0.1432; G1 PASS). H1's 0.6335 test edge is paired noise (LB95 -0.0048). Serves the MULTI-QUESTION contract (Issue 011) — the seat's corpus ships from the full-pool datasets dir (deploy.yaml)
 pin_keys = []
 budget  = { load = "eager", max_payload_mb = 16 }

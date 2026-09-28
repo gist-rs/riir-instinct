@@ -162,6 +162,24 @@ impl BagConvention {
     }
 }
 
+/// The serve contract a suite answers on the hosted lane (Issue 011):
+/// the declaration lives on the bridge so the wire shape is decided at
+/// ONE home beside the file + bag coupling, never inferred from case
+/// shapes at boot.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ServeContract {
+    /// Every case carries exactly one question; the synthesized request
+    /// carries case[0]'s template. The single-question `decide` form.
+    SingleQuestion,
+    /// The suite's cases carry question SETS (typed_decisions: 5 heads
+    /// over one state) — the upstream `decision_wire` law ("one state,
+    /// ALL questions answered in one call — no per-question round
+    /// trips"): the serve form is `decide_multi`, and the single-question
+    /// `decide` refuses loud (a case[0]-template answer for an arbitrary
+    /// state would be a fished partial read).
+    MultiQuestion,
+}
+
 /// The per-suite winner bridge — ONE home for the 578 coupling lesson
 /// (winner names + training conventions couple to the consumer; a change
 /// is THIS window's act, never a train-side silent swap).
@@ -171,25 +189,36 @@ impl BagConvention {
 /// raw-mode `file` override must agree — [`check_winner_file`]).
 /// `convention`: the bag the winner's weights were trained under — every
 /// bag-building site for the suite MUST dispatch through it.
+/// `serves`: the suite's serve contract ([`ServeContract`], Issue 011).
 #[derive(Debug, Clone, Copy)]
 pub struct WinnerBridge {
     pub file: Option<&'static str>,
     pub convention: BagConvention,
+    pub serves: ServeContract,
 }
 
 /// Issue 579 / Bench 612: banking77's winner is the nbsvm v2 artifact —
 /// deliberately NOT a `winner_v1` name (that name stays the refused v1
 /// artifact for reproduction), trained over L2-normalized PRESENCE bags.
 /// Every other suite keeps the v1 file + count-bag convention.
+/// Issue 011: typed_decisions serves the multi-question contract (the
+/// only suite whose cases carry question sets).
 pub fn winner_bridge(suite: &str) -> WinnerBridge {
     match suite {
         "banking77" => WinnerBridge {
             file: Some("banking77_nbsvm_v2.bin"),
             convention: BagConvention::Presence,
+            serves: ServeContract::SingleQuestion,
+        },
+        "typed_decisions" => WinnerBridge {
+            file: None,
+            convention: BagConvention::Count,
+            serves: ServeContract::MultiQuestion,
         },
         _ => WinnerBridge {
             file: None,
             convention: BagConvention::Count,
+            serves: ServeContract::SingleQuestion,
         },
     }
 }
@@ -397,25 +426,32 @@ mod tests {
     }
 
     /// The bridge table, both directions: banking77 is the v2 presence
-    /// lane; every other arena suite stays on the v1 file + count bags.
+    /// lane; every other arena suite stays on the v1 file + count bags;
+    /// typed_decisions is the one MultiQuestion serve contract (Issue 011).
     #[test]
     fn winner_bridge_pins_the_convention_coupling() {
+        use crate::specialist::ServeContract;
         let b = winner_bridge("banking77");
         assert_eq!(b.file, Some("banking77_nbsvm_v2.bin"));
         assert_eq!(b.convention, BagConvention::Presence);
+        assert_eq!(b.serves, ServeContract::SingleQuestion);
+        let t = winner_bridge("typed_decisions");
+        assert_eq!(t.file, None, "typed keeps the winner_v1 convention");
+        assert_eq!(t.convention, BagConvention::Count);
+        assert_eq!(t.serves, ServeContract::MultiQuestion);
         for suite in [
             "ag_news",
             "emotion",
             "sst5",
             "massive_intent_en",
             "xnli_en",
-            "typed_decisions",
             "prompt_injections",
             "a_suite_that_never_exists",
         ] {
             let w = winner_bridge(suite);
             assert_eq!(w.file, None, "{suite}: unexpected bridged file");
             assert_eq!(w.convention, BagConvention::Count, "{suite}: unexpected convention");
+            assert_eq!(w.serves, ServeContract::SingleQuestion, "{suite}: unexpected contract");
         }
         // The dispatch routes by convention.
         let mut a = Vec::new();

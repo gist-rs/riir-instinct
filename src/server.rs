@@ -35,9 +35,29 @@ use riir_reflex::nb_scope::NbView;
 
 use crate::arsenal::ArsenalManifest;
 use crate::hybrid::{
-    A0Answer, Cascade, HybridLane, MAX_TOP_K, PriorFusion, SpecialistLane, prior_fusion_pick,
+    A0Answer, Cascade, HybridLane, MAX_TOP_K, NOUL_PAIR, PriorFusion, SpecialistLane,
+    prior_fusion_pick,
 };
 use crate::specialist::decode_artifact;
+
+/// The fixed `[false, true]` noul rendering in PRESENTED space (the
+/// engine's speak-space; a context seat's noul presentation must be this
+/// pair in order, or empty — the fixed rendering).
+fn is_fixed_noul_presentation(options: &[String]) -> bool {
+    options.len() == 2 && options[0] == "false" && options[1] == "true"
+}
+
+/// One question of a multi-question serve request (`decide_multi`,
+/// Issue 011): the wire's per-question shape, resolved against the
+/// seat's bridge. A noul question may present NO options — the fixed
+/// `[false, true]` rendering speaks it (the `decision_wire` law: a noul
+/// question carries no option list).
+pub struct ServedQuestion<'a> {
+    pub qid: &'a str,
+    pub kind: QKind,
+    pub instructions: &'a str,
+    pub options: &'a [String],
+}
 
 /// The cascade width the lane joins with when the serving arm is not H1
 /// (the arena's default `top_k`; H1 arms join at their own width).
@@ -199,7 +219,6 @@ pub struct SuiteServer<const N: usize> {
     in_scores: Vec<f32>,
     nb_scratch: Vec<u32>,
     pos_label: Vec<usize>,
-    pos_class: Vec<usize>,
     pos_spec: Vec<f32>,
     pos_nb: Vec<f32>,
     /// The suite's corpus centroid folded into the admission space (the
@@ -322,22 +341,51 @@ impl<const N: usize> SuiteServer<N> {
         arm: Arm,
     ) -> Result<Self, String> {
         // The serving shape (Plan 003, relaxed from one-non-noul-question-
-        // per-case): one question per case — the synthesized request below
-        // carries the case[0] template, so a multi-question set has no
-        // single serving kind (seat it arena-side) — with noul questions
-        // admitted through the bridge (the fixed [false, true] rendering;
-        // decide's positional resolve).
-        if seat
-            .suite
-            .cases
-            .iter()
-            .any(|c| c.questions.len() != 1)
-        {
-            return Err(format!(
-                "suite {suite}: the serving shape is one question per case (the synthesized \
-                 request carries the case[0] template — a multi-question set has no single \
-                 serving kind; seat it arena-side)"
-            ));
+        // per-case; Issue 011 split it by the bridge's ServeContract):
+        // SingleQuestion suites keep the one-question-per-case guard (the
+        // synthesized request carries the case[0] template); a
+        // MultiQuestion suite (typed_decisions — the decision_wire law,
+        // "one state, ALL questions answered in one call") answers through
+        // `decide_multi` and its single-question `decide` refuses loud.
+        let contract = crate::specialist::winner_bridge(suite).serves;
+        match contract {
+            crate::specialist::ServeContract::SingleQuestion => {
+                if seat
+                    .suite
+                    .cases
+                    .iter()
+                    .any(|c| c.questions.len() != 1)
+                {
+                    return Err(format!(
+                        "suite {suite}: the serving shape is one question per case (the synthesized \
+                         request carries the case[0] template — a multi-question set has no single \
+                         serving kind; seat it arena-side or declare the MultiQuestion contract on \
+                         the winner bridge)"
+                    ));
+                }
+            }
+            crate::specialist::ServeContract::MultiQuestion => {
+                // The declaration must not outlive the suite's shape: an
+                // empty question set has no answer space, and a suite whose
+                // every case carries ONE question is a SingleQuestion suite
+                // wearing the wrong declaration.
+                if seat.suite.cases.iter().any(|c| c.questions.is_empty()) {
+                    return Err(format!(
+                        "suite {suite}: a MultiQuestion case carries zero questions — no answer space"
+                    ));
+                }
+                if !seat
+                    .suite
+                    .cases
+                    .iter()
+                    .any(|c| c.questions.len() > 1)
+                {
+                    return Err(format!(
+                        "suite {suite}: declared MultiQuestion but every case carries one question — \
+                         fix the winner_bridge declaration, not the guard"
+                    ));
+                }
+            }
         }
         if seat.labels.len() != N {
             return Err(format!(
@@ -462,7 +510,6 @@ impl<const N: usize> SuiteServer<N> {
             in_scores: vec![0.0; N],
             nb_scratch: Vec::new(),
             pos_label: Vec::new(),
-            pos_class: Vec::new(),
             pos_spec: Vec::new(),
             pos_nb: Vec::new(),
             centroid,
@@ -493,235 +540,350 @@ impl<const N: usize> SuiteServer<N> {
         &self.labels
     }
 
-    /// One decision. `options` = `None` presents the suite's canonical
-    /// label universe in seat order; `Some` presents an explicit option
-    /// set (a named subset or a positional full-arity set — the arena's
-    /// two bridge rules, BY NAME and identity-by-count, decide which).
+    /// One decision under the suite's DEFAULT question template (the
+    /// single-question contract's form; `options` = `None` presents the
+    /// suite's canonical label universe in seat order, `Some` an explicit
+    /// option set). A MultiQuestion suite refuses loud — its contract is
+    /// [`Self::decide_multi`] (Issue 011: a case[0]-template answer for an
+    /// arbitrary state would be a fished partial read).
     pub fn decide(
         &mut self,
         state: &str,
         options: Option<&[String]>,
     ) -> Result<ServedDecision, String> {
-        let t0 = std::time::Instant::now();
-        let options: Vec<String> = match options {
-            Some(opts) => opts.to_vec(),
+        if crate::specialist::winner_bridge(self.suite).serves
+            == crate::specialist::ServeContract::MultiQuestion
+        {
+            return Err(format!(
+                "suite {} serves the multi-question contract — send the question set \
+                 (decision_wire: one state, ALL questions answered in one call)",
+                self.suite
+            ));
+        }
+        // Everything the question slice needs is cloned out of `self` —
+        // decide_multi takes `&mut self` (the engine's eval needs it), so
+        // the slice cannot borrow from the server.
+        let owned_options: Vec<String> = match options {
+            Some(o) => o.to_vec(),
             None => self.labels.clone(),
         };
+        let qid = self.qid.clone();
+        let instructions = self.q_instructions.clone();
+        let kind = self.q_kind;
+        let q = [ServedQuestion {
+            qid: qid.as_str(),
+            kind,
+            instructions: instructions.as_str(),
+            options: &owned_options,
+        }];
+        Ok(self.decide_multi(state, &q)?.remove(0))
+    }
+
+    /// One multi-question decision (Issue 011 — the `decision_wire` law:
+    /// one state, ALL questions answered in one call). Each question
+    /// carries its own id/kind/instructions/presented options; the answer
+    /// is one [`ServedDecision`] per question, in call order. The state is
+    /// bagged ONCE and evaluated through the SAME eval path the seat eval
+    /// uses, so A0's per-question bytes are the arena's.
+    pub fn decide_multi(
+        &mut self,
+        state: &str,
+        questions: &[ServedQuestion<'_>],
+    ) -> Result<Vec<ServedDecision>, String> {
+        let t0 = std::time::Instant::now();
         if state.trim().is_empty() {
             return Err("empty state".into());
         }
-        if options.len() < 2 {
-            return Err("need ≥2 presented options".into());
-        }
-        let mut seen = std::collections::HashSet::new();
-        if !options.iter().all(|o| seen.insert(o.as_str())) {
-            return Err("duplicate presented options — the answer space would collide".into());
+        if questions.is_empty() {
+            return Err("empty question set".into());
         }
 
-        // The bridge (the arena's fill_positions two rules, verbatim):
-        // every key resolving through the key map → BY NAME; else count ==
-        // seat-label count → IDENTITY BY INDEX; else refuse loud — the
-        // specialist bridge is undefined there (Issue 006's instrument
-        // defect was exactly a mismatch of these two spaces). NOUL
-        // (Plan 003): the engine's noul rendering is the FIXED
-        // [false, true] — the presented names never reorder it — so the
-        // resolve is positional always (option p takes seat label p and
-        // the artifact's pair row p), and the count must be exactly the
-        // seat universe (a wider or narrower presentation has no noul
-        // space).
-        self.pos_label.clear();
-        self.pos_class.clear();
-        if self.q_kind == QKind::Noul {
-            if options.len() != self.labels.len() {
+        // The bridge (the arena's fill_positions rules, verbatim,
+        // resolved PER question): every key resolving through the key map
+        // → BY NAME; else count == seat-label count → IDENTITY BY INDEX;
+        // else refuse loud — the specialist bridge is undefined there
+        // (Issue 006's instrument defect was exactly a mismatch of these
+        // two spaces). NOUL (Plan 003 + Issue 011): Named joins keep the
+        // single-question contract's positional law; a Context join
+        // resolves NOUL_PAIR by name (the arena's fill_positions law) —
+        // the seat labels are the engine's domain space, so position has
+        // no seat-label meaning. An EMPTY noul presentation takes the
+        // fixed [false, true] rendering (the decision_wire law: a noul
+        // question carries no option list).
+        let mut all_labels: Vec<Vec<usize>> = Vec::with_capacity(questions.len());
+        let mut all_classes: Vec<Vec<usize>> = Vec::with_capacity(questions.len());
+        let mut all_options: Vec<Vec<String>> = Vec::with_capacity(questions.len());
+        for q in questions {
+            // Noul questions may present the FIXED rendering by sending no
+            // options at all (the decision_wire law: a noul question carries
+            // no option list — [false, true] speaks it).
+            let options: Vec<String> = if q.kind == QKind::Noul && q.options.is_empty() {
+                vec!["false".to_string(), "true".to_string()]
+            } else {
+                q.options.to_vec()
+            };
+            if options.len() < 2 {
                 return Err(format!(
-                    "suite {}: a noul presentation carries {} options — the fixed \
-                     [false, true] rendering has exactly {} (pick_index speaks that \
-                     space whatever names are presented)",
-                    self.suite,
-                    options.len(),
-                    self.labels.len()
+                    "question {:?}: need ≥2 presented options",
+                    q.qid
                 ));
             }
-            for (li, &cls) in self.perm.iter().enumerate() {
-                self.pos_label.push(li);
-                self.pos_class.push(cls);
+            let mut seen = std::collections::HashSet::new();
+            if !options.iter().all(|o| seen.insert(o.as_str())) {
+                return Err(format!(
+                    "question {:?}: duplicate presented options — the answer space would collide",
+                    q.qid
+                ));
             }
-        } else {
-            let all_named = options.iter().all(|k| self.key_map.contains_key(k));
-            if all_named {
-                for key in &options {
-                    let (li, cls) = self.key_map[key];
-                    self.pos_label.push(li);
-                    self.pos_class.push(cls);
-                }
-            } else if !self.perm.contains(&usize::MAX) && options.len() == self.perm.len() {
-                for (li, &cls) in self.perm.iter().enumerate() {
-                    self.pos_label.push(li);
-                    self.pos_class.push(cls);
+            let mut pos_label = Vec::with_capacity(options.len());
+            let mut pos_class = Vec::with_capacity(options.len());
+            if q.kind == QKind::Noul {
+                if !self.perm.contains(&usize::MAX) {
+                    // Named join (e.g. the positional-int noul suites): the
+                    // single-question contract's law, byte-preserved — the
+                    // presented names never reorder the fixed rendering,
+                    // position p takes seat label p and the artifact's pair
+                    // row p, and the count must be exactly the seat
+                    // universe (a wider or narrower presentation has no
+                    // noul space).
+                    if options.len() != self.labels.len() {
+                        return Err(format!(
+                            "suite {}: a noul presentation carries {} options — the fixed \
+                             [false, true] rendering has exactly {} (pick_index speaks that \
+                             space whatever names are presented)",
+                            self.suite,
+                            options.len(),
+                            self.labels.len()
+                        ));
+                    }
+                    for (li, &cls) in self.perm.iter().enumerate() {
+                        pos_label.push(li);
+                        pos_class.push(cls);
+                    }
+                } else {
+                    // The CONTEXT join (the arena's fill_positions law): the
+                    // seat labels are the engine's domain space, disjoint
+                    // from the pair — resolve NOUL_PAIR BY NAME through the
+                    // key map (the artifact's unified no/yes rows; a missing
+                    // row is a producer-contract break, loud).
+                    if !is_fixed_noul_presentation(&options) {
+                        return Err(format!(
+                            "suite {}: a context noul presentation must be the fixed pair in order \
+                             (or empty — the fixed rendering): {options:?} vs [\"false\", \"true\"]",
+                            self.suite
+                        ));
+                    }
+                    for name in NOUL_PAIR {
+                        let Some(&(li, cls)) = self.key_map.get(name) else {
+                            return Err(format!(
+                                "suite {}: the noul bridge needs a {name:?} class row — the \
+                                 artifact's unified no/yes pair is missing from the key map",
+                                self.suite
+                            ));
+                        };
+                        pos_label.push(li);
+                        pos_class.push(cls);
+                    }
                 }
             } else {
-                let unmatched: Vec<String> = options
-                    .iter()
-                    .filter(|k| !self.key_map.contains_key(*k))
-                    .cloned()
-                    .collect();
-                return Err(format!(
-                    "presented options neither all name seat labels nor match the label count \
-                     ({}) — the specialist bridge is undefined; unmatched {unmatched:?}",
-                    self.labels.len()
-                ));
+                let all_named = options.iter().all(|k| self.key_map.contains_key(k));
+                if all_named {
+                    for key in &options {
+                        let (li, cls) = self.key_map[key];
+                        pos_label.push(li);
+                        pos_class.push(cls);
+                    }
+                } else if !self.perm.contains(&usize::MAX)
+                    && options.len() == self.perm.len()
+                {
+                    for (li, &cls) in self.perm.iter().enumerate() {
+                        pos_label.push(li);
+                        pos_class.push(cls);
+                    }
+                } else {
+                    let unmatched: Vec<String> = options
+                        .iter()
+                        .filter(|k| !self.key_map.contains_key(*k))
+                        .cloned()
+                        .collect();
+                    return Err(format!(
+                        "presented options neither all name seat labels nor match the label count \
+                         ({}) — the specialist bridge is undefined; unmatched {unmatched:?}",
+                        self.labels.len()
+                    ));
+                }
             }
+            all_labels.push(pos_label);
+            all_classes.push(pos_class);
+            all_options.push(options);
         }
 
-        // The modelless lane's answer: the synthesized one-question case
+        // The modelless lane's answers: the synthesized multi-question case
         // goes through the SAME eval path the seat eval uses
         // (eval_seat → engine_request → decide_with), so A0 here is the
-        // arena's A0 byte for byte.
-        let state_value = serde_json::Value::String(state.to_string());
-        let criteria: serde_json::Value = match self.q_kind {
-            QKind::Choice => {
-                let mut m = serde_json::Map::new();
-                for key in &options {
-                    m.insert(key.clone(), serde_json::Value::Null);
-                }
-                serde_json::Value::Object(m)
-            }
-            QKind::Score => serde_json::Value::Array(
-                options
-                    .iter()
-                    .map(|k| serde_json::Value::String(k.clone()))
-                    .collect(),
-            ),
-            QKind::Noul => serde_json::Value::Null,
-        };
+        // arena's A0 byte for byte, per question.
+        let case_questions: Vec<SuiteQuestion> = questions
+            .iter()
+            .zip(all_options.iter())
+            .map(|(q, options)| SuiteQuestion {
+                qid: q.qid.to_string(),
+                kind: q.kind,
+                instructions: q.instructions.to_string(),
+                criteria: match q.kind {
+                    QKind::Choice => {
+                        let mut m = serde_json::Map::new();
+                        for key in options {
+                            m.insert(key.clone(), serde_json::Value::Null);
+                        }
+                        serde_json::Value::Object(m)
+                    }
+                    QKind::Score => serde_json::Value::Array(
+                        options
+                            .iter()
+                            .map(|k| serde_json::Value::String(k.clone()))
+                            .collect(),
+                    ),
+                    QKind::Noul => serde_json::Value::Null,
+                },
+            })
+            .collect();
         let case = SuiteCase {
             id: "served".into(),
-            state: state_value,
-            questions: vec![SuiteQuestion {
-                qid: self.qid.clone(),
-                kind: self.q_kind,
-                instructions: self.q_instructions.clone(),
-                criteria,
-            }],
-            gold: vec![GoldAnswer {
-                idx: 0,
-                soft: vec![],
-                gold_score: None,
-            }],
+            state: serde_json::Value::String(state.to_string()),
+            questions: case_questions,
+            gold: questions
+                .iter()
+                .map(|_| GoldAnswer {
+                    idx: 0,
+                    soft: vec![],
+                    gold_score: None,
+                })
+                .collect(),
         };
         let se = eval_seat(&mut self.engine, std::slice::from_ref(&case), &[state.to_string()])?;
-        let qo = &se.cases[0][0];
+        let outs = &se.cases[0];
+        if outs.len() != questions.len() {
+            return Err(format!(
+                "suite {}: the engine answered {} of {} questions — eval shape drift",
+                self.suite,
+                outs.len(),
+                questions.len()
+            ));
+        }
 
-        // The specialist's bag + per-position class scores — built under
-        // the artifact's training convention (Issue 579's bridge).
+        // The specialist's bag — built ONCE per state under the artifact's
+        // training convention (Issue 579's bridge); the per-question class
+        // scores read the same bag.
         self.bag_conv
             .bag_into(state.as_bytes(), &mut self.bag, &mut self.tok);
-        self.pos_spec.clear();
-        self.pos_spec.resize(self.pos_class.len(), 0.0);
-        self.lane
-            .scores_classes_into(&self.bag, &self.pos_class, &mut self.pos_spec);
 
         let arm = self.arm;
-        let a0_ans = A0Answer {
-            probs: &qo.probs,
-            pick: qo.pick,
-            abstained: qo.abstained,
-        };
-        let (pick_index, escalated, abstained, probabilities, specialist_scores, confidence) =
-            match arm {
-                Arm::A0 => {
-                    let abstained = qo.abstained;
-                    let pick = (!abstained).then_some(qo.pick);
-                    let probs = (!qo.probs.is_empty()).then(|| qo.probs.clone());
-                    (pick, false, abstained, probs, None, qo.conf)
-                }
-                Arm::A1 => {
-                    let (p, c) = argmax_pos(&self.pos_spec);
-                    (
-                        Some(p),
-                        true,
-                        false,
-                        None,
-                        Some(self.pos_spec.clone()),
-                        f64::from(c),
-                    )
-                }
-                Arm::H1 { .. } => {
-                    let d = {
-                        let SuiteServer {
-                            lane,
-                            bag,
-                            pos_class,
-                            survivors,
-                            h1_scores,
-                            ..
-                        } = self;
-                        lane.h1_decide(a0_ans, bag, pos_class, survivors, h1_scores)
-                    };
-                    if d.escalated {
-                        let (_, c) = argmax_pos(&self.pos_spec);
+        let mut decisions = Vec::with_capacity(questions.len());
+        for (qi, _q) in questions.iter().enumerate() {
+            let qo = &outs[qi];
+            let pos_class = &all_classes[qi];
+            let options = &all_options[qi];
+            self.pos_spec.clear();
+            self.pos_spec.resize(pos_class.len(), 0.0);
+            self.lane
+                .scores_classes_into(&self.bag, pos_class, &mut self.pos_spec);
+            let a0_ans = A0Answer {
+                probs: &qo.probs,
+                pick: qo.pick,
+                abstained: qo.abstained,
+            };
+            let (pick_index, escalated, abstained, probabilities, specialist_scores, confidence) =
+                match arm {
+                    Arm::A0 => {
+                        let abstained = qo.abstained;
+                        let pick = (!abstained).then_some(qo.pick);
+                        let probs = (!qo.probs.is_empty()).then(|| qo.probs.clone());
+                        (pick, false, abstained, probs, None, qo.conf)
+                    }
+                    Arm::A1 => {
+                        let (p, c) = argmax_pos(&self.pos_spec);
                         (
-                            Some(d.pick),
+                            Some(p),
                             true,
                             false,
                             None,
                             Some(self.pos_spec.clone()),
                             f64::from(c),
                         )
-                    } else {
-                        (
-                            Some(d.pick),
-                            false,
-                            qo.abstained,
-                            (!qo.probs.is_empty()).then(|| qo.probs.clone()),
-                            None,
-                            qo.conf,
-                        )
                     }
-                }
-                Arm::H2 {
-                    beta,
-                    n_min,
-                    tau_n,
-                } => {
-                    let (n_seen, n_tok) = self.gather_nb(state);
-                    let inscores: &[f32] = if self.nb_armed {
-                        self.gather_positions_nb();
-                        &self.pos_nb
-                    } else {
-                        &[]
-                    };
-                    let fusion = PriorFusion {
+                    Arm::H1 { .. } => {
+                        let d = {
+                            let SuiteServer { lane, bag, survivors, h1_scores, .. } = self;
+                            lane.h1_decide(a0_ans, bag, pos_class, survivors, h1_scores)
+                        };
+                        if d.escalated {
+                            let (_, c) = argmax_pos(&self.pos_spec);
+                            (
+                                Some(d.pick),
+                                true,
+                                false,
+                                None,
+                                Some(self.pos_spec.clone()),
+                                f64::from(c),
+                            )
+                        } else {
+                            (
+                                Some(d.pick),
+                                false,
+                                qo.abstained,
+                                (!qo.probs.is_empty()).then(|| qo.probs.clone()),
+                                None,
+                                qo.conf,
+                            )
+                        }
+                    }
+                    Arm::H2 {
                         beta,
                         n_min,
                         tau_n,
-                    };
-                    let f = prior_fusion_pick(&fusion, &self.pos_spec, inscores, n_seen, n_tok);
-                    (
-                        Some(f.pick),
-                        true,
-                        false,
-                        None,
-                        Some(self.pos_spec.clone()),
-                        f.conf,
-                    )
-                }
-            };
-
-        let pick = pick_index.map(|i| options[i].clone());
-        Ok(ServedDecision {
-            suite: self.suite,
-            arm: arm.name(),
-            options,
-            pick_index,
-            pick,
-            probabilities,
-            specialist_scores,
-            confidence,
-            escalated,
-            abstained,
-            us: u64::try_from(t0.elapsed().as_micros()).unwrap_or(u64::MAX),
-        })
+                    } => {
+                        let (n_seen, n_tok) = self.gather_nb(state);
+                        let inscores: &[f32] = if self.nb_armed {
+                            self.pos_label.clear();
+                            self.pos_label.extend_from_slice(&all_labels[qi]);
+                            self.gather_positions_nb();
+                            &self.pos_nb
+                        } else {
+                            &[]
+                        };
+                        let fusion = PriorFusion {
+                            beta,
+                            n_min,
+                            tau_n,
+                        };
+                        let f =
+                            prior_fusion_pick(&fusion, &self.pos_spec, inscores, n_seen, n_tok);
+                        (
+                            Some(f.pick),
+                            true,
+                            false,
+                            None,
+                            Some(self.pos_spec.clone()),
+                            f.conf,
+                        )
+                    }
+                };
+            let pick = pick_index.map(|i| options[i].clone());
+            decisions.push(ServedDecision {
+                suite: self.suite,
+                arm: arm.name(),
+                options: options.clone(),
+                pick_index,
+                pick,
+                probabilities,
+                specialist_scores,
+                confidence,
+                escalated,
+                abstained,
+                us: u64::try_from(t0.elapsed().as_micros()).unwrap_or(u64::MAX),
+            });
+        }
+        Ok(decisions)
     }
 
     /// The count tables' evidence for this state (label space) + the
@@ -983,6 +1145,25 @@ impl AnySuiteServer {
             AnySuiteServer::S6(s) => s.decide(state, options),
             AnySuiteServer::S59(s) => s.decide(state, options),
             AnySuiteServer::S77(s) => s.decide(state, options),
+        }
+    }
+
+    /// The multi-question contract (Issue 011): one state, ALL questions
+    /// answered in one call (the `decision_wire` law). One
+    /// [`ServedDecision`] per question, in call order.
+    pub fn decide_multi(
+        &mut self,
+        state: &str,
+        questions: &[ServedQuestion<'_>],
+    ) -> Result<Vec<ServedDecision>, String> {
+        match self {
+            AnySuiteServer::S2(s) => s.decide_multi(state, questions),
+            AnySuiteServer::S3(s) => s.decide_multi(state, questions),
+            AnySuiteServer::S4(s) => s.decide_multi(state, questions),
+            AnySuiteServer::S5(s) => s.decide_multi(state, questions),
+            AnySuiteServer::S6(s) => s.decide_multi(state, questions),
+            AnySuiteServer::S59(s) => s.decide_multi(state, questions),
+            AnySuiteServer::S77(s) => s.decide_multi(state, questions),
         }
     }
 
