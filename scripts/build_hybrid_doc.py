@@ -465,24 +465,59 @@ def build_doc(predictions_path: Path, git_sha: str, date_utc: str,
     return build_doc_from(preds, git_sha, date_utc, serving)
 
 
+def build_doc_merged(paths: list[Path], git_sha: str, date_utc: str,
+                     serving: dict[str, str] | None = None) -> dict:
+    """`build_doc` over a SUITE-LEVEL UNION of several frozen records —
+    for the mixed-pool posture: the serving arm may be measured in a
+    per-suite record (typed_decisions' full-pool H2, Bench 020) while the
+    other suites ride the default-pool full run (Bench 019). Later files
+    override earlier ones per suite (argv order = precedence); every
+    suite's cell still comes from ONE frozen record and the manifest
+    cross-check runs over the merged view, so an arm named in no record
+    still refuses. The meta discloses the merge."""
+    merged: dict[str, dict] = {}
+    order: list[str] = []
+    for p in paths:
+        preds = json.loads(p.read_text(encoding="utf-8"))
+        for run in preds["frozen_test_predictions"]:
+            name = run["suite"]
+            if name not in merged:
+                order.append(name)
+            merged[name] = run
+    preds = {"frozen_test_predictions": [merged[n] for n in order]}
+    doc = build_doc_from(preds, git_sha, date_utc, serving)
+    doc["meta"]["lane_note"] += (
+        " Record merge: "
+        + ", ".join(p.name for p in paths)
+        + " (suite-level union, argv order wins; each suite's cell is "
+          "one frozen read)."
+    )
+    return doc
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("predictions", type=Path, nargs="?",
-                    help="the arena's frozen predictions.json")
-    ap.add_argument("out", type=Path, nargs="?")
+    ap.add_argument("predictions", type=Path, nargs="*",
+                    help="the arena's frozen predictions.json (repeat to "
+                         "merge records per suite; argv order = precedence)")
+    ap.add_argument("--out", "-o", type=Path, required=False,
+                    help="the lane doc to write (required unless "
+                         "--self-test)")
     ap.add_argument("--git-sha", default=None,
                     help="the arena build's sha (default: git rev-parse HEAD)")
     ap.add_argument("--date-utc", default=None)
     ap.add_argument("--arsenal", type=Path, default=None,
                     help="the arsenal manifest (the serving truth; "
-                         "default: <repo>/arsenal.toml beside this script)")
+                         "default: arsenal.toml beside this script)")
     ap.add_argument("--self-test", action="store_true",
                     help="run the Issue-007 known-answer arms and exit")
     args = ap.parse_args()
     if args.self_test:
         return selftest()
-    if args.predictions is None or args.out is None:
-        ap.error("predictions and out are required (or pass --self-test)")
+    if not args.predictions and args.out is None and not args.self_test:
+        ap.error("predictions and --out are required (or pass --self-test)")
+    if args.predictions and args.out is None:
+        ap.error("--out is required with predictions")
     git_sha = args.git_sha
     if git_sha is None:
         git_sha = subprocess.run(
@@ -491,8 +526,11 @@ def main() -> int:
         ).stdout.strip()
     date_utc = args.date_utc or datetime.now(timezone.utc).strftime(
         "%Y-%m-%dT%H:%M:%SZ")
-    serving = serving_arms(args.arsenal)
-    doc = build_doc(args.predictions, git_sha, date_utc, serving)
+    arsenal = args.arsenal or Path(__file__).resolve().parent.parent / "arsenal.toml"
+    serving = serving_arms(arsenal)
+    doc = (build_doc(args.predictions[0], git_sha, date_utc, serving)
+           if len(args.predictions) == 1
+           else build_doc_merged(args.predictions, git_sha, date_utc, serving))
     args.out.write_text(json.dumps(doc, indent=1) + "\n", encoding="utf-8")
     names = [s["name"] for s in doc["suites"]]
     a0 = [s["name"] for s in doc["suites"] if s["verdict"] == "a0_stands"]
