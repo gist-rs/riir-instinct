@@ -15,6 +15,11 @@ Owner direction 2026-09-28: riir-mmorpg-examples / seal-online-remaster / seal-g
   `--skip-pin-a0` stays the documented posture with this reason; the
   site's modelless rows (reflex HEAD, canonical pool) and the hybrid rows
   (t20k seat) compare across (pool × engine) by design.
+  **2026-09-29 dated note:** the site's typed modelless row now REALLY
+  carries that posture — republished at reflex Bench 078/079 (0.5725,
+  both hosts; reflex-site `a2f1f9e`) — so the visible typed pair is
+  modelless 0.5725 (canonical pool) vs hybrid t20k-seat rows; this row's
+  (a)/(b) decision is unchanged and still open.
 
 - E2 — OWNER-GATED / cred-holder: the devnet container push is an explicitly MANUAL push under the manual-deploy posture (local e2e green, staged artifact verified — `AGENTS.md:103`). No agent execution.
 - [-] MAINNET ceremony T4 (`AGENTS.md:400`) — DEFERRED: no mainnet until the owner lifts the hold.
