@@ -34,25 +34,26 @@ use std::hint::black_box;
 use std::path::{Path, PathBuf};
 
 use riir_instinct::{
-    A0Answer, ArmStat, Cascade, HybridLane, MAX_TOP_K, PairedDiff, PriorFusion, SpecialistLane,
-    delta_suite, paired_upper_bound, pareto_rank0, prior_fusion_pick, select_arm, wilson_lb,
+    A0Answer, ArmStat, Cascade, HybridLane, MAX_TOP_K, NOUL_PAIR, PairedDiff, PriorFusion,
+    SpecialistLane, delta_suite, paired_upper_bound, pareto_rank0, prior_fusion_pick, select_arm,
+    wilson_lb,
 };
 use riir_reflex::embed::EMBED_DIM;
 use riir_reflex::engine::DecisionEngine;
 use riir_reflex::harness::metrics::{CalibrationPair, conformal_naive_floor, ece_of};
 use riir_reflex::harness::runner::seat::{
-    PostureKnobs, QuestionOut, Seat, SeatEval, SeatPosture, build_seat_engine, eval_seat,
-    fit_posture, prepare_seat,
+    PostureKnobs, Seat, SeatEval, SeatPosture, build_seat_engine, eval_seat, fit_posture,
+    prepare_seat,
 };
-use riir_reflex::harness::suites::{QKind, SuiteCase};
+use riir_reflex::harness::suites::{QKind, SuiteCase, SuiteQuestion};
 use riir_reflex::nb_scope::NbView;
 
 /// The arena population (Issue 010 T1): every reflex DATASET suite. The
 /// first six carry riir-train Issue 576 winner artifacts (the full arm
-/// grid); `typed_decisions` + `prompt_injections` have no specialist —
-/// they run the A0/G0-only posture (T2) and publish their measured
-/// `a0_stands` row. Label-arity dispatch below must cover their train-
-/// derived label counts (3 workflows / 2 noul classes, measured 2026-09-27).
+/// grid); `typed_decisions` + `prompt_injections` carry the Issue 578
+/// winners through Plan 003's noul bridge. Label-arity dispatch below must
+/// cover their train-derived label counts (4 workflows / 2 noul classes,
+/// measured 2026-09-28 — the plan's 3-workflow guess was stale).
 /// Issue 010 T6 (2026-09-28): the harness families + `code_fixtures` join
 /// — the reflex Issue-049 seat seam now seats them (marked synthetic);
 /// no winner artifacts exist for them, so they run the A0/G0-only
@@ -283,6 +284,7 @@ fn main() {
     let mut out_dir = PathBuf::from(".benchmarks/001_hybrid_goat");
     let mut top_k = 8usize;
     let mut pin_a0 = true;
+    let mut only_suites: Vec<String> = Vec::new();
     let mut i = 1;
     while i < args.len() {
         match args[i].as_str() {
@@ -302,6 +304,10 @@ fn main() {
                 i += 1;
                 top_k = args[i].parse().expect("--top-k needs a number");
             }
+            "--suite" => {
+                i += 1;
+                only_suites.push(args[i].clone());
+            }
             "--skip-pin-a0" => pin_a0 = false,
             other => die(&format!("unknown arg {other}")),
         }
@@ -310,6 +316,26 @@ fn main() {
     if !(1..=MAX_TOP_K).contains(&top_k) {
         die("--top-k out of range (1..=32)");
     }
+    // The focused-read filter (Plan 003's T5 frozen reads): run a subset
+    // of the population; the A0 pin covers exactly what ran. Repeatable.
+    let suites: Vec<&'static str> = if only_suites.is_empty() {
+        SUITES.to_vec()
+    } else {
+        only_suites
+            .iter()
+            .map(|s| {
+                SUITES
+                    .iter()
+                    .find(|x| **x == s.as_str())
+                    .copied()
+                    .unwrap_or_else(|| {
+                        die(&format!(
+                            "unknown suite {s} — the arena seats {SUITES:?}"
+                        ))
+                    })
+            })
+            .collect()
+    };
 
     eprintln!("=== riir-instinct arena — the Reflex · instinct GOAT run ===");
     eprintln!(
@@ -323,7 +349,7 @@ fn main() {
     eprintln!("box: {box_summary}");
 
     let mut runs: Vec<SuiteRun> = Vec::new();
-    for suite in SUITES {
+    for suite in &suites {
         match run_suite(suite, &datasets_dir, &winners_dir, top_k) {
             Ok(run) => runs.push(run),
             Err(e) => die(&format!("{suite}: {e}")),
@@ -331,11 +357,12 @@ fn main() {
     }
 
     // The A0 drift pin: the seat path must reproduce reflex's own lane,
-    // byte for byte, on EVERY arena suite — and, when the reflex-site
-    // checkout stands beside the workspace, reflex's rows must equal the
-    // PUBLISHED bench.json numbers (the Issue-008 T1 re-baseline law).
+    // byte for byte, on EVERY arena suite that ran — and, when the
+    // reflex-site checkout stands beside the workspace, reflex's rows must
+    // equal the PUBLISHED bench.json numbers (the Issue-008 T1 re-baseline
+    // law).
     if pin_a0 {
-        if let Err(e) = pin_a0_identity(&datasets_dir, &runs) {
+        if let Err(e) = pin_a0_identity(&datasets_dir, &runs, &suites) {
             die(&format!("A0 identity pin FAILED: {e}"));
         }
         eprintln!(
@@ -431,28 +458,47 @@ struct SuiteCtx<const N: usize> {
 type GridRow = (Cand, Vec<usize>, Vec<bool>, Vec<f64>, Vec<f64>);
 
 impl<const N: usize> SuiteCtx<N> {
-    /// Fill the per-case position maps from the question's presented
+    /// Fill the per-question position maps from the question's presented
     /// criteria keys, in the object's own order — the exact iteration
     /// `engine_request` feeds the engine, so position p here IS the
     /// engine's answer index p (and the gold index's space). The
-    /// position → domain rule mirrors the engine's own two rules
-    /// (`solve_into`): every key resolving to a seat label → BY NAME
-    /// (massive/banking77, whose keys are the label strings); otherwise
-    /// count == label count → IDENTITY BY INDEX (the fixed-criteria
-    /// suites ag_news/emotion/sst5/xnli, whose keys are display names
-    /// over int-string domains). Anything else is the engine's
-    /// route-less shape — the specialist bridge is undefined there, so
-    /// REFUSE loud (Issue 006: the mismatch of these two spaces is the
-    /// instrument defect that read massive at chance).
+    /// position → domain rule mirrors the engine's own rules
+    /// (`solve_into`): NOUL questions (Plan 003) present the fixed
+    /// `[false, true]` rendering — gold idx 0/1 speak it — mapped onto
+    /// [`NOUL_PAIR`] by NAME through the key map (real seat indices where
+    /// the suite's own universe is the pair — prompt_injections' positional
+    /// join; the artifact-known sentinel where it is not —
+    /// typed_decisions' workflow seats, whose NB margin then mutes).
+    /// CHOICE/SCORE questions follow the engine's two rules: every key
+    /// resolving to a known label → BY NAME (massive/banking77, whose
+    /// keys are the label strings); otherwise count == label count →
+    /// IDENTITY BY INDEX (the fixed-criteria suites ag_news/emotion/sst5/
+    /// xnli, whose keys are display names over int-string domains).
+    /// Anything else is the engine's route-less shape — the specialist
+    /// bridge is undefined there, so REFUSE loud (Issue 006: the mismatch
+    /// of these two spaces is the instrument defect that read massive at
+    /// chance).
     ///
     /// A key naming an ARTIFACT-KNOWN label the seat never offers (the
     /// test-split universe can be a strict subset of the artifact's
     /// train-derived one) resolves to the sentinel seat index —
     /// scoreable by the specialist, NaN-evidence for the NB margin.
-    fn fill_positions(&mut self, case: &SuiteCase) {
+    fn fill_positions(&mut self, case_id: &str, q: &SuiteQuestion) {
         self.pos_label.clear();
         self.pos_class.clear();
-        let q = &case.questions[0];
+        if q.kind == QKind::Noul {
+            for name in NOUL_PAIR {
+                let Some(&(li, cls)) = self.key_map.get(name) else {
+                    panic!(
+                        "case {case_id}: the noul bridge needs a {name:?} class row — the \
+                         artifact's unified no/yes pair is missing from the key map"
+                    );
+                };
+                self.pos_label.push(li);
+                self.pos_class.push(cls);
+            }
+            return;
+        }
         // The presented options, in presentation order — a choice's
         // criteria OBJECT keys, or a score's criteria ARRAY levels (the
         // engine's `Outcome::Score { level }` indexes the array).
@@ -468,8 +514,8 @@ impl<const N: usize> SuiteCtx<N> {
                 .collect()
         } else {
             panic!(
-                "case {}: criteria must be an object (choice) or an array (score)",
-                case.id
+                "case {case_id}: criteria must be an object (choice), an array (score), \
+                 or Null (noul)",
             );
         };
         let all_named = keys.iter().all(|key| self.key_map.contains_key(key));
@@ -491,10 +537,9 @@ impl<const N: usize> SuiteCtx<N> {
                 .cloned()
                 .collect();
             panic!(
-                "case {}: presented options neither all name seat labels nor match the \
+                "case {case_id}: presented options neither all name seat labels nor match the \
                  label count ({}) — the specialist bridge is undefined; \
                  unmatched {unmatched:?}; key_map {} entries; perm {}",
-                case.id,
                 self.perm.len(),
                 self.key_map.len(),
                 self.perm.len()
@@ -586,85 +631,91 @@ impl<const N: usize> SuiteCtx<N> {
     }
 
     /// H1 over a case set from an existing seat eval — the cascade arm
-    /// (reflex pass-through + specialist over survivors). The bridge
-    /// reads each case's FIRST question (`fill_positions`); the strict
-    /// one-non-noul-question-per-case shape is asserted where the
-    /// specialist joins, so per-question rows here == per-case rows.
+    /// (reflex pass-through + specialist over survivors). Flattened PER
+    /// QUESTION (Plan 003: typed_decisions' 5-question cases each yield
+    /// per-question rows — the per-question bag is the case's state string
+    /// re-bagged, the per-question positions/gold come from that question's
+    /// own criteria; for the one-question suites this is byte-identical to
+    /// the old per-case loop).
     fn eval_h1(
         &mut self,
         se: &SeatEval,
         cases: &[SuiteCase],
         strs: &[String],
     ) -> ArmOut {
-        let n = cases.len();
+        let n_q: usize = cases.iter().map(|c| c.questions.len()).sum();
         let mut h1 = ArmOut {
             name: "H1".into(),
-            correct: Vec::with_capacity(n),
-            picks: Vec::with_capacity(n),
-            probs: Vec::with_capacity(n),
-            confs: Vec::with_capacity(n),
-            escalated: Vec::with_capacity(n),
-            abstained: Vec::with_capacity(n),
-            own_durs_us: Vec::with_capacity(n),
-            total_durs_us: Vec::with_capacity(n),
+            correct: Vec::with_capacity(n_q),
+            picks: Vec::with_capacity(n_q),
+            probs: Vec::with_capacity(n_q),
+            confs: Vec::with_capacity(n_q),
+            escalated: Vec::with_capacity(n_q),
+            abstained: Vec::with_capacity(n_q),
+            own_durs_us: Vec::with_capacity(n_q),
+            total_durs_us: Vec::with_capacity(n_q),
             contains_seat_solve: true,
         };
         for (ci, case) in cases.iter().enumerate() {
-            let gold = case.gold[0].idx;
-            let qo: &QuestionOut = &se.cases[ci][0];
-            let a0_ans = A0Answer {
-                probs: &qo.probs,
-                pick: qo.pick,
-                abstained: qo.abstained,
-            };
             let state = strs[ci].as_bytes();
-            self.conv.bag_into(state, &mut self.bag, &mut self.tok);
-            self.fill_positions(case);
-            self.score_positions();
-            let t = std::time::Instant::now();
-            let d = self.lane.h1_decide(
-                a0_ans,
-                &self.bag,
-                &self.pos_class,
-                &mut self.survivors,
-                &mut self.h1_scores,
-            );
-            let dt_us = t.elapsed().as_nanos() as f64 / 1000.0;
-            h1.picks.push(d.pick);
-            h1.correct.push(d.pick == gold);
-            h1.probs.push(qo.probs.clone());
-            h1.escalated.push(d.escalated);
-            // H1 abstains only where reflex abstained AND the gate did
-            // not escalate (the passthrough half of the cascade).
-            h1.abstained.push(qo.abstained && !d.escalated);
-            h1.own_durs_us.push(dt_us);
-            h1.total_durs_us.push(dt_us + se.durs_us[ci] as f64);
-            // The hybrid's confidence readout: reflex's when it answered,
-            // the specialist's winning score when escalated (read OUTSIDE
-            // the timed region — a readout, not decision work).
-            h1.confs.push(if d.escalated {
-                f64::from(argmax_pos(&self.pos_spec).1)
-            } else {
-                qo.conf
-            });
+            for (qi, (q, qo)) in case.questions.iter().zip(&se.cases[ci]).enumerate() {
+                let gold = case.gold[qi].idx;
+                let a0_ans = A0Answer {
+                    probs: &qo.probs,
+                    pick: qo.pick,
+                    abstained: qo.abstained,
+                };
+                self.conv.bag_into(state, &mut self.bag, &mut self.tok);
+                self.fill_positions(&case.id, q);
+                self.score_positions();
+                let t = std::time::Instant::now();
+                let d = self.lane.h1_decide(
+                    a0_ans,
+                    &self.bag,
+                    &self.pos_class,
+                    &mut self.survivors,
+                    &mut self.h1_scores,
+                );
+                let dt_us = t.elapsed().as_nanos() as f64 / 1000.0;
+                h1.picks.push(d.pick);
+                h1.correct.push(d.pick == gold);
+                h1.probs.push(qo.probs.clone());
+                h1.escalated.push(d.escalated);
+                // H1 abstains only where reflex abstained AND the gate did
+                // not escalate (the passthrough half of the cascade).
+                h1.abstained.push(qo.abstained && !d.escalated);
+                h1.own_durs_us.push(dt_us);
+                h1.total_durs_us.push(dt_us + se.durs_us[ci] as f64);
+                // The hybrid's confidence readout: reflex's when it answered,
+                // the specialist's winning score when escalated (read OUTSIDE
+                // the timed region — a readout, not decision work).
+                h1.confs.push(if d.escalated {
+                    f64::from(argmax_pos(&self.pos_spec).1)
+                } else {
+                    qo.conf
+                });
+            }
         }
         h1
     }
 
     /// A1 + the H2 grid over a case set (no reflex solve — the specialist
-    /// forward + the frozen count tables only).
+    /// forward + the frozen count tables only). Flattened PER QUESTION
+    /// (Plan 003 — the same law as [`Self::eval_h1`]); the state-level NB
+    /// read is hoisted per CASE (identical for every question; each
+    /// question's own gather maps it into that question's position space).
     fn eval_a1_h2(&mut self, cases: &[SuiteCase], strs: &[String]) -> (ArmOut, Vec<ArmOut>) {
-        let n = cases.len();
+        let n_q: usize = cases.iter().map(|c| c.questions.len()).sum();
         let mut a1 = ArmOut {
             name: "A1".into(),
-            correct: Vec::with_capacity(n),
-            picks: Vec::with_capacity(n),
-            probs: Vec::with_capacity(n),
-            confs: Vec::with_capacity(n),
-            escalated: vec![true; n],
-            abstained: vec![false; n],
-            own_durs_us: Vec::with_capacity(n),
-            total_durs_us: Vec::with_capacity(n),
+            correct: Vec::with_capacity(n_q),
+            picks: Vec::with_capacity(n_q),
+            probs: Vec::with_capacity(n_q),
+            confs: Vec::with_capacity(n_q),
+            escalated: vec![true; n_q],
+            abstained: vec![false; n_q],
+            own_durs_us: Vec::with_capacity(n_q),
+            total_durs_us: Vec::with_capacity(n_q),
             contains_seat_solve: false,
         };
         let mut grid: Vec<GridRow> = BETA_GRID
@@ -681,33 +732,17 @@ impl<const N: usize> SuiteCtx<N> {
             .map(|c| {
                 (
                     c,
-                    Vec::with_capacity(n),
-                    Vec::with_capacity(n),
-                    Vec::with_capacity(n),
-                    Vec::with_capacity(n),
+                    Vec::with_capacity(n_q),
+                    Vec::with_capacity(n_q),
+                    Vec::with_capacity(n_q),
+                    Vec::with_capacity(n_q),
                 )
             })
             .collect();
         for (ci, case) in cases.iter().enumerate() {
-            let gold = case.gold[0].idx;
-            self.fill_positions(case);
             let state = strs[ci].as_bytes();
-            let t = std::time::Instant::now();
-            self.conv.bag_into(state, &mut self.bag, &mut self.tok);
-            self.score_positions();
-            // A1's pick in PRESENTED-OPTION space — the space gold speaks
-            // (the specialist answers the question asked, among the
-            // options presented; Issue 006).
-            let (pick, conf) = argmax_pos(&self.pos_spec);
-            let fwd_us = t.elapsed().as_nanos() as f64 / 1000.0;
-            a1.picks.push(pick);
-            a1.correct.push(pick == gold);
-            a1.probs.push(Vec::new());
-            a1.confs.push(f64::from(conf));
-            a1.own_durs_us.push(fwd_us);
-            a1.total_durs_us.push(fwd_us);
-
-            // The frozen count tables' evidence for this state (read-only).
+            // The frozen count tables' evidence for this state (read-only;
+            // state-level — identical for every question of the case).
             let (n_seen, n_tok): (usize, usize) = if self.nb_armed {
                 let tables = self
                     .engine
@@ -720,27 +755,46 @@ impl<const N: usize> SuiteCtx<N> {
             } else {
                 (0, 0)
             };
-            let inscores: &[f32] = if self.nb_armed {
-                self.gather_positions_nb();
-                &self.pos_nb
-            } else {
-                &[]
-            };
-            let spec_pos: &[f32] = &self.pos_spec;
-            for (cand, picks, correct, confs, durs) in grid.iter_mut() {
-                let Cand::H2 { beta, n_min, tau_n } = cand else {
-                    unreachable!("grid holds only H2 candidates")
+            for (qi, q) in case.questions.iter().enumerate() {
+                let gold = case.gold[qi].idx;
+                self.fill_positions(&case.id, q);
+                let t = std::time::Instant::now();
+                self.conv.bag_into(state, &mut self.bag, &mut self.tok);
+                self.score_positions();
+                // A1's pick in PRESENTED-OPTION space — the space gold speaks
+                // (the specialist answers the question asked, among the
+                // options presented; Issue 006).
+                let (pick, conf) = argmax_pos(&self.pos_spec);
+                let fwd_us = t.elapsed().as_nanos() as f64 / 1000.0;
+                a1.picks.push(pick);
+                a1.correct.push(pick == gold);
+                a1.probs.push(Vec::new());
+                a1.confs.push(f64::from(conf));
+                a1.own_durs_us.push(fwd_us);
+                a1.total_durs_us.push(fwd_us);
+
+                let inscores: &[f32] = if self.nb_armed {
+                    self.gather_positions_nb();
+                    &self.pos_nb
+                } else {
+                    &[]
                 };
-                let fusion = PriorFusion {
-                    beta: *beta,
-                    n_min: *n_min,
-                    tau_n: *tau_n,
-                };
-                let f = prior_fusion_pick(&fusion, spec_pos, inscores, n_seen, n_tok);
-                picks.push(f.pick);
-                correct.push(f.pick == gold);
-                confs.push(f.conf);
-                durs.push(fwd_us);
+                let spec_pos: &[f32] = &self.pos_spec;
+                for (cand, picks, correct, confs, durs) in grid.iter_mut() {
+                    let Cand::H2 { beta, n_min, tau_n } = cand else {
+                        unreachable!("grid holds only H2 candidates")
+                    };
+                    let fusion = PriorFusion {
+                        beta: *beta,
+                        n_min: *n_min,
+                        tau_n: *tau_n,
+                    };
+                    let f = prior_fusion_pick(&fusion, spec_pos, inscores, n_seen, n_tok);
+                    picks.push(f.pick);
+                    correct.push(f.pick == gold);
+                    confs.push(f.conf);
+                    durs.push(fwd_us);
+                }
             }
         }
         let arms = grid
@@ -751,8 +805,8 @@ impl<const N: usize> SuiteCtx<N> {
                 picks,
                 probs: Vec::new(),
                 confs,
-                escalated: vec![true; n],
-                abstained: vec![false; n],
+                escalated: vec![true; n_q],
+                abstained: vec![false; n_q],
                 own_durs_us: durs.clone(),
                 total_durs_us: durs,
                 contains_seat_solve: false,
@@ -844,20 +898,19 @@ fn run_suite_n<const N: usize>(
         return run_suite_a0_only(name, seat, engine, posture);
     };
 
-    // The specialist bridge's shape law (one non-noul question per case):
-    // the bridge reads a case's FIRST question (`fill_positions`), so the
-    // assertion guards exactly the arm-construction path below. A0-only
-    // suites (no artifact) admit any question shape — their A0 arm is
-    // flattened per question in `eval_a0`.
-    if seat
-        .suite
-        .cases
-        .iter()
-        .any(|c| c.questions.len() != 1 || c.questions.iter().any(|q| q.kind == QKind::Noul))
-    {
+    // The specialist bridge's shape law (Plan 003, relaxed from
+    // one-non-noul-question-per-case): every case carries ≥1 question and
+    // every question resolves through the bridge — noul via the fixed
+    // [no, yes] pair (the producer's unified spelling, mapped by NAME
+    // through the key map), choice/score via the presented criteria (the
+    // two existing rules). A zero-question case is the bridge's undefined
+    // shape — refuse loud. (typed_decisions' 5-question mixed sets and
+    // prompt_injections' noul singletons both pass; A0 is flattened per
+    // question and H1/A1/H2 zip per question.)
+    if seat.suite.cases.iter().any(|c| c.questions.is_empty()) {
         return Err(
-            "the specialist bridge's shape is one non-noul question per case (true of all \
-             six artifact suites; the assertion keeps a silent shape drift loud)"
+            "the specialist bridge's shape is ≥1 question per case — a zero-question \
+             case is undefined (the assertion keeps a silent shape drift loud)"
                 .into(),
         );
     }
@@ -868,11 +921,16 @@ fn run_suite_n<const N: usize>(
         spec.labels.len(),
         bridge.convention.name()
     );
-    let joined = SpecialistLane::join(spec, name, &seat.labels, Cascade { top_k })?;
-    // The presented-option bridge (SuiteCtx::key_map): every seat label
-    // → (its own index, its artifact class row).
-    let mut key_map: HashMap<String, (usize, usize)> = seat
-        .labels
+    // The seat↔artifact label join (Plan 003's noul bridge): name-joinable
+    // suites pass through; a noul-only suite whose seat labels are the
+    // positional int spelling joins the unified [no, yes] pair by position
+    // — the key map below keys off the JOINED labels, so prompt_injections'
+    // two noul positions carry real seat indices (live NB evidence).
+    let join_labels = riir_instinct::hybrid::noul_join_labels(&seat.labels, &spec.labels);
+    let joined = SpecialistLane::join(spec, name, &join_labels, Cascade { top_k })?;
+    // The presented-option bridge (SuiteCtx::key_map): every JOINED seat
+    // label → (its own index, its artifact class row).
+    let mut key_map: HashMap<String, (usize, usize)> = join_labels
         .iter()
         .enumerate()
         .map(|(li, l)| (l.clone(), (li, joined.perm[li])))
@@ -1546,10 +1604,10 @@ fn laya_face(_seat: &Seat, _test_arms: &[ArmOut]) -> Option<LayaFace> {
 /// The A0 drift pin: reflex's own `run()` over xnli_en at the same
 /// posture must reproduce the arena's A0 test accuracy exactly (the same
 /// engine, the same questions — a divergence is a seat-path defect).
-fn pin_a0_identity(datasets_dir: &Path, runs: &[SuiteRun]) -> Result<(), String> {
+fn pin_a0_identity(datasets_dir: &Path, runs: &[SuiteRun], suites: &[&str]) -> Result<(), String> {
     let opts = riir_reflex::harness::runner::RunOptions {
         datasets_dir: datasets_dir.to_path_buf(),
-        suites: SUITES.iter().map(|s| s.to_string()).collect(),
+        suites: suites.iter().map(|s| (*s).to_string()).collect(),
         laya_max_questions: 0,
         skip_laya: true,
         // the cascade lane (sibling reflex Issue 038 T4′ / 042 lever 3) —
@@ -1599,6 +1657,10 @@ fn pin_a0_identity(datasets_dir: &Path, runs: &[SuiteRun]) -> Result<(), String>
         // reflex's issue-044 probe arm — measurement-only upstream, and
         // never part of the published posture the pin reproduces.
         nli_feature_ab: false,
+        // reflex's Issue 047 M1 reopen lane (xnli pick/confidence
+        // separation) — measurement-only upstream, never the pin's
+        // posture. (Field landed by the sibling's in-flight tree.)
+        nli_m1: false,
     };
     let (out, errors) = riir_reflex::harness::runner::run(&opts)?;
     if !errors.is_empty() {
@@ -1610,7 +1672,7 @@ fn pin_a0_identity(datasets_dir: &Path, runs: &[SuiteRun]) -> Result<(), String>
     // numbers — that is the "A0 == the published modelless row" half of
     // the re-baseline (Issue 008 T1). Absent checkout → a loud skip
     // (a deferral, never a green).
-    let site_rows = site_published_rows(datasets_dir, SUITES)?;
+    let site_rows = site_published_rows(datasets_dir, suites)?;
 
     let mut mismatches = Vec::new();
     for run in runs {

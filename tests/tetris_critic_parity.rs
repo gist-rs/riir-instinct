@@ -8,6 +8,7 @@
 //! - `TET_CRITIC_MODEL` — the format-v1 weights file (`tetris_mlp_v1.bin`);
 //! - `TET_CRITIC_PARITY` — the matching `parity_fixture.json`
 //!   (defaults to `<model dir>/parity_fixture.json`).
+//!
 //! `TET_CRITIC_PARITY_REQUIRE=1` turns the missing-data skip into a
 //! failure (the slice_leak pattern) — never a silent green zero.
 

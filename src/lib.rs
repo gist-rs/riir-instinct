@@ -34,8 +34,8 @@ pub mod tetris_lane;
 pub mod tetris_critic;
 
 pub use hybrid::{
-    A0Answer, Cascade, FusedPick, HybridDecision, HybridLane, MAX_TOP_K, PriorFusion,
-    SpecialistLane, prior_fusion_pick,
+    A0Answer, Cascade, FusedPick, HybridDecision, HybridLane, MAX_TOP_K, NOUL_PAIR, PriorFusion,
+    SpecialistLane, noul_join_labels, prior_fusion_pick,
 };
 pub use specialist::Specialist;
 pub use arsenal_ops::{

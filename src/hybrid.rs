@@ -134,6 +134,48 @@ impl Cascade {
     }
 }
 
+/// The noul bridge's unified pair (Plan 003 / riir-train Issue 578): the
+/// producer's label spelling for a noul question's two positions — gold
+/// idx 0 (the `[false, true]` rendering's false side) is `"no"`, gold idx
+/// 1 (true) is `"yes"` — shared verbatim by both 578 artifacts
+/// (`prompt_injections` and `typed_decisions`, whose class universes
+/// carry the pair as ordinary labels).
+pub const NOUL_PAIR: [&str; 2] = ["no", "yes"];
+
+/// The noul bridge's seat half (Plan 003): the label list to join a seat
+/// with. Name-joinable suites pass through untouched (typed_decisions'
+/// workflow seats join by name; its noul questions resolve through the
+/// artifact-known labels in the key map instead). A noul-only suite whose
+/// seat labels are the modelless positional int spelling (`"0"`, `"1"` —
+/// reflex's prompt_injections seat; the harness's noul rendering is the
+/// fixed `[false, true]`, gold idx p speaks it, and the train side's
+/// dataset map label p → [`NOUL_PAIR`][p] is the same correspondence)
+/// joins the unified pair BY POSITION: seat label `"p"` and pair entry p
+/// denote the same class, so the returned labels are the pair and the
+/// resulting `perm`/key map carry real seat indices for the two noul
+/// positions (their NB evidence stays live). When NEITHER form joins, the
+/// seat labels pass through unchanged and [`SpecialistLane::join`] is the
+/// single refusal site (its "seat label not in the artifact" error, with
+/// the drift context).
+#[must_use]
+pub fn noul_join_labels(seat_labels: &[String], artifact_labels: &[String]) -> Vec<String> {
+    if seat_labels.iter().all(|l| artifact_labels.contains(l)) {
+        return seat_labels.to_vec();
+    }
+    let positional = seat_labels.len() == NOUL_PAIR.len()
+        && seat_labels
+            .iter()
+            .enumerate()
+            .all(|(i, l)| l == &i.to_string())
+        && NOUL_PAIR
+            .iter()
+            .all(|n| artifact_labels.iter().any(|a| a == n));
+    if positional {
+        return NOUL_PAIR.iter().map(|s| (*s).to_string()).collect();
+    }
+    seat_labels.to_vec()
+}
+
 /// A loaded specialist joined onto a seat's label order. `perm[label]` is
 /// the specialist's class row for that label — a bijection asserted at
 /// construction (the join pin; a silent permutation here would move every
@@ -598,6 +640,40 @@ mod tests {
         .unwrap();
         assert!(SpecialistLane::join(spec, "toy", &["s0".into(), "s1".into()], Cascade::default())
             .is_err());
+    }
+
+    /// The noul seat bridge (Plan 003): name-joinable seats pass through
+    /// untouched; the positional int spelling over the unified pair joins
+    /// the pair; anything else passes through unchanged so the join stays
+    /// the single refusal site.
+    #[test]
+    fn noul_join_labels_passthrough_positional_and_refusal() {
+        // Passthrough: typed_decisions' workflow seat joins by name.
+        let seat = vec!["wf_a".to_string(), "wf_b".to_string(), "wf_c".to_string()];
+        let artifact = vec![
+            "no".to_string(),
+            "wf_a".to_string(),
+            "yes".to_string(),
+            "wf_b".to_string(),
+            "wf_c".to_string(),
+        ];
+        assert_eq!(noul_join_labels(&seat, &artifact), seat);
+        // Positional: prompt_injections' int spelling over the pair.
+        let seat = vec!["0".to_string(), "1".to_string()];
+        let artifact = vec!["no".to_string(), "yes".to_string()];
+        assert_eq!(
+            noul_join_labels(&seat, &artifact),
+            vec!["no".to_string(), "yes".to_string()]
+        );
+        // Int spelling but NO pair in the artifact → unchanged (join
+        // refuses with its own drift error).
+        let artifact = vec!["a".to_string(), "b".to_string()];
+        assert_eq!(noul_join_labels(&seat, &artifact), seat);
+        // Three int labels — noul renders exactly two positions, so the
+        // positional arm never fires → unchanged.
+        let seat = vec!["0".to_string(), "1".to_string(), "2".to_string()];
+        let artifact = vec!["no".to_string(), "yes".to_string()];
+        assert_eq!(noul_join_labels(&seat, &artifact), seat);
     }
 
     /// H1: an abstaining question escalates; with top_k = 1 the survivor

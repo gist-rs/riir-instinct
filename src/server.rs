@@ -321,14 +321,22 @@ impl<const N: usize> SuiteServer<N> {
         source: WeightSource,
         arm: Arm,
     ) -> Result<Self, String> {
+        // The serving shape (Plan 003, relaxed from one-non-noul-question-
+        // per-case): one question per case — the synthesized request below
+        // carries the case[0] template, so a multi-question set has no
+        // single serving kind (seat it arena-side) — with noul questions
+        // admitted through the bridge (the fixed [false, true] rendering;
+        // decide's positional resolve).
         if seat
             .suite
             .cases
             .iter()
-            .any(|c| c.questions.len() != 1 || c.questions.iter().any(|q| q.kind == QKind::Noul))
+            .any(|c| c.questions.len() != 1)
         {
             return Err(format!(
-                "suite {suite}: the serving shape is one non-noul question per case"
+                "suite {suite}: the serving shape is one question per case (the synthesized \
+                 request carries the case[0] template — a multi-question set has no single \
+                 serving kind; seat it arena-side)"
             ));
         }
         if seat.labels.len() != N {
@@ -373,16 +381,19 @@ impl<const N: usize> SuiteServer<N> {
         let artifact_labels_n = spec.labels.len();
         let artifact_labels = spec.labels.clone();
         let top_k = arm.join_top_k();
-        let joined = SpecialistLane::join(spec, suite, &seat.labels, Cascade { top_k })?;
+        // The seat↔artifact label join (Plan 003's noul bridge — the
+        // arena's run_suite_n law verbatim): name-joinable suites pass
+        // through; the positional int spelling joins the unified pair.
+        let join_labels = crate::hybrid::noul_join_labels(&seat.labels, &spec.labels);
+        let joined = SpecialistLane::join(spec, suite, &join_labels, Cascade { top_k })?;
         let perm: Vec<usize> = joined.perm.clone();
 
         // The presented-option bridge (the arena's SuiteCtx::key_map):
-        // every seat label → (its own index, its artifact class row); the
-        // artifact-known labels the seat never offers join at the
-        // sentinel (NaN NB evidence; the specialist still scores the
+        // every JOINED seat label → (its own index, its artifact class
+        // row); the artifact-known labels the seat never offers join at
+        // the sentinel (NaN NB evidence; the specialist still scores the
         // class row it trained).
-        let mut key_map: HashMap<String, (usize, usize)> = seat
-            .labels
+        let mut key_map: HashMap<String, (usize, usize)> = join_labels
             .iter()
             .enumerate()
             .map(|(li, l)| (l.clone(), (li, joined.perm[li])))
@@ -498,32 +509,55 @@ impl<const N: usize> SuiteServer<N> {
         // every key resolving through the key map → BY NAME; else count ==
         // seat-label count → IDENTITY BY INDEX; else refuse loud — the
         // specialist bridge is undefined there (Issue 006's instrument
-        // defect was exactly a mismatch of these two spaces).
-        let all_named = options.iter().all(|k| self.key_map.contains_key(k));
+        // defect was exactly a mismatch of these two spaces). NOUL
+        // (Plan 003): the engine's noul rendering is the FIXED
+        // [false, true] — the presented names never reorder it — so the
+        // resolve is positional always (option p takes seat label p and
+        // the artifact's pair row p), and the count must be exactly the
+        // seat universe (a wider or narrower presentation has no noul
+        // space).
         self.pos_label.clear();
         self.pos_class.clear();
-        if all_named {
-            for key in &options {
-                let (li, cls) = self.key_map[key];
-                self.pos_label.push(li);
-                self.pos_class.push(cls);
+        if self.q_kind == QKind::Noul {
+            if options.len() != self.labels.len() {
+                return Err(format!(
+                    "suite {}: a noul presentation carries {} options — the fixed \
+                     [false, true] rendering has exactly {} (pick_index speaks that \
+                     space whatever names are presented)",
+                    self.suite,
+                    options.len(),
+                    self.labels.len()
+                ));
             }
-        } else if options.len() == self.perm.len() {
             for (li, &cls) in self.perm.iter().enumerate() {
                 self.pos_label.push(li);
                 self.pos_class.push(cls);
             }
         } else {
-            let unmatched: Vec<String> = options
-                .iter()
-                .filter(|k| !self.key_map.contains_key(*k))
-                .cloned()
-                .collect();
-            return Err(format!(
-                "presented options neither all name seat labels nor match the label count \
-                 ({}) — the specialist bridge is undefined; unmatched {unmatched:?}",
-                self.labels.len()
-            ));
+            let all_named = options.iter().all(|k| self.key_map.contains_key(k));
+            if all_named {
+                for key in &options {
+                    let (li, cls) = self.key_map[key];
+                    self.pos_label.push(li);
+                    self.pos_class.push(cls);
+                }
+            } else if options.len() == self.perm.len() {
+                for (li, &cls) in self.perm.iter().enumerate() {
+                    self.pos_label.push(li);
+                    self.pos_class.push(cls);
+                }
+            } else {
+                let unmatched: Vec<String> = options
+                    .iter()
+                    .filter(|k| !self.key_map.contains_key(*k))
+                    .cloned()
+                    .collect();
+                return Err(format!(
+                    "presented options neither all name seat labels nor match the label count \
+                     ({}) — the specialist bridge is undefined; unmatched {unmatched:?}",
+                    self.labels.len()
+                ));
+            }
         }
 
         // The modelless lane's answer: the synthesized one-question case
@@ -726,9 +760,11 @@ fn argmax_pos(scores: &[f32]) -> (usize, f32) {
     (best, scores[best])
 }
 
-/// The arity-erased server (the registry holds one per suite; the six
-/// engine arities are const-generic).
+/// The arity-erased server (the registry holds one per suite; the
+/// engine arities are const-generic). S2 (Plan 003) seats the noul
+/// suites' 2-label universe — prompt_injections.
 pub enum AnySuiteServer {
+    S2(Box<SuiteServer<2>>),
     S3(Box<SuiteServer<3>>),
     S4(Box<SuiteServer<4>>),
     S5(Box<SuiteServer<5>>),
@@ -795,6 +831,7 @@ impl AnySuiteServer {
             }};
         }
         match seat.labels.len() {
+            2 => seat_arm!(S2, 2),
             3 => seat_arm!(S3, 3),
             4 => seat_arm!(S4, 4),
             5 => seat_arm!(S5, 5),
@@ -823,6 +860,7 @@ impl AnySuiteServer {
             }};
         }
         match seat.labels.len() {
+            2 => seat_arm!(S2, 2),
             3 => seat_arm!(S3, 3),
             4 => seat_arm!(S4, 4),
             5 => seat_arm!(S5, 5),
@@ -868,6 +906,7 @@ impl AnySuiteServer {
             }};
         }
         match seat.labels.len() {
+            2 => vessel_arm!(S2, 2),
             3 => vessel_arm!(S3, 3),
             4 => vessel_arm!(S4, 4),
             5 => vessel_arm!(S5, 5),
@@ -907,6 +946,7 @@ impl AnySuiteServer {
             }};
         }
         match seat.labels.len() {
+            2 => vessel_arm!(S2, 2),
             3 => vessel_arm!(S3, 3),
             4 => vessel_arm!(S4, 4),
             5 => vessel_arm!(S5, 5),
@@ -923,6 +963,7 @@ impl AnySuiteServer {
         options: Option<&[String]>,
     ) -> Result<ServedDecision, String> {
         match self {
+            AnySuiteServer::S2(s) => s.decide(state, options),
             AnySuiteServer::S3(s) => s.decide(state, options),
             AnySuiteServer::S4(s) => s.decide(state, options),
             AnySuiteServer::S5(s) => s.decide(state, options),
@@ -934,6 +975,7 @@ impl AnySuiteServer {
 
     pub fn meta(&self) -> &SuiteMeta {
         match self {
+            AnySuiteServer::S2(s) => s.meta(),
             AnySuiteServer::S3(s) => s.meta(),
             AnySuiteServer::S4(s) => s.meta(),
             AnySuiteServer::S5(s) => s.meta(),
@@ -947,6 +989,7 @@ impl AnySuiteServer {
     #[must_use]
     pub fn centroid(&self) -> [f32; crate::arsenal_ops::DIM] {
         match self {
+            AnySuiteServer::S2(s) => s.centroid(),
             AnySuiteServer::S3(s) => s.centroid(),
             AnySuiteServer::S4(s) => s.centroid(),
             AnySuiteServer::S5(s) => s.centroid(),
