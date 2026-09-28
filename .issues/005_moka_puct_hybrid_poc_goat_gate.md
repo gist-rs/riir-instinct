@@ -17,10 +17,13 @@ LANDED (test_publish_bench 22/22; the arena card + #sizes presence
 `.benchmarks/002_hybrid_052_protocol/predictions.json` (Bench 001 v2's
 frozen read is the superseded instrument's). Open faces, both
 data-gated: **H3 (PUCT over chains)** — its only chain-shaped suite
-(typed_decisions) has no trained specialist in the 576 winner set, and
-its value-head category rule bars substituting one; the arm re-opens
-when a typed_decisions specialist is trained (also blocked by E0's
-route-terms caveat there). **The armed-off/serving faces rode the
+(typed_decisions) NOW HAS a trained specialist (riir-train Issue 581's
+full-pool retrain + Bench 015's multi-question serve extension: A1
+0.6300 serves, T2-certified), so the specialist precondition is MET —
+what remains is E0's route-terms caveat (typed's options are state-field
+values, so the nb_scope margin term m_i never activates; arming H2/H3
+there needs the option-conditioned scorer first). The arm re-opens when
+that scorer exists; the specialist half is done. **The armed-off/serving faces rode the
 arsenal Proposal 001 — CLOSED: T8's `arsenal_budget_goat` passed 7/7
 (Bench 003, 2026-09-27; the signed-centroid defect it caught fixed in
 the same landing).**
