@@ -59,7 +59,7 @@ fn embedded_manifest() -> ArsenalManifest {
 /// re-run + frozen-predictions parity update law A6 demands). This is
 /// the TOML analogue of the compile-time posture table it replaced.
 const PINNED_MANIFEST_DIGEST: &str =
-    "blake3:5d334ec279b047b45ab0edd70841d6bb5f871c255ddb1829007ba18b40694440";
+    "blake3:a0a520e262afbceca0244b292c032306f37fb667dfebaa2b8a61755ff79dd0f9";
 
 #[test]
 fn arsenal_manifest_bytes_are_pinned_byte_for_byte() {
@@ -87,7 +87,15 @@ fn manifest_posture_rows_are_the_serving_law_verdict() {
     // the same uncertified-under-best-measured class; emotion / xnli
     // serve A0 because A0 IS the argmax there — the losing specialists
     // are the Issue-008 T4/T5 backlog, not a refusal to serve.
-    let expected: [(&str, Arm, &str); 6] = [
+    // prompt_injections serves A1 0.8534 over the Issue 578 winner
+    // (Plan 003's noul bridge, Bench 013): +8.6 pt with the paired LB95
+    // POSITIVE (+0.0082) — T2-CERTIFIED, the massive class, at n=116;
+    // its G1 face is a disclosed FAIL (Platt hurts the 2-class sigmoid;
+    // raw ECE 0.0824 beats the conformal floor). typed_decisions gains
+    // NO row: its Issue 578 artifact is UNSEATABLE (100/500 test cases
+    // present option keys with no class row — the 014 record's refusal),
+    // so there is nothing to serve.
+    let expected: [(&str, Arm, &str); 7] = [
         (
             "ag_news",
             Arm::H2 { beta: 0.25, n_min: 2.0, tau_n: 2.0 },
@@ -106,8 +114,13 @@ fn manifest_posture_rows_are_the_serving_law_verdict() {
             "H2(β=2,nmin=8,τ=8)",
         ),
         ("xnli_en", Arm::A0, "A0"),
+        ("prompt_injections", Arm::A1, "A1"),
     ];
-    assert_eq!(m.rows().len(), 6, "the manifest carries exactly the six rows");
+    assert_eq!(
+        m.rows().len(),
+        7,
+        "the manifest carries exactly the seven rows"
+    );
     for (suite, arm, name) in expected {
         let row = m
             .row(suite)
@@ -122,8 +135,8 @@ fn manifest_posture_rows_are_the_serving_law_verdict() {
         assert_eq!(parsed.name(), name, "{suite}: arm display name drifted");
     }
     assert!(
-        m.row("prompt_injections").is_none(),
-        "a suite with no specialist gained a row"
+        m.row("typed_decisions").is_none(),
+        "the unseatable typed_decisions artifact gained a serving row (the 014 refusal)"
     );
 }
 
@@ -167,10 +180,13 @@ fn boot_suite(suite: &'static str) -> Result<riir_instinct::server::AnySuiteServ
 /// site — the manifest posture's arm (the serving law's one selection
 /// surface), never the record's `registered` field, which still carries
 /// the T2-era answer. Abstention recorded since Bench 004; an older
-/// record without the field reads as all-answered.
-fn frozen_picks(suite: &str, arm_name: &str) -> Option<(Vec<usize>, Vec<bool>)> {
+/// record without the field reads as all-answered. `path` names the
+/// record the suite's frozen read lives in (the Bench-004 re-baseline
+/// for the six legacy suites; the per-suite Issue 578 records for the
+/// Plan 003 lanes).
+fn frozen_picks_from(path: &std::path::Path, suite: &str, arm_name: &str) -> Option<(Vec<usize>, Vec<bool>)> {
     let doc: serde_json::Value =
-        serde_json::from_reader(std::fs::File::open(predictions_path()).ok()?).ok()?;
+        serde_json::from_reader(std::fs::File::open(path).ok()?).ok()?;
     for s in doc["frozen_test_predictions"].as_array()? {
         if s["suite"].as_str()? == suite {
             for arm in s["arms"].as_array()? {
@@ -195,6 +211,10 @@ fn frozen_picks(suite: &str, arm_name: &str) -> Option<(Vec<usize>, Vec<bool>)> 
         }
     }
     None
+}
+
+fn frozen_picks(suite: &str, arm_name: &str) -> Option<(Vec<usize>, Vec<bool>)> {
+    frozen_picks_from(&predictions_path(), suite, arm_name)
 }
 
 /// The serving posture's arm for one suite, resolved from the embedded
@@ -437,6 +457,67 @@ fn noul_suite_serves_positionally_through_the_bridge() {
         "decision took {} µs — outside the modelless tier",
         d_default.us
     );
+}
+
+/// The prompt_injections parity gate (Plan 003 T5): the SERVED arm (the
+/// manifest's A1 — Bench 013's T2-certified pick) reproduces the frozen
+/// 013 record's picks on the first test cases, through the noul bridge's
+/// positional resolve. Reads the 013 record (the suite's own frozen
+/// read), not the Bench-004 re-baseline (which predates the specialist).
+#[test]
+fn prompt_injections_serves_the_frozen_a1_picks() {
+    if !data_present() || !winners_dir().join("prompt_injections_winner_v1.bin").is_file() {
+        eprintln!("SKIP loud: datasets / the prompt_injections winner absent");
+        return;
+    }
+    let record = repo_root().join(".benchmarks/013_prompt_injections_specialist/predictions.json");
+    let Some((picks, abstained)) = frozen_picks_from(&record, "prompt_injections", "A1") else {
+        panic!(
+            "the 013 frozen record is absent or lacks the A1 arm — the serving posture's \
+             parity source; re-run the 013 read"
+        );
+    };
+    let datasets = datasets_dir();
+    let winner = winners_dir().join("prompt_injections_winner_v1.bin");
+    let mut server = std::thread::Builder::new()
+        .stack_size(64 * 1024 * 1024)
+        .spawn(move || {
+            let seat = riir_reflex::harness::runner::seat::prepare_seat(
+                "prompt_injections",
+                &datasets,
+            )
+            .expect("prepare prompt_injections seat");
+            riir_instinct::server::SuiteServer::<2>::from_seat(
+                "prompt_injections",
+                seat,
+                &winner,
+                Arm::A1,
+            )
+        })
+        .expect("spawn boot thread")
+        .join()
+        .expect("boot thread panicked")
+        .expect("boot prompt_injections server");
+    assert_eq!(server.meta().arm.name(), "A1");
+
+    let seat = riir_reflex::harness::runner::seat::prepare_seat("prompt_injections", &datasets_dir())
+        .expect("prepare seat for the parity cases");
+    let n = 16.min(seat.suite.cases.len()).min(picks.len());
+    assert!(n >= 8, "parity sample too small: {n}");
+    for (ci, _case) in seat.suite.cases.iter().take(n).enumerate() {
+        // A1 never abstains; the frozen record's flags agree by
+        // construction and the pick parity is exact.
+        assert!(!abstained[ci], "case {ci}: A1 abstained in the frozen record");
+        let d = server
+            .decide(&seat.state_strs[ci], None)
+            .unwrap_or_else(|e| panic!("case {ci}: decide failed: {e}"));
+        assert_eq!(
+            d.pick_index,
+            Some(picks[ci]),
+            "case {ci}: served pick drifted from the frozen 013 pick"
+        );
+        assert!(d.us < 100_000, "case {ci}: outside the modelless tier");
+    }
 }
 
 // ── face 3: the HTTP edge gates ──────────────────────────────────────

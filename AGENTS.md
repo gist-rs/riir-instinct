@@ -113,6 +113,40 @@ file .deploy/local/stage/decisions/app-bin   # → ELF 64-bit x86-64
 
 ## Current state
 
+**Benches 013+014 (2026-09-28) — the Issue 578 noul bridge LANDED:
+prompt_injections serves the T2-certified A1; typed_decisions refuses
+(unseatable).** Plan 003's bridge (`.plans/003_noul_bridge_578_specialists.md`,
+commits `1e9f1b1`/`ed592ba`/`d644ea5`): the specialist bridge's third
+presented-option arm — a noul question's fixed `[false, true]` rendering
+maps onto the producer's unified `no`/`yes` pair (arena: by NAME through
+the key map; serve: POSITIONAL always — presented names never reorder the
+rendering); `seat_join` decides the form (Named / the positional int
+spelling → the pair / **Context** — typed_decisions' 4 workflow labels are
+the modelless engine's domain space, disjoint from the option-key
+artifact, sentinel perm rows, identity-by-count disabled both sides);
+`S2` dispatch; per-question `eval_h1`/`eval_a1_h2` (typed's 5-question
+cases zip per question; the non-noul path verified byte-identical —
+banking77 re-run reproduced the Bench 012 predictions with zero diffs);
+a context seat's template-coverage gate (an unseatable artifact falls
+back to a0_stands with the gap named, never a mid-read panic). **Bench
+013** (`.benchmarks/013_prompt_injections_specialist/`): A1 0.8534 vs A0
+0.7672 (+8.6 pt), **T2 PASS (paired LB95 +0.0082 > 0 at n=116) — the
+second certified suite ever** (massive the first; the 578 "likely
+refusal" risk inverted); G1 disclosed FAIL (Platt hurts the 2-class
+sigmoid; raw ECE 0.0824 beats the floor). **Bench 014**
+(`.benchmarks/014_typed_decisions_specialist/`): the Issue 578 typed
+artifact is UNSEATABLE — 100/500 cases (security_incidents: 5 severity
+levels + 4 action keys) present option keys the artifact has no class row
+for (the train pool never carried the reflex test templates; the seat's
+own corpus guard falls back to a self-doc for that workflow) → a0_stands
+with the reason; A0 0.4655 re-pinned site ✓. Serving truth: the manifest
+rows are SEVEN now (prompt = A1, digest `blake3:ee0b4eb4…`, the 578
+winner name), `typed_decisions` asserted ABSENT; the lane doc for the
+reflex-site session is merged into
+`014_…/hybrid_lane_doc.json`; `deploy.yaml` ships the prompt winner +
+dataset dir. Unblock path: riir-train Issue 581 (retrain over the
+template key set).
+
 **Bench 012 (2026-09-28) — the Issue 579 T3 arena bridge LANDED: banking77
 serves the nbsvm v2 winner.** The bridge: `specialist::winner_bridge` is
 the ONE home for the per-suite winner file + input-bag convention (the 578

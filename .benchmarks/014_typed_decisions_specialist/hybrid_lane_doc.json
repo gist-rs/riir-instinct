@@ -1,0 +1,614 @@
+{
+ "meta": {
+  "host": "m3",
+  "git_sha": "d644ea5",
+  "date_utc": "2026-09-28T00:30:15Z",
+  "profile": "release",
+  "laya_feature": false,
+  "lane_note": "instinct hybrid lane: the SERVING arm's single frozen test read over the reflex harness seat. Serving law (owner, 2026-09-27): the best measured arm serves \u2014 resolved from the arsenal manifest, A0 a candidate like any other; every seated suite carries its cell (a tie or a loss is shown, labeled via serves/gate, and stays visible as the Issue-008 improvement backlog \u2014 never hidden). The T2 strict-superiority gate remains the ADVERTISING law, not the serving selector."
+ },
+ "suites": [
+  {
+   "name": "ag_news",
+   "n_questions": 400,
+   "n_cases": 400,
+   "verdict": "hybrid_arm",
+   "measured_a0": {
+    "lane": "hybrid",
+    "model": "A0",
+    "hard": {
+     "n": 400,
+     "accuracy": 0.8825,
+     "ece": 0.8304792892932893,
+     "mean_confidence": 0.05202071070671081,
+     "acc_at_50_coverage": 0.93
+    },
+    "consult_rate": 0.0,
+    "latency_scope": "seat+arm",
+    "latency_rows": "questions",
+    "latency_p50_ms": 0.15,
+    "latency_p99_ms": 0.248,
+    "latency_tail_support": 6
+   },
+   "reason": "instrument pick H2(\u03b2=0.25,nmin=2,\u03c4=2) refused \u2014 paired LB95 -0.0100 (Issue 008 T2)",
+   "hybrid": {
+    "lane": "hybrid",
+    "model": "H2(\u03b2=0.25,nmin=2,\u03c4=2)",
+    "hard": {
+     "n": 400,
+     "accuracy": 0.8975,
+     "ece": 0.013315694555954022,
+     "mean_confidence": 0.888912138562494,
+     "acc_at_50_coverage": 0.99
+    },
+    "consult_rate": 1.0,
+    "latency_scope": "arm-only",
+    "latency_rows": "questions",
+    "latency_p50_ms": 0.001583,
+    "latency_p99_ms": 0.003833,
+    "latency_tail_support": 5,
+    "serves": "H2(\u03b2=0.25,nmin=2,\u03c4=2)",
+    "gate": "best measured, T2-uncertified (paired LB95 -0.0100) \u2014 certification is more questions, not a posture rollback"
+   }
+  },
+  {
+   "name": "emotion",
+   "n_questions": 400,
+   "n_cases": 400,
+   "verdict": "a0_stands",
+   "measured_a0": {
+    "lane": "hybrid",
+    "model": "A0",
+    "hard": {
+     "n": 400,
+     "accuracy": 0.885,
+     "ece": 0.8622394363582135,
+     "mean_confidence": 0.022760563641786576,
+     "acc_at_50_coverage": 0.97
+    },
+    "consult_rate": 0.0,
+    "latency_scope": "seat+arm",
+    "latency_rows": "questions",
+    "latency_p50_ms": 0.117,
+    "latency_p99_ms": 0.132,
+    "latency_tail_support": 5
+   },
+   "reason": "the instrument registered A0 outright",
+   "hybrid": {
+    "lane": "hybrid",
+    "model": "A0",
+    "hard": {
+     "n": 400,
+     "accuracy": 0.885,
+     "ece": 0.8622394363582135,
+     "mean_confidence": 0.022760563641786576,
+     "acc_at_50_coverage": 0.97
+    },
+    "consult_rate": 0.0,
+    "latency_scope": "seat+arm",
+    "latency_rows": "questions",
+    "latency_p50_ms": 0.117,
+    "latency_p99_ms": 0.132,
+    "latency_tail_support": 5,
+    "serves": "A0",
+    "gate": "served by the reflex half \u2014 the best measured arm on this suite"
+   }
+  },
+  {
+   "name": "sst5",
+   "n_questions": 600,
+   "n_cases": 600,
+   "verdict": "hybrid_arm",
+   "measured_a0": {
+    "lane": "hybrid",
+    "model": "A0",
+    "hard": {
+     "n": 600,
+     "accuracy": 0.39666666666666667,
+     "ece": 0.3848924572269122,
+     "mean_confidence": 0.011774209439754485,
+     "acc_at_50_coverage": 0.46
+    },
+    "consult_rate": 0.0,
+    "latency_scope": "seat+arm",
+    "latency_rows": "questions",
+    "latency_p50_ms": 0.097,
+    "latency_p99_ms": 0.105,
+    "latency_tail_support": 19
+   },
+   "reason": "instrument pick A1 refused \u2014 paired LB95 -0.0129 (Issue 008 T2)",
+   "hybrid": {
+    "lane": "hybrid",
+    "model": "A1",
+    "hard": {
+     "n": 600,
+     "accuracy": 0.4216666666666667,
+     "ece": 0.10076249030729133,
+     "mean_confidence": 0.4711805712431669,
+     "acc_at_50_coverage": 0.5
+    },
+    "consult_rate": 1.0,
+    "latency_scope": "arm-only",
+    "latency_rows": "questions",
+    "latency_p50_ms": 0.00075,
+    "latency_p99_ms": 0.001666,
+    "latency_tail_support": 7,
+    "serves": "A1",
+    "gate": "best measured, T2-uncertified (paired LB95 -0.0129) \u2014 certification is more questions, not a posture rollback"
+   }
+  },
+  {
+   "name": "xnli_en",
+   "n_questions": 300,
+   "n_cases": 300,
+   "verdict": "a0_stands",
+   "measured_a0": {
+    "lane": "hybrid",
+    "model": "A0",
+    "hard": {
+     "n": 300,
+     "accuracy": 0.5233333333333333,
+     "ece": 0.5026737833023072,
+     "mean_confidence": 0.020659550031026205,
+     "acc_at_50_coverage": 0.6466666666666666
+    },
+    "consult_rate": 0.0,
+    "latency_scope": "seat+arm",
+    "latency_rows": "questions",
+    "latency_p50_ms": 0.088,
+    "latency_p99_ms": 0.096,
+    "latency_tail_support": 4
+   },
+   "reason": "the instrument registered A0 outright",
+   "hybrid": {
+    "lane": "hybrid",
+    "model": "A0",
+    "hard": {
+     "n": 300,
+     "accuracy": 0.5233333333333333,
+     "ece": 0.5026737833023072,
+     "mean_confidence": 0.020659550031026205,
+     "acc_at_50_coverage": 0.6466666666666666
+    },
+    "consult_rate": 0.0,
+    "latency_scope": "seat+arm",
+    "latency_rows": "questions",
+    "latency_p50_ms": 0.088,
+    "latency_p99_ms": 0.096,
+    "latency_tail_support": 4,
+    "serves": "A0",
+    "gate": "served by the reflex half \u2014 the best measured arm on this suite"
+   }
+  },
+  {
+   "name": "massive_intent_en",
+   "n_questions": 300,
+   "n_cases": 300,
+   "verdict": "hybrid_arm",
+   "measured_a0": {
+    "lane": "hybrid",
+    "model": "A0",
+    "hard": {
+     "n": 300,
+     "accuracy": 0.78,
+     "ece": 0.635231661486129,
+     "mean_confidence": 0.14476833851387103,
+     "acc_at_50_coverage": 0.9666666666666667
+    },
+    "consult_rate": 0.0,
+    "latency_scope": "seat+arm",
+    "latency_rows": "questions",
+    "latency_p50_ms": 0.121,
+    "latency_p99_ms": 0.148,
+    "latency_tail_support": 5
+   },
+   "reason": null,
+   "hybrid": {
+    "lane": "hybrid",
+    "model": "H2(\u03b2=1,nmin=2,\u03c4=8)",
+    "hard": {
+     "n": 300,
+     "accuracy": 0.8266666666666667,
+     "ece": 0.06070700170483837,
+     "mean_confidence": 0.8355173326634961,
+     "acc_at_50_coverage": 0.9933333333333333
+    },
+    "consult_rate": 1.0,
+    "latency_scope": "arm-only",
+    "latency_rows": "questions",
+    "latency_p50_ms": 0.0009170000000000001,
+    "latency_p99_ms": 0.0017909999999999998,
+    "latency_tail_support": 4,
+    "serves": "H2(\u03b2=1,nmin=2,\u03c4=8)",
+    "gate": "certified (paired LB95 +0.0124, mean +0.0467)"
+   }
+  },
+  {
+   "name": "banking77",
+   "n_questions": 500,
+   "n_cases": 500,
+   "verdict": "hybrid_arm",
+   "measured_a0": {
+    "lane": "hybrid",
+    "model": "A0",
+    "hard": {
+     "n": 500,
+     "accuracy": 0.826,
+     "ece": 0.8015380177684128,
+     "mean_confidence": 0.024461982231587173,
+     "acc_at_50_coverage": 0.972
+    },
+    "consult_rate": 0.0,
+    "latency_scope": "seat+arm",
+    "latency_rows": "questions",
+    "latency_p50_ms": 0.386,
+    "latency_p99_ms": 0.698,
+    "latency_tail_support": 6
+   },
+   "reason": "instrument pick H2(\u03b2=2,nmin=8,\u03c4=8) refused \u2014 paired LB95 -0.0013 (Issue 008 T2)",
+   "hybrid": {
+    "lane": "hybrid",
+    "model": "H2(\u03b2=2,nmin=8,\u03c4=8)",
+    "hard": {
+     "n": 500,
+     "accuracy": 0.854,
+     "ece": 0.08412793359878214,
+     "mean_confidence": 0.9374190933679326,
+     "acc_at_50_coverage": 0.996
+    },
+    "consult_rate": 1.0,
+    "latency_scope": "arm-only",
+    "latency_rows": "questions",
+    "latency_p50_ms": 0.0055839999999999996,
+    "latency_p99_ms": 0.020167,
+    "latency_tail_support": 6,
+    "serves": "H2(\u03b2=2,nmin=8,\u03c4=8)",
+    "gate": "best measured, T2-uncertified (paired LB95 -0.0013) \u2014 certification is more questions, not a posture rollback"
+   }
+  },
+  {
+   "name": "typed_decisions",
+   "n_questions": 2000,
+   "n_cases": 400,
+   "verdict": "a0_stands",
+   "measured_a0": {
+    "lane": "hybrid",
+    "model": "A0",
+    "hard": {
+     "n": 2000,
+     "accuracy": 0.4655,
+     "ece": 0.4237521817982197,
+     "mean_confidence": 0.04024781820178032,
+     "acc_at_50_coverage": 0.548
+    },
+    "consult_rate": 0.0,
+    "latency_scope": "seat+arm",
+    "latency_rows": "cases",
+    "latency_p50_ms": 0.504,
+    "latency_p99_ms": 1.8,
+    "latency_tail_support": 5
+   },
+   "reason": "winner present but UNSEATABLE \u2014 100 of 500 case(s) present option key(s) with no artifact class row (template drift vs the train pool; 9 distinct key(s), e.g. [\"Critical: active compromise of crown-jewel systems.\", \"High: access to production, secrets or customer data.\", \"Low: limited access, easily reversed.\", \"Moderate: access to internal systems or non-public data.\"]); the context seat answers only by name (Plan 003), so the specialist cannot seat \u2014 Issue 010 T2's A0-only posture with this reason",
+   "hybrid": {
+    "lane": "hybrid",
+    "model": "A0",
+    "hard": {
+     "n": 2000,
+     "accuracy": 0.4655,
+     "ece": 0.4237521817982197,
+     "mean_confidence": 0.04024781820178032,
+     "acc_at_50_coverage": 0.548
+    },
+    "consult_rate": 0.0,
+    "latency_scope": "seat+arm",
+    "latency_rows": "cases",
+    "latency_p50_ms": 0.504,
+    "latency_p99_ms": 1.8,
+    "latency_tail_support": 5,
+    "serves": "A0",
+    "gate": "served by the reflex half \u2014 the best measured arm on this suite"
+   }
+  },
+  {
+   "name": "prompt_injections",
+   "n_questions": 116,
+   "n_cases": 116,
+   "verdict": "hybrid_arm",
+   "measured_a0": {
+    "lane": "hybrid",
+    "model": "A0",
+    "hard": {
+     "n": 116,
+     "accuracy": 0.7672413793103449,
+     "ece": 0.674452191282963,
+     "mean_confidence": 0.0927891880273819,
+     "acc_at_50_coverage": 0.896551724137931
+    },
+    "consult_rate": 0.0,
+    "latency_scope": "seat+arm",
+    "latency_rows": "questions",
+    "latency_p50_ms": 0.069,
+    "latency_p99_ms": 0.083,
+    "latency_tail_support": 2
+   },
+   "reason": null,
+   "hybrid": {
+    "lane": "hybrid",
+    "model": "A1",
+    "hard": {
+     "n": 116,
+     "accuracy": 0.853448275862069,
+     "ece": 0.0823830797754485,
+     "mean_confidence": 0.8039373015535289,
+     "acc_at_50_coverage": 0.9655172413793104
+    },
+    "consult_rate": 1.0,
+    "latency_scope": "arm-only",
+    "latency_rows": "questions",
+    "latency_p50_ms": 0.000375,
+    "latency_p99_ms": 0.003,
+    "latency_tail_support": 2,
+    "serves": "A1",
+    "gate": "certified (paired LB95 +0.0082, mean +0.0862)"
+   }
+  },
+  {
+   "name": "harness_visibility",
+   "n_questions": 16,
+   "n_cases": 16,
+   "verdict": "a0_stands",
+   "measured_a0": {
+    "lane": "hybrid",
+    "model": "A0",
+    "hard": {
+     "n": 16,
+     "accuracy": 0.5625,
+     "ece": 0.4815405048429966,
+     "mean_confidence": 0.0809594951570034,
+     "acc_at_50_coverage": 1.0
+    },
+    "consult_rate": 0.0,
+    "latency_scope": "seat+arm",
+    "latency_rows": "questions",
+    "latency_p50_ms": 0.009,
+    "latency_p99_ms": 0.01,
+    "latency_tail_support": 6
+   },
+   "reason": "no specialist artifact (Issue 010 T2)",
+   "hybrid": {
+    "lane": "hybrid",
+    "model": "A0",
+    "hard": {
+     "n": 16,
+     "accuracy": 0.5625,
+     "ece": 0.4815405048429966,
+     "mean_confidence": 0.0809594951570034,
+     "acc_at_50_coverage": 1.0
+    },
+    "consult_rate": 0.0,
+    "latency_scope": "seat+arm",
+    "latency_rows": "questions",
+    "latency_p50_ms": 0.009,
+    "latency_p99_ms": 0.01,
+    "latency_tail_support": 6,
+    "serves": "A0",
+    "gate": "served by the reflex half \u2014 the best measured arm on this suite"
+   }
+  },
+  {
+   "name": "harness_permissions",
+   "n_questions": 12,
+   "n_cases": 12,
+   "verdict": "a0_stands",
+   "measured_a0": {
+    "lane": "hybrid",
+    "model": "A0",
+    "hard": {
+     "n": 12,
+     "accuracy": 0.6666666666666666,
+     "ece": 0.6058034847180048,
+     "mean_confidence": 0.060863181948661804,
+     "acc_at_50_coverage": 0.8333333333333334
+    },
+    "consult_rate": 0.0,
+    "latency_scope": "seat+arm",
+    "latency_rows": "questions",
+    "latency_p50_ms": 0.007,
+    "latency_p99_ms": 0.007,
+    "latency_tail_support": 10
+   },
+   "reason": "no specialist artifact (Issue 010 T2)",
+   "hybrid": {
+    "lane": "hybrid",
+    "model": "A0",
+    "hard": {
+     "n": 12,
+     "accuracy": 0.6666666666666666,
+     "ece": 0.6058034847180048,
+     "mean_confidence": 0.060863181948661804,
+     "acc_at_50_coverage": 0.8333333333333334
+    },
+    "consult_rate": 0.0,
+    "latency_scope": "seat+arm",
+    "latency_rows": "questions",
+    "latency_p50_ms": 0.007,
+    "latency_p99_ms": 0.007,
+    "latency_tail_support": 10,
+    "serves": "A0",
+    "gate": "served by the reflex half \u2014 the best measured arm on this suite"
+   }
+  },
+  {
+   "name": "harness_tool_fit",
+   "n_questions": 12,
+   "n_cases": 12,
+   "verdict": "a0_stands",
+   "measured_a0": {
+    "lane": "hybrid",
+    "model": "A0",
+    "hard": {
+     "n": 12,
+     "accuracy": 0.9166666666666666,
+     "ece": 0.5807514190673828,
+     "mean_confidence": 0.3504203160603841,
+     "acc_at_50_coverage": 1.0
+    },
+    "consult_rate": 0.0,
+    "latency_scope": "seat+arm",
+    "latency_rows": "questions",
+    "latency_p50_ms": 0.008,
+    "latency_p99_ms": 0.009,
+    "latency_tail_support": 1
+   },
+   "reason": "no specialist artifact (Issue 010 T2)",
+   "hybrid": {
+    "lane": "hybrid",
+    "model": "A0",
+    "hard": {
+     "n": 12,
+     "accuracy": 0.9166666666666666,
+     "ece": 0.5807514190673828,
+     "mean_confidence": 0.3504203160603841,
+     "acc_at_50_coverage": 1.0
+    },
+    "consult_rate": 0.0,
+    "latency_scope": "seat+arm",
+    "latency_rows": "questions",
+    "latency_p50_ms": 0.008,
+    "latency_p99_ms": 0.009,
+    "latency_tail_support": 1,
+    "serves": "A0",
+    "gate": "served by the reflex half \u2014 the best measured arm on this suite"
+   }
+  },
+  {
+   "name": "harness_routing",
+   "n_questions": 16,
+   "n_cases": 16,
+   "verdict": "a0_stands",
+   "measured_a0": {
+    "lane": "hybrid",
+    "model": "A0",
+    "hard": {
+     "n": 16,
+     "accuracy": 0.75,
+     "ece": 0.7215857654809952,
+     "mean_confidence": 0.028414234519004822,
+     "acc_at_50_coverage": 1.0
+    },
+    "consult_rate": 0.0,
+    "latency_scope": "seat+arm",
+    "latency_rows": "questions",
+    "latency_p50_ms": 0.009,
+    "latency_p99_ms": 0.011,
+    "latency_tail_support": 2
+   },
+   "reason": "no specialist artifact (Issue 010 T2)",
+   "hybrid": {
+    "lane": "hybrid",
+    "model": "A0",
+    "hard": {
+     "n": 16,
+     "accuracy": 0.75,
+     "ece": 0.7215857654809952,
+     "mean_confidence": 0.028414234519004822,
+     "acc_at_50_coverage": 1.0
+    },
+    "consult_rate": 0.0,
+    "latency_scope": "seat+arm",
+    "latency_rows": "questions",
+    "latency_p50_ms": 0.009,
+    "latency_p99_ms": 0.011,
+    "latency_tail_support": 2,
+    "serves": "A0",
+    "gate": "served by the reflex half \u2014 the best measured arm on this suite"
+   }
+  },
+  {
+   "name": "harness_sensitivity",
+   "n_questions": 15,
+   "n_cases": 15,
+   "verdict": "a0_stands",
+   "measured_a0": {
+    "lane": "hybrid",
+    "model": "A0",
+    "hard": {
+     "n": 15,
+     "accuracy": 0.8,
+     "ece": 0.762697426478068,
+     "mean_confidence": 0.03730257352193197,
+     "acc_at_50_coverage": 1.0
+    },
+    "consult_rate": 0.0,
+    "latency_scope": "seat+arm",
+    "latency_rows": "questions",
+    "latency_p50_ms": 0.008,
+    "latency_p99_ms": 0.009,
+    "latency_tail_support": 2
+   },
+   "reason": "no specialist artifact (Issue 010 T2)",
+   "hybrid": {
+    "lane": "hybrid",
+    "model": "A0",
+    "hard": {
+     "n": 15,
+     "accuracy": 0.8,
+     "ece": 0.762697426478068,
+     "mean_confidence": 0.03730257352193197,
+     "acc_at_50_coverage": 1.0
+    },
+    "consult_rate": 0.0,
+    "latency_scope": "seat+arm",
+    "latency_rows": "questions",
+    "latency_p50_ms": 0.008,
+    "latency_p99_ms": 0.009,
+    "latency_tail_support": 2,
+    "serves": "A0",
+    "gate": "served by the reflex half \u2014 the best measured arm on this suite"
+   }
+  },
+  {
+   "name": "code_fixtures",
+   "n_questions": 32,
+   "n_cases": 16,
+   "verdict": "a0_stands",
+   "measured_a0": {
+    "lane": "hybrid",
+    "model": "A0",
+    "hard": {
+     "n": 32,
+     "accuracy": 0.375,
+     "ece": 0.3742090817540884,
+     "mean_confidence": 0.0007909182459115982,
+     "acc_at_50_coverage": 0.3125
+    },
+    "consult_rate": 0.0,
+    "latency_scope": "seat+arm",
+    "latency_rows": "cases",
+    "latency_p50_ms": 0.182,
+    "latency_p99_ms": 0.381,
+    "latency_tail_support": 1
+   },
+   "reason": "no specialist artifact (Issue 010 T2)",
+   "hybrid": {
+    "lane": "hybrid",
+    "model": "A0",
+    "hard": {
+     "n": 32,
+     "accuracy": 0.375,
+     "ece": 0.3742090817540884,
+     "mean_confidence": 0.0007909182459115982,
+     "acc_at_50_coverage": 0.3125
+    },
+    "consult_rate": 0.0,
+    "latency_scope": "seat+arm",
+    "latency_rows": "cases",
+    "latency_p50_ms": 0.182,
+    "latency_p99_ms": 0.381,
+    "latency_tail_support": 1,
+    "serves": "A0",
+    "gate": "served by the reflex half \u2014 the best measured arm on this suite"
+   }
+  }
+ ]
+}

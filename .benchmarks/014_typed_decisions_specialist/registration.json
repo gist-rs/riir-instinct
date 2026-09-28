@@ -1,0 +1,16 @@
+[
+  {
+    "suite": "typed_decisions",
+    "registered": "A0",
+    "rows": [
+      {
+        "arm": "A0",
+        "cal_acc": 0.522,
+        "acc_lcb": 0.48522213101387024,
+        "consult": 0.0,
+        "p99_us": 1609.0,
+        "rank0": true
+      }
+    ]
+  }
+]
