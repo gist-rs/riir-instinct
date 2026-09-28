@@ -163,11 +163,14 @@ verdict `a0_stands` (no specialist artifact); the noul polarity armed
 through the seat's synthetic cal-front selection fallback. The other 14
 suites reproduced their published rows byte-identically, serving arms
 included (massive H2 0.8267 T2-certified, banking77 H2 nbsvm-v2 0.8540,
-typed A1 0.6300, prompt A1 0.8534). Records under `--skip-pin-a0` — the
-pin's SITE leg reds on the six stale Bench-002-era rows in the
-reflex-site checkout's `data/bench.json` (+ typed's pre-078 row); that
-republish is the reflex-site lane's work and stays the open half of Issue
-010 T4. Two instrument facts written down: the arena's default datasets
+typed A1 0.6300, prompt A1 0.8534). Records under `--skip-pin-a0` — the SITE half VERIFIED DONE 2026-09-28
+(reflex-site `74b49e4`: all 15 hybrid rows seated and live on
+reflex.gist.rs, curl-verified, chart_render_smoke + bench_page_smoke
+PASS); `--skip-pin-a0` remains the documented posture for the OWNER-GATED
+residual — the cross-lane pool/engine divergence (site modelless rows are
+reflex HEAD on the canonical pool; hybrid rows are the t20k seat), now
+recorded in the owner-gate pickup (Issue 013). Issue 010 closed + removed
+(HISTORY.md hygiene section, 2026-09-29). Two instrument facts written down: the arena's default datasets
 dir is the FROZEN Bench-005 re-baseline pool (`datasets_t20k`) —
 re-pointing it is a re-baseline decision, never a cleanup (one run of
 this bench against reflex's canonical `.raw/datasets` pool matched no

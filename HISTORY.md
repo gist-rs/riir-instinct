@@ -1,5 +1,26 @@
 # HISTORY — riir-instinct
 
+## 2026-09-29 — issue-file hygiene: 010 removed (every measurable task landed; the residual is an owner decision, moved to 013)
+
+- **010 (the hybrid lane carries a MEASURED row for every suite)** — all
+  six tasks landed across 09-27/28: T1+T2+T3 (Bench 005:
+  `run_suite_a0_only` — a missing specialist degrades to a0_stands, never
+  dies; the three-state `hybrid_lane_doc.json`), T5's arena half (the
+  8/8 A0 pin incl. the oc-armed typed_decisions catch), T6 (Bench 011 —
+  the reflex synthetic seat seam seated all six harness families +
+  code_fixtures), the OWED `harness_cache_reuse` seat (Bench 016), and
+  T4+T5's SITE half VERIFIED 09-28 (reflex-site `74b49e4`: all 15 hybrid
+  rows live on reflex.gist.rs, curl-verified, smokes PASS). Residual =
+  the cross-lane pool/engine divergence — an OWNER decision ((a)
+  re-baseline the arena to canonical `.raw/datasets` + reflex HEAD, or
+  (b) keep `datasets_t20k` frozen + relabel the A0-pin site leg as a
+  pool-mismatch advisory), recorded in `.issues/013_owner_gate_pickup.md`.
+  `--skip-pin-a0` stays the documented posture with that reason until the
+  owner picks.
+
+Full narrative of the removed file: `git log --follow --
+.issues/010_hybrid_lane_every_suite_measured.md`.
+
 ## 2026-09-28 — the 581 lane lands end to end: typed_decisions seats, certifies, and SERVES (Bench 015 + Issue 011)
 
 The one-day arc, three repos, every gate measured:
