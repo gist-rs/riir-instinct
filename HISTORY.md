@@ -1,5 +1,13 @@
-# HISTORY — riir-instinct
+## 2026-09-29 — the instinct flow figure reflowed to two bands (owner ask: too wide, rendered small)
 
+The source mermaid in
+`.docs/03_decision_flow/instinct_flow.md` now uses the Reflex hero's
+flywheel shape — top band "the question in — Reflex · modelless, always
+first, free", bottom band "on abstain — the trained add-on, paid only
+here", thresholds + arsenal.toml dotted in from outside — re-rendered to
+both mirrors by reflex-site's `scripts/render_tetris_flows.py` (viewBox
+2304×574 → 1751×730). Site half: reflex-site `bench/index.html` img dims
++ alt; smokes PASS; figures `--check` in sync.
 ## 2026-09-29 — Issue 008 T7 wave 1 (owner GO): six vs-best specialist lanes measured — every verdict a NEGATIVE; sst5's holdout win refused at the frozen read (Bench 024); Issue 005 H3 closed by a measured premise refutation; Issue 009's critic-guided-search lever re-derived GO-as-teacher
 
 - **The wave (riir-train issues 592–597, filed then closed under the 579
@@ -54,6 +62,8 @@
   arm in `instinct_specialist::suite_row`. Re-opens ride a CLASS upgrade
   (encoder features or a distill lane that beats the named lane's class),
   never another bag sweep.
+# HISTORY — riir-instinct
+
 
 ## 2026-09-29 — issue-file hygiene: 010 removed (every measurable task landed; the residual is an owner decision, moved to 013)
 
