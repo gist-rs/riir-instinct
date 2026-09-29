@@ -148,6 +148,18 @@ ag_news (laya english), sst5 (gliner); then the seven 0.0-edge ties.
   the best published lane on a majority of suites without per-suite tuning,
   so "Instinct is the best lane" holds as a general claim, not only per
   domain.
+  **SCOPED 2026-09-30 (post-wave-3, from the measured class evidence — not
+  started):** the only lane that has ever read at-or-above a named bar's
+  class is the ENCODER class (xnli 0.86, sst5 0.5267-confirmed), and both
+  of those seats are the OPEN owner gate (issue 014 / 599 T5 — the
+  heavyweight encoder serve posture). A bag-class general arm cannot clear
+  a majority of bars (the wave-1 law: per-suite tuning is what makes arms
+  win; the bag class's ceilings are measured), and the encoder reference
+  alone ties-or-trails its bars outside sst5 (ag_news ceiling-tie, xnli
+  −4.0, sst5 −6.6 — the head is load-bearing). So T6 is PRACTICALLY
+  BLOCKED on the owner gate's outcome: no encoder seating → no above-bar
+  class → no majority claim to build. Re-scopes after the gate resolves;
+  until then it is the issue's standing research lane, not a queued run.
 - [ ] T7 — **close the six vs-best gaps** (the amended bar, widest first):
   xnli_en (openthai 0.9000), code_fixtures (paw 0.6250 — SAME-SHAPE bar; the
   037 gliner 0.6667 cell was the pre-freeze 24-question shape, not
@@ -222,6 +234,54 @@ ag_news (laya english), sst5 (gliner); then the seven 0.0-edge ties.
   a tie sells nothing (the original law). The families are synthetic:
   data-design decision first (T5's rule), then a specialist that wins, then
   the suite counts as sold; otherwise the site section keeps saying "tied".
+  **T8 ADJUDICATION 2026-09-30 (the data-design decision, made from the
+  measured board — the current published data/bench.json @ reflex-site):
+  the six harness families DROP from the covered set; code_fixtures takes
+  the tie-break lane.**
+  **The families DROP — the reason is measured, not convenience.** Each
+  family is n = 12–16 questions (visibility 16, permissions 12, tool_fit 12,
+  routing 16, sensitivity 15, cache_reuse 12), and the eval instances are
+  template siblings of ANY trainable corpus (the family generators
+  randomize entities inside one template). A specialist trained on
+  same-rule different-draw rows shares the template with the eval, so a
+  win is indistinguishable from template memorization — the suite cannot
+  CERTIFY specialist competence at this n, and a reflex-side engine lever
+  (Bench 072's cache_reuse 0.9167) can move the same row without us
+  publishing anything. Two of the six (tool_fit, cache_reuse at 0.9167 =
+  11/12) already sit at reflex's own near-ceiling, where "strictly ahead"
+  means 12/12 on twelve questions — noise. The honest T8 branch is the
+  drop: the instinct card's covered set shrinks to the real suites; the
+  lane re-opens only with a larger template-disjoint eval design (a
+  reflex-side harness change, not an instinct training task). The
+  site-side re-render (the six family cells leave the instinct card) rides
+  the next reflex-site republish session — recorded here as the owner of
+  that change.
+  **code_fixtures — the ONE tie a real specialist can break (pre-registered
+  protocol, written BEFORE any run):** the arena reads
+  `code_fixtures_winner_v1.bin` (absent today → a0_stands → the tie); the
+  wave-1 per-head merge substrate (`merge_per_head`/`per_head_nbsvm`,
+  riir-train `instinct_v2_gate`) holds candidates whose train-side holdout
+  reads 0.55–0.57 vs reflex A0 0.375 — on REAL disjoint code spans (the
+  exporter's rows are real reflex-source fns; the eval's 32 questions are
+  different fns; the module question's signal — the body names its module
+  path — is a genuine codebase regularity, the banking77 presence-bag
+  class, not template memorization). **Protocol:** (1) trainer side: the
+  wave-1 shape (per-head arm A merged = v1, per-head NBSVM merged = v2),
+  holdout 56 (the wave-1 protocol), train-side gate = candidate holdout
+  (argmax of v1/v2) ≥ **0.45** (reflex A0 + 7.5 pt, so a weak candidate
+  never burns the frozen read); (2) mint the argmax under its natural
+  name — v1 → `code_fixtures_winner_v1.bin` (Count convention, unbridged
+  default), v2 → `code_fixtures_nbsvm_v2.bin` + the winner_bridge entry in
+  the same change (the 579 law); (3) ONE frozen arena read
+  (`--suite code_fixtures`, `--skip-pin-a0`, the documented pool-divergence
+  posture), adjudicated by the standing issue-008 T2 product gate (strictly
+  above Reflex, paired LB95 > 0) — no new gate machinery; (4) PASS →
+  manifest row + lane doc + the suite reads ahead-of-Reflex (still trailing
+  the paw 0.6250 bar — the amended law keeps it unsold; the tie display
+  dies); MISS → the negative is recorded, the suite joins the drop class
+  (at n=32 the T2 gate needs ≈ +6 net questions — the read is honestly
+  marginal, the Bench-024 sst5 precedent: a holdout PASS noise-refusing at
+  the frozen read is a recorded outcome, not a protocol failure).
 - [ ] T9 — **the site flip**: when the measured board shows Instinct strictly
   ahead of every published lane on every suite it covers, the PoC chip on
   `/bench/#instinct` reads GOAT on the next republish (rendered from data,
