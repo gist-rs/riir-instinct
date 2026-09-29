@@ -1,0 +1,64 @@
+{
+  "magic": "TETCRIT1",
+  "sample_bytes": 288,
+  "generated_at": 1790699492,
+  "contract": "riir-instinct src/tetris_critic.rs (feat module: the 33-feature order; RawOpt.piece = Piece::index(), mode = Genome::mode_of as u8)",
+  "champion_genome_id": "68cae9d382014662",
+  "teacher": {
+    "engine": "katgpt_core::chance_puct over (champion evaluator + trained critic afterstate values blended at the value seam)",
+    "budget": 1600,
+    "information_rule": "no preview, fresh bag (uniform-7 chance); mode at the decision root",
+    "rng_salt": "0x5eed892"
+  },
+  "blend": {
+    "module": "riir_instinct::tetris_blend",
+    "critic_digest_16": "7e319da89b7f5a7c",
+    "critic_bytes": 2286136,
+    "weight": 0.5,
+    "seam": "value only (leaf backup); priors stay pure champion; root frame = (mean critic, sd_champ/sd_critic) over the root options; root value_ref champion-only"
+  },
+  "train_seeds": "301..=308",
+  "val_seeds": "309..=312",
+  "seed_disjointness": "avoids 006's 1..=40 + 101..=140, the eval 1..=20, and 607",
+  "cap": 600,
+  "target": "q = teacher search-root value ∈ (0,1) (sigmoid-normalised, the chance_puct way); is_pick = the teacher's chosen option",
+  "files": [
+    {
+      "name": "train-16x75.bin",
+      "split": "train",
+      "regime": "garbage 16@75%",
+      "samples": 38382,
+      "bytes": 11054028,
+      "blake3_16": "4a5e79d158031e58",
+      "teacher_mean_pieces": 600.0
+    },
+    {
+      "name": "val-16x75.bin",
+      "split": "val",
+      "regime": "garbage 16@75%",
+      "samples": 19200,
+      "bytes": 5529612,
+      "blake3_16": "56d90f58708fb988",
+      "teacher_mean_pieces": 600.0
+    },
+    {
+      "name": "train-18x75.bin",
+      "split": "train",
+      "regime": "garbage 18@75%",
+      "samples": 29234,
+      "bytes": 8419404,
+      "blake3_16": "655fb295680e46a2",
+      "teacher_mean_pieces": 458.75
+    },
+    {
+      "name": "val-18x75.bin",
+      "split": "val",
+      "regime": "garbage 18@75%",
+      "samples": 19196,
+      "bytes": 5528460,
+      "blake3_16": "41deab34d77ee0bb",
+      "teacher_mean_pieces": 600.0
+    }
+  ],
+  "wall_s": 793.982646791
+}

@@ -1,0 +1,40 @@
+{
+  "magic": "TETCRIT1",
+  "sample_bytes": 288,
+  "generated_at": 1790700795,
+  "contract": "riir-instinct src/tetris_critic.rs (feat module: the 33-feature order; RawOpt.piece = Piece::index(), mode = Genome::mode_of as u8)",
+  "champion_genome_id": "68cae9d382014662",
+  "teacher": {
+    "engine": "katgpt_core::chance_puct over the champion evaluator",
+    "budget": 400,
+    "information_rule": "no preview, fresh bag (uniform-7 chance); mode at the decision root",
+    "rng_salt": "0x5eed892"
+  },
+  "blend": null,
+  "train_seeds": "301..=320",
+  "val_seeds": "321..=322",
+  "seed_disjointness": "avoids 006's 1..=40 + 101..=140, the eval 1..=20, and 607",
+  "cap": 600,
+  "target": "q = teacher search-root value ∈ (0,1) (sigmoid-normalised, the chance_puct way); is_pick = the teacher's chosen option",
+  "files": [
+    {
+      "name": "train-18x75.bin",
+      "split": "train",
+      "regime": "garbage 18@75%",
+      "samples": 58107,
+      "bytes": 16734828,
+      "blake3_16": "043b4783938bf949",
+      "teacher_mean_pieces": 364.9
+    },
+    {
+      "name": "val-18x75.bin",
+      "split": "val",
+      "regime": "garbage 18@75%",
+      "samples": 4902,
+      "bytes": 1411788,
+      "blake3_16": "bb0b306f23497074",
+      "teacher_mean_pieces": 307.5
+    }
+  ],
+  "wall_s": 1.867320584
+}

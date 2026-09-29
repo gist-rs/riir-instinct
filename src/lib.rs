@@ -36,6 +36,11 @@ pub mod tetris_lane;
 /// search-root Q, plus the sample-collection lane loop.
 #[cfg(feature = "tetris")]
 pub mod tetris_critic;
+/// The round-5 blended teacher (Issue 009 T7 round 5): chance_puct over the
+/// champion evaluator + the trained critic's afterstate values blended at
+/// the search's value seam. weight 0 is the plain teacher, bit-exact.
+#[cfg(feature = "tetris")]
+pub mod tetris_blend;
 
 pub use hybrid::{
     A0Answer, Cascade, FusedPick, HybridDecision, HybridLane, MAX_TOP_K, NOUL_PAIR, PriorFusion,
