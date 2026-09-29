@@ -1,3 +1,29 @@
+## 2026-09-30 — Issue 008 T4's armed-posture caveat RESOLVED (records-only, no compute): emotion's board edge is posture-gap, not specialist value
+
+The standing T4 caveat ("re-verify emotion vs the ARMED Reflex posture before
+claiming the suite sold") resolved from EXISTING measured data — three records
+already carry the answer, no re-run needed: the Bench-004/016 arena seat
+already arms reflex's own cal-selected posture on emotion (posture line
+`ridge 8.00 (bag)`) and reads **A0 0.8850 — exactly reflex Bench 057's armed
+ridge@8 number, cross-pool** — while the specialist A1 reads 0.8550 (−3.0 pt,
+loses; H1 0.8775 also loses). **Verdict: emotion is sold vs the PUBLISHED
+board by posture gap** (armed seat 0.8850 vs the defaults-posture published
+row 0.7700), **not by specialist value** — root cause 1 is live here by
+construction, and a reflex republish at the armed posture collapses the edge
+to a tie. The serving posture was already honest (A0 serves; arsenal.toml's
+comment reads "A1 0.8550 / H1 0.8775 lose — specialist backlog"; the site's
+emotion hybrid row renders A0/serves-A0, "served by the reflex half").
+**Repairs (issue 008):** the floor table's emotion row carried the A0/armed
+number 0.8850 under an **A1 label** — re-labeled `(seat)` (the xnli-row
+convention); the "8/15 ahead with an arm" count corrected to **6 with an arm**
+(emotion + xnli ahead via the armed seat); the "strictly best" line annotates
+emotion as posture-gap; the T4 task records the resolution NEGATIVE-for-the-
+specialist; root cause 1's pointer added. AGENTS.md's Bench-004 bullet and
+arsenal.toml carried the correct 0.8550 all along — the slip was born in the
+09-29 issue-008 table transcription. What an emotion arm that actually beats
+0.8850 would take: the encoder class (issue 014's owner-gated arm class,
+shared with xnli + sst5) — a bag sweep is the closed class per the wave-1 law.
+
 ## 2026-09-30 — Issue 009 round 5 closed on both forms: the teacher A/B (Bench 026) measured NO-GO beside the residual pilot's null (Bench 027); the lane stops, eval seeds still at 5 reads
 
 The 4090 session's pre-registered z-blend A/B (plain b1600 vs the r4'-critic

@@ -43,14 +43,14 @@ the training backlog.
 
 ## Measured — vs the floor (free Reflex; published data/bench.json @ reflex-site 1881624, 2026-09-29)
 
-Ahead on **8/15** suites with an arm; tied on 7.
+Ahead on **8/15** suites — **6 with an arm**; emotion + xnli ahead via the armed reflex seat (the seat arms reflex's own cal-selected heads: ridge@8 on emotion reads 0.8850 = the armed reflex, so the specialist has nothing to add there — see T4's resolved caveat). tied on 7.
 
 | suite | Instinct arm | Instinct | Reflex (published) | edge |
 |---|---|---|---|---|
 | massive_intent_en | H2(β=1,nmin=2,τ=8) | 0.8267 | 0.4067 | **+42.0 pt** |
 | banking77 | H2 (nbsvm v2) | 0.8540 | 0.4020 | **+45.2 pt** |
 | sst5 | A1 | 0.4217 | 0.2017 | **+22.0 pt** |
-| emotion | A1 | 0.8850 | 0.7700 | **+11.5 pt** |
+| emotion | (seat) | 0.8850 | 0.7700 | **+11.5 pt** |
 | prompt_injections | A1 | 0.8534 | 0.7672 | **+8.6 pt** |
 | typed_decisions | H2(β=0.5,oc) | 0.6300 | 0.5725 | +5.8 pt |
 | ag_news | H2(β=0.25) | 0.8975 | 0.8625 | +3.5 pt |
@@ -70,8 +70,7 @@ Strictly best on **3/15** armed suites, tied on 6, **trailing on 6**:
 | ag_news | 0.8975 | 0.9500 | **−5.2 pt** | laya (english) 0.9500 |
 | sst5 | 0.4217 | 0.4383 | **−1.7 pt** | gliner 0.4383 |
 
-Strictly best: banking77 (+14.8 vs gliner 0.7060), emotion (+11.5 vs Reflex
-0.7700), prompt_injections (+8.6 vs Reflex 0.7672). Tied at +0.0 edge:
+Strictly best: banking77 (+14.8 vs gliner 0.7060), emotion (+11.5 vs Reflex 0.7700 — **posture-gap, not specialist value**: the seat serves A0 = reflex's own armed ridge@8 0.8850; the specialist A1 0.8550 LOSES to it by −3.0; a reflex republish at the armed posture collapses this edge to a tie), prompt_injections (+8.6 vs Reflex 0.7672). Tied at +0.0 edge:
 code_fixtures + the six harness_* families (the specialist adds nothing
 measurable on the synthetic families — a tie sells nothing). No arm:
 thai_wisesight, thai_sib200 (coverage, T5).
@@ -89,7 +88,9 @@ ag_news (laya english), sst5 (gliner); then the seven 0.0-edge ties.
    The same drift can reach every suite whenever Reflex improves, so this is a
    standing hazard, not a one-off. (Today's published emotion modelless row
    reads 0.7700 — the registry-defaults posture; re-verify against the ARMED
-   posture before calling emotion sold.)
+   posture before calling emotion sold. **RESOLVED 2026-09-30, see T4: the
+   seat's armed A0 == 0.8850, the specialist loses to it — emotion's board
+   edge is posture-gap.**)
 2. **banking77 publishes an arm the product does not serve.** RESOLVED
    2026-09-28 (Bench 012): the nbsvm v2 winner serves H2 0.8540 (+45.2 vs the
    published Reflex row) — and it is strictly best on the board (+14.8 vs
@@ -120,9 +121,22 @@ ag_news (laya english), sst5 (gliner); then the seven 0.0-edge ties.
   `assets/instinct.js`.
 - [x] T4 — **close the two Reflex gaps with specialists that clear G3**:
   banking77 ✅ (Bench 012 — nbsvm v2 serves, strictly best on the board);
-  emotion ✅ on the published board (0.8850 vs 0.7700) with the standing
-  caveat: re-verify vs the ARMED Reflex posture (Bench 057's ridge@8 0.8850)
-  before claiming the suite sold — cause 1 is live there.
+  emotion ✅ on the published board (0.8850 vs 0.7700) — **the ARMED-posture
+  caveat RESOLVED 2026-09-30 from existing measured data, verdict NEGATIVE for
+  the specialist**: the Bench-004/016 seat already arms reflex's own cal-selected
+  posture on emotion (posture line `ridge 8.00 (bag)`) and reads **A0 0.8850 —
+  exactly reflex Bench 057's armed ridge@8 number, cross-pool** — while the
+  specialist A1 reads 0.8550 (−3.0 pt, loses). The 0.8850 in this issue's floor
+  table was the A0/armed number transcribed under an A1 label (fixed same day;
+  AGENTS.md's Bench-004 bullet and arsenal.toml carried the correct 0.8550 all
+  along). Consequence: emotion is sold vs the PUBLISHED board by **posture gap**
+  (armed seat 0.8850 vs defaults-posture published 0.7700), not by specialist
+  value — root cause 1 is live here by construction, and a reflex republish at
+  the armed posture collapses the edge to a tie. The serving posture is already
+  honest (A0 serves; arsenal.toml's own comment says "A1 0.8550 / H1 0.8775
+  lose — specialist backlog"). An emotion arm that beats 0.8850 needs the
+  encoder class (issue 014's owner-gated arm class, shared with xnli + sst5) —
+  a bag sweep is the closed class per the wave-1 law.
 - [-] T5 — **coverage: arms for the unsold suites.** Remaining no-arm:
   thai_wisesight, thai_sib200 (a Thai specialist — OpenThai-SystemOne holds
   the bar there at 0.475 / 0.8382). Previously-open xnli_en, code_fixtures
