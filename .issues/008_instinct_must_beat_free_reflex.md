@@ -159,6 +159,20 @@ ag_news (laya english), sst5 (gliner); then the seven 0.0-edge ties.
   needs the laya-english encoder at serve — a heavyweight, GPU-backed
   posture). OWNER GATE: build the encoder arm class, or keep xnli
   unsold.**
+  **WAVE 2 ADDENDUM — the earned frozen test read (riir-train 599 T5a,
+  train-side eval, 2026-09-30): 0.8600 (258/300, the exact Bench-084
+  split) — UNDER the 0.9000 openthai class bar (−4.0 pt) but +33.7 pt over
+  Reflex A0. The T3 holdout did NOT transfer: the laya class's pool→test
+  drop is −10.5 pt (reference logits 0.9654 pool → 0.8600 test; openthai
+  moved +2.4 the other way) — pool-side holdouts are not test forecasts
+  for this class. And the UNTRAINED reference logits read the same 0.8600
+  (identical hit count): the trained head adds no test picks over the
+  frozen representation — if the owner green-lights, the serving class
+  could carry the reference logits alone (pending the pick-agreement
+  check). The wave-2 verdict stands amended: the class upgrade is REAL
+  (+33.7 over A0) but does not clear the named lane's bar on the frozen
+  read; the owner gate now prices a 0.86-serving arm against the 0.90
+  bar.
 - [ ] T8 — **break the seven 0.0-edge ties or drop them from the sold set**:
   code_fixtures + the six harness families are ties with Reflex at +0.0 —
   a tie sells nothing (the original law). The families are synthetic:
