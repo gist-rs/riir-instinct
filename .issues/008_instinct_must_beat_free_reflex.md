@@ -179,6 +179,7 @@ ag_news (laya english), sst5 (gliner); then the seven 0.0-edge ties.
   NEGATIVE (the head LOSES 4.9 pt to its own reference on test),
   code_fixtures NEGATIVE-by-law (reference 26.7 pt under the bar, over the
   measured max head-lift of +14.7), typed_decisions not screenable
+  typed_decisions not screenable
   position-free (per-case option sets), and **sst5 the ONE live lane —
   head 0.5183 on the test screen vs the 0.4383 gliner bar (+8.0 pt) and
   its own reference (0.3717, +14.7 pt) — PROVISIONAL-POSITIVE pending the
@@ -188,6 +189,20 @@ ag_news (laya english), sst5 (gliner); then the seven 0.0-edge ties.
   does — except far-from-ceiling references, where lift is real) is the
   wave-3 design instrument; the seating question for an sst5 encoder arm
   rides T6's verdict.
+  **WAVE 3 / T6 VERDICT — CONFIRMED, the sst5 lane is LIVE (riir-train
+  600, `6f24cd92`, 2026-09-30): the properly-gated fresh head read
+  0.5267 on the frozen test read — +8.8 pt over the 0.4383 gliner bar,
+  +15.5 over its own reference, ABOVE the T2 probe's ungated 0.5183; the
+  reference arm reproduced 0.3717 exactly (cache witness). Protocol:
+  class-relative-only earn gate (`--min-holdout 0`), 5-head pool-side
+  sweep, best-holdout selection (0.5050), ONE pre-registered frozen read.
+  The suite's incumbent serve (bag arm A1) reads 0.4217 — a 0.5267-class
+  encoder arm would be sst5's first strictly-superior specialist (+10.5
+  pt). Seating = **owner gate** (the serve-posture decision: the
+  encoder-backed arm class is the heavyweight GPU-backed serve posture,
+  ~2 GB VRAM class): filed as **Issue 014** — same gate shape as the xnli
+  T5 owner call, now priced with a bigger margin over BOTH the bar and
+  the incumbent.
 - [ ] T8 — **break the seven 0.0-edge ties or drop them from the sold set**:
   code_fixtures + the six harness families are ties with Reflex at +0.0 —
   a tie sells nothing (the original law). The families are synthetic:
