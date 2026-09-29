@@ -147,6 +147,18 @@ ag_news (laya english), sst5 (gliner); then the seven 0.0-edge ties.
   riir-train issues 592-597, removed on close-out per noise-reduction,
   records in riir-train HISTORY.md). The re-open bar is a CLASS upgrade,
   not another bag sweep.**
+  **WAVE 2 — xnli_en RE-OPENED and measured POSITIVE (riir-train issue 599,
+  `69962050`, 2026-09-30): the encoder-feature lane (the sanctioned class
+  upgrade) reads 0.9630 on the 2000-row train-side holdout vs the 0.9000
+  bar — the first lane ABOVE the named lane's class (bag 0.395-0.43,
+  lexical pair-features ~0.52, laya reference logits 0.9654, openthai
+  teacher itself 0.876 on the pool). The winner artifact is sealed
+  (NLEH v1, `a1e2380b…`). REMAINING before xnli flips to sold: the single
+  frozen test read in the arena + an ENCODER-BACKED arm reader in
+  riir-instinct (today's winner_bridge consumes bag artifacts; this class
+  needs the laya-english encoder at serve — a heavyweight, GPU-backed
+  posture). OWNER GATE: build the encoder arm class, or keep xnli
+  unsold.**
 - [ ] T8 — **break the seven 0.0-edge ties or drop them from the sold set**:
   code_fixtures + the six harness families are ties with Reflex at +0.0 —
   a tie sells nothing (the original law). The families are synthetic:
