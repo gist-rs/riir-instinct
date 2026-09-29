@@ -146,3 +146,11 @@ required-features = ["tetris_goat"]
 [[bin]]
 name = "export_tetris_critic"
 required-features = ["tetris"]
+
+# The round-5 per-seed scale probe (Issue 009 T7 round 5, Bench 025/026) —
+# imports the tetris-only surface (tetris_blend/tetris_critic/tetris_lane +
+# katgpt_tetris); without this row a plain --all-targets build at default
+# features fails E0432/E0433 (the tetris_critic_parity row's own class).
+[[example]]
+name = "tetris_round5_scale_probe"
+required-features = ["tetris"]

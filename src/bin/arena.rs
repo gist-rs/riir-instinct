@@ -1839,6 +1839,13 @@ fn pin_a0_identity(datasets_dir: &Path, runs: &[SuiteRun], suites: &[&str]) -> R
         // cal-slice fused fit is the posture the pin reproduces.
         gate_fit_selection: false,
         gate_distance_only: false,
+        // Reflex Issue 056 direction 0 — PROMOTED default-on 2026-09-30:
+        // fit the score-axis threshold on the calibrated scale the
+        // deployed gate applies (the fit-on-raw / apply-on-calibrated
+        // mismatch was a units bug). The reflex seat carries the fix as
+        // its default, so the pin mirrors it (`--no-gate-fit-calibrated`
+        // is the old measurement posture).
+        gate_fit_calibrated: true,
         laya_python: false,
         gliner: false,
         agentjev: false,
