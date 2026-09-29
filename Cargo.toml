@@ -136,6 +136,12 @@ name = "tetris_critic_goat"
 harness = false
 required-features = ["tetris_goat"]
 
+# The round-5 teacher A/B (issue 009 pre-registration) — whole-target gated.
+[[bench]]
+name = "tetris_round5_teacher_ab"
+harness = false
+required-features = ["tetris_goat"]
+
 # The T7 dataset export (Issue 580's contract) — whole-target gated.
 [[bin]]
 name = "export_tetris_critic"

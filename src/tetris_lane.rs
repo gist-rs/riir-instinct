@@ -54,7 +54,10 @@ use katgpt_tetris::sim::{
 };
 use riir_reflex::game_heads::GameHeads;
 use std::collections::HashMap;
+use std::sync::atomic::{AtomicU64, Ordering};
 use std::time::Instant;
+
+use crate::tetris_critic::{RawOpt, TrainedMlp, raw_opt};
 
 /// The rulebook-champion genome the whole lane measures against (Bench 892).
 pub const CHAMPION_ID: &str = "68cae9d382014662";
@@ -62,6 +65,11 @@ pub const CHAMPION_ID: &str = "68cae9d382014662";
 /// The teacher-search RNG seed convention, inherited from
 /// `katgpt-rs examples/tetris_08_puct_goat` (disclosed in every record).
 pub const TEACHER_RNG_SALT: u64 = 0x05EE_D892;
+
+/// The round-5 no-op probe's rng salt (distinct stream: the blended arm
+/// runs the plain teacher's pick per decision WITHOUT perturbing the
+/// blended search's rng consumption — disclosed in the A/B record).
+pub const TEACHER_PROBE_SALT: u64 = TEACHER_RNG_SALT ^ 0x0B5E_D1FF;
 
 // ── Streams & regimes ────────────────────────────────────────────────────
 
@@ -343,7 +351,95 @@ impl Runner {
     }
 }
 
-// ── The teacher's chance game (no preview, fresh bag) ────────────────────
+// ── The teacher's chance game (no preview, fresh bag) ────────────────
+
+/// Round-5 teacher blend (issue 009 pre-registration, verdicts R1 REVISE +
+/// R2 AGREE): the trained critic's LOGIT z-blended into the champion eval
+/// at chance_puct's DECISION-STATE eval seam. `fit` calibrates per decision
+/// over the root's KEPT top-k options by champion eval (the searcher's own
+/// `value_scale` calibration set), so every blend value stays in
+/// champion-eval units and the searcher's value squash sees the same
+/// spread the plain teacher's did. Priors stay pure champion (the recorded
+/// limit: the critic reorders the champion's top-k, never rescues a move
+/// below it). `w = 0` short-circuits to the champion eval exactly.
+pub struct TeacherBlend<'m> {
+    mlp: &'m TrainedMlp,
+    w: f64,
+    /// The champion FSM's mode of the ROOT board — the per-decision
+    /// convention the champion eval and the critic's training rows share.
+    mode: Mode,
+    mean_e: f64,
+    std_e: f64,
+    mean_c: f64,
+    std_c: f64,
+}
+
+impl<'m> TeacherBlend<'m> {
+    /// Root z-fit: per root option, the champion eval `e` of the afterstate
+    /// (the same closure the search uses for priors) and the critic logit
+    /// `c` of the option's raw features; keep the searcher's kept set (top
+    /// [`ChancePuctConfig::default().top_k`] by `e` desc, index asc — the
+    /// searcher's own tie-break, on the f32 prior the searcher sorts) and
+    /// fit (mean, std) of BOTH channels over it.
+    pub fn fit(
+        eval: &dyn Fn(&Board, u32, u32) -> f64,
+        mlp: &'m TrainedMlp,
+        w: f64,
+        board: &Board,
+        cur: Piece,
+        mode: Mode,
+        options: &[Placement],
+    ) -> Self {
+        let top_k = ChancePuctConfig::default().top_k.max(1);
+        let mut rows: Vec<(f32, usize, f64, f64)> = Vec::with_capacity(options.len());
+        let mut scratch: Vec<f64> = Vec::new();
+        for (i, p) in options.iter().enumerate() {
+            let (b1, l1) = apply(board, &p.cells);
+            let e = eval(&b1, l1, u32::from(l1 == 4));
+            let raw = raw_opt(board, p, cur, mode, &b1, l1);
+            let need = mlp.scratch_len();
+            if scratch.len() < need {
+                scratch.resize(need, 0.0);
+            }
+            let c = mlp.score_logit(&raw, &mut scratch);
+            rows.push((e as f32, i, e, c));
+        }
+        rows.sort_by(|a, b| b.0.total_cmp(&a.0).then(a.1.cmp(&b.1)));
+        rows.truncate(top_k);
+        let n = rows.len() as f64;
+        let mean_e = rows.iter().map(|r| r.2).sum::<f64>() / n;
+        let mean_c = rows.iter().map(|r| r.3).sum::<f64>() / n;
+        // Population std; a degenerate (all-tie) channel gets scale 1.0 so
+        // the z term is 0 for every option and the blend degrades to the
+        // other channel — never a NaN.
+        let std_of = |mean: f64, col: usize| {
+            let var =
+                rows.iter().map(|r| match col { 2 => (r.2 - mean) * (r.2 - mean), _ => (r.3 - mean) * (r.3 - mean) }).sum::<f64>()
+                    / n;
+            if var > 1e-18 {
+                var.sqrt()
+            } else {
+                1.0
+            }
+        };
+        Self { mlp, w, mode, mean_e, std_e: std_of(mean_e, 2), mean_c, std_c: std_of(mean_c, 3) }
+    }
+}
+
+/// Blend-path telemetry (the verdict-R1 no-op pin): value() invocations
+/// that took the blend branch. The A/B bench resets + reads this and
+/// refuses to read any cell while it is 0.
+static BLEND_VALUE_CALLS: AtomicU64 = AtomicU64::new(0);
+
+/// (blend-path value() calls since the last reset.)
+pub fn blend_telemetry() -> u64 {
+    BLEND_VALUE_CALLS.load(Ordering::Relaxed)
+}
+
+/// Reset [`blend_telemetry`] (bench setup).
+pub fn blend_telemetry_reset() {
+    BLEND_VALUE_CALLS.store(0, Ordering::Relaxed);
+}
 
 /// A placement, inline (a tetromino is always 4 cells) — the PUCT adapter's
 /// `Move`, local until T9's adapter promotion consolidates the two.
@@ -365,11 +461,41 @@ pub struct TeacherState<'e> {
     tetrises: u32,
     after: bool,
     eval: &'e dyn Fn(&Board, u32, u32) -> f64,
+    /// Round-5 blend context — `None` ⇒ the plain teacher (byte-identical
+    /// to the pre-round-5 harness).
+    blend: Option<&'e TeacherBlend<'e>>,
+    /// The incoming transition's raw critic features: `None` at the root
+    /// (no placement — the root keeps the plain champion eval, so the
+    /// searcher's `value_ref` stays in champion units) and in plain arms.
+    /// chance_puct scores DECISION states only (afterstates are chance
+    /// nodes and are resolved, never valued), so this is consumed at
+    /// depth ≥ 1, where the state's board IS the post-placement board.
+    transition: Option<RawOpt>,
 }
 
 impl<'e> TeacherState<'e> {
     pub fn root(board: &Board, cur: Piece, eval: &'e dyn Fn(&Board, u32, u32) -> f64) -> Self {
-        Self { board: board.clone(), cur, lines: 0, tetrises: 0, after: false, eval }
+        Self { board: board.clone(), cur, lines: 0, tetrises: 0, after: false, eval, blend: None, transition: None }
+    }
+
+    /// The round-5 blended root (issue 009): identical game model, the
+    /// blend applied at the decision-state eval seam.
+    pub fn root_blended(
+        board: &Board,
+        cur: Piece,
+        eval: &'e dyn Fn(&Board, u32, u32) -> f64,
+        blend: &'e TeacherBlend<'e>,
+    ) -> Self {
+        Self {
+            board: board.clone(),
+            cur,
+            lines: 0,
+            tetrises: 0,
+            after: false,
+            eval,
+            blend: Some(blend),
+            transition: None,
+        }
     }
 }
 
@@ -382,7 +508,19 @@ impl ChanceGame for TeacherState<'_> {
     }
 
     fn value(&self) -> f32 {
-        (self.eval)(&self.board, self.lines, self.tetrises) as f32
+        let e = (self.eval)(&self.board, self.lines, self.tetrises);
+        match (self.blend, &self.transition) {
+            (Some(b), Some(raw)) if b.w > 0.0 => {
+                BLEND_VALUE_CALLS.fetch_add(1, Ordering::Relaxed);
+                let mut scratch = vec![0.0f64; b.mlp.scratch_len()];
+                let c = b.mlp.score_logit(raw, &mut scratch);
+                let z =
+                    (1.0 - b.w) * (e - b.mean_e) / b.std_e + b.w * (c - b.mean_c) / b.std_c;
+                (b.mean_e + z * b.std_e) as f32
+            }
+            // Plain teacher (and w = 0): the champion eval, bit-exact.
+            _ => e as f32,
+        }
     }
 
     fn actions(&self, out: &mut Vec<(Self::Action, f32)>) {
@@ -408,11 +546,26 @@ impl ChanceGame for TeacherState<'_> {
         let cells: Vec<(usize, usize)> =
             m.cells.iter().map(|&(r, c)| (r as usize, c as usize)).collect();
         let (board, n) = apply(&self.board, &cells);
+        // The transition's raw critic features, computed HERE where the
+        // placement is in hand (verdict R2: actions() would compute ~4x
+        // more for the same values). `outcome_features` reads ONLY
+        // p.cells (verified against katgpt-tetris sim.rs), so the
+        // synthesized rot/col/row are never read.
+        let transition = self.blend.map(|b| {
+            let p = Placement {
+                rot: 0,
+                col: 0,
+                row: 0,
+                cells: m.cells.map(|(r, c)| (r as usize, c as usize)),
+            };
+            raw_opt(&self.board, &p, self.cur, b.mode, &board, n)
+        });
         Self {
             board,
             lines: self.lines + n,
             tetrises: self.tetrises + u32::from(n == 4),
             after: true,
+            transition,
             ..self.clone()
         }
     }
@@ -425,6 +578,9 @@ impl ChanceGame for TeacherState<'_> {
     }
 
     fn resolve(&self, drawn: Self::Outcome) -> Self {
+        // `..self.clone()` carries the transition through: the resolved
+        // decision state keeps the post-placement board AND the raw
+        // features of the placement that produced it — the blend seam.
         Self { cur: drawn, after: false, ..self.clone() }
     }
 }

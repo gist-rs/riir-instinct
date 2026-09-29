@@ -42,7 +42,10 @@
 //! option) order, so the fit is bit-deterministic for a fixed seed list.
 //! The weights' BLAKE3 digest is the model identity.
 
-use crate::tetris_lane::{start_board, GameStats, Regime, TeacherState, CHAMPION_ID, TEACHER_RNG_SALT};
+use crate::tetris_lane::{
+    start_board, GameStats, Regime, TeacherBlend, TeacherState, CHAMPION_ID, TEACHER_PROBE_SALT,
+    TEACHER_RNG_SALT,
+};
 use katgpt_core::chance_puct::{ChancePuct, ChancePuctConfig, RootStat};
 use katgpt_core::karc::{ridge_solve_direct_f64, ChebyshevBasis, KarcBasis};
 use katgpt_tetris::lookahead::{apply, Bag, LINES_SCORE};
@@ -50,6 +53,7 @@ use katgpt_tetris::rulebook::{Genome, Leaf, Mode};
 use katgpt_tetris::sim::{
     Board, DropRule, OutcomeFeatures, Piece, Placement, landing_options_with, outcome_features,
 };
+use std::sync::atomic::{AtomicU64, Ordering};
 use std::time::Instant;
 
 // ── Raw features (the contract) ──────────────────────────────────────────
@@ -596,6 +600,16 @@ impl TrainedMlp {
     /// The critic score of one option (higher = better; only
     /// within-decision comparisons are meaningful). Allocates nothing.
     pub fn score(&self, raw: &RawOpt, scratch: &mut [f64]) -> f64 {
+        let z3 = self.score_logit(raw, scratch);
+        1.0 / (1.0 + (-z3).exp())
+    }
+
+    /// The pre-sigmoid logit of [`TrainedMlp::score`] — same forward, the
+    /// return is `z3` before the squash. The round-5 teacher blend z-fits
+    /// THIS (σ compresses exactly the catastrophic tail the critic exists
+    /// to separate, verdict R1); `score()` stays the serve readout. The
+    /// in-module test pins `σ(score_logit(x)) == score(x)`.
+    pub fn score_logit(&self, raw: &RawOpt, scratch: &mut [f64]) -> f64 {
         let (x, rest) = scratch.split_at_mut(43);
         let (y1, y2) = rest.split_at_mut(self.h1);
         debug_assert_eq!(y2.len(), self.h2);
@@ -635,7 +649,7 @@ impl TrainedMlp {
         for (k, &y2k) in y2.iter().enumerate() {
             z3 += self.w3[k] * y2k;
         }
-        1.0 / (1.0 + (-z3).exp())
+        z3
     }
 
     /// BLAKE3 over the whole weights file — the model identity (the
@@ -732,6 +746,13 @@ pub enum LanePolicy<'m> {
     /// The trained MLP head (Issue 580 T3): same 1-ply argmax over the
     /// serving-side forward. The scratch buffer is f64 (`scratch_len`).
     Mlp { model: &'m TrainedMlp },
+    /// Round-5 blended teacher (issue 009 pre-registration): chance_puct
+    /// over the champion evaluator with the trained critic's LOGIT z-blent
+    /// into the decision-state eval seam at weight `w` (0.5 pre-registered;
+    /// w = 0 short-circuits to the plain teacher bit-exactly). Every
+    /// visited option's Q recorded through `sink` (the same contract as
+    /// [`LanePolicy::Teacher`]). Teacher only — never a serve posture.
+    TeacherBlended { budget: u32, model: &'m TrainedMlp, w: f64, sink: &'m mut Vec<Sample> },
 }
 
 /// One seed, one game, one policy — the T6 game-loop shape (same bag, same
@@ -804,6 +825,64 @@ pub fn play_lane(genome: &Genome, seed: u64, regime: Regime, cap: usize, policy:
                     }
                 }
                 best
+            }
+            LanePolicy::TeacherBlended { budget, model, w, sink } => {
+                let mode = genome.mode_of(&board);
+                let eval = |b: &Board, lines: u32, tetrises: u32| -> f64 {
+                    let scan = b.scan();
+                    let leaf = Leaf { board: b, heights: scan.heights, lines, tetrises, held: None };
+                    genome.eval_with(&leaf, mode, &scan)
+                };
+                // Root z-fit over the SAME option list the search enumerates
+                // (the kept set the searcher's value_scale calibrates on).
+                let blend = TeacherBlend::fit(&eval, model, *w, &board, cur, mode, &options);
+                let root = TeacherState::root_blended(&board, cur, &eval, &blend);
+                let cfg = ChancePuctConfig { budget: *budget, ..ChancePuctConfig::default() };
+                let mut search = ChancePuct::new(cfg);
+                let picked = match search.search(&root, &mut rng) {
+                    Some(p) => p.index,
+                    None => usize::MAX, // unreachable: options non-empty ⇒ actions non-empty
+                };
+                // Sample recording — the Teacher arm's block verbatim (the
+                // frozen dataset path stays untouched; q comes from the
+                // blended search's root stats, the export's target law).
+                let stats: Vec<RootStat> = search.root_stats().collect();
+                for s in stats {
+                    if s.index < options.len() && s.visits > 0 {
+                        let (b1, l1) = apply(&board, &options[s.index].cells);
+                        let raw = raw_opt(&board, &options[s.index], cur, mode, &b1, l1);
+                        sink.push(Sample {
+                            seed,
+                            decision,
+                            raw,
+                            q: f64::from(s.q),
+                            is_pick: s.index == picked,
+                        });
+                    }
+                }
+                // The verdict-R1 no-op probe: the PLAIN teacher's pick on
+                // its own rng stream (never perturbs the blended search's
+                // stream). Diffs must be > 0 somewhere before the A/B cells
+                // are read; its wall time is disclosed SEPARATELY from the
+                // per-spot latency (verdict R2).
+                let probe_t0 = Instant::now();
+                let mut probe_rng = fastrand::Rng::with_seed(
+                    seed ^ TEACHER_PROBE_SALT ^ (u64::from(decision)).wrapping_mul(0x9E37_79B9_7F4A_7C15),
+                );
+                let probe_root = TeacherState::root(&board, cur, &eval);
+                let mut probe_search =
+                    ChancePuct::new(ChancePuctConfig { budget: *budget, ..ChancePuctConfig::default() });
+                PROBE_PICKS.fetch_add(1, Ordering::Relaxed);
+                if let Some(p) = probe_search.search(&probe_root, &mut probe_rng) {
+                    if p.index != picked {
+                        PROBE_DIFFS.fetch_add(1, Ordering::Relaxed);
+                    }
+                }
+                PROBE_MICROS.fetch_add(
+                    (probe_t0.elapsed().as_secs_f64() * 1e6) as u64,
+                    Ordering::Relaxed,
+                );
+                picked
             }
             LanePolicy::Mlp { model } => {
                 let mode = genome.mode_of(&board);
@@ -892,6 +971,77 @@ pub fn collect_teacher(
     (samples, stats)
 }
 
+// ── Round-5 no-op probe telemetry (the verdict-R1 pins) ─────────────
+
+static PROBE_PICKS: AtomicU64 = AtomicU64::new(0);
+static PROBE_DIFFS: AtomicU64 = AtomicU64::new(0);
+static PROBE_MICROS: AtomicU64 = AtomicU64::new(0);
+
+/// (plain-probe picks, blended-vs-plain pick diffs, probe wall micros)
+/// since the last reset. The A/B bench refuses to read any cell while the
+/// diff share is 0 (the blend must MOVE picks somewhere) and reports the
+/// probe's wall cost SEPARATELY from the per-spot latency.
+pub fn teacher_probe_telemetry() -> (u64, u64, u64) {
+    (
+        PROBE_PICKS.load(Ordering::Relaxed),
+        PROBE_DIFFS.load(Ordering::Relaxed),
+        PROBE_MICROS.load(Ordering::Relaxed),
+    )
+}
+
+/// Reset [`teacher_probe_telemetry`] (bench setup).
+pub fn teacher_probe_telemetry_reset() {
+    PROBE_PICKS.store(0, Ordering::Relaxed);
+    PROBE_DIFFS.store(0, Ordering::Relaxed);
+    PROBE_MICROS.store(0, Ordering::Relaxed);
+}
+
+/// Teacher collection with the ROUND-5 BLENDED teacher (issue 009
+/// pre-registration): same game loop, same seed merge order, same sample
+/// contract as [`collect_teacher`] — the teacher's picks and root Q come
+/// from the critic-z-blended search at weight `w`.
+#[allow(clippy::too_many_arguments)] // mirrors collect_teacher's signature + (model, w)
+pub fn collect_teacher_blended(
+    genome: &Genome,
+    model: &TrainedMlp,
+    w: f64,
+    regime: Regime,
+    seeds: &[u64],
+    budget: u32,
+    cap: usize,
+    threads: usize,
+) -> (Vec<Sample>, Vec<GameStats>) {
+    let next_seed = std::sync::atomic::AtomicUsize::new(0);
+    let results: std::sync::Mutex<Vec<(u64, GameStats, Vec<Sample>)>> =
+        std::sync::Mutex::new(Vec::with_capacity(seeds.len()));
+    std::thread::scope(|s| {
+        for _ in 0..threads.max(1) {
+            s.spawn(|| {
+                loop {
+                    let k = next_seed.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+                    if k >= seeds.len() {
+                        break;
+                    }
+                    let seed = seeds[k];
+                    let mut sink: Vec<Sample> = Vec::new();
+                    let mut policy = LanePolicy::TeacherBlended { budget, model, w, sink: &mut sink };
+                    let stats = play_lane(genome, seed, regime, cap, &mut policy);
+                    results.lock().expect("results lock").push((seed, stats, sink));
+                }
+            });
+        }
+    });
+    let mut out = results.into_inner().expect("results");
+    out.sort_by_key(|(seed, _, _)| *seed);
+    let mut samples = Vec::new();
+    let mut stats = Vec::new();
+    for (_, st, mut sink) in out {
+        stats.push(st);
+        samples.append(&mut sink);
+    }
+    (samples, stats)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -937,5 +1087,79 @@ mod tests {
         assert_eq!(a, b);
         assert_eq!(a[0], 1.0, "bias segment first");
         assert_eq!(a.len(), DESIGN_DIM);
+    }
+
+    /// Verdict-R2 parity pin: `σ(score_logit(x))` must be BIT-IDENTICAL to
+    /// `score(x)` — the blend z-fits the logit, the serve path reads the
+    /// sigmoid, and a future edit that quietly splits the two forward
+    /// passes would break the round-5 teacher's meaning of "the r4 critic".
+    /// Runs on a synthetic in-code model — no trained weights file needed.
+    #[test]
+    fn score_logit_sigmoid_is_score_bit_exactly() {
+        let model = TrainedMlp {
+            scale: FeatureScale { lo: [-1.0; feat::NUM], hi: [2.0; feat::NUM] },
+            h1: 4,
+            h2: 3,
+            tanh_hidden: true,
+            w1: (0..4 * 43).map(|i| ((i % 13) as f64 - 6.0) / 24.0).collect(),
+            b1: (0..4).map(|i| (i as f64 - 1.5) / 8.0).collect(),
+            w2: (0..3 * 4).map(|i| ((i % 11) as f64 - 5.0) / 20.0).collect(),
+            b2: [0.1, -0.2, 0.05].to_vec(),
+            w3: [0.9, -0.7, 0.3].to_vec(),
+            b3: 0.02,
+        };
+        for i in 0..64 {
+            let mut num = [0.0; feat::NUM];
+            for (k, v) in num.iter_mut().enumerate() {
+                *v = ((i * (k + 3)) % 19) as f64 / 9.0 - 1.0;
+            }
+            let raw = RawOpt { num, piece: (i % 7) as u8, mode: (i % 3) as u8 };
+            let mut scratch = vec![0.0f64; model.scratch_len()];
+            let s = model.score(&raw, &mut scratch);
+            let z = model.score_logit(&raw, &mut scratch);
+            let sig_z = 1.0 / (1.0 + (-z).exp());
+            assert_eq!(sig_z, s, "row {i}: σ(logit) must be score bit-exactly");
+        }
+    }
+
+    /// The verdict-R1 byte-stability pin: `TeacherBlended { w: 0.0 }` must
+    /// play the EXACT same games as the plain `Teacher` arm — same pieces,
+    /// lines, points, decisions — on the same seeds. The w=0 short-circuit
+    /// is what keeps the pre-round-5 dataset lane reproducible through the
+    /// new code path.
+    #[test]
+    fn blended_w0_plays_the_plain_teacher_game_bit_exactly() {
+        let model = TrainedMlp {
+            scale: FeatureScale { lo: [-1.0; feat::NUM], hi: [2.0; feat::NUM] },
+            h1: 4,
+            h2: 3,
+            tanh_hidden: true,
+            w1: (0..4 * 43).map(|i| ((i % 7) as f64 - 3.0) / 12.0).collect(),
+            b1: (0..4).map(|i| (i as f64) / 16.0).collect(),
+            w2: (0..3 * 4).map(|i| ((i % 5) as f64 - 2.0) / 10.0).collect(),
+            b2: [0.0, 0.1, -0.1].to_vec(),
+            w3: [0.5, -0.5, 0.2].to_vec(),
+            b3: 0.0,
+        };
+        let genome = katgpt_tetris::rulebook::Genome::champion_hybrid();
+        let regime = Regime::garbage(16, 75);
+        for seed in [9u64, 421] {
+            let mut sink_plain = Vec::new();
+            let mut p = LanePolicy::Teacher { budget: 64, sink: &mut sink_plain };
+            let plain = play_lane(&genome, seed, regime, 60, &mut p);
+            let mut sink_blend = Vec::new();
+            let mut q = LanePolicy::TeacherBlended {
+                budget: 64,
+                model: &model,
+                w: 0.0,
+                sink: &mut sink_blend,
+            };
+            let blended = play_lane(&genome, seed, regime, 60, &mut q);
+            assert_eq!(plain.pieces, blended.pieces, "seed {seed}: w=0 must be the plain game");
+            assert_eq!(plain.lines, blended.lines);
+            assert_eq!(plain.points, blended.points);
+            assert_eq!(plain.decisions, blended.decisions);
+            assert_eq!(plain.topped_out, blended.topped_out);
+        }
     }
 }
