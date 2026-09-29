@@ -284,6 +284,25 @@ struct DisclosedPosture {
 }
 
 fn main() {
+    // The massive/59-label seat builds (head-select over the ~11k-doc
+    // pool) overflow the 1- MiB Windows main-thread stack (the M3's 8 MiB
+    // main stack ran the identical binary fine — a platform gap, not a
+    // logic defect). Run the whole arena on a big-stack worker thread —
+    // the serve.rs LOADER_STACK precedent; die()'s process::exit works
+    // from any thread.
+    const ARENA_STACK: usize = 512 * 1024 * 1024;
+    let rc = std::thread::Builder::new()
+        .name("arena-main".into())
+        .stack_size(ARENA_STACK)
+        .spawn(arena_main)
+        .and_then(|h| h.join().map_err(|_| std::io::Error::other("arena thread panicked")))
+        .inspect_err(|e| eprintln!("⛔ arena: {e}"))
+        .map(|_| ())
+        .map_or(1, |()| 0);
+    std::process::exit(rc);
+}
+
+fn arena_main() {
     let args: Vec<String> = std::env::args().collect();
     // The datasets dir is the FROZEN Bench-005 re-baseline pool — every
     // published arena row (Bench 005/011/012/015) is measured on these
