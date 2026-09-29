@@ -96,3 +96,47 @@ cargo bench --bench tetris_round5_teacher_ab --features tetris_goat -- \
 Model: `riir-train/data/tetris_critic_r4p2/tetris_mlp_v1.bin` (BLAKE3
 `5c7eb6ca4ae3bb3e…`, the Bench-025 qualified component). Raw record:
 `teacher_ab.json` in this directory.
+
+## Addendum — the independent 4090 execution (same gate, second box; verdict CONFIRMED)
+
+The 4090 session ran the same pre-registered gate independently and
+concurrently (the Issue-825 duplicate-execution class — adjudicated here as a
+cross-box confirmation rather than a duplicate, because the two executions
+AGREE on the verdict and DISAGREE on cell 1 in an informative way). Raw
+record: `teacher_ab_4090.json` (4090 Windows / i7-13700K, two complete runs
+that were byte-identical to each other on every game statistic — same-box
+determinism pinned; only wall_s moved, 3040.7 vs 3404.8 s on cell 1 under
+different box load).
+
+| cell | 4090 plain | 4090 blended | Δmean | lb95 | ub95 | W/T/L |
+|---|---|---|---|---|---|---|
+| garbage 16@75, cap 5000 | 4296.7 (16 cap) | 4881.6 (18 cap) | +584.9 | −53.6 | +1223.4 | 4/15/1 |
+| garbage 18@75, cap 1000 | 655.0 (13 cap) | 605.9 (12 cap) | −49.0 | −145.8 | +47.7 | 1/16/3 |
+| garbage 20@80, cap 1000 | 0.0 | 0.0 | 0.0 | +0.0 | +0.0 | 0/20/0 |
+
+GO rule on the 4090 numbers: identical — **0 GO cells, 0 harm cells ⇒ NO-GO**,
+guards pass (175.5M blend value() calls, 15,388/109,750 pick diffs).
+
+**The cross-box pattern is itself the finding:** cell 2 (18@75) reproduced
+BYTE-IDENTICALLY across macOS ARM and Windows x86 (654.95/605.90, Δ−49.05,
+1/16/3 — every digit), while cell 1 (16@75) diverged (4535.1 vs 4296.7 plain;
+3/17/0 vs 4/15/1) — longer games compound per-decision ulp divergence past
+tie-breaking points, shorter games stay inside them. Both cells' VERDICT
+inputs agree (cell 1 lb95 < 0 on both boxes; cell 2 identical), so the NO-GO
+is box-independent — measured, not assumed. The same cross-arch caveat the
+Bench-025 rebuild recorded for TRAINING data applies to long-horizon
+play-strength evals: per-arch deterministic, cross-arch divergent in the
+tail; never compare per-cell numbers across boxes, only verdicts and
+same-box re-runs.
+
+Provenance note for the 4090 runs: the first execution launched via an agent
+session that was watchdog-cancelled mid-flight (the detached child survived
+and completed the full gate — `tasklist /FI "IMAGENAME eq …"` exact-matches
+the bare name and MISSES cargo's hash-suffixed bench binary
+`tetris_round5_teacher_ab-<hash>.exe`; filter with a `LIKE` prefix or
+`Get-CimInstance` instead). A second complete run then reproduced the first
+byte-identically; `teacher_ab_4090.json` is the second run's output.
+Launcher provenance: `scripts/r5_launch_ab.ps1` (committed beside this
+record).
+
+Session: 4090-r5b, 2026-09-30T03:55+07:00
