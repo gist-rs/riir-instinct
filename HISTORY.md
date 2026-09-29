@@ -22,6 +22,24 @@ at 5 reads (the A/B used only 401..=420). Next priced lever: the loss/data-
 shape lane's offline label-blend test (low prior, both nulls depress it).
 Record: `.benchmarks/026_tetris_round5_teacher_ab/`.
 
+**Round-6 follow-through (same day, verdict R1 REVISE adopted, no compute):**
+the label-blend — the last priced lever — was ANALYTICALLY CLOSED. Grounds:
+(1) self-distillation fixed point: r6 (r4's arch/config/rows) trained on
+y′ = (1−λ)q + λ·f_r4 converges to f_r4 in both the memorized and the
+underfit branch (the metrics read UNDERFIT: 287k params vs 1.07M rows, best
+epoch = last; the draft's memorization premise was struck unmeasured);
+Mobahi 2020 — repeated self-distillation regularizes, weaker for a
+capacity-bound model. (2) DECISIVE: a win could not ship — r6 is the r4
+config at ≈3.76 ms/decision = 3.4–3.8× over the 1 ms serve bar; servable
+widths ≤256×256 already lost by Δ−172.1; eval-seed read #6 on a
+cannot-ship outcome fails the read discipline. (3) escapes void (disjoint-
+seed critic = same class/teacher/fixed point at the same price). **T7 is out
+of priced levers** — every recorded candidate measured or closed (capacity
+010/018/021, loss family 017, teacher blend 026+027, label blend this); a
+future lever must bring new information representable WITHIN the 1 ms bar
+(the T5 widened-wire/afterstate side, or a different teacher signal). Issue
+stays OPEN owner-visible; eval seeds at 5 reads; nothing minted/served.
+
 ## 2026-09-29 — the instinct flow figure reflowed to two bands (owner ask: too wide, rendered small)
 
 The source mermaid in

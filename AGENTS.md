@@ -123,8 +123,17 @@ bridge row reverted same-session. code_fixtures' flat-union collapse was found
 massive/ag_news/xnli holdout negatives; typed rides the 581 ceiling. The
 re-open bar is a model-CLASS upgrade, never another bag sweep. Full record:
 HISTORY.md 2026-09-29. Issue 005 H3 closed premise-refuted (typed questions
-are INDEPENDENT-GIVEN-CASE — no tree); Issue 009's next Tetris lever
-re-derived GO-as-teacher (pre-registered round 5 in the issue).
+are INDEPENDENT-GIVEN-CASE — no tree). **Issue 009 T7 CLOSED-OUT OF LEVERS
+2026-09-30: round 5's teacher A/B (Bench 026, z-form) measured NO-GO beside
+the residual pilot's null (Bench 027), and round 6 (the label-blend, the
+last priced lever) was analytically closed under verdict — self-distillation
+fixed point + the decisive ground that a win could not ship (the r4 config
+runs 3.4–3.8× over the 1 ms serve bar). Every recorded lever measured or
+closed (capacity 010/018/021, loss 017, teacher blend 026+027, label blend
+round-6); b0 stands; the issue stays OPEN owner-visible with T1/T2/T4/T9
+gated on a future lever that brings new information representable WITHIN
+the 1 ms bar (the T5 widened-wire side, or a different teacher signal);
+eval seeds at 5 reads.**
 
 **Bench 022 + Plan 005 (2026-09-29) — the frozen-artifact staleness probe
 LANDED (Issue 012, resolved + removed): the soft early-warning readout beside
