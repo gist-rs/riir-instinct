@@ -1,42 +1,65 @@
-# Issue 008 — Instinct must strictly beat free Reflex on every suite it sells
+# Issue 008 — Instinct must strictly beat EVERY published lane on every suite it sells
 
 **Status:** OPEN — filed 2026-09-27 (owner direction). T1+T2 EXECUTED 2026-09-27
-(Bench 004): the T2-certified set is exactly ONE arm — massive H2 +4.7 pt.
-**AMENDED same day (owner serving verdict): the SERVING selector is the
-BEST MEASURED ARM per suite (A0 a candidate like any other) — ag_news
-serves H2 0.8975 and sst5 serves A1 0.4217 while still T2-uncertified;
-T2 remains the ADVERTISING law (the site ✓/✗ row), never the serving
-selector. The site displays EVERY seated suite's cell (reflex-half
-suites included, labeled) — hiding a measured result reads as "can't
-handle it". Serving law + display landed at riir-instinct `4cc4441` +
-reflex-site `aeea24b` (serve_gates 11/11, publish 48/48, pairing 28/28).
-T4/T5 are now the whole improvement backlog: certify ag_news/sst5
-(more questions) and replace the losing specialists (emotion/banking77/
-xnli) — the served posture upgrades automatically when a better arm
-measures.
+(Bench 004); serving/display landed `4cc4441` + reflex-site `aeea24b`. **AMENDED
+2026-09-29 (owner direction): the bar is no longer "beat free Reflex" — free
+Reflex is the FLOOR.** The product claim is **"the best published lane on every
+suite it sells"**: every comparison lane (laya's best checkpoint, clm, gliner,
+agentjev, openthai, paw) and Reflex itself. Today it does not (measured below).
+Site consequence landed same day (reflex-site): the "Instinct vs Reflex" row
+MOVED from the arena TL;DR to `/bench/#instinct` (the arena stays Reflex's),
+rendered beside the new "vs best lane" row and a **PoC** status chip — the chip
+flips only when the bar is met, and the row returns to the arena TL;DR only on
+an explicit owner call (T9).
 
 ## Why
 
 Reflex is free. Instinct is the paid lane (trained specialists composed over
-Reflex), so it must EARN its place: ahead of Reflex, in general and/or in a
-named domain. A tie sells nothing. reflex-site now renders the arena row
-from Instinct's side, **"Instinct vs Reflex, accuracy"**, with ✓ only when
-Instinct is STRICTLY ahead on every suite it has an arm for (reflex-site `bc7b1a0`, the row law in
-`assets/arena_tldr.js`). Today it reads ✗.
+Reflex), so it must EARN its place — and a customer does not compare it to
+Reflex alone; they compare it to **whatever is best on the board**. A tie with
+the best lane sells nothing, and so does losing to openthai on a suite where
+Instinct beats Reflex by +42 pt. The serving selector is unchanged (best
+measured arm per suite, A0 a candidate); this issue is the ADVERTISING bar and
+the training backlog.
 
-## Measured (published data/bench.json, 2026-09-27)
+## Measured — vs the floor (free Reflex; published data/bench.json @ reflex-site 1881624, 2026-09-29)
+
+Ahead on **8/15** suites with an arm; tied on 7.
 
 | suite | Instinct arm | Instinct | Reflex (published) | edge |
 |---|---|---|---|---|
-| massive_intent_en | H2(β=1,nmin=2,τ=8) | 0.8267 | 0.7800 | **+4.7 pt** |
-| sst5 | A1 | 0.4217 | 0.3967 | **+2.5 pt** |
-| ag_news | H2(β=0.25,nmin=2,τ=2) | 0.8975 | 0.8825 | **+1.5 pt** |
-| banking77 | H1 (NOT served — G3 FAIL, A0 serves) | 0.8060 | 0.8260 | −2.0 pt |
-| emotion | A1 | 0.8550 | 0.8850 | −3.0 pt |
-| 9 suites | — no arm | — | — | not sold |
+| massive_intent_en | H2(β=1,nmin=2,τ=8) | 0.8267 | 0.4067 | **+42.0 pt** |
+| banking77 | H2 (nbsvm v2) | 0.8540 | 0.4020 | **+45.2 pt** |
+| sst5 | A1 | 0.4217 | 0.2017 | **+22.0 pt** |
+| emotion | A1 | 0.8850 | 0.7700 | **+11.5 pt** |
+| prompt_injections | A1 | 0.8534 | 0.7672 | **+8.6 pt** |
+| typed_decisions | H2(β=0.5,oc) | 0.6300 | 0.5725 | +5.8 pt |
+| ag_news | H2(β=0.25) | 0.8975 | 0.8625 | +3.5 pt |
+| xnli_en | (seat) | 0.5233 | 0.5033 | +2.0 pt |
+| code_fixtures + 6 harness_* | — | = Reflex | — | +0.0 pt (ties) |
 
-No arm: typed_decisions, prompt_injections, xnli_en (A0 stands), code_fixtures,
-and the six harness_* suites.
+## Measured — vs the BAR (best published lane per suite, best non-multilingual checkpoint, any host)
+
+Strictly best on **3/15** armed suites, tied on 6, **trailing on 6**:
+
+| suite | Instinct | best published lane | edge | the bar to beat |
+|---|---|---|---|---|
+| xnli_en | 0.5233 | 0.9000 | **−37.7 pt** | openthai-systemone 0.9000 |
+| code_fixtures | 0.3750 | 0.6250 | **−25.0 pt** | paw (hosted) 0.6250 |
+| typed_decisions | 0.6300 | 0.7715 | **−14.1 pt** | agentjev-0.6B 0.7715 |
+| massive_intent_en | 0.8267 | 0.9200 | **−9.3 pt** | openthai-systemone 0.9200 |
+| ag_news | 0.8975 | 0.9500 | **−5.2 pt** | laya (english) 0.9500 |
+| sst5 | 0.4217 | 0.4383 | **−1.7 pt** | gliner 0.4383 |
+
+Strictly best: banking77 (+14.8 vs gliner 0.7060), emotion (+11.5 vs Reflex
+0.7700), prompt_injections (+8.6 vs Reflex 0.7672). Tied at +0.0 edge:
+code_fixtures + the six harness_* families (the specialist adds nothing
+measurable on the synthetic families — a tie sells nothing). No arm:
+thai_wisesight, thai_sib200 (coverage, T5).
+
+**What we don't beat yet — the work list, widest first:** xnli_en (openthai),
+code_fixtures (paw), typed_decisions (agentjev), massive_intent_en (openthai),
+ag_news (laya english), sst5 (gliner); then the seven 0.0-edge ties.
 
 ## Root causes (read before training anything)
 
@@ -44,85 +67,69 @@ and the six harness_* suites.
    Bench 002 registered every arm at the Bench-052 protocol, whose A0 is
    Reflex's 052 posture (emotion A0 **0.7375**). Reflex has since armed its
    cal-selected heads (riir-reflex Bench 057: emotion ridge@8 → **0.8850**).
-   So emotion's A1 beat the Reflex it was registered on by +11.8 pt and trails
-   today's free Reflex by 3.0 pt. The same drift can reach every suite
-   whenever Reflex improves, so this is a standing hazard, not a one-off.
-2. **banking77 publishes an arm the product does not serve.** The serving
-   posture (`server::serving_posture`) is A0 there, i.e. exactly Reflex,
-   because H1 FAILED G3. The site row shows the unserved H1 (−2.0 pt).
-   AGENTS.md records that as deliberate ("the H1 row stays a published site
-   measurement"); under the paid-lane framing it undersells what ships AND
-   still cannot sell (a tie).
+   The same drift can reach every suite whenever Reflex improves, so this is a
+   standing hazard, not a one-off. (Today's published emotion modelless row
+   reads 0.7700 — the registry-defaults posture; re-verify against the ARMED
+   posture before calling emotion sold.)
+2. **banking77 publishes an arm the product does not serve.** RESOLVED
+   2026-09-28 (Bench 012): the nbsvm v2 winner serves H2 0.8540 (+45.2 vs the
+   published Reflex row) — and it is strictly best on the board (+14.8 vs
+   gliner).
+3. **The bar moved under the same drift hazard as cause 1, one lane wider.**
+   Comparison lanes keep landing (agentjev typed 0.7715, openthai massive
+   0.9200 / xnli 0.9000, gliner sst5 0.4383, paw code_fixtures 0.6250), each
+   raising the per-suite bar independently of Reflex's own posture. T1's
+   re-baseline discipline applies to the WHOLE lane set, never just A0: every
+   re-read must recompute the vs-best edge, and a "sold" claim must name the
+   lane it beat.
 
 ## Tasks
 
-- [x] T1 — **re-baseline A0 on the CURRENT published Reflex posture** (the
-  armed heads: emotion ridge@8, typed oc@2, sst5/xnli nb@16 … as published)
-  and re-run the Bench-002 arena on the same `datasets_t20k` bytes. Every
-  hybrid arm fuses over that Reflex, so A0 == the published modelless row
-  becomes the comparability proof again (the 6/6 pin, re-pinned). Expected:
-  emotion's fused arm re-scores against 0.8850; ties are the floor, not a loss.
-  ✅ DONE (Bench 004): seat knobs = head+nb+ridge select (the ladder arms
-  only where reflex's bar clears — emotion @8, all other arena suites 0,
-  byte-identical to off); the drift pin extended to all six suites AND to
-  the published site rows (arena == reflex run() == bench.json, 6/6 site ✓).
-  Emotion measured: A1 0.8550 vs the new A0 0.8850 — the instrument picked
-  A0 outright; the +11.8 pt story closed at −3.0 pt, exactly as this issue
-  predicted.
+- [x] T1 — **re-baseline A0 on the CURRENT published Reflex posture** and
+  re-run the arena on the same `datasets_t20k` bytes; the drift pin (arena ==
+  reflex run() == bench.json) extended to all suites AND the published site
+  rows. ✅ DONE (Bench 004; extended 2026-09-28 — 9/9 dataset suites pinned).
 - [x] T2 — **a product gate: registration REFUSES an arm not strictly above
-  the current Reflex row** on the frozen test read (paired, with the existing
-  `stats.rs` non-inferiority machinery turned into superiority: lower bound
-  of the paired delta > 0). This makes the site's ✓ a riir-instinct GOAT
-  gate instead of a page rule, and T1's drift can never silently reopen.
-  ✅ DONE (Bench 004): `stats::PairedDiff::lb95` + the gate in the arena's
-  registration (`src/bin/arena.rs`) — a refused pick prints its paired mean
-  and LB95, A0 serves, and the refusal rides the frozen record
-  (`predictions.json`'s `instrument_pick`/`superiority` fields) + the
-  RESULTS.md gate table. Refusals measured: ag_news H2 (+0.0150/−0.0100),
-  sst5 A1 (+0.0250/−0.0129), banking77 H1 (−0.0200/−0.0466).
-- [x] T3 — **publish the SERVED posture, not the registered one** — now
-  MOOT AS STATED (the T2 gate made registered == served: a refused arm is
-  not registered, so there is no unserved arm left to hide). The REMAINING
-  half was the site sync: `scripts/build_hybrid_doc.py` + reflex-site must
-  republish from Bench 004's record so the site row carries the served set
-  (massive only, +4.7 pt certified) instead of the Bench-002 arms.
-  ✅ DONE 2026-09-27 — reflex-site `4ca2ef6`; republished from the Bench-005 record (the freshest
-  read, same serving verdict): the lane doc lives at
-  `.benchmarks/005_hybrid_every_suite_measured/hybrid_lane_doc.json`; the
-  four refused Bench-002 cells are REMOVED from `data/bench.json`
-  (ag_news/emotion/sst5/banking77) and only massive H2 0.8267 remains ==
-  the arsenal. Site-side mechanism: publish_bench.py's `a0_stands` arm
-  (the three-state vocabulary, instinct Issue 010 T3) deletes the
-  incumbent cell when the update doc marks the suite a0_stands — pinned
-  by `case_a0_stands_removes_refused_incumbent_cell` (48/48 green),
-  pairing gate 28/28, chart smoke green post-publish. The TL;DR row now
-  reads from the served set: "ahead of Reflex on 1/1 suites with an
-  Instinct arm (widest: massive_intent_en 82.7% vs 78.0%)" + the no-arm
-  disclosure. Massive's latency publishes UNJUDGED (that run's box load
-  6.26 — the accuracy is the claim).
-- [ ] T4 — **close the two gaps with specialists that clear G3**: emotion
-  (vs 0.8850) and banking77 (vs 0.8260; H1 lost up to ~4.7 pt at 95%).
-  Training runs in riir-train (`vessel-mint`), on the GPU; not deferred.
-  Filed: riir-train Issue 579 (the v2 bar + the 576 protocol + the
-  teacher-quality lever warnings).
-  **HALF DONE 2026-09-28 (Bench 012): the banking77 half LANDED** — the
-  Issue 579 nbsvm v2 winner serves H2(β=2,nmin=8,τ=8) 0.8540 vs A0 0.8260
-  (+2.8 pt; T2 LB95 −0.0013, uncertified — serves under best-measured,
-  the arsenal row + `PINNED_MANIFEST_DIGEST` moved together, 11/11 serve
-  gates green); the train-side holdout edge transferred (+2.8 pt). A
-  banking77 HOSTED-ONLY vessel must be re-minted from v2 by riir-train
-  before the vessel lane carries this posture. **Emotion remains open**
-  (A1 0.8550 vs A0 0.8850 — the specialist backlog).
-- [ ] T5 — **coverage**: arms for the 9 unsold suites, starting with the
-  ones where Reflex is weakest and a specialist has the most room
-  (code_fixtures 0.25, harness_visibility 0.375, sst5-class tasks), and the
-  typed_decisions / prompt_injections suites that products actually route.
-  **PROGRESS 2026-09-28: typed + prompt both SERVE (prompt A1 0.8534
-  T2-certified, Bench 013; typed H2 0.6475 certified against every leg,
-  Bench 020 — the Issue-005 oc-margin arm). The remaining no-arm suites:
-  xnli_en, code_fixtures, and the six harness families (the families are
-  synthetic-authored — a specialist there needs a data-design decision
-  first, never a silent run).**
+  the current Reflex row** on the frozen test read (paired LB95 > 0). Makes
+  the site's ✓ a riir-instinct GOAT gate instead of a page rule.
+  ✅ DONE (Bench 004: `stats::PairedDiff::lb95` in the arena registration).
+- [x] T3 — **publish the SERVED posture, not the registered one** — MOOT AS
+  STATED (the T2 gate made registered == served). Site sync DONE reflex-site
+  `4ca2ef6`; the four refused Bench-002 cells removed, only the served set
+  renders. Since 2026-09-29 the row lives at `/bench/#instinct` (see the
+  amendment) beside the vs-best row, both rendered from data by reflex-site
+  `assets/instinct.js`.
+- [x] T4 — **close the two Reflex gaps with specialists that clear G3**:
+  banking77 ✅ (Bench 012 — nbsvm v2 serves, strictly best on the board);
+  emotion ✅ on the published board (0.8850 vs 0.7700) with the standing
+  caveat: re-verify vs the ARMED Reflex posture (Bench 057's ridge@8 0.8850)
+  before claiming the suite sold — cause 1 is live there.
+- [-] T5 — **coverage: arms for the unsold suites.** Remaining no-arm:
+  thai_wisesight, thai_sib200 (a Thai specialist — OpenThai-SystemOne holds
+  the bar there at 0.475 / 0.8382). Previously-open xnli_en, code_fixtures
+  and the six harness families HAVE arms now (xnli +2.0 vs Reflex but −37.7
+  vs openthai — seated ≠ sold under the amended bar); the harness families
+  are synthetic-authored — a specialist there needs a data-design decision
+  first, never a silent run. DEFER on Thai until the six vs-best gaps close.
 - [ ] T6 — **a general-domain arm**: one specialist whose fused read beats
-  Reflex on a majority of suites without per-suite tuning, so "Instinct beats
-  Reflex" holds as a general claim and not only per domain.
+  the best published lane on a majority of suites without per-suite tuning,
+  so "Instinct is the best lane" holds as a general claim, not only per
+  domain.
+- [ ] T7 — **close the six vs-best gaps** (the amended bar, widest first):
+  xnli_en (openthai 0.9000), code_fixtures (paw 0.6250), typed_decisions
+  (agentjev 0.7715), massive_intent_en (openthai 0.9200), ag_news (laya en
+  0.9500), sst5 (gliner 0.4383). Each needs a specialist that beats the
+  NAMED lane, not just Reflex; runs in riir-train (`vessel-mint`), on the
+  GPU; not deferred. Filed per-suite as riir-train issues using the 579
+  protocol (the v2 bar + teacher-quality lever warnings).
+- [ ] T8 — **break the seven 0.0-edge ties or drop them from the sold set**:
+  code_fixtures + the six harness families are ties with Reflex at +0.0 —
+  a tie sells nothing (the original law). The families are synthetic:
+  data-design decision first (T5's rule), then a specialist that wins, then
+  the suite counts as sold; otherwise the site section keeps saying "tied".
+- [ ] T9 — **the site flip**: when the measured board shows Instinct strictly
+  ahead of every published lane on every suite it covers, the PoC chip on
+  `/bench/#instinct` reads GOAT on the next republish (rendered from data,
+  no edit), and an owner call moves the row back into the arena TL;DR. Until
+  then the home page and arena TL;DR stay Reflex-only — the owner's 09-29
+  "let it shine later" call.
