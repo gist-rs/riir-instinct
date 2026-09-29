@@ -172,7 +172,22 @@ ag_news (laya english), sst5 (gliner); then the seven 0.0-edge ties.
   check). The wave-2 verdict stands amended: the class upgrade is REAL
   (+33.7 over A0) but does not clear the named lane's bar on the frozen
   read; the owner gate now prices a 0.86-serving arm against the 0.90
-  bar.
+  bar.**
+  **WAVE 3 — the five remaining gaps SCREENED in one session (riir-train
+  issue 600, `d5e3a30b`, 2026-09-30): ag_news NEGATIVE (the reference
+  0.9500 IS the laya bar; the head adds nothing at ceiling), massive
+  NEGATIVE (the head LOSES 4.9 pt to its own reference on test),
+  code_fixtures NEGATIVE-by-law (reference 26.7 pt under the bar, over the
+  measured max head-lift of +14.7), typed_decisions not screenable
+  position-free (per-case option sets), and **sst5 the ONE live lane —
+  head 0.5183 on the test screen vs the 0.4383 gliner bar (+8.0 pt) and
+  its own reference (0.3717, +14.7 pt) — PROVISIONAL-POSITIVE pending the
+  T6 frozen-read re-run under the class-relative-only bar (the 0.75
+  absolute earn floor misprices a 5-way sentiment suite).** The
+  class-relative law (the head never beats the bar unless its reference
+  does — except far-from-ceiling references, where lift is real) is the
+  wave-3 design instrument; the seating question for an sst5 encoder arm
+  rides T6's verdict.
 - [ ] T8 — **break the seven 0.0-edge ties or drop them from the sold set**:
   code_fixtures + the six harness families are ties with Reflex at +0.0 —
   a tie sells nothing (the original law). The families are synthetic:
