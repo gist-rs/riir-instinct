@@ -1,3 +1,27 @@
+## 2026-09-30 — Issue 009 round 5 closed on both forms: the teacher A/B (Bench 026) measured NO-GO beside the residual pilot's null (Bench 027); the lane stops, eval seeds still at 5 reads
+
+The 4090 session's pre-registered z-blend A/B (plain b1600 vs the r4'-critic
+z-blend at w=0.5, seeds 401..=420) was executed on the M3 with the
+digest-verified qualified component (`5c7eb6ca4ae3bb3e`, Bench 025's attempt-2
+rebuild, copied from the 4090 and BLAKE3-checked) after that session moved to
+the t599 encoder lane — a CPU play-strength eval, seed-deterministic,
+box-independent in its verdict. **NO-GO per the pre-registered rule:** 16@75
+cap 5000 Δ+396.0 lb95 −119.7 (3/17/0 — blended survives longer, 19/20 vs 17/20
+cap, but not significant); 18@75 cap 1000 Δ−49.05 lb95 −145.8 ub95 +47.7
+(1/16/3 — leans the other way); 20@80 cap 1000 DEGENERATE (both arms died at 0
+pieces on all 20 seeds — the pre-registered "hard cell" was unplayable; a
+pre-reg design miss now recorded: single-probe a new regime's playability
+before allocating a cell). Guards PASS (177.1M blend value() calls, 15,370
+pick diffs). The points column agrees harder than pieces: the blended teacher
+scored FEWER points in both live cells (219,615 vs 274,957 at 16@75 despite
++396 pieces) — survival-biased style, a worse distillation target. **Both
+round-5 forms measured, neither promotable** (z: 026; residual: 027); closed:
+z at w=0.5; not closed: other w (thin — the forms bracket it) and the
+prior-seam blend (never priced). No dataset built, no r5 student, eval seeds
+at 5 reads (the A/B used only 401..=420). Next priced lever: the loss/data-
+shape lane's offline label-blend test (low prior, both nulls depress it).
+Record: `.benchmarks/026_tetris_round5_teacher_ab/`.
+
 ## 2026-09-29 — the instinct flow figure reflowed to two bands (owner ask: too wide, rendered small)
 
 The source mermaid in

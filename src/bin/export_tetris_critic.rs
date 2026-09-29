@@ -22,13 +22,17 @@
 //! ```
 //!
 //! TWO round-5 blend forms shipped from concurrent sessions (the
-//! duplication is recorded in Bench 027; the loser retires when the
-//! other lane's A/B settles):
+//! duplication is recorded in Bench 027; BOTH lanes' gates settled
+//! 2026-09-30 — the z-form's A/B is Bench 026 NO-GO, the residual form is
+//! Bench 027 NO-GO — neither dataset lane proceeds; both flags remain as
+//! the instruments of record for their negatives):
 //! - `--blend` (the pre-registered form, `tetris_critic::TeacherBlend`):
 //!   the model's LOGIT z-blended into the champion eval at the
 //!   decision-state eval seam — `v = mean_e + ((1−w)·z_e + w·z_c)·std_e`,
 //!   z-fit over the root's kept top-8 by champion eval, priors pure
-//!   champion, root plain. The blended-dataset lane.
+//!   champion, root plain. Bench 026: NO-GO at w=0.5 (Δ+396 ns at 16@75,
+//!   Δ−49 ns at 18@75, both bounds straddle zero; fewer POINTS in both
+//!   live cells). Kept as the instrument of record.
 //! - `--critic` (the residual form, `tetris_blend::BlendedState`, Bench
 //!   027): `champ + w·gain·(m − m̄)` on the critic's SIGMOID score,
 //!   frame over ALL root options. Measured null-to-harmful — kept as the

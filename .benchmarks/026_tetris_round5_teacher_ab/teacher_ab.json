@@ -1,0 +1,134 @@
+{
+  "meta": {
+    "issue": "riir-instinct 009 round 5 teacher A/B (pre-registration committed 7060deb BEFORE compute)",
+    "recorded_at": "2026-09-29T19:42:58Z",
+    "box_load": {
+      "avg1": null
+    },
+    "champion_genome_id": "68cae9d382014662",
+    "tetris_head_unused": true,
+    "model_path": "../riir-train/data/tetris_critic_r4p2/tetris_mlp_v1.bin",
+    "model_blake3_16": "5c7eb6ca4ae3bb3e",
+    "model_dims": {
+      "h1": 512,
+      "h2": 512,
+      "tanh_hidden": true
+    },
+    "w": 0.5,
+    "budget": 1600,
+    "seeds": "401..=420",
+    "teacher_information_rule": "no preview, fresh bag (uniform-7 chance); mode at the decision root",
+    "cells": "16@75 cap 5000; 18@75 cap 1000; 20@80 cap 1000 (A/B-only)",
+    "censoring_rule": "both arms all-cap on every seed ⇒ non-separating, bounds not evidence",
+    "go_rule": "blend guards pass AND lb95>0 on >=1 cell AND no cell ub95<0",
+    "no_op_guards": {
+      "blend_value_calls": 177104397,
+      "probe_picks": 110740,
+      "probe_pick_diffs": 15370,
+      "probe_wall_s": 720.568772,
+      "note": "probe wall is DISCLOSED SEPARATELY from per-spot latency (verdict R2); blended p50_decision_ms includes the probe (~5 ms/spot of the ~180 ms) — subtract conceptually, never compare to the plain arm's p50 as a latency claim"
+    },
+    "threads": 10,
+    "wall_s": 4234.820841125
+  },
+  "guards_ok": true,
+  "go": false,
+  "go_cells": 0,
+  "harm_cells": 0,
+  "non_separating_cells": 0,
+  "cells": [
+    {
+      "regime": "garbage 16@75%",
+      "cap": 5000,
+      "plain": {
+        "mean_pieces": 4535.1,
+        "mean_lines": 1819.5,
+        "mean_points": 274957.0,
+        "survived": 17,
+        "cap_hits": 17,
+        "of": 20,
+        "p50_decision_ms": 7.785375
+      },
+      "blended": {
+        "mean_pieces": 4931.1,
+        "mean_lines": 1978.95,
+        "mean_points": 219615.0,
+        "survived": 19,
+        "cap_hits": 19,
+        "of": 20,
+        "p50_decision_ms": 342.04575
+      },
+      "paired_blended_minus_plain": {
+        "n_paired": 20,
+        "paired_mean": 396.0,
+        "paired_lb95": -119.72372745412179,
+        "paired_ub95": 911.7237274541218,
+        "wtl": "3/17/0"
+      },
+      "non_separating_both_all_cap": false,
+      "wall_s": 3542.50739275
+    },
+    {
+      "regime": "garbage 18@75%",
+      "cap": 1000,
+      "plain": {
+        "mean_pieces": 654.95,
+        "mean_lines": 267.4,
+        "mean_points": 36542.0,
+        "survived": 13,
+        "cap_hits": 13,
+        "of": 20,
+        "p50_decision_ms": 7.722333
+      },
+      "blended": {
+        "mean_pieces": 605.9,
+        "mean_lines": 247.15,
+        "mean_points": 23429.0,
+        "survived": 12,
+        "cap_hits": 12,
+        "of": 20,
+        "p50_decision_ms": 340.98233300000004
+      },
+      "paired_blended_minus_plain": {
+        "n_paired": 20,
+        "paired_mean": -49.05,
+        "paired_lb95": -145.8095630490484,
+        "paired_ub95": 47.70956304904841,
+        "wtl": "1/16/3"
+      },
+      "non_separating_both_all_cap": false,
+      "wall_s": 692.313039583
+    },
+    {
+      "regime": "garbage 20@80%",
+      "cap": 1000,
+      "plain": {
+        "mean_pieces": 0.0,
+        "mean_lines": 0.0,
+        "mean_points": 0.0,
+        "survived": 0,
+        "cap_hits": 0,
+        "of": 20,
+        "p50_decision_ms": 0.0
+      },
+      "blended": {
+        "mean_pieces": 0.0,
+        "mean_lines": 0.0,
+        "mean_points": 0.0,
+        "survived": 0,
+        "cap_hits": 0,
+        "of": 20,
+        "p50_decision_ms": 0.0
+      },
+      "paired_blended_minus_plain": {
+        "n_paired": 20,
+        "paired_mean": 0.0,
+        "paired_lb95": 0.0,
+        "paired_ub95": 0.0,
+        "wtl": "0/20/0"
+      },
+      "non_separating_both_all_cap": false,
+      "wall_s": 0.000231792
+    }
+  ]
+}
