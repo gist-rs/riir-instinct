@@ -117,17 +117,9 @@ different box load).
 GO rule on the 4090 numbers: identical — **0 GO cells, 0 harm cells ⇒ NO-GO**,
 guards pass (175.5M blend value() calls, 15,388/109,750 pick diffs).
 
-**The cross-box pattern is itself the finding:** cell 2 (18@75) reproduced
-BYTE-IDENTICALLY across macOS ARM and Windows x86 (654.95/605.90, Δ−49.05,
-1/16/3 — every digit), while cell 1 (16@75) diverged (4535.1 vs 4296.7 plain;
-3/17/0 vs 4/15/1) — longer games compound per-decision ulp divergence past
-tie-breaking points, shorter games stay inside them. Both cells' VERDICT
-inputs agree (cell 1 lb95 < 0 on both boxes; cell 2 identical), so the NO-GO
-is box-independent — measured, not assumed. The same cross-arch caveat the
-Bench-025 rebuild recorded for TRAINING data applies to long-horizon
-play-strength evals: per-arch deterministic, cross-arch divergent in the
-tail; never compare per-cell numbers across boxes, only verdicts and
-same-box re-runs.
+**The cross-box pattern is itself the finding — stated at its measured precision:** cell 2's (18@75) VERDICT INPUTS reproduced exactly across macOS ARM and Windows x86 — pieces (654.95/605.90), paired bounds (−49.05, −145.81, +47.71), W/T/L (1/16/3), every digit. Its LINES and POINTS did not (M3 plain 267.4 lines / 36,542 points vs 4090 267.7 / 36,733; blended 23,429 vs 24,154) — **the games themselves diverged cross-arch and reached the same piece counts**; why the counts coincided at cap is unattributed (the earlier "short games stay inside tie-breaks" reading was wrong — the tie-breaks were crossed). Cell 1 (16@75) diverged outright (4535.1 vs 4296.7 plain) — long games compound per-decision ulp divergence past visible statistics. Both cells' VERDICT inputs agree (cell 1 lb95 < 0 on both boxes; cell 2's pieces/bounds identical), so the NO-GO is box-independent — measured, not assumed. The same cross-arch caveat the Bench-025 rebuild recorded for TRAINING data applies to play-strength evals at every horizon: per-arch deterministic, cross-arch divergent in the games' interiors; never compare per-cell numbers across boxes, only the pre-registered verdict inputs and same-box re-runs.
+
+**The points column confirms on this box too, strengthening the NO-GO:** the blended teacher scores FEWER POINTS in both live cells on the 4090 as on the M3 — 209,148 vs 246,104 at 16@75 (despite +584.9 pieces) and 24,154 vs 36,733 at 18@75. The survival-biased style shift is cross-box, not an M3 artifact.
 
 Provenance note for the 4090 runs: the first execution launched via an agent
 session that was watchdog-cancelled mid-flight (the detached child survived
