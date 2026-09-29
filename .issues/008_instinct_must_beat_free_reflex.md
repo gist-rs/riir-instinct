@@ -11,6 +11,25 @@ MOVED from the arena TL;DR to `/bench/#instinct` (the arena stays Reflex's),
 rendered beside the new "vs best lane" row and a **PoC** status chip — the chip
 flips only when the bar is met, and the row returns to the arena TL;DR only on
 an explicit owner call (T9).
+**T7 WAVE 1 EXECUTED 2026-09-29 (owner GO; riir-train issues 592-597, all six
+bars verified against the reflex bench tables): every wave-1 verdict is a
+MEASURED negative — no suite's vs-best gap closed.** sst5 (the closest gap,
+−1.66 pt): the 579 v2 lever PASSED its holdout gate (v2-vs-v1 mean +3.10 pt,
+paired LB95 +0.0076, minted) and the single frozen arena read (Bench 024)
+REFUSED it — A1 read 0.4217 == the v1 row (the holdout edge did not transfer),
+T2 LB95 −0.0151, bar 0.4383 unmet → A0 serves, no registration. code_fixtures
+(bar paw 0.6250): the flat-union training collapse was FOUND and FIXED (per-head
+training + merge — the probe measured the flat union at constant while
+module-only reaches 0.5714) and the merged v2 still read 0.5536 holdout vs the
+0.72 pre-registered absolute floor → negative, no mint. massive (+6.5 pt measured
+lever lift, the wave's largest — vs a +9.3 pt gap), ag_news (v2 never beat v1),
+xnli (+4.0 pt vs a +37.7 pt gap): holdout-gate negatives (riir-train `d59a7e55`).
+typed (agentjev 0.7715): the 581 full-pool retrain already measured the bag
+class's ceiling on this pool (0.6475); this wave's largest measured lever lift
+(+6.5 pt) does not close a −12.4 pt gap — the reachability verdict stands in
+issue 594, re-opens only with a model-class upgrade. **What would reopen a
+suite: an encoder-feature or distill lane that beats the named lane's CLASS,
+not more bag-model sweeps** — the wave's data is in riir-train HISTORY.md.
 
 ## Why
 
@@ -116,12 +135,18 @@ ag_news (laya english), sst5 (gliner); then the seven 0.0-edge ties.
   so "Instinct is the best lane" holds as a general claim, not only per
   domain.
 - [ ] T7 — **close the six vs-best gaps** (the amended bar, widest first):
-  xnli_en (openthai 0.9000), code_fixtures (paw 0.6250), typed_decisions
+  xnli_en (openthai 0.9000), code_fixtures (paw 0.6250 — SAME-SHAPE bar; the
+  037 gliner 0.6667 cell was the pre-freeze 24-question shape, not
+  comparable — verified 2026-09-29), typed_decisions
   (agentjev 0.7715), massive_intent_en (openthai 0.9200), ag_news (laya en
   0.9500), sst5 (gliner 0.4383). Each needs a specialist that beats the
   NAMED lane, not just Reflex; runs in riir-train (`vessel-mint`), on the
   GPU; not deferred. Filed per-suite as riir-train issues using the 579
   protocol (the v2 bar + teacher-quality lever warnings).
+  **WAVE 1 MEASURED 2026-09-29 — all six negative (see the status block;
+  riir-train issues 592-597, removed on close-out per noise-reduction,
+  records in riir-train HISTORY.md). The re-open bar is a CLASS upgrade,
+  not another bag sweep.**
 - [ ] T8 — **break the seven 0.0-edge ties or drop them from the sold set**:
   code_fixtures + the six harness families are ties with Reflex at +0.0 —
   a tie sells nothing (the original law). The families are synthetic:

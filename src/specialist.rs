@@ -200,7 +200,12 @@ pub struct WinnerBridge {
 /// Issue 579 / Bench 612: banking77's winner is the nbsvm v2 artifact —
 /// deliberately NOT a `winner_v1` name (that name stays the refused v1
 /// artifact for reproduction), trained over L2-normalized PRESENCE bags.
-/// Every other suite keeps the v1 file + count-bag convention.
+/// Every other suite keeps the v1 file + count-bag convention. (Issue 597's
+/// sst5 nbsvm v2 attempt measured the same shape on 2026-09-29 and the
+/// frozen read REFUSED it — holdout edge +3.1 pt did not transfer (A1
+/// 0.4217 == the v1 row), T2 LB95 −0.0151, bar 0.4383 unmet — so no bridge
+/// row; the mint stays on disk unregistered, Bench 024's record is the
+/// negative.)
 /// Issue 011: typed_decisions serves the multi-question contract (the
 /// only suite whose cases carry question sets).
 pub fn winner_bridge(suite: &str) -> WinnerBridge {

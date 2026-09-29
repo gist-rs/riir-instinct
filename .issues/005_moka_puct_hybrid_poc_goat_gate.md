@@ -20,6 +20,20 @@ data-gated: **H3 (PUCT over chains)** — its only chain-shaped suite
 (typed_decisions) NOW HAS a trained specialist (riir-train Issue 581's
 full-pool retrain + Bench 015's multi-question serve extension: A1
 0.6300 serves, T2-certified), so the specialist precondition is MET.
+**H3 CLOSED 2026-09-29 — premise REFUTED on the only chain-shaped suite:**
+typed_decisions' five questions are INDEPENDENT-GIVEN-CASE (measured on the
+dataset rows: the `questions` blob is byte-identical across every row of a
+workflow — same qids, same instructions, same criteria option sets; no
+`depends_on`/conditional fields anywhere; the PAW lane's one-spec-per-qid
+files corroborate the static option sets). There is no question-to-question
+conditioning — no tree for PUCT to search; the chain premise reads depth 1.
+Gold answers correlate through the SHARED CASE STATE (the `factors`
+generators), which any per-case model already consumes — and the serving H2's
+OC margin is exactly the flat multi-task read that structure rewards. The
+tree search stays unbuilt BY MEASUREMENT, not by deferral. (Evidence:
+dataset rows + the harness builder `suites.rs::build_typed_decisions` + the
+wire builder `runner.rs::engine_request` — one request per case, all five
+questions, no prior-answer feedback into option lists.)
 **H2 LANDED 2026-09-28 (Benches 019+020, `reflex b5cf4b0`): the
 option-conditioned scorer EXISTS — it is reflex issue 038 T7b's
 `(qid, option)` count tables, exposed to the seat through the `oc()`

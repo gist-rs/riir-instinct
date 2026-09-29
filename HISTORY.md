@@ -1,5 +1,60 @@
 # HISTORY — riir-instinct
 
+## 2026-09-29 — Issue 008 T7 wave 1 (owner GO): six vs-best specialist lanes measured — every verdict a NEGATIVE; sst5's holdout win refused at the frozen read (Bench 024); Issue 005 H3 closed by a measured premise refutation; Issue 009's critic-guided-search lever re-derived GO-as-teacher
+
+- **The wave (riir-train issues 592–597, filed then closed under the 579
+  protocol; every bar verified against the reflex bench tables before any
+  run):** xnli_en (openthai 0.9000) — v2 holdout +4.0 pt, LB95 −0.0045,
+  gap +37.7 pt: negative. massive_intent_en (openthai 0.9200) — the wave's
+  largest lever lift (+6.5 pt, LB95 +0.0316 — the 579 v2 shape's biggest
+  measured win since banking77's +2.9) still misses the +9.3 pt gap:
+  negative. ag_news (laya-en 0.9500) — v2 never beat v1 (−0.17 pt): the bag
+  class is at its ceiling; negative. sst5 (gliner 0.4383, the closest gap at
+  −1.66 pt) — the ONLY holdout gate PASS of the wave (v2-vs-v1 mean +3.10 pt,
+  paired LB95 +0.0076 at the protocol holdout n=1000; minted
+  `sst5_nbsvm_v2.bin` blake3 `633a3a67ed9a6987…`) — and the single frozen
+  arena read (Bench 024, this repo) REFUSED it: A1 0.4217 == the v1 row (the
+  holdout edge did not transfer), T2 LB95 −0.0151, the vs-best bar unmet →
+  A0 serves, no registration, the bridge row reverted in the same session
+  (the 578 coupling law). code_fixtures (paw 0.6250, the frozen-shape bar —
+  037's gliner 0.6667 is the pre-freeze 24-q shape, not comparable): the
+  FLAT-UNION training collapse was found (probe: flat union constant at
+  0.1071 while module-only reaches 0.5714 — each span exported twice makes
+  every head's positives another head's near-duplicate negatives) and FIXED
+  (per-head training + merge, `merge_per_head`/`per_head_nbsvm` in the
+  `instinct_v2_gate` lane) — and the merged v2 still read 0.5536 holdout vs
+  the pre-registered 0.72 absolute floor: negative, no mint. typed_decisions
+  (agentjev 0.7715): the 581 full-pool retrain already measured the bag
+  class's ceiling on that pool (0.6475); this wave's max lever (+6.5 pt)
+  does not close −12.4 pt — issue 594 stays open on the reachability
+  verdict, re-opens with a model-class upgrade.
+- **Bench 024 (`.benchmarks/024_sst5_nbsvm_v2/`)** — the sst5 frozen read:
+  A0 0.3967 == reflex run() == the published t20k row (the A0 pin's reflex
+  leg held on THIS box — the cross-host anchor half-verified; the pin's SITE
+  leg reds exactly as Issue 013's pool×engine divergence predicts, the
+  documented `--skip-pin-a0` posture applied; that aborted morning run
+  `t4_4090_crosscheck_anchor/` is the same red, left untracked as
+  sibling-session WIP). T2 refused; G1 PASS (platt 0.0716 vs floor 0.2224);
+  G3 PASS; fusion 7.83 ns/option.
+- **Issue 005 H3 CLOSED by measurement** — typed_decisions' five questions
+  are INDEPENDENT-GIVEN-CASE (the `questions` blob byte-identical per
+  workflow; no conditioning fields; one request per case in
+  `engine_request`): no tree exists for PUCT to search — depth 1. The arm
+  closes premise-refuted, not deferred; the OC margin already exploits the
+  shared-state structure it would have targeted.
+- **Issue 009 re-derivation recorded** — the round-4 pricing conflated the
+  serve lane (critic-guided search stays dead there: ~0.9 s/spot) with the
+  TEACHER lane (unbounded by serve G2): GO as a teacher-side round-5
+  pre-registration (chance_puct + the r4 critic blended at the eval seam,
+  T6 information rule, bar unchanged), NO-GO on building it this session.
+- **Infra landed:** riir-train `instinct_v2_gate` (the stage-2-only holdout
+  gate lane, per-suite pre-registered bar/floor table); riir-instinct
+  `examples/export_code_fixtures.rs` (the frozen fixture's cal+docs spans →
+  train envelopes, 224 rows, idempotence-asserted) + the `code_fixtures`
+  arm in `instinct_specialist::suite_row`. Re-opens ride a CLASS upgrade
+  (encoder features or a distill lane that beats the named lane's class),
+  never another bag sweep.
+
 ## 2026-09-29 — issue-file hygiene: 010 removed (every measurable task landed; the residual is an owner decision, moved to 013)
 
 - **010 (the hybrid lane carries a MEASURED row for every suite)** — all

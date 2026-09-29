@@ -113,6 +113,19 @@ file .deploy/local/stage/decisions/app-bin   # → ELF 64-bit x86-64
 
 ## Current state
 
+**Issue 008 T7 wave 1 (2026-09-29, owner GO): six vs-best specialist lanes
+measured, all NEGATIVE — the sold set is unchanged (the seven serving rows of
+Bench 019/020).** sst5's holdout gate PASS (the 579 v2 lever, +3.10 pt LB95
++0.0076) was REFUSED at the single frozen arena read (Bench 024: A1 0.4217 ==
+the v1 row, T2 LB95 −0.0151, gliner's 0.4383 bar unmet) — A0 serves, the
+bridge row reverted same-session. code_fixtures' flat-union collapse was found
++ fixed (per-head training + merge) and still read 0.5536 vs the 0.72 floor.
+massive/ag_news/xnli holdout negatives; typed rides the 581 ceiling. The
+re-open bar is a model-CLASS upgrade, never another bag sweep. Full record:
+HISTORY.md 2026-09-29. Issue 005 H3 closed premise-refuted (typed questions
+are INDEPENDENT-GIVEN-CASE — no tree); Issue 009's next Tetris lever
+re-derived GO-as-teacher (pre-registered round 5 in the issue).
+
 **Bench 022 + Plan 005 (2026-09-29) — the frozen-artifact staleness probe
 LANDED (Issue 012, resolved + removed): the soft early-warning readout beside
 the hard pick-parity gate — arXiv:2609.30652's fixed-trace probe, modelless

@@ -20,6 +20,16 @@ Owner direction 2026-09-28: riir-mmorpg-examples / seal-online-remaster / seal-g
   both hosts; reflex-site `a2f1f9e`) — so the visible typed pair is
   modelless 0.5725 (canonical pool) vs hybrid t20k-seat rows; this row's
   (a)/(b) decision is unchanged and still open.
+  **2026-09-29 second dated note (the 4090 box):** the divergence is
+  now CONFIRMED from the other side — the arena's A0 pin SITE leg reds
+  on this box exactly as the (a)/(b) analysis predicts (fresh
+  reflex-site pull `ccb98d2`: site sst5 0.2017 canonical-pool vs arena
+  t20k 0.3967; the same shape on every dataset suite). The documented
+  `--skip-pin-a0` posture is what makes arena runs possible here; the
+  reflex-RUN leg (arena == reflex run()) held on every suite measured
+  this session (sst5 0.3967 == published t20k row, cross-host anchor
+  half-verified). This note is evidence FOR the divergence being
+  structural (pool × engine), not a drift — it does not decide (a)/(b).
 
 - E2 — OWNER-GATED / cred-holder: the devnet container push is an explicitly MANUAL push under the manual-deploy posture (local e2e green, staged artifact verified — `AGENTS.md:103`). No agent execution.
 - [-] MAINNET ceremony T4 (`AGENTS.md:400`) — DEFERRED: no mainnet until the owner lifts the hold.
