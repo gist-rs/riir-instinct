@@ -1,0 +1,16 @@
+[
+  {
+    "suite": "massive_intent_en",
+    "registered": "A0",
+    "rows": [
+      {
+        "arm": "A0",
+        "cal_acc": 0.57,
+        "acc_lcb": 0.5117326378822327,
+        "consult": 0.0,
+        "p99_us": 249.0,
+        "rank0": true
+      }
+    ]
+  }
+]
