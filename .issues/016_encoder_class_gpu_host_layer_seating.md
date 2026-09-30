@@ -8,7 +8,10 @@ decision surface the 014 close left open by construction (the extraction substra
 incorporated** (arithmetic corrected to 80–1800 ms GPU/s + the admission cap made
 required; resident-from-boot per L9 "never loads"; the sync-boundary bridge law; wire
 RTT counted; M5-unmeasured premise; event-driven named consumers; D1 reframed as a
-trigger; 014-still-governs-CPU line).
+trigger; 014-still-governs-CPU line). **Verdict round 2: AGREE — ruling RATIFIED; the
+four non-blocking edits folded (`a136ff6`: deadline fallback + G1b; T1 demand model =
+event-arrival × admission + the G2 unit derived; certification scoped to the
+utterance→sentiment/intent consumer; measured-vs-cited table wording). T1–T6 open.**
 
 ## The premise change
 
