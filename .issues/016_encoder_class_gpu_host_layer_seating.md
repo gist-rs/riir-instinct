@@ -146,7 +146,15 @@ host" to ANY real GPU serving deploy — game prod OR text-lane serve host,
 the board consumer's premise; the ladder-monotonicity note — each rung
 strictly-additive via deadline fallback, L2 skipped by law (lookup-only),
 L4 untasked because 048 deferred L4/L5 with Plasma reserved as the L4
-salience-depth rung.**)**
+salience-depth rung.**)
+
+**SUPERSEDED 2026-09-30 (owner call, same session): round-3's "no new
+product lane" clause is refused — the product consolidates as `riir-thinker`
+(all-tier adaptive serving; the rename of this repo), per
+[riir-ai Proposal 051](../../riir-ai/.proposals/051_thinker_all_tier_adaptive_serving_family.md).
+The staged plan T1–T8 stands unchanged; D1's wording becomes "publishes as
+served Thinker (encoder) @<host>" once the rename lands. The
+"Instinct (encoder)" site lane rebrands with aliases (Phase 1).****
 
 ## Staged plan (pending verdict round)
 
