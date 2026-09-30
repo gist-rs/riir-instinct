@@ -152,11 +152,13 @@ L4 untasked because 048 deferred L4/L5 with Plasma reserved as the L4
 salience-depth rung.**)
 
 **SUPERSEDED 2026-09-30 (owner call, same session): round-3's "no new
-product lane" clause is refused — the product consolidates as `riir-thinker`
-(all-tier adaptive serving; the rename of this repo), per
-[riir-ai Proposal 051](../../riir-ai/.proposals/051_thinker_all_tier_adaptive_serving_family.md).
+product lane" clause is refused — the product consolidates as `riir-rethink`
+(all-tier adaptive serving; the rename of this repo; the name evolved
+same-session thinker → Rethink — the Reflex→Rethink pairing, endorsed by the
+`rethinks` sweep), per
+[riir-ai Proposal 051](../../riir-ai/.proposals/051_rethink_all_tier_adaptive_serving_family.md).
 The staged plan T1–T8 stands unchanged; D1's wording becomes "publishes as
-served Thinker (encoder) @<host>" once the rename lands. The
+served Rethink (encoder) @<host>" once the rename lands. The
 "Instinct (encoder)" site lane rebrands with aliases (Phase 1).****
 
 ## Staged plan (pending verdict round)
