@@ -19,6 +19,11 @@ generalized to ANY real GPU serving deploy (game prod OR text-lane serve host �
 board consumer's premise), and the ladder-monotonicity note (each rung strictly-additive
 via deadline fallback; L2 skipped by law; L4 untasked because 048 deferred L4/L5, Plasma
 reserved as the L4 salience-depth rung).**
+**T8 added 2026-09-30 (owner round 4): the retrieval-gated corpus ladder — a DESIGN
+CANDIDATE, not queued (frozen-encoder-state KNN surrogate at L2, admission gate to L3,
+nightly corpus-stacking consolidation at L4; SIMD boundary recorded honestly —
+wasm-simd128 is port-class, not a 540× multiplier). Pre-registration required before
+any run. T1–T8 open.**
 
 ## The premise change
 
@@ -34,7 +39,7 @@ binary (plain std HTTP, no CF binding) runs natively.
 | Layer | Cadence | Per-slot budget | Encoder cost class |
 |---|---|---|---|
 | L0/L1 Reflex + basic instinct | 20 Hz | 50 ms | ✗ fixed by tier |
-| L2 Surface | 5–10 Hz | 100–200 ms | ✗ lookup only |
+| L2 Surface | 5–10 Hz | 100–200 ms | ✗ for the LIVE encoder (lookup-only by law) — **but T8's retrieval surrogate is the L2-SHAPED encoder-class rung** (KNN over frozen states = a lookup, not a think) |
 | **L3 Working** | **1–2 Hz** | **500–1000 ms** | **✓ 1–7 % of slot (36 ms/row MEASURED on a loaded M3 + 4090 parity; the 8–15 ms GPU-posture figure is CITED, not measured on our boxes — see the premise note below); the "think depth per decision" knob IS this op** |
 | L4 Critical | 0.2–0.5 Hz | 2–5 s | ✓ batch encode of salient sets |
 
@@ -201,6 +206,36 @@ salience-depth rung.**)**
   D1-triggered posture. The board row itself does not move — the site's
   verdict bars exclude serve-refused arms by design. On a MISS: recorded
   negative, no serve change, no re-run (the read is spent).**
+- [ ] T8 — **the retrieval-gated corpus ladder (DESIGN CANDIDATE — owner
+  proposal 2026-09-30, NOT queued; pre-registration required before any
+  run)**: the pattern transfer from the MTCS/LEO/PUCT + quest_grammar
+  lineage — frozen corpus states = the vessel, live encode = the prior,
+  head = the fusion. Instinct already does the CORPUS half (offline
+  `dump_encoder_states` pools → frozen NLEH heads; the bag arms ARE
+  corpus-is-the-model); the irreducible live half is the QUERY encode
+  (one row: 8–36 ms GPU / ~157 ms CPU). The candidate adds the retrieval
+  gate between them:
+  - **L2 rung**: static query embedding (µs, SIMD) → KNN over the FROZEN
+    encoder states → small fusion head over the neighbors —
+    in-distribution queries never run the encoder forward. The only
+    candidate that puts an encoder-class rung on CPU/CF tiers (KNN =
+    dot-products = katgpt-core SIMD-matvec territory; the workspace
+    already ships wasm32+simd128 kernel arms, katgpt-rs full-gate 2b).
+  - **Admission gate**: high corpus-similarity → L2 answer; OOD or
+    salient → L3 live encode (GPU); CPU-only hosts stop at L2.
+  - **L4 rung**: the consolidation job — nightly/downtime batch encode of
+    admitted utterances into the frozen store (the neuron-db Raven/δ-Mem
+    sleep-cycle pattern; BLAKE3-sealed; the corpus compounds).
+  - **The SIMD boundary, honest**: wasm-simd128 is a PORT-class lane
+    (≈ SSE/NEON class via the gemm/KNN kernels), NOT a 540× multiplier —
+    the full f32 encoder forward stays out of CF reach (~157 ms →
+    100–200 ms class); the RETRIEVAL surrogate is the CF-shaped rung.
+  - **Boundary**: UNMEASURED. C2's pure-static negative (0.3917) is the
+    floor this must beat — KNN fusion borrows neighbor structure but
+    inherits static's lexical binding for novel phrasings (the exact C2
+    diagnosis). Gates if ever run: beat C2 on its own suite + T2 paired
+    LB95 vs A1 + latency ≤ ~300 µs; the frozen-read budget applies (the
+    014 law).
 
 ## Scope notes
 
