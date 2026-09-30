@@ -26,7 +26,12 @@ reference floor on the emotion test split reads 0.5950 vs the 0.8850 earn bar; t
 class's measured-max lift (+14.7 pt) tops out at 0.742 — the lane is dead by the
 pre-registered screen-first law, the train run never earned. Emotion stays
 A0-served; the posture-gap state stands (the row's security waits on a different
-model class or the D1 posture).** T5–T6 open (T5's G2/G4 land with the consumer;
+model class or the D1 posture). CROSS-CHECKED 2026-10-01 (Bench 035, the
+Issue-825 double-run): the second session's independent 5-head sweep refused
+every head (holdout 0.459–0.4835 vs the reference's 0.4975; best head 0.6200 on
+test = 26.5 under the bar) and the Bench-032 cells reproduce EXACTLY at the 4090
+CUDA posture — the verdict is double-measured; the frozen read was never spent
+in either session.** T5–T6 open (T5's G2/G4 land with the consumer;
 T6 = D1, trigger-blocked).**
 **Owner round 3 (2026-09-30): three clarifications folded — the no-new-product-lane note
 (nothing named "Working"/"riir-working"; L0–L5 are 048's tier vocabulary), D1's host
@@ -300,6 +305,25 @@ served Rethink (encoder) @<host>" once the rename lands. The
   artifacts in the record (M3 Metal, AC; `riir-train/.raw/t607/` —
   the case-maker is wire-faithful + regenerable).** The original MISS
   clause holds verbatim: negative, no serve change, no re-run.
+  **CROSS-CHECK 2026-10-01 ([Bench
+  035](../.benchmarks/035_emotion_encoder_t7_crosscheck/RESULTS.md)) —
+  the Issue-825 shape, resolved the measured way: the second session ran
+  the FULL pre-registered sweep independently before fetching, then
+  cross-ran instead of landing a second negative blind. The Bench-032
+  cells reproduce EXACTLY on the 4090 at CUDA (fresh encode of the same
+  case bytes in 8.6 s: floor 0.5950 byte-exact, all six per-class recalls
+  match, zero Metal-vs-CUDA cell flips — the lane's third
+  device-independence witness), AND the 5-head fresh-seed sweep
+  (0x016E016..A, gold-only, the bench-615 quarantine, this box's CPU
+  cache) reads holdout 0.4590/0.4745/0.4685/0.4730/**0.4835 (best)** vs
+  the reference's 0.4975 — every head refused BOTH gate halves
+  (floor-robust: even a 0.0 floor refuses); train-acc ~0.71 vs holdout
+  ~0.47 = the features overfit; the best head reads **0.6200 on test**
+  (+2.5 over the floor, **26.5 under the bar** — the +14.7 ceiling was
+  optimistic for emotion; the verdict holds with 4× the margin). The
+  frozen read was NEVER SPENT in either session (both budgets stay
+  RESERVED); artifacts `../riir-train/.raw/t599/emotion_*` (blake3
+  sidecars).**
 
 ## Scope notes
 

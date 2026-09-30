@@ -146,7 +146,11 @@ ENC`, feature `serve-encoder`, GPU hosts only — and the client + vessel halves
 ship beside it. T7 (the emotion screen) EXECUTED 2026-09-30 — DEAD BY THE SCREEN
 (Bench 032: the reference floor 0.5950 vs the 0.8850 bar; the class's max lift
 cannot close it — the train run never earned; emotion stays A0, the posture-gap
-risk stands).**
+risk stands) and CROSS-CHECKED 2026-10-01 (Bench 035, the Issue-825 double-run:
+an independent 5-head sweep refused every head — holdout 0.459–0.4835 vs the
+reference's 0.4975; the best head reads 0.6200 on test, 26.5 under the bar; the
+Bench-032 cells reproduce EXACTLY at the 4090 CUDA posture — dead by screen AND
+by sweep, the frozen read never spent in either session).**
 `src/encoder_serve.rs`: the sealed NLEH head + the laya-english agent
 resident from boot (the boot warmup encode pays the pipeline compile, L9);
 the agent on a dedicated worker thread (the reflex !Send law — clients get
