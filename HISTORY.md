@@ -1,3 +1,27 @@
+## 2026-09-30 — issue-file hygiene: 005 removed (every measurable face landed, refuted, or absorbed; the GOAT verdict is the serving posture)
+
+- **005 (the Moka+PUCT-style hybrid POC — instinct × reflex, three
+  compositions + one GOAT gate)** — complete across every face: T1–T5
+  measured (Bench 001 v2, superseded by the ALIGNED Bench 002 as the
+  publishable record); the GOAT verdict is the standing serving posture
+  (ag_news H2 0.8975 raw-readout; emotion A1 0.8550 + sst5 A1 0.4217
+  G1+G3 PASS; massive H2 0.8267 T2-certified and SERVING; banking77 H1
+  G3 FAIL → A0 stands; xnli A0 stands). **H2 LANDED and SERVING**
+  (Benches 019+020: typed_decisions H2(β=0.5,nmin=2,τ=2) 0.6475, T2
+  LB95 +0.0062 over its own specialist A1 — the attribution standard
+  met; manifest row moved A1→H2, serve gate replays the frozen picks,
+  reflex `b5cf4b0`). **H3 CLOSED premise-refuted** (2026-09-29:
+  typed_decisions' five questions are independent-given-case — no
+  tree for PUCT to search; the tree search stays unbuilt BY
+  MEASUREMENT). The armed-off/serving faces rode arsenal Proposal 001
+  (CLOSED — Bench 003's `arsenal_budget_goat` 7/7). The serving law
+  itself (best-measured arm serves, T2 stays the advertising gate) is
+  the owner verdict of 2026-09-27 (`4cc4441`). Nothing actionable
+  remains in the file.
+
+Full narrative of the removed file: `git log --follow --
+.issues/005_moka_puct_hybrid_poc_goat_gate.md`.
+
 ## 2026-09-30 — Issue 014 C1 EXECUTED: the sst5 encoder arm reads 0.5267 on the ARENA (T2-certified above A1, LB95 +0.0535) — published `serve: ✗`; en-route: the T8 name-first noul regression fixed
 
 **The record-only C1 read (Bench 029).** The arena gained the
