@@ -42,11 +42,12 @@
 use std::io::{BufRead, BufReader, Read, Write};
 use std::net::{TcpListener, TcpStream};
 use std::path::Path;
-use std::sync::{Arc, OnceLock};
+use std::sync::Arc;
 use std::time::Duration;
 
 use katgpt_core::set_admission::SetAdmissionConfig;
 use riir_instinct::arsenal::ArsenalManifest;
+use riir_instinct::receipt::{decision_blake3, fingerprint, input_blake3};
 use riir_reflex::harness::suites::QKind;
 use riir_instinct::arsenal_ops::{
     EpochApply, EpochTag, LaneSlot, LaneState, SwapRefusal, check_epoch_tag, hoard_check,
@@ -785,28 +786,6 @@ fn allowed_origins() -> Vec<String> {
                 .collect()
         })
         .unwrap_or_default()
-}
-
-/// The build fingerprint — BLAKE3 over the toolchain + feature-set stamp
-/// (the receipt's build half; Proposal 014 §4).
-fn fingerprint() -> String {
-    static FP: OnceLock<String> = OnceLock::new();
-    FP.get_or_init(|| {
-        let mut h = blake3::Hasher::new();
-        h.update(RUSTC_RELEASE.as_bytes());
-        h.update(b"\0");
-        h.update(RUSTC_COMMIT.as_bytes());
-        h.update(b"\0");
-        h.update(RUSTC_HOST.as_bytes());
-        h.update(b"\0");
-        for f in COMPILED_FEATURES {
-            h.update(f.as_bytes());
-            h.update(b"\0");
-        }
-        h.update(VERSION.as_bytes());
-        h.finalize().to_hex().to_string()[..16].to_string()
-    })
-    .clone()
 }
 
 struct Req {
@@ -1686,33 +1665,9 @@ fn hex_digest(b: &[u8; 32]) -> String {
     s
 }
 
-/// BLAKE3 over the request's decision inputs — the receipt's input half.
-fn input_blake3(state: &str, options: &[String]) -> String {
-    let mut h = blake3::Hasher::new();
-    h.update(state.as_bytes());
-    h.update(b"\0");
-    for o in options {
-        h.update(o.as_bytes());
-        h.update(b"\0");
-    }
-    h.finalize().to_hex().to_string()
-}
-
-/// BLAKE3 over the canonical decision (sans receipt) — the receipt's
-/// decision half.
-fn decision_blake3(d: &riir_instinct::server::ServedDecision) -> String {
-    let canonical = serde_json::json!({
-        "suite": d.suite,
-        "arm": d.arm,
-        "pick": d.pick,
-        "pick_index": d.pick_index,
-        "probabilities": d.probabilities,
-        "specialist_scores": d.specialist_scores,
-        "confidence": d.confidence,
-        "escalated": d.escalated,
-        "abstained": d.abstained,
-    });
-    blake3::hash(serde_json::to_string(&canonical).unwrap_or_default().as_bytes())
-        .to_hex()
-        .to_string()
-}
+// The receipt halves (`input_blake3` / `decision_blake3`) and the build
+// fingerprint (`fingerprint`) are LIB-side now — Plan 043 C0's
+// one-definition law: `riir_instinct::receipt` is the ONE home, so the
+// submitter, the verifier, and this edge all spell the receipt
+// identically. The `use` at the top of this file binds the names; the
+// call sites below are unchanged.

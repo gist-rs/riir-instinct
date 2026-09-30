@@ -16,6 +16,11 @@ pub mod stats;
 pub mod arsenal;
 pub mod arsenal_ops;
 pub mod server;
+/// The serve lane's receipt primitives (Plan 043 C0 — the
+/// one-definition law): the build fingerprint + the input/decision
+/// BLAKE3 halves + the manifest fingerprint, ONE home for the serve
+/// binary, the decstat submitter, and the decstat verifier.
+pub mod receipt;
 /// The encoder-feature arm reader (instinct issue 014 C1): the NLEH v1
 /// codec + the live laya-english encode replay. RECORD-ONLY — the encoder
 /// class is refused at serve (issue 014 decision 1); the ungated half is
@@ -59,6 +64,8 @@ pub use hybrid::{
     SeatJoin, SpecialistLane, prior_fusion_pick, seat_join,
 };
 pub use specialist::Specialist;
+pub use receipt::{decision_blake3, fingerprint, fp8_from_hex, hash32_from_hex, input_blake3,
+    manifest_fingerprint, manifest_fingerprint_hex};
 pub use staleness::{PairReport, PairSide, ProbeItem, ProbeSet, SuiteProbe, FIRE_GOLD_DELTA, compare_pair};
 pub use arsenal_ops::{
     EpochApply, EpochTag, HoardRefusal, HoardReport, InstallOutcome, LaneSlot, LaneState,
