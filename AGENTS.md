@@ -113,8 +113,10 @@ file .deploy/local/stage/decisions/app-bin   # → ELF 64-bit x86-64
 
 ## Current state
 
-**Issue 016 T1+T2 LANDED (2026-09-30, Bench 031): the encoder class now
-SERVES — `posture ENC`, feature `serve-encoder`, GPU hosts only.**
+**Issue 016 T1–T4 LANDED (2026-09-30, Bench 031 + instinct `82011af` + riir-ai
+`0c39b4f30f` + riir-train `f3ce8973`): the encoder class now SERVES — `posture
+ENC`, feature `serve-encoder`, GPU hosts only — and the client + vessel halves
+ship beside it.**
 `src/encoder_serve.rs`: the sealed NLEH head + the laya-english agent
 resident from boot (the boot warmup encode pays the pipeline compile, L9);
 the agent on a dedicated worker thread (the reflex !Send law — clients get
@@ -138,7 +140,20 @@ e2e HTTP smoke (healthz `arm: "ENC"` / decide 200 + the score vector
 crossing, the embedding never does). T1's derivation (the G2 GPU-s/s unit
 + the admission-cap formula + the stand-in cells) is in the same record.
 D1 (the sst5 cell publishes as served) stays trigger-blocked until a real
-GPU serving deploy exists.
+GPU serving deploy exists. **T3 (riir-ai `riir-agents/src/decision_client.rs`,
+feature `decision_client`): the decision-wire thin client — one std TCP POST
+under a per-call L3 deadline, every failure path collapsing into
+`DecisionClass::BagFallback` (the record names WHICH class answered;
+late-but-good responses dropped on arrival; the connect phase capped at
+min(remaining, 250 ms) for the Windows refusal-latency fact); 9 module
+tests incl. the G1b deadline-miss injection + guard Layer 1.33. WIRE-ONLY
+per the boundary law (zero deps on the serving repos). **T4 (instinct
+`82011af` + train `f3ce8973`): the HOSTED-ONLY head vessel —
+`load_hosted_head_bytes` (same walk, raw NLEH payload out),
+`boot_vessel/_bytes` ENC routes on the arsenal's existing monotonic apply
+(no new lineage code), `vessel-mint` accepts NLEH; the round-trip gate
+proves vessel-lane == raw-lane + the downgrade refusal; the production
+mint is the owner's key ceremony.**
 
 **Bench 0029 + Plan 426 T6 (2026-09-30): the massive SYNTH SEAT serves —
 H2(β=1,nmin=2,τ=4) 0.8400 (was 0.8267), the modelless A0 0.7800 → 0.8133
