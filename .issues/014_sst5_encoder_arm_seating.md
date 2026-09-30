@@ -63,3 +63,20 @@ recorded; this issue closes with the decision noted in 008's T7 row.
 - The trainer substrate is suite-generic (riir-train
   `instinct_encoder_trainer`, `--min-holdout`/`--seed`); re-training at a
   new pool is one command, not a lane rebuild.
+- **M3-side replay (2026-09-30, post-sync)** — the frozen read now has a
+  second-box witness: `t6_s0.bin` + the test cache synced from the 4090,
+  then re-read on the M3 (riir-train `instinct_encoder_eval`):
+  - **Cache-witness posture** (4090 bytes, M3 CPU eval): winner **0.5267**
+    (316/600), reference **0.3717** (223/600) — both confusion matrices
+    cell-identical to the 4090 read. The sealed artifact + eval path are
+    box-independent.
+  - **M3-Metal posture** (fresh `dump_encoder_states --checkpoint english`
+    encode of the same 600 cases on M3 Metal, d 1024): winner **0.5267**
+    (316/600), reference **0.3717** (223/600) — again cell-identical. The
+    Metal-vs-CUDA feature drift flips ZERO cell-level outcomes in either
+    arm, so the serve posture's per-request encoder inference is not
+    CUDA-bound. Encode cost: 600 rows in 21.7 s (~36 ms/row) on a loaded
+    box (a sibling rustc held one core at 100% throughout; AC power,
+    battery 100%).
+  - This is the TRAIN-side replay, not the seat's own arena read — that
+    read stays part of the GO path (owner-gated) as scoped above.
