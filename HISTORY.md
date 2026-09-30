@@ -1,3 +1,44 @@
+## 2026-09-30 — Issue 014 C1 EXECUTED: the sst5 encoder arm reads 0.5267 on the ARENA (T2-certified above A1, LB95 +0.0535) — published `serve: ✗`; en-route: the T8 name-first noul regression fixed
+
+**The record-only C1 read (Bench 029).** The arena gained the
+encoder-arm reader (`src/encoder_arm.rs` + `--encoder-art`, features
+`arena-laya`/`arena-laya-metal`): the sealed NLEH v1 head `t6_s0.bin`
+(BLAKE3-verified at load) replayed over a LIVE M3-Metal laya-english
+encode of the seat's own 600 sst5 test cases — the question wire from
+reflex's `case_questions` (made `pub`; ONE home for the render law).
+The instinct-side codec/feature/forward is a byte-lawful consumer copy
+of riir-train's lane (the trainer is never a cargo dep — the consume-
+bytes law), pinned by the read itself:
+
+- **ENC 0.5267 (316/600)** — cell-identical to the trainer's frozen
+  read for the THIRD independent posture (4090 cache → M3-Metal dump →
+  live arena encode). A0 0.3967 == reflex run(); A1 0.4217 == the
+  published cell exactly.
+- **T2 vs the incumbent A1: mean +0.1050 · LB95 +0.0535 > 0 —
+  CERTIFIED.** The +10.5 cross-pool claim settles exactly; the test
+  split verified byte-identical across all three pools (trainer cases,
+  t20k, canonical — the divergence is train-pool only).
+- **Latency (the refusal's ground)**: p50 14,709 µs / p99 17,452 µs on
+  Metal — ~49× the ~300 µs provisional text-lane bar, on a device the
+  CPU-only deploy shape does not carry. `serve: ✗` stands.
+- **Publish**: the lane doc carries the encoder cell BESIDE the
+  unchanged hybrid cell (A1 serves; no manifest change). The site
+  publish + the `encoder` lane rendering ride this landing's
+  reflex-site half.
+
+**The en-route catch — a REAL T8 serve regression, found by the gate
+battery and fixed here.** The T8 landing's "name-first noul law"
+(`2d20397`) dropped the presentation-width guard on the pair_named
+branch: a hostile 3-option noul presentation on prompt_injections
+silently answered over the fixed pair and reported a pick from the
+caller's unrelated list (the failing assertion's own output: pick "b"
+of ["a","b","c"]). The T8 session's "15/15 serve gates" claim missed
+it (the parity gate drove code_fixtures' EMPTY noul presentation — the
+one shape the bug tolerated). Fix: the pair_named branch keeps the
+positional law's width check — a noul presentation must be the pair
+(width 2, whatever names it spells); serve_gates 15/15 green, the
+code_fixtures parity gate unaffected, no manifest change.
+
 ## 2026-09-30 — Issue 008 T8 EXECUTED: the code_fixtures tie BROKEN (A1 0.5625 vs A0 0.3750, T2-certified) and the six harness families DROPPED; the serving path landed (S8 + the name-first noul law + the 9th manifest row)
 
 **The seven 0.0-edge ties are RESOLVED — one broken, six dropped.** The

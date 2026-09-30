@@ -16,6 +16,11 @@ pub mod stats;
 pub mod arsenal;
 pub mod arsenal_ops;
 pub mod server;
+/// The encoder-feature arm reader (instinct issue 014 C1): the NLEH v1
+/// codec + the live laya-english encode replay. RECORD-ONLY — the encoder
+/// class is refused at serve (issue 014 decision 1); the ungated half is
+/// pure (codec + feature law), the seat runner rides `arena-laya`.
+pub mod encoder_arm;
 /// The frozen-artifact staleness probe (Issue 012 / Plan 005): the soft
 /// early-warning readout beside the hard pick-parity gate. Report-only —
 /// nothing here serves, swaps, or writes state.

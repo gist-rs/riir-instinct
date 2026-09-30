@@ -58,6 +58,10 @@ vessel = ["dep:reflexer-vessel", "dep:ed25519-dalek"]
 # The arena's laya paired face (G2): forwards reflex's laya-riir — the
 # metal/tokenizers tree compiles only under this feature.
 arena-laya = ["riir-reflex/laya-riir"]
+# The Metal posture of the same lane (instinct issue 014 C1: the sst5
+# encoder-arm frozen read runs on M3 Metal — `LAYA_DEVICE=metal` resolves
+# through reflex's forwarding to the riir-infer-laya metal backend).
+arena-laya-metal = ["arena-laya", "riir-reflex/laya-riir-metal"]
 # The decstat flywheel capture (Plan 002 / Issue 004 T1): consent-gated
 # decision-outcome stats over the riir-kat wire (lane "dec"). Opt-in —
 # default builds never resolve the wire/transport tree and the /decide

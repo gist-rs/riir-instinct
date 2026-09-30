@@ -68,6 +68,11 @@ for _s in (sys.stdout, sys.stderr):
 # The lane's machine id — publish_bench.py's LANE_DISPLAY renames it to
 # the public "Instinct (hybrid)" at the publish boundary.
 LANE_ID = "hybrid"
+# The issue-014 C1 encoder arm's lane key (RECORD-ONLY — serve: ✗; the
+# encoder class is refused at serve). A SEPARATE lane from the hybrid
+# cell: the hybrid cell keeps publishing the SERVING arm (A1 — no serve
+# change), the encoder cell publishes the measured-but-refused read.
+ENCODER_LANE_ID = "encoder"
 
 
 def bin_of(conf: float) -> int | None:
@@ -226,6 +231,53 @@ def lane_cell(arm: dict) -> dict:
         "latency_p99_ms": p99,
         "latency_tail_support": tail_support,
     }
+
+
+def encoder_cell(run: dict) -> dict | None:
+    """The issue-014 C1 encoder arm → its lane cell (RECORD-ONLY,
+    serve: ✗). Built from the record's `encoder_arm` block — per-row
+    freezes where the record carries them (the stats laws apply), the
+    aggregates otherwise (fields the record lacks are OMITTED, never
+    zero-filled — the site renders "—"; the 029 record predates the
+    per-row fields and publishes accuracy/latency/T2 only)."""
+    enc = run.get("encoder_arm")
+    if not enc:
+        return None
+    n = enc.get("n", 0)
+    if not n:
+        return None
+    cell: dict = {
+        "lane": ENCODER_LANE_ID,
+        "model": "ENC-t6s0 (laya-english encoder + NLEH v1 head)",
+        "hard": {"n": n, "accuracy": enc["accuracy"]},
+        "consult_rate": 1.0,
+        "latency_scope": "arm-only",
+        "latency_rows": "questions",
+        "latency_p50_ms": enc["p50_us"] / 1000.0,
+        "latency_p99_ms": enc["p99_us"] / 1000.0,
+        # The C1 disclosure vocabulary: the cell publishes the MEASURED
+        # read with the serve refusal — never a serving posture.
+        "serves": "✗ (encoder class refused at serve — A1 serves; instinct issue 014 C1)",
+        "gate": (
+            f"T2-certified above the incumbent A1 (paired LB95 "
+            f"{enc['lb95_vs_a1']:+.4f}, mean {enc['mean_vs_a1']:+.4f}) — "
+            f"serve REFUSED on the latency class ({enc['p50_us'] / 1000.0:.1f} "
+            f"ms/row vs the ~0.3 ms provisional bar; issue 014 decision 1)"
+        ),
+        "device": enc.get("device"),
+        "record_only": True,
+    }
+    confs = enc.get("confs")
+    correct = enc.get("correct")
+    if confs and correct and len(confs) == len(correct) == n:
+        cell["hard"]["ece"] = ece_of(list(zip(confs, correct)))
+        cell["hard"]["mean_confidence"] = sum(confs) / n
+        order = sorted(range(n), key=lambda i: -confs[i])
+        k = max(1, math.floor(n * 0.5))
+        cell["hard"]["acc_at_50_coverage"] = (
+            sum(1 for i in order[:k] if correct[i]) / k
+        )
+    return cell
 
 
 def _arm(name: str, correct: list[bool], confs: list[float],
@@ -436,6 +488,12 @@ def build_doc_from(preds: dict, git_sha: str, date_utc: str,
         cell["serves"] = serving_name
         cell["gate"] = gate_note(suite, serving_name, run)
         entry["hybrid"] = cell
+        # The issue-014 C1 encoder cell (record-only, serve: ✗) rides the
+        # suite entry BESIDE the serving hybrid cell — the measured read
+        # is published without touching the serving posture.
+        enc = encoder_cell(run)
+        if enc is not None:
+            entry["encoder"] = enc
         entry["verdict"] = "a0_stands" if serving_name == "A0" else "hybrid_arm"
         suites.append(entry)
     meta = {

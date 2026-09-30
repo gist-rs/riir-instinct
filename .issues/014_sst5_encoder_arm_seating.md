@@ -1,10 +1,59 @@
 # Issue 014 — sst5 encoder-arm seating: lane confirmed at 0.5267, serve posture is the owner gate
 
-**Status:** DECIDED 2026-09-30 — **conditional staged GO, class-wide** (owner
+**Status:** C1 EXECUTED 2026-09-30 (Bench 029) — the arena-side frozen
+read is ON RECORD with the `serve: ✗` cell; **C2 remains open** (the
+static-vector surrogate rung — the pre-registration pins below bind).
+DECIDED 2026-09-30 — **conditional staged GO, class-wide** (owner
 ratified after the Claude verdict ping-pong: REVISE → AGREE, 3 rounds).
-**The serve-posture gate is CLOSED — agents: do not re-ask it.** What
-remains is C1/C2 execution (see §Decision). Filed 2026-09-30 (riir-train
-issue 600 T6 confirmed; instinct 008 T7 wave-3).
+**The serve-posture gate is CLOSED — agents: do not re-ask it.** Filed
+2026-09-30 (riir-train issue 600 T6 confirmed; instinct 008 T7 wave-3).
+
+## C1 — EXECUTED (Bench 029, `.benchmarks/029_sst5_encoder_c1/`)
+
+The record-only arena read, exactly as scoped ("record, don't serve"):
+
+- **The reader**: `src/encoder_arm.rs` + the arena's `--encoder-art` flag
+  (feature `arena-laya` / `arena-laya-metal`) — the sealed NLEH v1 head
+  BLAKE3-verified at load, replayed over a LIVE M3-Metal laya-english
+  encode of the seat's own test cases, the question wire built by
+  reflex's `case_questions` (made `pub` for this — ONE home for the
+  render law, no law copy). Byte-lawful consumer-side re-implementation
+  of riir-train's codec + feature law + eval forward (the instinct law:
+  consume bytes, never depend on the trainer).
+- **THE FROZEN READ (M3 Metal, LAYA_DEVICE=metal): ENC 0.5267 (316/600)**
+  — **cell-identical to the trainer's frozen read for the third
+  independent posture** (4090 cache-witness → M3-Metal dump → the live
+  arena encode). A0 0.3967 == reflex run() (the pin's run leg held; the
+  site leg skipped per the documented Issue-013 pool-divergence
+  posture). A1 0.4217 == the published hybrid cell exactly.
+- **The T2 cross-pool claim SETTLES +10.50 exactly**: paired (ENC − A1)
+  mean **+0.1050** · LB95 **+0.0535** > 0 — the encoder arm is
+  T2-CERTIFIED strictly above the incumbent bag arm on the same 600
+  rows. (The test split is byte-identical across the trainer's cases,
+  the t20k pool, and the canonical pool — verified row-by-row — so the
+  "cross-pool" concern reduces to the train pools, not the read.)
+- **Per-row latency (the refusal's ground)**: p50 **14,709 µs** / p99
+  17,452 µs — the full arm cost (encode + head) on Metal, ~49× the
+  ~300 µs provisional text-lane bar, on a device the deploy shape
+  (CPU-only standard-2 cf-container) does not carry at all.
+- **Box state**: `power=AC Power load=5.07 swap=388.06M powermode=2(high)`
+  (reflex `bench_preflight.sh` PASSED before the read; the arena's own
+  capture: load1m 5.92 · quotable true · refusals []).
+- **The published cell**: `serve: ✗ (encoder class refused at serve — A1
+  serves; instinct issue 014 C1)` — the lane doc carries the encoder
+  cell BESIDE the unchanged sst5 hybrid cell (A1 keeps serving; NO
+  serve change, NO manifest change). The instinct.js verdict bars
+  deliberately EXCLUDE the encoder lane (a serve-refused arm is not
+  the serving lane — it cannot move the "Instinct vs best lane" board).
+- **En-route catch — a REAL T8 serve regression fixed**: the arena gate
+  battery red on `noul_suite_serves_positionally_through_the_bridge` —
+  the T8 landing's "name-first noul law" (commit `2d20397`) dropped the
+  presentation-width guard: a hostile 3-option noul presentation on
+  prompt_injections silently answered over the fixed pair (pick "b"
+  from an unrelated list). Fixed in the same change: the pair_named
+  branch keeps the positional law's width check (a noul presentation
+  must be the pair — width 2 — whatever names it spells); serve_gates
+  15/15 green again, the code_fixtures parity gate unaffected.
 
 ## The measured verdict (riir-train 600, `6f24cd92`)
 

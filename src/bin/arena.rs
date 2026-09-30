@@ -210,6 +210,38 @@ struct LayaFace {
     pass: bool,
 }
 
+/// The issue-014 C1 encoder-arm face (RECORD-ONLY, `serve: ✗`): the
+/// frozen seat read of the NLEH head over the live laya-english encode,
+/// paired against the INCUMBENT A1 bag arm on the same rows (the T2
+/// gate's comparator — the cross-pool claim the C1 read settles). The
+/// per-row latency is the full arm cost (encode + head), the number the
+/// serve refusal is priced against (the provisional text-lane bar
+/// ≤ ~300 µs; the encoder reads ms-class — the evidence, not a pass).
+struct EncoderFace {
+    /// Path of the sealed NLEH artifact this read replayed.
+    art: String,
+    accuracy: f64,
+    n: usize,
+    /// Paired (ENC − A1) mean accuracy delta on the same frozen rows.
+    mean_vs_a1: f64,
+    /// Its 95% lower bound — > 0 certifies the encoder arm strictly
+    /// above the incumbent (the T2 form, A1 the comparator).
+    lb95_vs_a1: f64,
+    p50_us: f64,
+    p99_us: f64,
+    /// The laya device posture the encode ran on ("metal" on the M3
+    /// read — disclosed beside every latency figure).
+    device: &'static str,
+    n_classes: usize,
+    feat_dim: usize,
+    /// Per-row freezes (predictions.json): the picks/correct/confs/µs
+    /// arrays — the doc builder's stats laws consume them where present.
+    picks: Vec<usize>,
+    correct: Vec<bool>,
+    confs: Vec<f64>,
+    durs_us: Vec<f64>,
+}
+
 struct SuiteRun {
     suite: String,
     /// Total QUESTIONS across the test read (the accuracy denominators;
@@ -249,6 +281,11 @@ struct SuiteRun {
     g3_delta: Option<f64>,
     g5: Option<(bool, String)>,
     laya: Option<LayaFace>,
+    /// The issue-014 C1 encoder arm (Some iff `--encoder-art` named a
+    /// sealed NLEH head and the feature armed it): a RECORD-ONLY row —
+    /// never a registration candidate, never served (the encoder class
+    /// is refused at serve, issue 014 decision 1).
+    encoder: Option<EncoderFace>,
 }
 
 /// The Issue-008 T2 product gate's face: the registered arm must be
@@ -325,6 +362,12 @@ fn arena_main() {
     // to every published row.
     let mut synth_corpus: Option<PathBuf> = None;
     let mut synth_extra_cap = 128usize;
+    // Issue 014 C1: the RECORD-ONLY encoder arm — a sealed NLEH v1 head
+    // (riir-train's `.raw/t599/t6_s0.bin`) replayed over the live
+    // laya-english encode of the seat's test cases. Needs `arena-laya`
+    // (the laya tree); the read publishes `serve: ✗` — never a serve
+    // change (the encoder class is refused at serve, issue 014 §1).
+    let mut encoder_art: Option<PathBuf> = None;
     let mut i = 1;
     while i < args.len() {
         match args[i].as_str() {
@@ -357,9 +400,19 @@ fn arena_main() {
                 i += 1;
                 synth_extra_cap = args[i].parse().expect("--synth-extra-cap needs a number");
             }
+            "--encoder-art" => {
+                i += 1;
+                encoder_art = Some(PathBuf::from(&args[i]));
+            }
             other => die(&format!("unknown arg {other}")),
         }
         i += 1;
+    }
+    if encoder_art.is_some() && cfg!(not(feature = "arena-laya")) {
+        die(
+            "--encoder-art needs --features arena-laya (or arena-laya-metal for the \
+             Metal posture) — the laya encode tree is not compiled in this build",
+        );
     }
     if !(1..=MAX_TOP_K).contains(&top_k) {
         die("--top-k out of range (1..=32)");
@@ -398,8 +451,15 @@ fn arena_main() {
 
     let mut runs: Vec<SuiteRun> = Vec::new();
     for suite in &suites {
-        match run_suite(suite, &datasets_dir, &winners_dir, top_k, synth_corpus.as_deref(), synth_extra_cap)
-        {
+        match run_suite(
+            suite,
+            &datasets_dir,
+            &winners_dir,
+            top_k,
+            synth_corpus.as_deref(),
+            synth_extra_cap,
+            encoder_art.as_deref(),
+        ) {
             Ok(run) => runs.push(run),
             Err(e) => die(&format!("{suite}: {e}")),
         }
@@ -447,6 +507,7 @@ fn run_suite(
     top_k: usize,
     synth_corpus: Option<&Path>,
     synth_extra_cap: usize,
+    encoder_art: Option<&Path>,
 ) -> Result<SuiteRun, String> {
     eprintln!("--- {name} ---");
     let seat = match synth_corpus {
@@ -472,14 +533,14 @@ fn run_suite(
         seat.train.len()
     );
     match seat.labels.len() {
-        2 => run_suite_n::<2>(name, seat, winners_dir, top_k),
-        3 => run_suite_n::<3>(name, seat, winners_dir, top_k),
-        4 => run_suite_n::<4>(name, seat, winners_dir, top_k),
-        5 => run_suite_n::<5>(name, seat, winners_dir, top_k),
-        6 => run_suite_n::<6>(name, seat, winners_dir, top_k),
-        8 => run_suite_n::<8>(name, seat, winners_dir, top_k),
-        59 => run_suite_n::<59>(name, seat, winners_dir, top_k),
-        77 => run_suite_n::<77>(name, seat, winners_dir, top_k),
+        2 => run_suite_n::<2>(name, seat, winners_dir, top_k, encoder_art),
+        3 => run_suite_n::<3>(name, seat, winners_dir, top_k, encoder_art),
+        4 => run_suite_n::<4>(name, seat, winners_dir, top_k, encoder_art),
+        5 => run_suite_n::<5>(name, seat, winners_dir, top_k, encoder_art),
+        6 => run_suite_n::<6>(name, seat, winners_dir, top_k, encoder_art),
+        8 => run_suite_n::<8>(name, seat, winners_dir, top_k, encoder_art),
+        59 => run_suite_n::<59>(name, seat, winners_dir, top_k, encoder_art),
+        77 => run_suite_n::<77>(name, seat, winners_dir, top_k, encoder_art),
         n => Err(format!("no engine arity for {n} labels — extend the dispatch")),
     }
 }
@@ -985,6 +1046,7 @@ fn run_suite_n<const N: usize>(
     seat: Seat,
     winners_dir: &Path,
     top_k: usize,
+    encoder_art: Option<&Path>,
 ) -> Result<SuiteRun, String> {
     // The CURRENT PUBLISHED reflex posture (Issue 008 T1's re-baseline):
     // head-select + nb-select + oc-select + ridge-select, registry caps,
@@ -1407,8 +1469,66 @@ fn run_suite_n<const N: usize>(
         eprintln!("  G5: {why} → {}", if *pass { "PASS" } else { "FAIL" });
     }
 
-    // ── the laya paired face (behind arena-laya) ─────────────────────
+    // ── the laya paired face (behind arena-laya) ─────────────────
     let laya = laya_face(&seat, &test_arms);
+
+    // ── the issue-014 C1 encoder arm (RECORD-ONLY, serve: ✗) ───────
+    // Loaded + replayed AFTER the standard arms: it is never a
+    // registration candidate (the cands list is closed), never serves
+    // (the encoder class is refused at serve — issue 014 decision 1),
+    // and its row exists to put the measured number on the board. The
+    // T2-style pairing reads the SAME frozen test rows A1 answered —
+    // the cross-pool claim (+10.5 vs A1) settled on the seat's own
+    // read, exactly as the issue scopes.
+    let encoder: Option<EncoderFace> = if let Some(art) = encoder_art {
+        #[cfg(feature = "arena-laya")]
+        {
+            eprintln!("  encoder arm (C1, record-only): encoding {} cases …", seat.suite.cases.len());
+            let out = riir_instinct::encoder_arm::eval_encoder_arm(&seat.suite.cases, art)?;
+            let a1 = test_arms
+                .iter()
+                .find(|a| a.name == "A1")
+                .ok_or_else(|| "the encoder face needs the incumbent A1 row".to_string())?;
+            let pd = paired_upper_bound(&out.correct, &a1.correct)
+                .ok_or_else(|| "the encoder-vs-A1 pairing could not be computed".to_string())?;
+            let n = out.correct.len();
+            let hits = out.correct.iter().filter(|c| **c).count();
+            let acc = hits as f64 / n as f64;
+            eprintln!(
+                "  encoder arm: {:.4} ({hits}/{n}) · vs A1 mean {:+.4} · LB95 {:+.4} · {:.0} µs p50 · device {}",
+                acc,
+                pd.mean,
+                pd.lb95,
+                pct(&out.durs_us, 0.5),
+                out.device
+            );
+            Some(EncoderFace {
+                art: art.display().to_string(),
+                accuracy: acc,
+                n,
+                mean_vs_a1: pd.mean,
+                lb95_vs_a1: pd.lb95,
+                p50_us: pct(&out.durs_us, 0.5),
+                p99_us: pct(&out.durs_us, 0.99),
+                device: out.device,
+                n_classes: out.n_classes,
+                feat_dim: out.feat_dim,
+                picks: out.picks,
+                correct: out.correct,
+                confs: out.confs,
+                durs_us: out.durs_us,
+            })
+        }
+        #[cfg(not(feature = "arena-laya"))]
+        {
+            let _ = art;
+            // The flag gate in main() already died loud on a featureless
+            // build; this arm is unreachable there.
+            None
+        }
+    } else {
+        None
+    };
 
     Ok(SuiteRun {
         suite: name.to_string(),
@@ -1465,6 +1585,7 @@ fn run_suite_n<const N: usize>(
         g3_delta,
         g5,
         laya,
+        encoder,
     })
 }
 
@@ -1563,6 +1684,10 @@ fn run_suite_a0_only<const N: usize>(
         g3_delta: None,
         g5: None,
         laya: None,
+        // The C1 encoder arm pairs against the incumbent A1 — an
+        // A0-only posture has no A1 row to pair with, so the arm never
+        // runs on this path (sst5, the C1 suite, seats a specialist).
+        encoder: None,
     })
 }
 
@@ -2106,6 +2231,28 @@ fn write_predictions(out_dir: &Path, runs: &[SuiteRun]) {
                 "lb95": s.lb95,
                 "passed": s.passed,
             })),
+            "encoder_arm": run.encoder.as_ref().map(|e| serde_json::json!({
+                "record_only": true,
+                "serve": false,
+                "serve_note": "encoder class refused at serve (instinct issue 014 decision 1) — A1 keeps serving",
+                "artifact": e.art,
+                "accuracy": e.accuracy,
+                "n": e.n,
+                "mean_vs_a1": e.mean_vs_a1,
+                "lb95_vs_a1": e.lb95_vs_a1,
+                "p50_us": e.p50_us,
+                "p99_us": e.p99_us,
+                "device": e.device,
+                "n_classes": e.n_classes,
+                "feat_dim": e.feat_dim,
+                // Per-row freezes (the doc builder's stats laws consume
+                // these where present; the 029 record predates the field
+                // and publishes aggregates only — omitted-elsewhere law).
+                "picks": e.picks,
+                "correct": e.correct,
+                "confs": e.confs,
+                "durs_us": e.durs_us,
+            })),
             "arms": arms,
         }));
     }
@@ -2379,6 +2526,26 @@ lane−laya UB95 {:+.0} µs ≤ 0 → {}\n",
                 l.laya_p50_us,
                 l.paired_ub95_us,
                 if l.pass { "PASS" } else { "FAIL" }
+            ));
+        }
+        if let Some(e) = &run.encoder {
+            md.push_str(&format!(
+                "- **C1 encoder arm (RECORD-ONLY — serve: ✗, the encoder class is refused at serve; issue 014 decision 1):** \
+NLEH head `{}` ({} classes · feat {}) over the live laya-english encode (device {}) · accuracy \
+**{:.4}** ({}) · vs the incumbent A1: paired mean {:+.4} · LB95 {:+.4} {} · per-row p50 {:.0} µs / \
+p99 {:.0} µs (the full arm cost: encode + head; the provisional text-lane bar is ≤ ~300 µs — \
+the arm reads ms-class, the recorded ground of the refusal). No serve change: A1 keeps serving.\n",
+                e.art,
+                e.n_classes,
+                e.feat_dim,
+                e.device,
+                e.accuracy,
+                e.n,
+                e.mean_vs_a1,
+                e.lb95_vs_a1,
+                if e.lb95_vs_a1 > 0.0 { "(strictly above — the T2 form, A1 the comparator)" } else { "(not certified above A1)" },
+                e.p50_us,
+                e.p99_us
             ));
         }
         md.push_str("- **G4 alloc-free:** `tests/g4_alloc.rs` — a counting global allocator \

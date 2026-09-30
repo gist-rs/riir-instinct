@@ -664,11 +664,27 @@ impl<const N: usize> SuiteServer<N> {
                     // suites (prompt_injections) and the pair-lives-in-
                     // the-artifact suites (code_fixtures: the seat
                     // offers the 8 module labels, the unified no/yes rows
-                    // join at the sentinel). The positional law stays as
-                    // the fallback for a noul suite whose pair is neither
-                    // named in the artifact nor the whole seat universe.
+                    // join at the sentinel). The caller's presentation
+                    // still VALIDATES against the answer space: pick_index
+                    // speaks the CALLER's option list positionally over
+                    // the fixed rendering, so a presentation wider or
+                    // narrower than the pair has no noul space — refuse
+                    // (the positional law's guard, kept; the T8 landing
+                    // dropped it and `noul_suite_serves_positionally_
+                    // through_the_bridge` red on exactly this — a 3-wide
+                    // hostile presentation answered over the pair).
                     let pair_named = NOUL_PAIR.iter().all(|n| self.key_map.contains_key(*n));
                     if pair_named {
+                        if options.len() != NOUL_PAIR.len() {
+                            return Err(format!(
+                                "suite {}: a noul presentation carries {} options — the fixed \
+                                 [false, true] rendering has exactly {} (pick_index speaks that \
+                                 space whatever names are presented)",
+                                self.suite,
+                                options.len(),
+                                NOUL_PAIR.len()
+                            ));
+                        }
                         for name in NOUL_PAIR {
                             let Some(&(li, cls)) = self.key_map.get(name) else {
                                 unreachable!("pair_named checked the keys");
