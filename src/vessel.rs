@@ -234,6 +234,78 @@ pub fn load_hosted_bytes(
     load_parts(&header, payload, key, applied)
 }
 
+/// The HOSTED-ONLY head half (instinct issue 016 T4): the SAME
+/// authenticity / class / monotonic / envelope walk as
+/// [`load_hosted_bytes`], returning the RAW decrypted payload instead of a
+/// decoded [`Specialist`] — the NLEH parse is the encoder lane's own law
+/// ([`crate::encoder_serve::EncoderLane::from_parts`]), and a second
+/// artifact class must never wedge the specialist path's decoder. The
+/// payload is NOT interpreted here on purpose: authenticity and lineage
+/// are the envelope's job; the payload shape is the consumer's.
+pub fn load_hosted_head_bytes(
+    buf: &[u8],
+    pins: &PinTable,
+    key: &[u8; 32],
+    applied: &AppliedState,
+) -> Result<LoadedHead, VesselLoadError> {
+    let (header, sig_bytes) =
+        reflexer_vessel::peek(buf).map_err(|e| VesselLoadError::Format(e.to_string()))?;
+    let verify_key = pins
+        .resolve_key(header.key_id)
+        .map_err(|e| VesselLoadError::Format(e.to_string()))?;
+    let signature = dalek_signature(&sig_bytes);
+    verify_key
+        .verify_strict(&signed_message(buf), &signature)
+        .map_err(|_| VesselLoadError::Format("signature failed strict verification".into()))?;
+    if header.payload_len != (buf.len() - reflexer_vessel::PREFIX_LEN) as u64 {
+        return Err(VesselLoadError::Format(format!(
+            "payload_len mismatch: header says {}, file carries {}",
+            header.payload_len,
+            buf.len() - reflexer_vessel::PREFIX_LEN
+        )));
+    }
+    let payload = buf[reflexer_vessel::PREFIX_LEN..].to_vec();
+    // Class discipline (the moat law, verbatim): HOSTED-ONLY only.
+    if header.class != Class::HostedOnly {
+        return Err(VesselLoadError::WrongClass(header.class));
+    }
+    // Monotonic gate before ANY payload work (the replay/downgrade wall).
+    if header.artifact_version <= applied.artifact_version {
+        return Err(VesselLoadError::Downgrade {
+            vessel: header.artifact_version,
+            applied: applied.artifact_version,
+        });
+    }
+    if payload.len() < NONCE_LEN + 1 {
+        return Err(VesselLoadError::Payload(format!(
+            "payload {} B is shorter than the nonce envelope ({NONCE_LEN} B nonce + body)",
+            payload.len()
+        )));
+    }
+    let (nonce, body) = payload.split_at(NONCE_LEN);
+    let nonce: [u8; NONCE_LEN] = nonce.try_into().expect("split at NONCE_LEN");
+    let mut plain = body.to_vec();
+    xor_keystream(key, &nonce, &mut plain);
+    let commitment = reflexer_vessel::commitment_of(&header, &payload);
+    Ok(LoadedHead {
+        head_bytes: plain,
+        commitment_hex: hex32(&commitment),
+        artifact_version: header.artifact_version,
+        parent_commitment: header.parent_commitment,
+    })
+}
+
+/// The decrypted HEAD payload + the lineage facts (the ENC analogue of
+/// [`LoadedVessel`] — the payload half is the raw NLEH artifact bytes, the
+/// encoder lane's own parse law).
+pub struct LoadedHead {
+    pub head_bytes: Vec<u8>,
+    /// The vessel's commitment (blake3 over the signed region).
+    pub commitment_hex: String,
+    pub artifact_version: u64,
+    pub parent_commitment: [u8; 32],
+}
+
 fn load_parts(
     header: &reflexer_vessel::Header,
     payload: Vec<u8>,

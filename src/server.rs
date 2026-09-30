@@ -1078,6 +1078,35 @@ fn argmax_pos(scores: &[f32]) -> (usize, f32) {
     (best, scores[best])
 }
 
+/// The ENC vessel boot (issue 016 T4): the HOSTED-ONLY head vessel — the
+/// same authenticity / class / monotonic walk the bag vessels carry
+/// ([`crate::vessel::load_hosted_head_bytes`]), the RAW decrypted NLEH
+/// payload handed to the lane's own parse law. The monotonic apply is the
+/// arsenal's existing epoch machinery: the facts (commitment, version,
+/// parent) flow to the slot install exactly as the bag facts do, so a
+/// swap/downgrade is refused by the same gate that refuses the bag
+/// vessels' — no new lineage code.
+#[cfg(all(feature = "vessel", feature = "serve-encoder"))]
+fn enc_vessel_boot(
+    suite: &'static str,
+    seat: Seat,
+    vessel_bytes: &[u8],
+    pins: &reflexer_vessel::PinTable,
+    key: &[u8; 32],
+    applied: &crate::vessel::AppliedState,
+    arm: Arm,
+) -> Result<(crate::encoder_serve::EncoderLane, VesselFacts), String> {
+    let loaded = crate::vessel::load_hosted_head_bytes(vessel_bytes, pins, key, applied)
+        .map_err(|e| format!("suite {suite}: head vessel refused: {e}"))?;
+    let lane = crate::encoder_serve::EncoderLane::from_parts(suite, seat, &loaded.head_bytes, arm)?;
+    let facts = VesselFacts {
+        commitment_hex: loaded.commitment_hex,
+        artifact_version: loaded.artifact_version,
+        parent_commitment: loaded.parent_commitment,
+    };
+    Ok((lane, facts))
+}
+
 /// The arity-erased server (the registry holds one per suite; the
 /// engine arities are const-generic). S2 (Plan 003) seats the noul
 /// suites' 2-label universe — prompt_injections. The ENC variant
@@ -1254,12 +1283,30 @@ impl AnySuiteServer {
         applied: &crate::vessel::AppliedState,
     ) -> Result<(Self, VesselFacts), String> {
         let arm = Self::posture_of(manifest, suite)?;
+        // The ENC route (issue 016 T4): the head vessel — the same
+        // authenticity / monotonic walk, the raw NLEH payload out.
         if arm == Arm::Enc {
-            return Err(format!(
-                "suite {suite}: posture ENC does not ride the vessel lane yet — the \
-                 HOSTED-ONLY head mint (instinct issue 016 T4) lands with its own \
-                 monotonic-apply wiring; the sealed raw head is the T2 posture"
-            ));
+            #[cfg(all(feature = "vessel", feature = "serve-encoder"))]
+            {
+                let row = manifest
+                    .row(suite)
+                    .ok_or_else(|| format!("suite {suite} is not in the arsenal manifest"))?;
+                let vessel_path =
+                    vessels_dir.join(row.artifact_file(format!("{suite}_v1.vessel")));
+                let bytes = std::fs::read(&vessel_path)
+                    .map_err(|e| format!("read vessel {vessel_path:?}: {e}"))?;
+                let (lane, facts) =
+                    enc_vessel_boot(suite, seat, &bytes, pins, key, applied, arm)?;
+                return Ok((AnySuiteServer::Enc(Box::new(lane)), facts));
+            }
+            #[cfg(not(all(feature = "vessel", feature = "serve-encoder")))]
+            {
+                let _ = (&seat, vessels_dir, pins, key, applied);
+                return Err(format!(
+                    "suite {suite}: posture ENC rides the vessel lane only on a build with \
+                     --features vessel,serve-encoder (instinct issue 016 T4)"
+                ));
+            }
         }
         let row = manifest
             .row(suite)
@@ -1307,11 +1354,20 @@ impl AnySuiteServer {
     ) -> Result<(Self, VesselFacts), String> {
         let arm = Self::posture_of(manifest, suite)?;
         if arm == Arm::Enc {
-            return Err(format!(
-                "suite {suite}: posture ENC does not ride the vessel lane yet — the \
-                 HOSTED-ONLY head mint (instinct issue 016 T4) lands with its own \
-                 monotonic-apply wiring; the sealed raw head is the T2 posture"
-            ));
+            #[cfg(all(feature = "vessel", feature = "serve-encoder"))]
+            {
+                let (lane, facts) =
+                    enc_vessel_boot(suite, seat, vessel_bytes, pins, key, applied, arm)?;
+                return Ok((AnySuiteServer::Enc(Box::new(lane)), facts));
+            }
+            #[cfg(not(all(feature = "vessel", feature = "serve-encoder")))]
+            {
+                let _ = (&seat, vessel_bytes, pins, key, applied);
+                return Err(format!(
+                    "suite {suite}: posture ENC rides the vessel lane only on a build with \
+                     --features vessel,serve-encoder (instinct issue 016 T4)"
+                ));
+            }
         }
         macro_rules! vessel_arm {
             ($variant:ident, $n:literal) => {{

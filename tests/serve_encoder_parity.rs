@@ -285,3 +285,214 @@ fn server_meta_device(server: &AnySuiteServer) -> &'static str {
         _ => panic!("the ENC boot must produce the encoder lane"),
     }
 }
+
+// ── T4: the HOSTED-ONLY head vessel (issue 016 T4) ─────────────────────
+
+/// Assemble one HOSTED-ONLY v1 vessel over `payload` — the minter's exact
+/// wire layout (riir-train `vessel_mint.rs`, pinned equal by the cross-repo
+/// gate): 68-byte header ‖ strict-ed25519(header ‖ payload) ‖
+/// nonce ‖ ciphertext. TEST-ONLY assembly with a TEST key; a production
+/// mint stays the riir-train bin's (the owner's key material never enters
+/// any repo).
+#[cfg(all(feature = "vessel", feature = "serve-encoder"))]
+fn assemble_head_vessel(
+    head_bytes: &[u8],
+    key: &ed25519_dalek::SigningKey,
+    key_id: u32,
+    version: u64,
+    nonce: [u8; 16],
+) -> Vec<u8> {
+    use ed25519_dalek::Signer;
+    let payload = riir_instinct::vessel::encrypt_payload(
+        &key.to_bytes(),
+        &nonce,
+        head_bytes,
+    );
+    let mut header = [0u8; 68];
+    header[0..8].copy_from_slice(b"RFLEXVSL");
+    header[8..12].copy_from_slice(&1u32.to_le_bytes()); // format_version
+    header[12..16].copy_from_slice(&1u32.to_le_bytes()); // class HOSTED-ONLY
+    header[16..20].copy_from_slice(&key_id.to_le_bytes());
+    header[20..28].copy_from_slice(&version.to_le_bytes());
+    header[28..60].copy_from_slice(&[0u8; 32]); // parent: genesis
+    header[60..68].copy_from_slice(&(payload.len() as u64).to_le_bytes());
+    let mut signed = Vec::with_capacity(68 + payload.len());
+    signed.extend_from_slice(&header);
+    signed.extend_from_slice(&payload);
+    let sig = key.sign(&signed);
+    let mut vessel = Vec::with_capacity(68 + 64 + payload.len());
+    vessel.extend_from_slice(&header);
+    vessel.extend_from_slice(&sig.to_bytes());
+    vessel.extend_from_slice(&payload);
+    vessel
+}
+
+/// The T4 round trip: the same head rides the HOSTED-ONLY vessel — minted
+/// here with a TEST key + deterministic nonce — and boots through
+/// [`AnySuiteServer::boot_vessel_bytes`]; the vessel lane's decisions must
+/// equal the raw lane's EXACTLY (the envelope is confidentiality, never
+/// semantics), the lineage facts must carry the minted version, and the
+/// monotonic gate must refuse a downgrade (v1 over an applied v1) without
+/// decrypting a byte. Gated on BOTH features (the reader needs the vessel
+/// crate, the lane needs the encoder) — a build without either refuses the
+/// ENC vessel route loud at boot instead.
+#[cfg(all(feature = "vessel", feature = "serve-encoder"))]
+#[test]
+fn head_vessel_boots_the_same_lane_and_refuses_a_downgrade() {
+    if std::env::var("INSTINCT_ENCODER_PARITY").as_deref() != Ok("1") {
+        eprintln!(
+            "SKIP loud: INSTINCT_ENCODER_PARITY=1 not set — the vessel arm needs the head \
+             artifact, the datasets and the laya weights"
+        );
+        return;
+    }
+    let head = head_path();
+    let datasets = datasets_dir();
+    if !head.is_file() || !datasets.join(SUITE).is_dir() {
+        eprintln!("SKIP loud: the head artifact / the datasets dir is absent");
+        return;
+    }
+    let head_bytes = std::fs::read(&head).expect("read the sealed head");
+
+    // The TEST minting key + pin table (operator key material never enters
+    // any repo; the --nonce seam's determinism role).
+    let mint = ed25519_dalek::SigningKey::from_bytes(&[42u8; 32]);
+    // The envelope key IS the minting seed in the minter's contract (one
+    // `--key` is both the ed25519 seed and the blake3-XOF keyed hash key —
+    // `INSTINCT_VESSEL_KEY_HEX` == the minter's `--key`).
+    let vessel_key = mint.to_bytes();
+
+    let vessel = assemble_head_vessel(&head_bytes, &mint, 7, 1, [3u8; 16]);
+    let manifest_text = format!(
+        "[[vessel]]\nsuite   = {SUITE:?}\ndigest  = \"blake3:{}\"\nclass   = \
+         \"hosted_only\"\nfile    = \"{SUITE}_v1.vessel\"\nposture = {{ arm = \"ENC\" }}\n\
+         pin_keys = [7]\nbudget  = {{ load = \"eager\", max_payload_mb = 16 }}\n",
+        blake3::hash(&vessel).to_hex()
+    );
+    // Parse-shaped once here (the grammar the deployment row carries); the
+    // boots re-parse per closure below.
+    ArsenalManifest::parse(&manifest_text).expect("the ENC vessel manifest parses");
+
+    // The states/golds extract before the boot consumes the seat.
+    let suite_static: &'static str = SUITE;
+    let seat = {
+        let datasets = datasets.clone();
+        std::thread::Builder::new()
+            .stack_size(64 * 1024 * 1024)
+            .spawn(move || {
+                riir_reflex::harness::runner::seat::prepare_seat(suite_static, &datasets)
+            })
+            .expect("spawn seat thread")
+            .join()
+            .expect("seat thread panicked")
+            .expect("prepare the sst5 seat")
+    };
+    let states: Vec<String> = seat.state_strs.clone();
+    let n = states.len().min(32);
+    drop(seat);
+
+    // The vessel boot (the swap/lazy loader's vessel entry).
+    let applied = riir_instinct::vessel::AppliedState::GENESIS;
+    let vessel_for_boot = vessel.clone();
+    let manifest_for_boot = riir_instinct::arsenal::ArsenalManifest::parse(&manifest_text)
+        .expect("parse for boot");
+    let pins_for_boot = reflexer_vessel::pins_from_bytes(&[(7u32, mint.verifying_key().to_bytes())]);
+    let datasets_for_boot = datasets.clone();
+    let mut server = std::thread::Builder::new()
+        .stack_size(64 * 1024 * 1024)
+        .spawn(move || {
+            let seat = riir_reflex::harness::runner::seat::prepare_seat(suite_static, &datasets_for_boot)
+                .expect("prepare the boot seat");
+            AnySuiteServer::boot_vessel_bytes(
+                suite_static,
+                seat,
+                &vessel_for_boot,
+                &manifest_for_boot,
+                &pins_for_boot,
+                &vessel_key,
+                &applied,
+            )
+        })
+        .expect("spawn boot thread")
+        .join()
+        .expect("boot thread panicked")
+        .unwrap_or_else(|e| panic!("boot the ENC head vessel: {e}"));
+    assert_eq!(server.0.meta().arm.name(), "ENC");
+    assert_eq!(
+        server.1.artifact_version, 1,
+        "the lineage facts carry the minted version (the monotonic apply's input)"
+    );
+
+    // Decision parity: the vessel lane's first n answers equal the raw
+    // lane's (the envelope is confidentiality, never semantics). The raw
+    // lane boots from the SAME head bytes for the comparison.
+    let vessel_picks: Vec<Option<usize>> = states[..n]
+        .iter()
+        .map(|s| {
+            server
+                .0
+                .decide(s, None)
+                .unwrap_or_else(|e| panic!("vessel case: {e}"))
+                .pick_index
+        })
+        .collect();
+    let raw_bytes = head_bytes.clone();
+    let datasets_for_raw = datasets.clone();
+    let manifest_for_raw = riir_instinct::arsenal::ArsenalManifest::parse(&manifest_text)
+        .expect("parse for raw");
+    let mut raw_server = std::thread::Builder::new()
+        .stack_size(64 * 1024 * 1024)
+        .spawn(move || {
+            let seat = riir_reflex::harness::runner::seat::prepare_seat(suite_static, &datasets_for_raw)
+                .expect("prepare the raw boot seat");
+            AnySuiteServer::boot_bytes(suite_static, seat, &raw_bytes, &manifest_for_raw)
+        })
+        .expect("spawn raw boot thread")
+        .join()
+        .expect("raw boot thread panicked")
+        .unwrap_or_else(|e| panic!("boot the raw ENC lane: {e}"));
+    for (i, s) in states[..n].iter().enumerate() {
+        let raw = raw_server
+            .decide(s, None)
+            .unwrap_or_else(|e| panic!("raw case {i}: {e}"));
+        assert_eq!(
+            vessel_picks[i], raw.pick_index,
+            "case {i}: the vessel lane drifted from the raw lane — the envelope changed \
+             semantics, which it must never do"
+        );
+    }
+
+    // The monotonic gate: v1 re-applied over an applied v1 is a DOWNGRADE
+    // — refused without decrypting a byte (the bag vessels' own law). The
+    // wrong-key arm is the confidentiality wall (garbage never parses).
+    let applied1 = riir_instinct::vessel::AppliedState { artifact_version: 1 };
+    let manifest_for_boot2 = riir_instinct::arsenal::ArsenalManifest::parse(&manifest_text)
+        .expect("parse for downgrade");
+    let pins_for_boot2 = reflexer_vessel::pins_from_bytes(&[(7u32, mint.verifying_key().to_bytes())]);
+    let err = std::thread::Builder::new()
+        .stack_size(64 * 1024 * 1024)
+        .spawn(move || {
+            let seat = riir_reflex::harness::runner::seat::prepare_seat(suite_static, &datasets)
+                .expect("prepare the downgrade seat");
+            AnySuiteServer::boot_vessel_bytes(
+                suite_static,
+                seat,
+                &vessel,
+                &manifest_for_boot2,
+                &pins_for_boot2,
+                &vessel_key,
+                &applied1,
+            )
+        })
+        .expect("spawn downgrade thread")
+        .join()
+        .expect("downgrade thread panicked");
+    let err = match err {
+        Err(e) => e,
+        Ok(_) => panic!("a downgrade must refuse, never boot"),
+    };
+    assert!(
+        err.contains("refused"),
+        "the downgrade refusal must come from the vessel walk: {err}"
+    );
+}

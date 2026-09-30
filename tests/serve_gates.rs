@@ -29,7 +29,9 @@ use std::path::PathBuf;
 use std::process::{Child, Command, Stdio};
 
 use riir_instinct::arsenal::{ArsenalManifest, ValidateCtx};
-use riir_instinct::server::{Arm, AnySuiteServer};
+#[cfg(not(feature = "serve-encoder"))]
+use riir_instinct::server::AnySuiteServer;
+use riir_instinct::server::Arm;
 use riir_reflex::harness::suites::QKind;
 
 fn repo_root() -> PathBuf {
