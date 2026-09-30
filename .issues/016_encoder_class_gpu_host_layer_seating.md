@@ -21,9 +21,13 @@ the prod host). T5 partially armed (the parity gate carries G1's pick-parity leg
 the L3 slot bound; G1b lives in the client's arms; G2/G4 land with the consumer).**
 T4 LANDED (the HOSTED-ONLY head vessel: riir-instinct 82011af reader+routes+round-trip
 gate, riir-train f3ce8973 NLEH minter; the production mint is the owner's key
-ceremony). T5–T7 open (T5's G2/G4 land with the consumer; T7 = the queued emotion
-screen + the per-suite run-state record, added 2026-09-30 on the owner ask; T6 = D1,
-trigger-blocked).**
+ceremony). **T7 EXECUTED 2026-09-30 — NEGATIVE BY THE SCREEN (Bench 032): the
+reference floor on the emotion test split reads 0.5950 vs the 0.8850 earn bar; the
+class's measured-max lift (+14.7 pt) tops out at 0.742 — the lane is dead by the
+pre-registered screen-first law, the train run never earned. Emotion stays
+A0-served; the posture-gap state stands (the row's security waits on a different
+model class or the D1 posture).** T5–T6 open (T5's G2/G4 land with the consumer;
+T6 = D1, trigger-blocked).**
 **Owner round 3 (2026-09-30): three clarifications folded — the no-new-product-lane note
 (nothing named "Working"/"riir-working"; L0–L5 are 048's tier vocabulary), D1's host
 generalized to ANY real GPU serving deploy (game prod OR text-lane serve host — the
@@ -272,8 +276,8 @@ served Rethink (encoder) @<host>" once the rename lands. The
   game prod host or text-lane serve host — serving the encoder, latency
   measured on that box, pin validating) — the
   sst5 cell publishes as served and 008's row flips through its own lane.
-- [ ] T7 — **the emotion screen (the ONE unscreened board-relevant encoder
-  run; QUEUED, not run)** — a 008-track text-lane run of the same class,
+- [x] T7 — **the emotion screen (the ONE unscreened board-relevant encoder
+  run)** — a 008-track text-lane run of the same class,
   not a layer-seating task. Pre-registered per the 014 law BEFORE any run:
   the suite-generic trainer (`instinct_encoder_trainer`) over the emotion
   t20k pool, ONE extraction method (the NLEH class, same architecture,
@@ -281,15 +285,21 @@ served Rethink (encoder) @<host>" once the rename lands. The
   best-holdout selection, **ONE frozen read** on the emotion test split.
   Earn gate: the head must read **> 0.8850** — the armed-seat A0, T4's
   recorded bar for a REAL emotion arm; below it the posture-gap state
-  stands and emotion stays A0-served. Cost ≈ 20–30 min GPU (M3-Metal
-  stand-in or 4090), box state recorded beside the number. **On a PASS the
-  arm is RECORD-ONLY (`serve: ✗` — the 014 class refusal still governs
-  the CF lane): its value is securing the fragile emotion row (a
-  posture-gap tie-in-waiting: a reflex republish at the armed posture
-  collapses today's +11.5 to a tie) with a genuine arm for the
-  D1-triggered posture. The board row itself does not move — the site's
-  verdict bars exclude serve-refused arms by design. On a MISS: recorded
-  negative, no serve change, no re-run (the read is spent).**
+  stands and emotion stays A0-served.
+  **EXECUTED 2026-09-30 — DEAD BY THE SCREEN, the train never earned
+  ([Bench 032](../.benchmarks/032_emotion_encoder_screen/RESULTS.md)):
+  the screen-first law (issue 600) ran first — the emotion-wire cases
+  (the reflex `build_emotion` wire verbatim, 400 test + 15,969 unique
+  train) → the test LENC cache on M3 Metal (15.3 s) → `--ref-only`:
+  the reference floor reads **0.5950** vs the 0.8850 bar, and the
+  class's measured-max lift (+14.7 pt) tops out at 0.742 — 14+ points
+  under the bar, no training run can close it. The 5-head sweep + the
+  frozen read were NOT spent (the screen exists to prevent exactly
+  that). Emotion stays A0-served; the posture-gap risk stands (the
+  row's security waits on a different model class or D1). Box state +
+  artifacts in the record (M3 Metal, AC; `riir-train/.raw/t607/` —
+  the case-maker is wire-faithful + regenerable).** The original MISS
+  clause holds verbatim: negative, no serve change, no re-run.
 
 ## Scope notes
 

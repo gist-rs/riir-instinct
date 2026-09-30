@@ -143,7 +143,10 @@ file .deploy/local/stage/decisions/app-bin   # → ELF 64-bit x86-64
 **Issue 016 T1–T4 LANDED (2026-09-30, Bench 031 + instinct `82011af` + riir-ai
 `0c39b4f30f` + riir-train `f3ce8973`): the encoder class now SERVES — `posture
 ENC`, feature `serve-encoder`, GPU hosts only — and the client + vessel halves
-ship beside it.**
+ship beside it. T7 (the emotion screen) EXECUTED 2026-09-30 — DEAD BY THE SCREEN
+(Bench 032: the reference floor 0.5950 vs the 0.8850 bar; the class's max lift
+cannot close it — the train run never earned; emotion stays A0, the posture-gap
+risk stands).**
 `src/encoder_serve.rs`: the sealed NLEH head + the laya-english agent
 resident from boot (the boot warmup encode pays the pipeline compile, L9);
 the agent on a dedicated worker thread (the reflex !Send law — clients get
