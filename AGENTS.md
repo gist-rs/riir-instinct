@@ -113,10 +113,17 @@ file .deploy/local/stage/decisions/app-bin   # → ELF 64-bit x86-64
 
 ## Current state
 
-**Issue 014 C1 EXECUTED (2026-09-30, Bench 029): the sst5 encoder-arm
-lane is ON RECORD at 0.5267, published `serve: ✗` — the owner's
-class-wide staged GO refused per-request encoder inference at serve;
-C2's static-vector surrogate is the open rung (riir-train Issue 602).**
+**Issue 014 CLOSED (2026-09-30): C1 EXECUTED POSITIVE (Bench 029 — the
+sst5 encoder-arm lane ON RECORD at ENC 0.5267, T2-certified +10.50 over
+A1, published `serve: ✗`; the owner's class-wide staged GO refused
+per-request encoder inference at serve) · C2 EXECUTED NEGATIVE (riir-train
+Issue 602 / Bench 615 — the static-vector surrogate reads 0.3917 vs the
+0.4383 gliner bar, paired LB95 −0.0691 vs A1; latency PASSES at p99
+21.4 µs but accuracy binds). The failure path executed: **sst5 stays on
+A1 (0.4217)**; the extraction substrate (tokenize_question + TOKN
+sidecars + TABL/TSFT/NSUR + the µs-class allocation-free serve path)
+stands reusable for any future C2-class rung on a bar-lower or
+order-insensitive suite.**
 `src/encoder_arm.rs` + the arena's `--encoder-art` flag (features
 `arena-laya`/`arena-laya-metal`): the sealed NLEH v1 head
 (`.raw/t599/t6_s0.bin`, BLAKE3-verified) replayed over a LIVE M3-Metal

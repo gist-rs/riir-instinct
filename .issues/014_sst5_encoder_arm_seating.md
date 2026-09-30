@@ -1,8 +1,13 @@
 # Issue 014 — sst5 encoder-arm seating: lane confirmed at 0.5267, serve posture is the owner gate
 
-**Status:** C1 EXECUTED 2026-09-30 (Bench 029) — the arena-side frozen
-read is ON RECORD with the `serve: ✗` cell; **C2 remains open** (the
-static-vector surrogate rung — the pre-registration pins below bind).
+**Status:** CLOSED 2026-09-30 — **C1 EXECUTED POSITIVE** (Bench 029:
+ENC 0.5267 on record, T2-certified +10.50 over A1, published
+`serve: ✗`) · **C2 EXECUTED NEGATIVE** (riir-train Issue 602 / Bench 615:
+the static-vector surrogate reads **0.3917** vs the 0.4383 bar, paired
+LB95 **−0.0691** vs A1; latency PASSES at p99 21.4 µs but accuracy is
+binding). **The failure path executed: sst5 stays on A1 (0.4217)**; both
+numbers on record; the TWO-read budget spent exactly as pre-registered;
+no serve change; no boundary-guard need (no laya-tokenizer dep landed).
 DECIDED 2026-09-30 — **conditional staged GO, class-wide** (owner
 ratified after the Claude verdict ping-pong: REVISE → AGREE, 3 rounds).
 **The serve-posture gate is CLOSED — agents: do not re-ask it.** Filed
@@ -57,6 +62,36 @@ The record-only arena read, exactly as scoped ("record, don't serve"):
   branch keeps the positional law's width check (a noul presentation
   must be the pair — width 2 — whatever names it spells); serve_gates
   15/15 green again, the code_fixtures parity gate unaffected.
+
+## C2 — EXECUTED NEGATIVE (riir-train Issue 602 / Bench 615, 2026-09-30)
+
+The static-vector surrogate rung, exactly as pre-registered (the pins
+below bind; the protocol was written BEFORE any student run):
+
+- **The lane**: Model2Vec-style corpus-averaged contextual states (ONE
+  extraction method) over sst5 train 8543 + emotion 4000 (labels
+  ignored), PCA-256 + i8 (top-256 = 99.99% variance — the contextual
+  cloud is near-low-rank), fresh 128-wide sigmoid head, teacher = the
+  sealed `t6_s0.bin`. The quarantine caught + dropped ONE SST-5
+  duplicate-text train row (`sst5:1139` `"no. ."` ⇔ test `sst5:180`) —
+  the stricter-than-the-lane law, disclosed.
+- **THE TWO FROZEN READS (the whole budget)**: static **0.3917** · bag
+  control **0.3333** vs the 0.4383 gliner bar (both FAIL) and paired
+  LB95 vs A1 **−0.0691 / −0.1303** (both FAIL). A1 (0.4217) stands.
+- **Latency (the one passing gate)**: p50 16.5 µs · p99 21.4 µs — 14×
+  under the ~300 µs provisional bar, an order under A0's 169 µs. The
+  CLASS is container-cheap; the accuracy is not there for sst5.
+- **The finding**: the class ordering held (static > bag — real encoder
+  signal beyond lexical bags) but the mean-pool bottleneck is the
+  binding loss: the teacher TRANSFERS pool→test (holdout 0.5030 → test
+  0.5267) while the student collapses (0.4650 → 0.3917). Fine-grained
+  5-way ordinal sentiment lives in word order + intensity — exactly what
+  mean-pooled static vectors wash out.
+- **What stands**: the entire extraction substrate (riir-infer
+  `tokenize_question` + TOKN sidecars; the TABL/TSFT/NSUR artifacts; the
+  allocation-free serve path) — a future C2-class rung on a bar-lower or
+  order-insensitive suite (intent, topic) reuses everything. **What
+  dies**: C2 as an sst5 serve rung. Re-opens need a NEW pre-registration.
 
 ## The measured verdict (riir-train 600, `6f24cd92`)
 
