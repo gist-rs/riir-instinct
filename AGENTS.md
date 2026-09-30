@@ -113,6 +113,24 @@ file .deploy/local/stage/decisions/app-bin   # → ELF 64-bit x86-64
 
 ## Current state
 
+**Bench 0029 + Plan 426 T6 (2026-09-30): the massive SYNTH SEAT serves —
+H2(β=1,nmin=2,τ=4) 0.8400 (was 0.8267), the modelless A0 0.7800 → 0.8133
+(== reflex bench 091's V5 anchor EXACTLY), every arm rose.** The synth
+corpus (2048 openthai-vetoed template×slot rows, blake3 `8eed806a…`, extra
+cap 128/label) seats via reflex `prepare_seat_with_synth` (blake3-verified,
+suite-header pinned, in-universe drop counted) applied at
+`build_seat_engine` — the exact V5 arm-B construction, SHARED with the
+corpus-ab lane via `specs_corpus_extended` (the measured build and the
+served build are the same code). The manifest row moved τ=8 → τ=4 (the
+certified gold-seat pick did not survive the stronger floor: T2 LB95
+−0.0039, mean +0.0267 — the banking77 law, serves under best-measured);
+A6 digest re-pinned `cf851e27…`; the massive serve gates boot the synth
+seat against 0029's frozen picks (17/17). Serve-side env
+`INSTINCT_SYNTH_CORPUS_DIR` (absent = gold, byte-identical). Vs-best:
+−9.3 → **−8.0** (openthai 0.9200 holds; 008 T7 massive open). Owner-side
+remainders: the deploy files row + env at the next deploy; the site cell
+at the next republish.
+
 **Issue 014 CLOSED (2026-09-30): C1 EXECUTED POSITIVE (Bench 029 — the
 sst5 encoder-arm lane ON RECORD at ENC 0.5267, T2-certified +10.50 over
 A1, published `serve: ✗`; the owner's class-wide staged GO refused

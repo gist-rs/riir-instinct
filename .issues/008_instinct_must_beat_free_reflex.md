@@ -52,7 +52,7 @@ resolved: one broken, six dropped).
 
 | suite | Instinct arm | Instinct | Reflex (published) | edge |
 |---|---|---|---|---|
-| massive_intent_en | H2(β=1,nmin=2,τ=8) | 0.8267 | 0.4067 | **+42.0 pt** |
+| massive_intent_en | H2(β=1,nmin=2,τ=4) | 0.8400 | 0.4067 | **+43.3 pt** |
 | banking77 | H2 (nbsvm v2) | 0.8540 | 0.4020 | **+45.2 pt** |
 | sst5 | A1 | 0.4217 | 0.2017 | **+22.0 pt** |
 | emotion | (seat) | 0.8850 | 0.7700 | **+11.5 pt** |
@@ -74,7 +74,7 @@ harness families left the covered set, so they no longer count as ties):
 | xnli_en | 0.5233 | 0.9000 | **−37.7 pt** | openthai-systemone 0.9000 |
 | code_fixtures | 0.5625 | 0.6250 | **−6.3 pt** | paw (hosted) 0.6250 |
 | typed_decisions | 0.6475 | 0.7715 | **−12.4 pt** | agentjev-0.6B 0.7715 |
-| massive_intent_en | 0.8267 | 0.9200 | **−9.3 pt** | openthai-systemone 0.9200 |
+| massive_intent_en | 0.8400 | 0.9200 | **−8.0 pt** | openthai-systemone 0.9200 |
 | ag_news | 0.8975 | 0.9500 | **−5.2 pt** | laya (english) 0.9500 |
 | sst5 | 0.4217 | 0.4383 | **−1.7 pt** | gliner 0.4383 |
 
@@ -112,6 +112,17 @@ owner-ratified rung, Issue 014). The seven 0.0-edge ties are RESOLVED
    re-baseline discipline applies to the WHOLE lane set, never just A0: every
    re-read must recompute the vs-best edge, and a "sold" claim must name the
    lane it beat.
+4. **The massive SYNTH SEAT (Plan 426 T5/T6, Bench 0029, 2026-09-30): the
+   serving row moved 0.8267 → 0.8400 (H2 β=1,nmin=2,τ=4) on corpus mass
+   alone** — the modelless A0 rose 0.7800 → 0.8133 (== the V5 reflex-bench-091
+   anchor EXACTLY) and every arm rode it (A1 0.8167, H1 0.8333). The new
+   pick is T2-UNCERTIFIED vs the synth A0 (paired LB95 −0.0039; mean +0.0267
+   — the refusal is support at 8 discordant pairs, not direction; the
+   banking77 law: serves under best-measured). The gold-seat certification
+   (+0.0124) did not survive the stronger floor — the standing hazard cause 1
+   names, now self-inflicted by our own lever: ANY A0 lift compresses the
+   specialist's certified edge. The vs-best gap narrows −9.3 → −8.0
+   (openthai 0.9200 holds the bar; T7 massive stays open).
 
 ## Tasks
 
