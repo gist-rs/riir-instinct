@@ -233,3 +233,98 @@ fn a_refused_push_surfaces_the_error_and_drops_the_window_posture() {
     let err = push_decstat(&opaque, &key, &row).expect_err("refused");
     assert!(err.contains("unparseable"), "{err}");
 }
+
+// ── Plan 043 Phase C1 — the receipt verifier (decstat_verify) ────────────
+
+/// The END-TO-END judge (data-gated): boot ONE suite through the real
+/// `Verifier::boot`, generate one receipt by driving a real case, forge
+/// the lease item from it — the judge must answer `verified` with the
+/// SAME decision hash the engine produced, and an unknown input must
+/// answer `corpus_skew`. SKIPs loud without the t20k data (a deferral,
+/// never a green).
+#[test]
+fn the_c1_judge_replays_a_real_receipt_end_to_end() {
+    use riir_instinct::decstat_verify::{BootConfig, Verdict, Verifier};
+    use riir_kat::kat_protocol_decstat_receipt::DecStatLeaseItemWire;
+
+    let datasets = std::path::Path::new("../riir-reflex/.raw/datasets_t20k");
+    let winners = std::path::Path::new("../riir-train/data/instinct_specialists");
+    if !datasets.join("ag_news").is_dir() || !winners.join("ag_news_winner_v1.bin").is_file() {
+        eprintln!(
+            "SKIP loud: t20k datasets / the ag_news winner absent (bare clone) — \
+             the end-to-end judge replay needs the bytes"
+        );
+        return;
+    }
+    let manifest = riir_instinct::arsenal::ArsenalManifest::embedded_default()
+        .expect("embedded manifest parses");
+    let mut verifier = Verifier::boot(
+        BootConfig {
+            datasets_dir: datasets.display().to_string(),
+            winners_dir: winners.display().to_string(),
+            synth_corpus_dir: None,
+            manifest,
+            suite_filter: Some(vec!["ag_news".into()]),
+        },
+        None,
+    )
+    .expect("boot the ag_news verifier");
+    assert_eq!(verifier.suites().len(), 1, "the filter admits exactly ag_news");
+
+    // Drive one real case; forge the lease item from the ACTUAL hashes
+    // (the honest submitter by construction).
+    let (suite_idx, _name) = verifier
+        .suites()
+        .iter()
+        .enumerate()
+        .map(|(i, h)| (i, h.name))
+        .next()
+        .expect("one booted suite");
+    let decisions = verifier.drive_case(suite_idx, 0).expect("case 0 decides");
+    assert!(!decisions.is_empty());
+    let d = &decisions[0];
+    let state = verifier.state_str(suite_idx, 0);
+    let input_hex = riir_instinct::receipt::input_blake3(state, &d.options);
+    let decision_hex = riir_instinct::receipt::decision_blake3(d);
+
+    let item = DecStatLeaseItemWire {
+        suite: "ag_news".into(),
+        input_hash_hex: input_hex.clone(),
+        decision_hash_hex: decision_hex.clone(),
+        build_fp_hex: verifier.build_fp_hex(),
+        manifest_fp_hex: verifier.manifest_fp_hex(),
+    };
+    let verdict = verifier.judge(&item);
+    assert_eq!(
+        verdict,
+        Verdict::Verified(
+            riir_instinct::receipt::hash32_from_hex(&decision_hex).unwrap()
+        ),
+        "the same-release replay of a real receipt must VERIFY"
+    );
+    assert_eq!(
+        verdict.wire_outcome(),
+        Some(riir_kat::kat_protocol_decstat_verdict::DECSTAT_VERDICT_VERIFIED)
+    );
+
+    // A corrupted claim hash on a resolvable input → mismatch (with the
+    // true computed hash disclosed).
+    let mut corrupted = item.clone();
+    corrupted.decision_hash_hex = "0".repeat(64);
+    let verdict = verifier.judge(&corrupted);
+    assert!(
+        matches!(verdict, Verdict::Mismatch { computed, .. } if computed
+            == riir_instinct::receipt::hash32_from_hex(&decision_hex).unwrap()),
+        "a flipped claim must mismatch with the TRUE hash disclosed"
+    );
+
+    // An unknown input (the canary shape — D4) → corpus_skew, zero hash.
+    let canary = DecStatLeaseItemWire {
+        suite: "ag_news".into(),
+        input_hash_hex: "f".repeat(64),
+        decision_hash_hex: "e".repeat(64),
+        build_fp_hex: verifier.build_fp_hex(),
+        manifest_fp_hex: verifier.manifest_fp_hex(),
+    };
+    assert_eq!(verifier.judge(&canary), Verdict::CorpusSkew);
+}

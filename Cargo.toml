@@ -174,3 +174,12 @@ required-features = ["tetris"]
 [[example]]
 name = "tetris_round5_scale_probe"
 required-features = ["tetris"]
+
+# The decstat receipt FLOOR runner (Plan 043 Phase C2) — the submitter +
+# verifier roles in one process over the SAME booted seat; the measured
+# same-release reproduction rate is the arming gate (D5). Whole-target
+# gated: without this row a plain --all-targets build fails E0432 (the
+# riir-kat wire tree is decstat-gated).
+[[example]]
+name = "decstat_floor"
+required-features = ["decstat"]

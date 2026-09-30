@@ -43,6 +43,12 @@ pub mod vessel;
 /// decision-outcome stats over the riir-kat wire — Unset never pushes.
 #[cfg(feature = "decstat")]
 pub mod decstat;
+/// The decstat receipt VERIFIER (Plan 043 Phase C1): boots the seat
+/// engine over the frozen pool, resolves lease items against the
+/// blake3 input map, re-runs the decide path, compares decision
+/// hashes — toolchain/manifest skew refuses, corpus skew is counted.
+#[cfg(feature = "decstat")]
+pub mod decstat_verify;
 /// The Tetris lane (Issue 009 T5+T6): the serving-matched teacher check +
 /// the serving-input-contract measurement, over the katgpt-rs tetris
 /// substrate (the shared engine; never a fourth one).
