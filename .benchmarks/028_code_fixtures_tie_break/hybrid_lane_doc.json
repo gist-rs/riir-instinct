@@ -1,0 +1,55 @@
+{
+ "meta": {
+  "host": "m3",
+  "git_sha": "07119b4",
+  "date_utc": "2026-09-30T00:59:53Z",
+  "profile": "release",
+  "laya_feature": false,
+  "lane_note": "instinct hybrid lane: the SERVING arm's single frozen test read over the reflex harness seat. Serving law (owner, 2026-09-27): the best measured arm serves \u2014 resolved from the arsenal manifest, A0 a candidate like any other; every seated suite carries its cell (a tie or a loss is shown, labeled via serves/gate, and stays visible as the Issue-008 improvement backlog \u2014 never hidden). The T2 strict-superiority gate remains the ADVERTISING law, not the serving selector."
+ },
+ "suites": [
+  {
+   "name": "code_fixtures",
+   "n_questions": 32,
+   "n_cases": 16,
+   "verdict": "hybrid_arm",
+   "measured_a0": {
+    "lane": "hybrid",
+    "model": "A0",
+    "hard": {
+     "n": 32,
+     "accuracy": 0.375,
+     "ece": 0.3742090817540884,
+     "mean_confidence": 0.0007909182459115982,
+     "acc_at_50_coverage": 0.3125
+    },
+    "consult_rate": 0.0,
+    "latency_scope": "seat+arm",
+    "latency_rows": "cases",
+    "latency_p50_ms": 0.29,
+    "latency_p99_ms": 1.57,
+    "latency_tail_support": 1
+   },
+   "reason": null,
+   "hybrid": {
+    "lane": "hybrid",
+    "model": "A1",
+    "hard": {
+     "n": 32,
+     "accuracy": 0.5625,
+     "ece": 0.2524139366578311,
+     "mean_confidence": 0.6191526229958981,
+     "acc_at_50_coverage": 0.75
+    },
+    "consult_rate": 1.0,
+    "latency_scope": "arm-only",
+    "latency_rows": "questions",
+    "latency_p50_ms": 0.002,
+    "latency_p99_ms": 0.0218,
+    "latency_tail_support": 1,
+    "serves": "A1",
+    "gate": "certified (paired LB95 +0.0021, mean +0.1875)"
+   }
+  }
+ ]
+}
