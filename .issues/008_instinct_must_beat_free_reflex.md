@@ -170,6 +170,15 @@ owner-ratified rung, Issue 014). The seven 0.0-edge ties are RESOLVED
   BLOCKED on the owner gate's outcome: no encoder seating → no above-bar
   class → no majority claim to build. Re-scopes after the gate resolves;
   until then it is the issue's standing research lane, not a queued run.
+  **RESOLUTION PATH 2026-09-30 (Issue 016, not a re-ask of 014):** the
+  owner's M5-Ultra-Metal prod premise re-opens the SEATING surface the
+  014 close left by construction — the encoder class as the L3
+  think-depth rung on GPU hosts (048's authority map: 1–2 Hz cadence,
+  8–36 ms = 1–7 % of slot; limelight salience gates the cardinality),
+  reached via `decision_wire` consumer #3. The text-lane gate and this
+  issue's board are untouched by that path; T6's majority claim re-prices
+  only if 016's D1 (an encoder-lane serve posture from an M5 host) is
+  answered YES — the measured candidate is sst5 0.5267 vs the 0.4383 bar.
 - [ ] T7 — **close the six vs-best gaps** (the amended bar, widest first):
   xnli_en (openthai 0.9000), code_fixtures (paw 0.6250 — SAME-SHAPE bar; the
   037 gliner 0.6667 cell was the pre-freeze 24-question shape, not
@@ -239,6 +248,21 @@ owner-ratified rung, Issue 014). The seven 0.0-edge ties are RESOLVED
   ~2 GB VRAM class): filed as **Issue 014** — same gate shape as the xnli
   T5 owner call, now priced with a bigger margin over BOTH the bar and
   the incumbent.
+  **STATE REFRESH 2026-09-30:** (a) 014 CLOSED — C1 recorded the encoder
+  at 0.5267 (T2-certified +10.5 over the serving A1) as `serve: ✗`; C2's
+  container-cheap surrogate measured NEGATIVE (0.3917) — sst5 stays on
+  A1 0.4217, −1.7 vs the gliner bar, the one live board row. (b)
+  typed_decisions' recorded unblock (riir-train 581) ALREADY LANDED
+  2026-09-28 — the served H2 0.6475 IS the post-581 posture, so the
+  −12.4 gap vs agentjev is POST-retrain; wave-3's "not screenable
+  position-free" stands; the remaining lever is the encoder-class M5
+  posture (016 D1) or a class upgrade, never another bag sweep. (c) 015
+  CLOSED — the canonical massive winner synced to the 4090, the serve's
+  A5/A9 pin validates and boots; no board number moved (the arena reads
+  were already byte-equal). (d) the sst5 surrogate-v2 pre-registration is
+  deliberately NOT filed: if 016 D1 answers YES it is moot for sst5 (the
+  encoder itself serves); if NO, the container-cheap class re-opens with
+  a NEW pre-registration per the 014 law.
 - [x] T8 — **break the seven 0.0-edge ties or drop them from the sold set**:
   code_fixtures + the six harness families are ties with Reflex at +0.0 —
   a tie sells nothing (the original law). The families are synthetic:

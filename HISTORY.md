@@ -1,3 +1,32 @@
+## 2026-09-30 — Issue 015 closed: the canonical massive winner synced to the 4090 — the serve's A5/A9 pin validates and boots (the drift was box sync, not the pin)
+
+**Remedy 1 executed** (the issue's own preferred path): scp'd the M3's
+canonical `massive_intent_en_winner_v1.bin` (blake3
+`7bc3ee385f81abc0f2a91e47f6dca08db37f9fb6cee6d48121b80e3f11378556`,
+verified on the M3 with `b3sum` — both the live file and the
+`.laya609.bak` byte-identical) into the 4090's canonical winners dir
+`E:\git\riir-train\data\instinct_specialists\` (which carried only sst5 +
+code_fixtures artifacts — the partial-sync gap the issue named).
+
+**Verified by the serve's own gate** (the authoritative blake3 verifier —
+no b3sum on the 4090): `cargo run --bin serve -- --suites
+massive_intent_en` at the same clean HEAD (`274d039`) with the DEFAULT
+winners dir — **the manifest validation PASSED** ("arsenal: 9 row(s)",
+serving bound on :8080, no A5/A9 digest refusal — the exact 08:45
+failure is gone), and the massive lane proceeded through its normal
+boot posture ladders (head/nb/oc selection + the ridge derivation).
+Note, not a defect: the debug-profile ridge ladder (59 classes × ~10.4 s)
+exceeds the 420 s readiness ceiling on that box — the deploy shape is
+release; the pin question the issue was filed for is settled.
+
+The untracked `instinct_specialists_openthai_4090/` dir stays scratch as
+the issue scoped. The sync-checklist idea (9 manifest artifacts vs
+on-disk per box) is NOT built — if the gap recurs, file it against the
+serve boot, not the pin.
+
+Full narrative of the removed file: `git log --follow --
+.issues/015_massive_winner_digest_drift_4090.md`.
+
 ## 2026-09-30 — issue-file hygiene: 005 removed (every measurable face landed, refuted, or absorbed; the GOAT verdict is the serving posture)
 
 - **005 (the Moka+PUCT-style hybrid POC — instinct × reflex, three
