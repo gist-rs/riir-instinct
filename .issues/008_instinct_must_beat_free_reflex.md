@@ -57,7 +57,7 @@ resolved: one broken, six dropped).
 | sst5 | A1 | 0.4217 | 0.2017 | **+22.0 pt** |
 | emotion | (seat) | 0.8850 | 0.7700 | **+11.5 pt** |
 | prompt_injections | A1 | 0.8534 | 0.7672 | **+8.6 pt** |
-| typed_decisions | H2(β=0.5,oc) | 0.6300 | 0.5725 | +5.8 pt |
+| typed_decisions | H2(β=0.5,nmin=2,τ=2) | 0.6475 | 0.5725 | +7.5 pt |
 | ag_news | H2(β=0.25) | 0.8975 | 0.8625 | +3.5 pt |
 | xnli_en | (seat) | 0.5233 | 0.5033 | +2.0 pt |
 | code_fixtures | A1 (nbsvm v2) | 0.5625 | 0.3750 | **+18.75 pt** |
@@ -73,7 +73,7 @@ harness families left the covered set, so they no longer count as ties):
 |---|---|---|---|---|
 | xnli_en | 0.5233 | 0.9000 | **−37.7 pt** | openthai-systemone 0.9000 |
 | code_fixtures | 0.5625 | 0.6250 | **−6.3 pt** | paw (hosted) 0.6250 |
-| typed_decisions | 0.6300 | 0.7715 | **−14.1 pt** | agentjev-0.6B 0.7715 |
+| typed_decisions | 0.6475 | 0.7715 | **−12.4 pt** | agentjev-0.6B 0.7715 |
 | massive_intent_en | 0.8267 | 0.9200 | **−9.3 pt** | openthai-systemone 0.9200 |
 | ag_news | 0.8975 | 0.9500 | **−5.2 pt** | laya (english) 0.9500 |
 | sst5 | 0.4217 | 0.4383 | **−1.7 pt** | gliner 0.4383 |
@@ -81,11 +81,13 @@ harness families left the covered set, so they no longer count as ties):
 Strictly best: banking77 (+14.8 vs gliner 0.7060), emotion (+11.5 vs Reflex 0.7700 — **posture-gap, not specialist value**: the seat serves A0 = reflex's own armed ridge@8 0.8850; the specialist A1 0.8550 LOSES to it by −3.0; a reflex republish at the armed posture collapses this edge to a tie), prompt_injections (+8.6 vs Reflex 0.7672). Tied at +0.0 edge: NOTHING since 09-30 — the seven 0.0-edge ties are resolved (code_fixtures broken by the T8 specialist at 0.5625, the six families dropped from the covered set). No arm:
 thai_wisesight, thai_sib200 (coverage, T5).
 
-**What we don't beat yet — the work list, widest first:** xnli_en (openthai),
-typed_decisions (agentjev), massive_intent_en (openthai), ag_news (laya
-english), code_fixtures (paw — now −6.3 after the T8 specialist), sst5
-(gliner — the confirmed 0.5267 encoder lane would flip it, seating
-owner-gated Issue 014). The seven 0.0-edge ties are RESOLVED (T8 ✅).
+**What we don't beat yet — the work list, widest first:** xnli_en (openthai
+−37.7), typed_decisions (agentjev −12.4 — the served H2 0.6475, Bench 020's
+certified read), massive_intent_en (openthai −9.3), code_fixtures (paw −6.3
+after the T8 specialist), ag_news (laya english −5.2), sst5 (gliner −1.7 —
+the confirmed 0.5267 encoder lane would flip it; C2's surrogate is the
+owner-ratified rung, Issue 014). The seven 0.0-edge ties are RESOLVED
+(T8 ✅).
 
 ## Root causes (read before training anything)
 

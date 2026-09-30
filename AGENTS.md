@@ -113,6 +113,33 @@ file .deploy/local/stage/decisions/app-bin   # → ELF 64-bit x86-64
 
 ## Current state
 
+**Issue 014 C1 EXECUTED (2026-09-30, Bench 029): the sst5 encoder-arm
+lane is ON RECORD at 0.5267, published `serve: ✗` — the owner's
+class-wide staged GO refused per-request encoder inference at serve;
+C2's static-vector surrogate is the open rung (riir-train Issue 602).**
+`src/encoder_arm.rs` + the arena's `--encoder-art` flag (features
+`arena-laya`/`arena-laya-metal`): the sealed NLEH v1 head
+(`.raw/t599/t6_s0.bin`, BLAKE3-verified) replayed over a LIVE M3-Metal
+laya-english encode of the seat's own test cases — a byte-lawful
+consumer-side re-implementation of riir-train's codec + feature law
+(never a trainer dep; the question wire via reflex's `case_questions`,
+made `pub` for this — the ONE render-law home). **THE FROZEN READ: ENC
+0.5267 (316/600)** — cell-identical to the trainer's read for the THIRD
+posture (4090 cache-witness → M3-Metal dump → live arena encode); **T2
+CERTIFIED vs the incumbent A1: mean +0.1050, paired LB95 +0.0535** (A1
+0.4217 serves UNCHANGED — no manifest change; A0 0.3967 == reflex
+run()). Per-row latency p50 14,709 µs / p99 17,452 µs on Metal — ~49×
+the ~300 µs provisional text-lane bar, on a device the deploy shape
+(CPU-only standard-2 cf-container) does not carry. LIVE on reflex.gist.rs
+as the `Instinct (encoder)` lane (reflex-site `b9b2ee1`): its own filter
+chip + the sst5 cell beside the unchanged serving cell; the instinct.js
+verdict bars deliberately EXCLUDE the serve-refused lane. En-route: caught
++ fixed a REAL T8 serve regression — the name-first noul law (`2d20397`)
+dropped the presentation-width guard (a hostile 3-option noul presentation
+silently answered over the fixed pair); the width guard restored on the
+pair_named branch, serve_gates 15/15. Record
+`.benchmarks/029_sst5_encoder_c1/`; full lane history: Issue 014.
+
 **Issue 008 T8 RESOLVED (2026-09-30): the seven 0.0-edge ties are gone —
 code_fixtures BROKEN by a real specialist, the six harness families DROPPED.**
 The T8 tie-break lane ran the pre-registered protocol end to end: trainer
