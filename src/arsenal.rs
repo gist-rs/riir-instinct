@@ -328,7 +328,24 @@ impl VesselRow {
         }
         // The arm + params — an unknown arm refuses here, NEVER defaulted
         // (law A6), and params must match the arm exactly.
-        self.posture.to_arm()?;
+        let arm = self.posture.to_arm()?;
+        if matches!(arm, Arm::Enc) {
+            // The encoder head is NOT a suite winner: the winner filename
+            // convention would silently load the bag lane's artifact as a
+            // head, so an ENC row must name its `file` explicitly.
+            if self.file.is_none() {
+                return Err("posture ENC: the trained head must name its artifact `file` — the \
+                            suite winner convention does not apply to a head artifact"
+                    .into());
+            }
+            // Resident from boot (Proposal 048 L9, issue 016 T2): a lazy
+            // first-route load would be L3 doing a load, which L9 forbids.
+            if self.budget.load != "eager" {
+                return Err("budget.load: posture ENC must be eager — the encoder weights are \
+                            resident from boot (Proposal 048 L9: never loads)"
+                    .into());
+            }
+        }
         self.budget.validate()?;
         if let Some(f) = &self.file {
             if f.is_empty() || f.contains('/') || f.contains('\\') || f.contains("..") {
@@ -422,9 +439,18 @@ impl PostureSpec {
                     tau_n: tau_n as f32,
                 })
             }
+            // The encoder think-depth arm (instinct issue 016 T2). The
+            // grammar is data; the EXECUTION is feature-gated — a build
+            // without `serve-encoder` refuses the row loud at the lane
+            // boot, naming the feature (the 014 serve refusal governs
+            // every CPU-only deploy shape).
+            "ENC" => {
+                self.forbid_params(&["top_k", "beta", "n_min", "tau_n"])?;
+                Ok(Arm::Enc)
+            }
             other => Err(format!(
                 "posture: unknown arm {other:?} — never defaulted (law A6; arms are A0, A1, \
-                 H1, H2)"
+                 H1, H2, ENC)"
             )),
         }
     }

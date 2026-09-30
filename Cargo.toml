@@ -62,6 +62,14 @@ arena-laya = ["riir-reflex/laya-riir"]
 # encoder-arm frozen read runs on M3 Metal — `LAYA_DEVICE=metal` resolves
 # through reflex's forwarding to the riir-infer-laya metal backend).
 arena-laya-metal = ["arena-laya", "riir-reflex/laya-riir-metal"]
+# The serve-side encoder lane (instinct issue 016 T2): posture ENC — the
+# sealed NLEH head over the live laya-english encode, RESIDENT FROM BOOT
+# (Proposal 048 L9: a lazy first-route load would be L3 doing a load).
+# A GPU-HOST posture: the default CF-shaped build compiles it to nothing
+# (issue 014's serve refusal stands for every CPU-only deploy shape).
+serve-encoder = ["arena-laya"]
+serve-encoder-metal = ["serve-encoder", "riir-reflex/laya-riir-metal"]
+serve-encoder-cuda = ["serve-encoder", "riir-reflex/laya-riir-cuda"]
 # The decstat flywheel capture (Plan 002 / Issue 004 T1): consent-gated
 # decision-outcome stats over the riir-kat wire (lane "dec"). Opt-in —
 # default builds never resolve the wire/transport tree and the /decide
@@ -120,6 +128,14 @@ required-features = ["decstat"]
 [[test]]
 name = "tetris_critic_parity"
 required-features = ["tetris"]
+
+# The serve-side encoder lane's parity gate (instinct issue 016 T2):
+# replays the frozen Bench-029 read through the SERVE surface. Env-driven
+# (INSTINCT_ENCODER_PARITY=1): skips loud without the head artifact /
+# datasets / the laya weights — a skip is a deferral, never a green.
+[[test]]
+name = "serve_encoder_parity"
+required-features = ["serve-encoder"]
 
 # The arsenal GOAT bench (Proposal 001 T8) — whole-target gated; the
 # required-features row keeps a plain `cargo bench` from building it.

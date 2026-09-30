@@ -80,6 +80,12 @@ pub enum Arm {
         n_min: f32,
         tau_n: f32,
     },
+    /// The encoder think-depth arm (instinct issue 016 T2): the sealed
+    /// NLEH head over the live laya-english encode — the L3 deep-cognition
+    /// op, spent on the salient few. Serves ONLY through the
+    /// serve-encoder lane (a GPU-host posture; the bag server refuses it
+    /// at boot — the class layers do not mix).
+    Enc,
 }
 
 impl Arm {
@@ -97,6 +103,7 @@ impl Arm {
                 n_min,
                 tau_n,
             } => format!("H2(β={beta},nmin={n_min},τ={tau_n})"),
+            Arm::Enc => "ENC".into(),
         }
     }
 
@@ -350,6 +357,17 @@ impl<const N: usize> SuiteServer<N> {
         source: WeightSource,
         arm: Arm,
     ) -> Result<Self, String> {
+        // The encoder class never seats on the bag server (issue 016 T2):
+        // the ENC arm routes to the serve-encoder lane at the loader, and
+        // a SuiteServer constructed with it is a layer mix — refuse here
+        // so every from_* path carries the same wall.
+        if arm == Arm::Enc {
+            return Err(format!(
+                "suite {suite}: posture ENC serves through the serve-encoder lane (instinct \
+                 issue 016 T2) — boot a GPU host with --features serve-encoder; the bag \
+                 server cannot serve the encoder class"
+            ));
+        }
         // The serving shape (Plan 003, relaxed from one-non-noul-question-
         // per-case; Issue 011 split it by the bridge's ServeContract):
         // SingleQuestion suites keep the one-question-per-case guard (the
@@ -946,6 +964,18 @@ impl<const N: usize> SuiteServer<N> {
                             f.conf,
                         )
                     }
+                    // Unreachable by construction: from_parts refuses ENC
+                    // at boot — the encoder class serves through the
+                    // serve-encoder lane (issue 016 T2), never the bag
+                    // server. The arm exists so the manifest grammar can
+                    // name the posture; the match must stay exhaustive.
+                    Arm::Enc => {
+                        return Err(format!(
+                            "suite {}: posture ENC serves through the serve-encoder lane, \
+                             never the bag server",
+                            self.suite
+                        ));
+                    }
                 };
             let pick = pick_index.map(|i| options[i].clone());
             decisions.push(ServedDecision {
@@ -1050,7 +1080,10 @@ fn argmax_pos(scores: &[f32]) -> (usize, f32) {
 
 /// The arity-erased server (the registry holds one per suite; the
 /// engine arities are const-generic). S2 (Plan 003) seats the noul
-/// suites' 2-label universe — prompt_injections.
+/// suites' 2-label universe — prompt_injections. The ENC variant
+/// (instinct issue 016 T2, feature-gated) seats the serve-side encoder
+/// lane — a GPU-host posture the default CF-shaped build compiles to
+/// nothing.
 pub enum AnySuiteServer {
     S2(Box<SuiteServer<2>>),
     S3(Box<SuiteServer<3>>),
@@ -1060,6 +1093,8 @@ pub enum AnySuiteServer {
     S8(Box<SuiteServer<8>>),
     S59(Box<SuiteServer<59>>),
     S77(Box<SuiteServer<77>>),
+    #[cfg(feature = "serve-encoder")]
+    Enc(Box<crate::encoder_serve::EncoderLane>),
 }
 
 impl AnySuiteServer {
@@ -1108,6 +1143,29 @@ impl AnySuiteServer {
         let row = manifest
             .row(suite)
             .ok_or_else(|| format!("suite {suite} is not in the arsenal manifest"))?;
+        // The encoder route (issue 016 T2): the head is NOT a bridged
+        // winner — it loads by its own `file` before the winner-convention
+        // check, and only where the lane is compiled in.
+        if arm == Arm::Enc {
+            #[cfg(feature = "serve-encoder")]
+            {
+                let head_name = row.artifact_file(format!("{suite}_encoder_head_v1.bin"));
+                let head_path = winners_dir.join(&head_name);
+                let bytes = std::fs::read(&head_path)
+                    .map_err(|e| format!("read head {head_name}: {e}"))?;
+                let lane = crate::encoder_serve::EncoderLane::from_parts(suite, seat, &bytes, arm)?;
+                return Ok(AnySuiteServer::Enc(Box::new(lane)));
+            }
+            #[cfg(not(feature = "serve-encoder"))]
+            {
+                let _ = (&seat, &winners_dir);
+                return Err(format!(
+                    "suite {suite}: posture ENC requires --features serve-encoder (instinct \
+                     issue 016 T2 — the encoder lane is a GPU-host posture; the default \
+                     CF-shaped build compiles it to nothing)"
+                ));
+            }
+        }
         let winner_name = row.artifact_file(format!("{suite}_winner_v1.bin"));
         // The raw-mode convention coupling (Issue 579): a bridged suite
         // loads EXACTLY its bridged file, loud refusal otherwise.
@@ -1143,6 +1201,24 @@ impl AnySuiteServer {
         manifest: &ArsenalManifest,
     ) -> Result<Self, String> {
         let arm = Self::posture_of(manifest, suite)?;
+        // The encoder route (issue 016 T2) — the bytes ARE the sealed head.
+        if arm == Arm::Enc {
+            #[cfg(feature = "serve-encoder")]
+            {
+                let lane =
+                    crate::encoder_serve::EncoderLane::from_parts(suite, seat, artifact_bytes, arm)?;
+                return Ok(AnySuiteServer::Enc(Box::new(lane)));
+            }
+            #[cfg(not(feature = "serve-encoder"))]
+            {
+                let _ = (&seat, artifact_bytes);
+                return Err(format!(
+                    "suite {suite}: posture ENC requires --features serve-encoder (instinct \
+                     issue 016 T2 — the encoder lane is a GPU-host posture; the default \
+                     CF-shaped build compiles it to nothing)"
+                ));
+            }
+        }
         macro_rules! seat_arm {
             ($variant:ident, $n:literal) => {{
                 let server = SuiteServer::<$n>::from_bytes(suite, seat, artifact_bytes, arm)?;
@@ -1178,6 +1254,13 @@ impl AnySuiteServer {
         applied: &crate::vessel::AppliedState,
     ) -> Result<(Self, VesselFacts), String> {
         let arm = Self::posture_of(manifest, suite)?;
+        if arm == Arm::Enc {
+            return Err(format!(
+                "suite {suite}: posture ENC does not ride the vessel lane yet — the \
+                 HOSTED-ONLY head mint (instinct issue 016 T4) lands with its own \
+                 monotonic-apply wiring; the sealed raw head is the T2 posture"
+            ));
+        }
         let row = manifest
             .row(suite)
             .ok_or_else(|| format!("suite {suite} is not in the arsenal manifest"))?;
@@ -1223,6 +1306,13 @@ impl AnySuiteServer {
         applied: &crate::vessel::AppliedState,
     ) -> Result<(Self, VesselFacts), String> {
         let arm = Self::posture_of(manifest, suite)?;
+        if arm == Arm::Enc {
+            return Err(format!(
+                "suite {suite}: posture ENC does not ride the vessel lane yet — the \
+                 HOSTED-ONLY head mint (instinct issue 016 T4) lands with its own \
+                 monotonic-apply wiring; the sealed raw head is the T2 posture"
+            ));
+        }
         macro_rules! vessel_arm {
             ($variant:ident, $n:literal) => {{
                 let (server, facts) = SuiteServer::<$n>::from_vessel_bytes(
@@ -1264,6 +1354,8 @@ impl AnySuiteServer {
             AnySuiteServer::S8(s) => s.decide(state, options),
             AnySuiteServer::S59(s) => s.decide(state, options),
             AnySuiteServer::S77(s) => s.decide(state, options),
+            #[cfg(feature = "serve-encoder")]
+            AnySuiteServer::Enc(s) => s.decide(state, options),
         }
     }
 
@@ -1284,6 +1376,8 @@ impl AnySuiteServer {
             AnySuiteServer::S8(s) => s.decide_multi(state, questions),
             AnySuiteServer::S59(s) => s.decide_multi(state, questions),
             AnySuiteServer::S77(s) => s.decide_multi(state, questions),
+            #[cfg(feature = "serve-encoder")]
+            AnySuiteServer::Enc(s) => s.decide_multi(state, questions),
         }
     }
 
@@ -1297,6 +1391,8 @@ impl AnySuiteServer {
             AnySuiteServer::S8(s) => s.meta(),
             AnySuiteServer::S59(s) => s.meta(),
             AnySuiteServer::S77(s) => s.meta(),
+            #[cfg(feature = "serve-encoder")]
+            AnySuiteServer::Enc(s) => s.meta(),
         }
     }
 
@@ -1312,6 +1408,8 @@ impl AnySuiteServer {
             AnySuiteServer::S8(s) => s.centroid(),
             AnySuiteServer::S59(s) => s.centroid(),
             AnySuiteServer::S77(s) => s.centroid(),
+            #[cfg(feature = "serve-encoder")]
+            AnySuiteServer::Enc(s) => s.centroid(),
         }
     }
 }

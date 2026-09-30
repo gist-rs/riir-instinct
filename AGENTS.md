@@ -113,6 +113,33 @@ file .deploy/local/stage/decisions/app-bin   # → ELF 64-bit x86-64
 
 ## Current state
 
+**Issue 016 T1+T2 LANDED (2026-09-30, Bench 031): the encoder class now
+SERVES — `posture ENC`, feature `serve-encoder`, GPU hosts only.**
+`src/encoder_serve.rs`: the sealed NLEH head + the laya-english agent
+resident from boot (the boot warmup encode pays the pipeline compile, L9);
+the agent on a dedicated worker thread (the reflex !Send law — clients get
+a Send+Sync channel handle, forwards serialized); the C1 canonical-
+presentation contract enforced (template criteria order is the presented
+space — NOT `seat.labels`, which for a score suite is index strings; and
+the suite's serialized-state form parsed back into the envelope Value so
+`serialize_state` re-derives the arena's exact prompt bytes — both caught
+by the gate's first red run at 198/600). Routing: `Arm::Enc` in
+`server.rs` (bag server refuses ENC by construction; vessel boots refuse
+ENC until T4's mint); grammar in `arsenal.rs` (ENC rows: explicit `file`,
+eager-only — a lazy ENC row is an L9 violation). **The DEFAULT manifest is
+UNTOUCHED** (the byte pin holds; sst5 keeps serving A1) — ENC rows are a
+GPU-host deployment surface; a build without the feature refuses an ENC
+row loud naming `--features serve-encoder` (014 still governs every CPU-
+only deploy shape). Gates: `tests/serve_encoder_parity.rs` (the frozen
+Bench-029 read replayed **316/600 EXACT** through the serve surface at the
+CPU posture + arena-runner pick parity 32/32 in-process + determinism +
+the 1 s L3 slot bound) + ENC grammar/refusal arms in `serve_gates.rs` +
+e2e HTTP smoke (healthz `arm: "ENC"` / decide 200 + the score vector
+crossing, the embedding never does). T1's derivation (the G2 GPU-s/s unit
++ the admission-cap formula + the stand-in cells) is in the same record.
+D1 (the sst5 cell publishes as served) stays trigger-blocked until a real
+GPU serving deploy exists.
+
 **Bench 0029 + Plan 426 T6 (2026-09-30): the massive SYNTH SEAT serves —
 H2(β=1,nmin=2,τ=4) 0.8400 (was 0.8267), the modelless A0 0.7800 → 0.8133
 (== reflex bench 091's V5 anchor EXACTLY), every arm rose.** The synth

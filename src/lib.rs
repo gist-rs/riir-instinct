@@ -21,6 +21,13 @@ pub mod server;
 /// class is refused at serve (issue 014 decision 1); the ungated half is
 /// pure (codec + feature law), the seat runner rides `arena-laya`.
 pub mod encoder_arm;
+/// The serve-side encoder lane (instinct issue 016 T2): posture ENC — the
+/// sealed NLEH head + the laya-english agent resident from boot, answering
+/// the suite's canonical presentation through the SAME decide surface the
+/// bag lanes serve. GPU-host posture; compiled to nothing at default
+/// features (the 014 serve refusal governs every CPU deploy shape).
+#[cfg(feature = "serve-encoder")]
+pub mod encoder_serve;
 /// The frozen-artifact staleness probe (Issue 012 / Plan 005): the soft
 /// early-warning readout beside the hard pick-parity gate. Report-only —
 /// nothing here serves, swaps, or writes state.
