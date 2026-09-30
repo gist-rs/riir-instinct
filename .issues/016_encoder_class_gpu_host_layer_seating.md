@@ -257,7 +257,11 @@ salience-depth rung.**)**
     sidecar, letting the regression check tell the two apart; (b)
     "train-side slice" means a subset of the pool DISJOINT from the
     OOF-labelling folds, so selection never tunes on rows whose teacher
-    labels depended on the held fold.
+    labels depended on the held fold; (c) **EXECUTION ORDER (closing
+    round): the OOF labels are produced BEFORE k, the calibrator, and
+    the admission threshold are selected** — selection running first,
+    even on the disjoint slice, would be tuning against labels that are
+    not yet final.
   - **The SIMD boundary, honest**: wasm-simd128 is a PORT-class lane
     (≈ SSE/NEON class via the gemm/KNN kernels), NOT a 540× multiplier —
     the full f32 encoder forward stays out of CF reach (~157 ms →
