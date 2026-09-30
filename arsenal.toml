@@ -96,7 +96,7 @@ budget  = { load = "eager", max_payload_mb = 16 }
 suite   = "massive_intent_en"
 digest  = "blake3:7bc3ee385f81abc0f2a91e47f6dca08db37f9fb6cee6d48121b80e3f11378556"
 class   = "hosted_only"
-posture = { arm = "H2", beta = 1.0, n_min = 2.0, tau_n = 8.0 }    # best measured 0.8267 vs A0 0.7800 (+4.7 pt) — ALSO T2-certified (LB95 +0.0124)
+posture = { arm = "H2", beta = 1.0, n_min = 2.0, tau_n = 4.0 }    # best measured 0.8400 vs A0 0.8133 (Bench 0029, the SYNTH SEAT — Plan 426 T5/T6: corpus 11314 gold + 2048 vetoed synth, blake3 8eed806a…, posture gold-fit) — T2 LB95 -0.0039 UNCERTIFIED vs the synth A0 (the banking77 precedent: serves under best-measured); gold-seat rows were 0.8267/0.7800 (Bench 019+020)
 pin_keys = []
 budget  = { load = "eager", max_payload_mb = 16 }
 

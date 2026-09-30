@@ -48,6 +48,13 @@ fn predictions_path() -> PathBuf {
     repo_root().join(".benchmarks/004_rebaseline_current_reflex/predictions.json")
 }
 
+/// massive's serving posture is the SYNTH seat (Plan 426 T6, Bench 0029):
+/// its frozen picks live in the 0029 record, not the 004 baseline — the
+/// two records are different seat postures and must never mix.
+fn massive_predictions_path() -> PathBuf {
+    repo_root().join(".benchmarks/0029_massive_synth_seat/predictions.json")
+}
+
 fn embedded_manifest() -> ArsenalManifest {
     ArsenalManifest::embedded_default().expect("the embedded arsenal manifest parses")
 }
@@ -60,7 +67,7 @@ fn embedded_manifest() -> ArsenalManifest {
 /// re-run + frozen-predictions parity update law A6 demands). This is
 /// the TOML analogue of the compile-time posture table it replaced.
 const PINNED_MANIFEST_DIGEST: &str =
-    "blake3:dbce92c684ac656b996a837d1c2e4141eee707d43a45188e16b5a761f8d6a036";
+    "blake3:cf851e2787a007247f1f861d33cd7bc0b27576e567917a2f1fee0889edafbd25";
 
 #[test]
 fn arsenal_manifest_bytes_are_pinned_byte_for_byte() {
@@ -117,8 +124,8 @@ fn manifest_posture_rows_are_the_serving_law_verdict() {
         ("sst5", Arm::A1, "A1"),
         (
             "massive_intent_en",
-            Arm::H2 { beta: 1.0, n_min: 2.0, tau_n: 8.0 },
-            "H2(β=1,nmin=2,τ=8)",
+            Arm::H2 { beta: 1.0, n_min: 2.0, tau_n: 4.0 },
+            "H2(β=1,nmin=2,τ=4)",
         ),
         (
             "banking77",
@@ -182,12 +189,41 @@ fn data_present() -> bool {
 /// frames exceed a test thread's 2 MiB default (the serve binary gives
 /// its loader threads the same headroom).
 fn boot_suite(suite: &'static str) -> Result<riir_instinct::server::AnySuiteServer, String> {
+    boot_suite_synth(suite, None)
+}
+
+/// The seat is prepared with the suite's synth corpus when the DEPLOYED
+/// posture seats one (Plan 426 T6): massive's serving row is the synth
+/// seat (Bench 0029), so its gates must replay through the same corpus
+/// the serve bin loads (INSTINCT_SYNTH_CORPUS_DIR at deploy).
+fn boot_suite_synth(
+    suite: &'static str,
+    synth: Option<&std::path::Path>,
+) -> Result<riir_instinct::server::AnySuiteServer, String> {
     let datasets = datasets_dir();
     let winners = winners_dir();
     let manifest = embedded_manifest();
+    const SYNTH_EXTRA_CAP: usize = 128;
+    let synth = synth.map(|p| p.to_path_buf());
     std::thread::Builder::new()
         .stack_size(64 * 1024 * 1024)
-        .spawn(move || AnySuiteServer::boot(suite, &datasets, &winners, &manifest))
+        .spawn(move || {
+            let seat = match synth.as_deref() {
+                Some(path) => riir_reflex::harness::runner::seat::prepare_seat_with_synth(
+                    suite,
+                    &datasets,
+                    path,
+                    SYNTH_EXTRA_CAP,
+                )?,
+                None => riir_reflex::harness::runner::seat::prepare_seat(suite, &datasets)?,
+            };
+            riir_instinct::server::AnySuiteServer::boot_from_seat(
+                suite,
+                seat,
+                &winners,
+                &manifest,
+            )
+        })
         .expect("spawn boot thread")
         .join()
         .expect("boot thread panicked")
@@ -232,6 +268,9 @@ fn frozen_picks_from(path: &std::path::Path, suite: &str, arm_name: &str) -> Opt
 }
 
 fn frozen_picks(suite: &str, arm_name: &str) -> Option<(Vec<usize>, Vec<bool>)> {
+    if suite == "massive_intent_en" {
+        return frozen_picks_from(&massive_predictions_path(), suite, arm_name);
+    }
     frozen_picks_from(&predictions_path(), suite, arm_name)
 }
 
@@ -330,12 +369,18 @@ fn massive_artifact_known_seat_unknown_option_stays_scorable() {
         eprintln!("SKIP loud: datasets/winners absent");
         return;
     }
-    let seat = riir_reflex::harness::runner::seat::prepare_seat(
+    let seat = riir_reflex::harness::runner::seat::prepare_seat_with_synth(
         "massive_intent_en",
         &datasets_dir(),
+        &repo_root().join("../riir-reflex/.raw/corpus_synth/massive_intent_en_synth.jsonl"),
+        128,
     )
-    .expect("prepare massive seat");
-    let mut server = boot_suite("massive_intent_en").expect("boot massive server");
+    .expect("prepare massive synth seat");
+    let mut server = boot_suite_synth(
+        "massive_intent_en",
+        Some(&repo_root().join("../riir-reflex/.raw/corpus_synth/massive_intent_en_synth.jsonl")),
+    )
+    .expect("boot massive server");
     let serving = serving_arm_name("massive_intent_en");
     let (picks, _abstained) =
         frozen_picks("massive_intent_en", &serving).expect("frozen massive record");
@@ -753,6 +798,99 @@ fn code_fixtures_serves_the_frozen_a1_picks() {
         }
     }
     assert!(qi >= 8, "parity covered too few questions: {qi}");
+}
+
+// ── face 5: the ENC posture grammar (instinct issue 016 T2) ────────
+
+/// The ENC manifest row the gates exercise (the deployment shape: explicit
+/// `file`, the head's BLAKE3, eager budget).
+fn enc_manifest_text(file: &str, digest_hex: &str, load: &str) -> String {
+    format!(
+        "[[vessel]]\nsuite   = \"sst5\"\ndigest  = \"blake3:{digest_hex}\"\nclass   = \
+         \"hosted_only\"\nfile    = {file:?}\nposture = {{ arm = \"ENC\" }}\npin_keys = \
+         []\nbudget  = {{ load = {load:?}, max_payload_mb = 16 }}\n"
+    )
+}
+
+/// The ENC grammar + validator rules, data-independent: the arm parses to
+/// [`Arm::Enc`] (params forbidden), the winner-convention default is
+/// refused (an ENC row must name its `file`), and a lazy budget is
+/// refused (L9: the encoder weights are resident from boot).
+#[test]
+fn enc_posture_grammar_and_validator_rules() {
+    let text = enc_manifest_text("t6_s0.bin", &"0".repeat(64), "eager");
+    let m = ArsenalManifest::parse(&text).expect("the ENC manifest parses");
+    let row = m.row("sst5").expect("the sst5 row");
+    let arm = row.to_arm().expect("ENC parses to Arm::Enc");
+    assert_eq!(arm, Arm::Enc);
+    assert_eq!(arm.name(), "ENC");
+
+    // Params the arm does not take must be ABSENT (drift, never ignored).
+    let bad = text.replace(
+        "posture = { arm = \"ENC\" }",
+        "posture = { arm = \"ENC\", beta = 1.0 }",
+    );
+    let bad_m = ArsenalManifest::parse(&bad).expect("parse-level posture params are lenient");
+    let probe_dir = std::env::temp_dir().join(format!("instinct_enc_gate_{}", std::process::id()));
+    let ctx = ValidateCtx::raw(&probe_dir);
+    let err = bad_m.validate(&ctx).unwrap_err();
+    assert!(err.contains("takes no beta"), "{err}");
+
+    // The winner-convention default refuses: no `file` — the convention
+    // would silently load the bag lane's artifact as a head.
+    let nofile = text.replace("file    = \"t6_s0.bin\"\n", "");
+    let nofile_m = ArsenalManifest::parse(&nofile).expect("parses");
+    let err = nofile_m.validate(&ctx).unwrap_err();
+    assert!(err.contains("must name its artifact `file`"), "{err}");
+
+    // Lazy refuses: resident from boot (Proposal 048 L9, issue 016 T2).
+    let lazy = text.replace("load = \"eager\"", "load = \"lazy\"");
+    let lazy_m = ArsenalManifest::parse(&lazy).expect("parses");
+    let err = lazy_m.validate(&ctx).unwrap_err();
+    assert!(err.contains("resident from boot"), "{err}");
+
+    // A well-formed row validates (the head file is absent from the probe
+    // dir — the file checks skip, the schema checks ran).
+    let m2 = ArsenalManifest::parse(&text).expect("parses");
+    m2.validate(&ctx)
+        .expect("a well-formed ENC row validates");
+}
+
+/// The default-build refusal: without the `serve-encoder` feature, an ENC
+/// row boots to a LOUD feature refusal — never a silent fallback to the
+/// bag lane (issue 014's serve refusal governing every CPU deploy shape).
+/// With the feature compiled in this test's subject does not exist (the
+/// lane boots for real — the parity gate covers it).
+#[cfg(not(feature = "serve-encoder"))]
+#[test]
+fn enc_row_boots_to_a_loud_feature_refusal_without_the_lane() {
+    if !data_present() {
+        eprintln!("SKIP loud: datasets absent (the seat is the refusal's vehicle)");
+        return;
+    }
+    let manifest = ArsenalManifest::parse(&enc_manifest_text("t6_s0.bin", &"0".repeat(64), "eager"))
+        .expect("parses");
+    let datasets = datasets_dir();
+    let out = std::thread::Builder::new()
+        .stack_size(64 * 1024 * 1024)
+        .spawn(move || {
+            let seat = riir_reflex::harness::runner::seat::prepare_seat("sst5", &datasets)
+                .expect("prepare the sst5 seat");
+            AnySuiteServer::boot_bytes("sst5", seat, b"not-a-head", &manifest)
+        })
+        .expect("spawn boot thread")
+        .join()
+        .expect("boot thread panicked");
+    let err = match out {
+        Err(e) => e,
+        Ok(_) => panic!(
+            "the ENC row must refuse on a build without serve-encoder — it booted instead"
+        ),
+    };
+    assert!(
+        err.contains("--features serve-encoder"),
+        "the refusal must name the feature: {err}"
+    );
 }
 
 // ── face 3: the HTTP edge gates ──────────────────────────────────────
