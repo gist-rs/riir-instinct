@@ -4,7 +4,11 @@
 have gpu plan"). Carries the layer-fit ruling + the staged promotion path. The 014
 serve-posture gate is NOT re-asked for the CF text lane; this issue is the different
 decision surface the 014 close left open by construction (the extraction substrate
-"stands reusable"). Verdict round filed same day.
+"stands reusable"). **Verdict round 1 (claude, 2026-09-30): REVISE — all seven reasons
+incorporated** (arithmetic corrected to 80–1800 ms GPU/s + the admission cap made
+required; resident-from-boot per L9 "never loads"; the sync-boundary bridge law; wire
+RTT counted; M5-unmeasured premise; event-driven named consumers; D1 reframed as a
+trigger; 014-still-governs-CPU line).
 
 ## The premise change
 
@@ -26,10 +30,16 @@ binary (plain std HTTP, no CF binding) runs natively.
 
 The fit is architectural, not just numeric: limelight's function is deciding
 WHO gets deep cognition; the encoder class is the deep-cognition op spent on
-the salient few. Salience-gated cardinality is the budget control: at
-~1–5 % of entities spotlighted per 1–2 Hz window, a 1000-NPC world pays
-~10–50 encodes/s ≈ 100–500 ms GPU/s on the measured M3-Metal class — an M5
-Ultra has far more headroom than that.
+the salient few. **The arithmetic, honestly:** 10–50 salience-admitted
+encodes/s × 8–36 ms/row = **80–1800 ms GPU/s** — the high end (50/s at the
+loaded-M3 36 ms figure) exceeds a whole GPU, so the salience admission cap
+is a REQUIRED control, not an option: the cap is derived from the measured
+per-row cost on the serving host (T1), with window-batching amortizing the
+per-row figure. At the 8–15 ms GPU-posture class, a 10–20/s cap lands at
+80–300 ms GPU/s per 1000 NPCs — inside a cognition budget with headroom.
+**Every figure is M3-Max-Metal or 4090 measured; the M5 Ultra is
+UNMEASURED** — the M3 figure is the stand-in premise until the host exists
+(T1 re-measures on arrival).
 
 ## The seam (048's own laws — no new architecture)
 
@@ -38,10 +48,18 @@ Ultra has far more headroom than that.
   feature-gated thin client — **consumer #3, the pattern after
   `riir-agents/decision_gates.rs`** (consumer #2). No cargo dep either
   direction; riir-ai's L3 call sites never link instinct.
-- **L9**: L3 ROUTES among equipped vessels (ns–µs — the routing, not the
-  think); the think-depth op itself is the per-decision budget spend the
-  cognition budget arbitrates. Swap policy stays L4/L5 game-side; the
-  monotonic swap mechanism stays arsenal-side (`arsenal_ops.rs`, landed).
+- **L9**: L3 ROUTES among equipped vessels (ns–µs — the routing, never the
+  think; the think-depth op is the per-decision budget spend the cognition
+  budget arbitrates). **"Never loads" binds:** under L9's interim rule the
+  encoder weights load and stay RESIDENT FROM BOOT on the GPU serve lane —
+  a lazy first-route load would be L3 doing a load, which L9 forbids; swap
+  policy stays L4/L5 game-side; the monotonic swap mechanism stays
+  arsenal-side (`arsenal_ops.rs`, landed).
+- **The sync boundary (the latent/raw bridge law)**: Metal and CUDA encoder
+  outputs agree on the argmax, NOT bit-for-bit — so only the CLASS/scalar
+  result may cross the wire and the sync boundary. The authority computes
+  ONCE, records the decision, and deterministic replay reads that record;
+  the embedding never crosses.
 - **A1/A9 (arsenal laws)**: the trained NLEH head is a HOSTED-ONLY vessel
   (our trained IP; minted by riir-train, never runtime-minted); the laya
   encoder weights are the RUNTIME (the bag-count runtime's analogue — the
@@ -52,31 +70,40 @@ Ultra has far more headroom than that.
 
 - NOT a re-ask of 014's text-lane gate: the reflex.gist.rs lane keeps its
   µs-class CF serve and its board rows unchanged; the `Instinct (encoder)`
-  site lane keeps `serve: ✗` unless the owner separately amends it (the
-  sub-decision below).
+  site lane keeps `serve: ✗` unless the D1 trigger below fires. **014's
+  refusal still governs EVERY CPU-only deploy shape, including CPU-only
+  game hosts** — the ruling here widens the surface to GPU hosts only.
 - NOT a flip of the 008 board by side effect: board rows move only through
   their own measured + published lanes.
 
-## Owner sub-decision D1 (recorded here, not decided here)
+## D1 — a TRIGGER, not a flat owner question (verdict round 1)
 
 The board's comparison lanes already serve from their own GPU hosts
-(openthai @4090-win, gliner @4090-win, paw hosted). Does the M5 premise
-extend to an **encoder-lane serve posture from an M5 host** — publishing
-the sst5 cell as a served `Instinct (encoder) @m5-metal` (0.5267, vs the
-0.4383 gliner bar = +8.8)? This would flip sst5's 008 board row through a
-MEASURED, already-certified number (T2 LB95 +0.0535 over A1). It re-asks
-014's scope only in the sense that the owner is supplying the exact premise
-("a GPU tier in the deploy shape") the refusal said was absent. Default
-posture if unanswered: the layer seating proceeds; the board posture does
-not.
+(openthai @4090-win, gliner @4090-win, paw hosted) — but those are
+COMPARISON hosts, not precedent: Instinct's row claims OUR deploy shape,
+and publishing `serve: ✓ @m5-metal` before such a host exists would be a
+false claim, whatever the premise's energy. So:
+
+**D1 flips to YES automatically when ALL of these hold:** (1) a Metal host
+in the prod deploy shape actually serves the encoder; (2) per-row latency
+measured ON THAT BOX; (3) the artifact pin validates on that box. The T2
+certification already exists (LB95 +0.0535), so nothing else is required —
+the sst5 cell publishes as served `Instinct (encoder) @<host>` (0.5267 vs
+the 0.4383 bar = +8.8) and 008's sst5 row flips through its own measured
+lane. Until the trigger fires: the layer seating proceeds; the board
+posture does not.
 
 ## Staged plan (pending verdict round)
 
 - [ ] T1 — **budget pricing (measured, no new lane)**: encode cost/row on
   the M5-class host × limelight salience cardinality (the spotlight % and
-  window) → the GPU-second share per 1000 NPCs at L3 cadence. Uses the
-  existing `dump_encoder_states` / `instinct_encoder_eval` harnesses; no
-  split reads.
+  window) → the GPU-second share per 1000 NPCs at L3 cadence, the WIRE RTT
+  counted inside the 500–1000 ms slot, and the **salience admission cap
+  derived from the measured figure** (the control that keeps the share
+  inside the budget — see the arithmetic above). Uses the existing
+  `dump_encoder_states` / `instinct_encoder_eval` harnesses; no split
+  reads. The M3-Max figure is the stand-in until the M5 host exists; the
+  number is re-measured on arrival.
 - [ ] T2 — **serve-side encoder lane (feature-gated)**: wire the landed
   arena reader (`src/encoder_arm.rs`, `arena-laya-metal`) into the serve
   path behind an opt-in feature (GPU hosts only; the default CF-shaped
@@ -94,16 +121,20 @@ not.
   budget share (GPU-s/s at target NPC count ≤ the limelight allocation);
   G3 no-regression on the bag lanes (byte-identical when the feature is
   off); G4 alloc-free outside the encode call.
-- [ ] T6 — D1 executes per the owner's answer.
+- [ ] T6 — D1 executes when the trigger fires (a real prod-shape Metal host
+  serving the encoder, latency measured on that box, pin validating) — the
+  sst5 cell publishes as served and 008's row flips through its own lane.
 
 ## Scope notes
 
 - The CPU fallback never routes the encoder (L3 falls back to the
   equipped bag/static class — the arsenal's equipped-set-per-host rule).
-- Consumers named for the L3 depth op (honest, not exhaustive): NPC
-  dialogue/quest intent over authored text (quest_grammar corpus),
-  riir-agents task-reasoning encoding, RAG query encoding on the neuron-db
-  read path.
+- Consumers named for the L3 depth op — **event-driven, not per-tick** (the
+  rung needs a caller, and its inputs are texts): a player/GM utterance
+  going to NPC sentiment or intent (fires when someone speaks — the
+  quest_grammar corpus class), riir-agents task-reasoning encoding, RAG
+  query encoding on the neuron-db read path. Salience gates ADMISSION
+  (which utterances/tasks pay the encode), never the tick loop.
 - The 4090 CUDA posture (`laya-riir-cuda`) serves the same lane on that
   host class if ever needed (Issue 008 T7's riir-train 599/600 encoder
   artifacts are host-portable — the 014 M3-replay proved box-independence).

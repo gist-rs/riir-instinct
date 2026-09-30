@@ -260,9 +260,13 @@ owner-ratified rung, Issue 014). The seven 0.0-edge ties are RESOLVED
   CLOSED — the canonical massive winner synced to the 4090, the serve's
   A5/A9 pin validates and boots; no board number moved (the arena reads
   were already byte-equal). (d) the sst5 surrogate-v2 pre-registration is
-  deliberately NOT filed: if 016 D1 answers YES it is moot for sst5 (the
-  encoder itself serves); if NO, the container-cheap class re-opens with
-  a NEW pre-registration per the 014 law.
+  deliberately NOT filed: it is moot for sst5 only if TEXT SERVING ITSELF
+  moves to a GPU host — the CF text lane persists whatever 016 does, and
+  if it stays on CF the container-cheap surrogate remains the ONLY sst5
+  lift there. The hold is tied to 016's D1 TRIGGER (a real prod-shape
+  Metal host serving the encoder, measured, pin-validating), not to an
+  abstract owner answer; if the trigger stays cold, the container-cheap
+  class re-opens with a NEW pre-registration per the 014 law.
 - [x] T8 — **break the seven 0.0-edge ties or drop them from the sold set**:
   code_fixtures + the six harness families are ties with Reflex at +0.0 —
   a tie sells nothing (the original law). The families are synthetic:
