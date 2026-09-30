@@ -250,6 +250,14 @@ salience-depth rung.**)**
     head-labelled admissions NEVER become training data for a future
     head (self-distillation drift) — pseudo-labels are for the retrieval
     store only.
+  - **Run-time notes (verdict round 2, fold at execution):** (a) after
+    the first consolidation the store mixes teacher provenance — pool
+    rows carry K-fold head labels while new admissions carry a single
+    never-saw-them head — so record a TEACHER HASH PER ROW in the
+    sidecar, letting the regression check tell the two apart; (b)
+    "train-side slice" means a subset of the pool DISJOINT from the
+    OOF-labelling folds, so selection never tunes on rows whose teacher
+    labels depended on the held fold.
   - **The SIMD boundary, honest**: wasm-simd128 is a PORT-class lane
     (≈ SSE/NEON class via the gemm/KNN kernels), NOT a 540× multiplier —
     the full f32 encoder forward stays out of CF reach (~157 ms →
