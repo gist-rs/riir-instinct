@@ -13,6 +13,12 @@ four non-blocking edits folded (`a136ff6`: deadline fallback + G1b; T1 demand mo
 event-arrival × admission + the G2 unit derived; certification scoped to the
 utterance→sentiment/intent consumer; measured-vs-cited table wording). T1–T7 open** (T7 = the
 queued emotion screen + the per-suite run-state record, added 2026-09-30 on the owner ask).
+**Owner round 3 (2026-09-30): three clarifications folded — the no-new-product-lane note
+(nothing named "Working"/"riir-working"; L0–L5 are 048's tier vocabulary), D1's host
+generalized to ANY real GPU serving deploy (game prod OR text-lane serve host — the
+board consumer's premise), and the ladder-monotonicity note (each rung strictly-additive
+via deadline fallback; L2 skipped by law; L4 untasked because 048 deferred L4/L5, Plasma
+reserved as the L4 salience-depth rung).**
 
 ## The premise change
 
@@ -45,6 +51,25 @@ per-row figure. At the 8–15 ms GPU-posture class, a 10–20/s cap lands at
 UNMEASURED** — the M3 figure is the stand-in premise until the host exists
 (T1 re-measures on arrival).
 
+**The ladder is monotone-by-construction, not guaranteed-incremental**
+(the "better result each step" question, answered): each rung up is
+strictly-additive at the system level — the deadline fallback answers from
+the equipped class below when the deeper op misses, so ACCURACY never
+regresses; the cost axis is latency/GPU-budget, never correctness. The
+measured step-ups: reflex-floor → bag arm (banking77 +45.2, massive +42.0,
+sst5 +22.0 over A0) and bag → encoder think (sst5 +10.5 over A1). It is
+NOT a guaranteed increment per suite — the class-relative law caps it
+(at-ceiling suites gain nothing: ag_news). **L2 is skipped by law, not by
+choice**: L2 is lookup-only (bark cost); the encoder is a think op; the
+cheap class that IS the L1/L2 equipped set is the bag class. **L4 carries
+no task here because 048 deferred L4/L5 shipping** (L9's interim: boot or
+operator swaps only) — and 048 already reserves **Plasma as the L4
+salience-depth rung**, so the natural L4 form of this class is batch
+encode for Plasma-depth entities on the 2–5 s critical slots, tasked when
+048's L4 ships. L4/L5 are cadence/authority layers (swap policy,
+curation), not deeper thinkers — "better each step" holds through L3 and
+then changes axis.
+
 ## The seam (048's own laws — no new architecture)
 
 - **L8**: layers are game-side; serving lanes serve decisions over the wire.
@@ -72,6 +97,12 @@ UNMEASURED** — the M3 figure is the stand-in premise until the host exists
 
 ## What this issue is NOT
 
+- NOT a new product lane: **nothing is named "Working" / "riir-working"** —
+  L0–L5 are 048's internal tier vocabulary (the cognition-budget authority
+  map), and any product surface born of this seats under the existing
+  instinct/reflex family. "L3 Working" is a CADENCE LABEL (the 1–2 Hz think
+  tier), not a brand.
+
 - NOT a re-ask of 014's text-lane gate: the reflex.gist.rs lane keeps its
   µs-class CF serve and its board rows unchanged; the `Instinct (encoder)`
   site lane keeps `serve: ✗` unless the D1 trigger below fires. **014's
@@ -86,16 +117,30 @@ The board's comparison lanes already serve from their own GPU hosts
 (openthai @4090-win, gliner @4090-win, paw hosted) — but those are
 COMPARISON hosts, not precedent: Instinct's row claims OUR deploy shape,
 and publishing `serve: ✓ @m5-metal` before such a host exists would be a
-false claim, whatever the premise's energy. So:
+false claim, whatever the premise's energy (the cell would read
+`serve: ✓ @<gpu-host>`, never a hardcoded box name). So — generalized
+2026-09-30 on
+the owner ask, faithful to the ratified reasoning ("Instinct's row claims
+OUR deploy shape" — a text-lane GPU serve host IS our deploy shape):
 
-**D1 flips to YES automatically when ALL of these hold:** (1) a Metal host
-in the prod deploy shape actually serves the encoder; (2) per-row latency
-measured ON THAT BOX; (3) the artifact pin validates on that box. The T2
+**D1 flips to YES automatically when ALL of these hold:** (1) a GPU host
+(Metal or CUDA) in a REAL serving deploy — the game prod host OR a
+dedicated text-lane serve host — actually serves the encoder; (2) per-row
+latency measured ON THAT BOX; (3) the artifact pin validates on that box. The T2
 certification already exists (LB95 +0.0535), so nothing else is required —
 the sst5 cell publishes as served `Instinct (encoder) @<host>` (0.5267 vs
 the 0.4383 bar = +8.8) and 008's sst5 row flips through its own measured
 lane. Until the trigger fires: the layer seating proceeds; the board
 posture does not.
+
+**(Owner round 3, 2026-09-30 — three clarifications folded:** the no-new-
+product-lane note — nothing is named "Working"/"riir-working", L0–L5 are
+048's tier vocabulary; D1's host generalized from "the game prod Metal
+host" to ANY real GPU serving deploy — game prod OR text-lane serve host,
+the board consumer's premise; the ladder-monotonicity note — each rung
+strictly-additive via deadline fallback, L2 skipped by law (lookup-only),
+L4 untasked because 048 deferred L4/L5 with Plasma reserved as the L4
+salience-depth rung.**)**
 
 ## Staged plan (pending verdict round)
 
@@ -134,8 +179,9 @@ posture does not.
   arrival rate ≤ the admission-capped allocation); G3 no-regression on
   the bag lanes (byte-identical when the feature is off); G4 alloc-free
   outside the encode call.
-- [ ] T6 — D1 executes when the trigger fires (a real prod-shape Metal host
-  serving the encoder, latency measured on that box, pin validating) — the
+- [ ] T6 — D1 executes when the trigger fires (a real GPU serving deploy —
+  game prod host or text-lane serve host — serving the encoder, latency
+  measured on that box, pin validating) — the
   sst5 cell publishes as served and 008's row flips through its own lane.
 - [ ] T7 — **the emotion screen (the ONE unscreened board-relevant encoder
   run; QUEUED, not run)** — a 008-track text-lane run of the same class,
@@ -176,6 +222,17 @@ posture does not.
 - The 4090 CUDA posture (`laya-riir-cuda`) serves the same lane on that
   host class if ever needed (Issue 008 T7's riir-train 599/600 encoder
   artifacts are host-portable — the 014 M3-replay proved box-independence).
+- **One serve lane, many consumers — the "game-only" reading is the
+  TITLE's framing, not the scope.** The encoder serve binary is
+  consumer-agnostic: the game layer (decision_wire consumer #3) is the
+  CERTIFIED consumer; the text-lane cells (D1, any real GPU serving
+  deploy) are the BOARD consumer; riir-agents task encoding and neuron-db
+  RAG query encoding are recorded candidates (own-G1 each). The board's
+  beaten rows are NOT abandoned to the game lane — they are MEASURED-dead
+  for this class (the per-suite state below): pointing the encoder at
+  xnli/massive/ag_news/code_fixtures again would not beat those bars on
+  the recorded evidence (wave-2/3). What the board rows are waiting on is
+  the D1 trigger, not a re-run.
 - **The per-suite encoder-run state** (recorded so the site's `Instinct
   (encoder) — not run` cells are never misread as backlog — five of the
   eleven are measured or law-refuted NEGATIVES; "not run" ≠ "expected
