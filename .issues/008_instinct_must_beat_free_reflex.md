@@ -266,7 +266,12 @@ owner-ratified rung, Issue 014). The seven 0.0-edge ties are RESOLVED
   lift there. The hold is tied to 016's D1 TRIGGER (a real prod-shape
   Metal host serving the encoder, measured, pin-validating), not to an
   abstract owner answer; if the trigger stays cold, the container-cheap
-  class re-opens with a NEW pre-registration per the 014 law.
+  class re-opens with a NEW pre-registration per the 014 law. (e) the
+  EMOTION encoder screen — T4's recorded path to a real (>0.8850) emotion
+  arm, the one unscreened board-relevant candidate — is QUEUED
+  pre-registered as **016 T7** (record-only on a pass, the 014 class
+  refusal governing; the row's posture-gap fragility is why it is worth
+  exactly one frozen read).
 - [x] T8 — **break the seven 0.0-edge ties or drop them from the sold set**:
   code_fixtures + the six harness families are ties with Reflex at +0.0 —
   a tie sells nothing (the original law). The families are synthetic:

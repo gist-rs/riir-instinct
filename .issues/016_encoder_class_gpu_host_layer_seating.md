@@ -11,7 +11,8 @@ RTT counted; M5-unmeasured premise; event-driven named consumers; D1 reframed as
 trigger; 014-still-governs-CPU line). **Verdict round 2: AGREE — ruling RATIFIED; the
 four non-blocking edits folded (`a136ff6`: deadline fallback + G1b; T1 demand model =
 event-arrival × admission + the G2 unit derived; certification scoped to the
-utterance→sentiment/intent consumer; measured-vs-cited table wording). T1–T6 open.**
+utterance→sentiment/intent consumer; measured-vs-cited table wording). T1–T7 open** (T7 = the
+queued emotion screen + the per-suite run-state record, added 2026-09-30 on the owner ask).
 
 ## The premise change
 
@@ -136,6 +137,24 @@ posture does not.
 - [ ] T6 — D1 executes when the trigger fires (a real prod-shape Metal host
   serving the encoder, latency measured on that box, pin validating) — the
   sst5 cell publishes as served and 008's row flips through its own lane.
+- [ ] T7 — **the emotion screen (the ONE unscreened board-relevant encoder
+  run; QUEUED, not run)** — a 008-track text-lane run of the same class,
+  not a layer-seating task. Pre-registered per the 014 law BEFORE any run:
+  the suite-generic trainer (`instinct_encoder_trainer`) over the emotion
+  t20k pool, ONE extraction method (the NLEH class, same architecture,
+  FRESH fit — never reused head weights), 5-head pool-side sweep,
+  best-holdout selection, **ONE frozen read** on the emotion test split.
+  Earn gate: the head must read **> 0.8850** — the armed-seat A0, T4's
+  recorded bar for a REAL emotion arm; below it the posture-gap state
+  stands and emotion stays A0-served. Cost ≈ 20–30 min GPU (M3-Metal
+  stand-in or 4090), box state recorded beside the number. **On a PASS the
+  arm is RECORD-ONLY (`serve: ✗` — the 014 class refusal still governs
+  the CF lane): its value is securing the fragile emotion row (a
+  posture-gap tie-in-waiting: a reflex republish at the armed posture
+  collapses today's +11.5 to a tie) with a genuine arm for the
+  D1-triggered posture. The board row itself does not move — the site's
+  verdict bars exclude serve-refused arms by design. On a MISS: recorded
+  negative, no serve change, no re-run (the read is spent).**
 
 ## Scope notes
 
@@ -157,3 +176,27 @@ posture does not.
 - The 4090 CUDA posture (`laya-riir-cuda`) serves the same lane on that
   host class if ever needed (Issue 008 T7's riir-train 599/600 encoder
   artifacts are host-portable — the 014 M3-replay proved box-independence).
+- **The per-suite encoder-run state** (recorded so the site's `Instinct
+  (encoder) — not run` cells are never misread as backlog — five of the
+  eleven are measured or law-refuted NEGATIVES; "not run" ≠ "expected
+  win"):
+  - sst5 — DONE: 0.5267, +8.8 over the gliner bar (Bench 029,
+    T2-certified; record-only).
+  - emotion — UNSCREENED: the one worthwhile run (T7 above).
+  - ag_news — screened NEGATIVE: the 0.9500 bar IS the laya reference at
+    ceiling; the head adds nothing at ceiling (the class-relative law).
+  - massive_intent_en — screened NEGATIVE: the head LOSES 4.9 pt to its
+    own reference on test.
+  - code_fixtures — NEGATIVE-by-law: the reference sits 26.7 pt under the
+    paw bar vs the measured max head-lift of +14.7.
+  - xnli_en — measured (wave-2): 0.8600 test < the 0.9000 openthai bar;
+    pool-side holdout gains did not transfer.
+  - typed_decisions — NOT screenable as-built: per-case option sets need
+    a scoring-shape change first (CODE before any run).
+  - banking77 / prompt_injections — unscreened, NO board need (already
+    strictly best with the bag arms; curiosity only, ~30 min each).
+  - thai_wisesight / thai_sib200 — need the MULTILINGUAL checkpoint (the
+    english encoder is useless for Thai); 008 T5's DEFER stands until the
+    vs-best gaps close.
+  - No new DATA anywhere — the t20k pools exist; per-suite cost is encode
+    (~36 ms/row M3-Metal stand-in) + sweep + one read ≈ 20–30 min/suite.
