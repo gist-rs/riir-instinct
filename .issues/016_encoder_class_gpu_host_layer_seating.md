@@ -19,11 +19,12 @@ generalized to ANY real GPU serving deploy (game prod OR text-lane serve host �
 board consumer's premise), and the ladder-monotonicity note (each rung strictly-additive
 via deadline fallback; L2 skipped by law; L4 untasked because 048 deferred L4/L5, Plasma
 reserved as the L4 salience-depth rung).**
-**T8 added 2026-09-30 (owner round 4): the retrieval-gated corpus ladder — a DESIGN
-CANDIDATE, not queued (frozen-encoder-state KNN surrogate at L2, admission gate to L3,
-nightly corpus-stacking consolidation at L4; SIMD boundary recorded honestly —
-wasm-simd128 is port-class, not a 540× multiplier). Pre-registration required before
-any run. T1–T8 open.**
+**T8 added 2026-09-30 (owner round 4): the retrieval-gated corpus ladder — V2
+same-space retrieval-distill with OOF teacher labels (V1 refused), consolidation moved
+to L5 + L4-swap with the two invariants, and the full POC pre-registration ratified
+(the n=600 identical read, paired G1 vs C2, multiplicity-adjusted G2, full-row G3,
+alloc-0 G4, one sealed bundle; SIMD boundary honest — wasm-simd128 port-class,
+unmeasured). Runs on the owner go. T1–T8 open.**
 
 ## The premise change
 
@@ -39,7 +40,7 @@ binary (plain std HTTP, no CF binding) runs natively.
 | Layer | Cadence | Per-slot budget | Encoder cost class |
 |---|---|---|---|
 | L0/L1 Reflex + basic instinct | 20 Hz | 50 ms | ✗ fixed by tier |
-| L2 Surface | 5–10 Hz | 100–200 ms | ✗ for the LIVE encoder (lookup-only by law) — **but T8's retrieval surrogate is the L2-SHAPED encoder-class rung** (KNN over frozen states = a lookup, not a think) |
+| L2 Surface | 5–10 Hz | 100–200 ms | ✗ for the LIVE encoder (lookup-only by law) — **but T8's retrieval surrogate is the L2-SHAPED encoder-class rung** (KNN over a frozen STATIC-embed index carrying frozen OOF head distributions = a lookup, not a think) |
 | **L3 Working** | **1–2 Hz** | **500–1000 ms** | **✓ 1–7 % of slot (36 ms/row MEASURED on a loaded M3 + 4090 parity; the 8–15 ms GPU-posture figure is CITED, not measured on our boxes — see the premise note below); the "think depth per decision" knob IS this op** |
 | L4 Critical | 0.2–0.5 Hz | 2–5 s | ✓ batch encode of salient sets |
 
@@ -207,35 +208,87 @@ salience-depth rung.**)**
   verdict bars exclude serve-refused arms by design. On a MISS: recorded
   negative, no serve change, no re-run (the read is spent).**
 - [ ] T8 — **the retrieval-gated corpus ladder (DESIGN CANDIDATE — owner
-  proposal 2026-09-30, NOT queued; pre-registration required before any
-  run)**: the pattern transfer from the MTCS/LEO/PUCT + quest_grammar
-  lineage — frozen corpus states = the vessel, live encode = the prior,
+  proposal 2026-09-30; PRE-REGISTRATION RATIFIED by verdict 2026-09-30,
+  ready to run on the owner go)**: the pattern transfer from the
+  MTCS/LEO/PUCT + quest_grammar lineage — frozen corpus = the vessel,
+  live encode = the prior,
   head = the fusion. Instinct already does the CORPUS half (offline
   `dump_encoder_states` pools → frozen NLEH heads; the bag arms ARE
   corpus-is-the-model); the irreducible live half is the QUERY encode
   (one row: 8–36 ms GPU / ~157 ms CPU). The candidate adds the retrieval
   gate between them:
-  - **L2 rung**: static query embedding (µs, SIMD) → KNN over the FROZEN
-    encoder states → small fusion head over the neighbors —
-    in-distribution queries never run the encoder forward. The only
-    candidate that puts an encoder-class rung on CPU/CF tiers (KNN =
-    dot-products = katgpt-core SIMD-matvec territory; the workspace
-    already ships wasm32+simd128 kernel arms, katgpt-rs full-gate 2b).
+  - **L2 rung (V2, same-space retrieval-distill — verdict-ratified; V1
+    REFUSED)**: KNN runs entirely in the STATIC space (query static embed
+    vs the train pool's static embeds — same space by construction; no
+    cross-space projection, the axis C2 measured as lost), and the
+    encoder's knowledge enters through the neighbors' **FROZEN
+    OUT-OF-FOLD head distributions** — K heads fit on K−1 folds of the
+    pool, each held fold labelled by the heads that never saw it (fold
+    seeds + head hashes sealed in the sidecar). In-sample teacher labels
+    are FORBIDDEN — the certified `t6_s0` head was fit on this pool, so
+    its in-sample predictions ≈ gold and the experiment would collapse
+    to gold-label kNN, certifying nothing. Runtime = static KNN (SIMD
+    matvec over an 8544×256 i8 index ≈ 2.2 MB + ~170 KB soft labels,
+    single-digit µs) → similarity-weighted vote of the neighbors' OOF
+    distributions → fixed monotone calibrator. The only CF-tier
+    encoder-class rung — deployability UNMEASURED (wasm-simd128
+    port-class; no wasm32 measurement of this path exists).
   - **Admission gate**: high corpus-similarity → L2 answer; OOD or
-    salient → L3 live encode (GPU); CPU-only hosts stop at L2.
-  - **L4 rung**: the consolidation job — nightly/downtime batch encode of
-    admitted utterances into the frozen store (the neuron-db Raven/δ-Mem
-    sleep-cycle pattern; BLAKE3-sealed; the corpus compounds).
+    salient → L3 live encode (GPU); CPU-only hosts stop at L2. The gate
+    threshold is selected POOL-SIDE and its **gated accuracy + test
+    coverage** at that threshold are declared IN ADVANCE as the read's
+    secondary result — the partial-coverage rung is the real value case.
+  - **L5 consolidation + L4 swap (verdict-corrected from "L4 rung" — a
+    nightly batch job runs at ≪0.1 Hz, which is L5 curation)**: nightly/
+    downtime batch encode of admitted utterances into a NEW sealed store
+    version (encode+admit+seal = L5); the ATOMIC SWAP of the version is
+    the L4 half (swap-policy, freeze/thaw), gated by a pool-side
+    regression check vs the incumbent — **a certified number never
+    carries over; every new store version is uncertified until
+    re-gated.** Two invariants: (a) admitted utterances DISJOINT from
+    every eval split (hash membership in the BLAKE3 lineage); (b)
+    head-labelled admissions NEVER become training data for a future
+    head (self-distillation drift) — pseudo-labels are for the retrieval
+    store only.
   - **The SIMD boundary, honest**: wasm-simd128 is a PORT-class lane
     (≈ SSE/NEON class via the gemm/KNN kernels), NOT a 540× multiplier —
     the full f32 encoder forward stays out of CF reach (~157 ms →
     100–200 ms class); the RETRIEVAL surrogate is the CF-shaped rung.
-  - **Boundary**: UNMEASURED. C2's pure-static negative (0.3917) is the
-    floor this must beat — KNN fusion borrows neighbor structure but
-    inherits static's lexical binding for novel phrasings (the exact C2
-    diagnosis). Gates if ever run: beat C2 on its own suite + T2 paired
-    LB95 vs A1 + latency ≤ ~300 µs; the frozen-read budget applies (the
-    014 law).
+  - **Boundary + the stated prior**: UNMEASURED. C2's pure-static negative
+    (0.3917) is the floor; **the honest prior is that V2 lands NEAR C2
+    (≈0.38–0.43)** — kNN and C2's MLP estimate over the same static
+    features, and 256-d kNN over 8.5k points carries the curse of
+    dimensionality; the only real lever is soft-target smoothing from the
+    OOF labels. A miss is an expected outcome, not a surprise.
+  - **The ratified POC pre-registration** (supersedes "gates if ever run"):
+    sst5, **the IDENTICAL n=600 rows as Bench 029's C1 read** (exact
+    pairing vs A1 0.4217 and C2 0.3917; this is the split's THIRD read,
+    disclosed). Offline (GPU, pool-side only): static-embed the pool
+    (PCA-256 + i8), train K OOF heads, freeze per-row OOF distributions;
+    leave-one-out KNN in all pool-side selection (a query never retrieves
+    itself); k ∈ {4,8,16,32,64} + calibrator + gate threshold selected on
+    a train-side slice (pool-side holdouts read ~10 pt inflated —
+    SELECTION ONLY, never forecast); pool-side attribution diagnostics
+    reported free (gold-kNN vs OOF-teacher-kNN vs C2 on the same holdout
+    — separates the retrieval effect from the distillation effect).
+    ONE frozen read. **G1: paired LB95 > 0 vs C2** (a point-only beat at
+    n=600, SE ≈ 2 pt, is noise → "inconclusive, recorded negative for
+    value"); **G2: multiplicity-adjusted** LB at 1−0.05/3 (≈LB98.3) vs
+    A1 (or the uncorrected LB95 disclosed as uncorrected); **G3:
+    FULL-ROW latency** — tokenize → static embed → PCA-256 → i8 quantize
+    → KNN → top-k → vote → calibrate, p50/p99 + box state, measured on
+    the SAME i8 index that would deploy (an f32 stand-in is not a
+    measurement; a wasm32+simd128 number is owed before any CF claim);
+    **G4: alloc count 0 per query after warm-up** (pre-allocated top-k
+    heap + vote buffer as scratch). **One sealed bundle** in the BLAKE3
+    sidecar: index, OOF soft-label table, PCA matrix, quant scales,
+    calibrator, fold-head hashes, pool/test hash membership. Failure
+    path: recorded negative, T8 stays a candidate, no re-run. Substrate
+    to REUSE, not rebuild (substrate-first before coding):
+    riir-neuron-db `dense_embed` (the retrieval index) + the i8 dot
+    kernels in katgpt-moka-wasm `moka_int8.rs` / katgpt-types' int8 dot
+    path — check BOUNDARY.md for dep legality (a sealed data artifact
+    over the wire is L8-lawful either way).
 
 ## Scope notes
 
