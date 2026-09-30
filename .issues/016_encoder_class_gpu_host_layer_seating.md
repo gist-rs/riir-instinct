@@ -25,7 +25,7 @@ binary (plain std HTTP, no CF binding) runs natively.
 |---|---|---|---|
 | L0/L1 Reflex + basic instinct | 20 Hz | 50 ms | ✗ fixed by tier |
 | L2 Surface | 5–10 Hz | 100–200 ms | ✗ lookup only |
-| **L3 Working** | **1–2 Hz** | **500–1000 ms** | **✓ 1–7 % of slot on Metal (8–36 ms/row measured, 014 replay); the "think depth per decision" knob IS this op** |
+| **L3 Working** | **1–2 Hz** | **500–1000 ms** | **✓ 1–7 % of slot (36 ms/row MEASURED on a loaded M3 + 4090 parity; the 8–15 ms GPU-posture figure is CITED, not measured on our boxes — see the premise note below); the "think depth per decision" knob IS this op** |
 | L4 Critical | 0.2–0.5 Hz | 2–5 s | ✓ batch encode of salient sets |
 
 The fit is architectural, not just numeric: limelight's function is deciding
@@ -95,15 +95,17 @@ posture does not.
 
 ## Staged plan (pending verdict round)
 
-- [ ] T1 — **budget pricing (measured, no new lane)**: encode cost/row on
-  the M5-class host × limelight salience cardinality (the spotlight % and
-  window) → the GPU-second share per 1000 NPCs at L3 cadence, the WIRE RTT
-  counted inside the 500–1000 ms slot, and the **salience admission cap
-  derived from the measured figure** (the control that keeps the share
-  inside the budget — see the arithmetic above). Uses the existing
-  `dump_encoder_states` / `instinct_encoder_eval` harnesses; no split
-  reads. The M3-Max figure is the stand-in until the M5 host exists; the
-  number is re-measured on arrival.
+- [ ] T1 — **budget pricing (measured, no new lane)**: the demand model is
+  **EVENT-ARRIVAL × ADMISSION**, not NPC population — the named consumers
+  fire when someone speaks / a task or query arrives, so load scales with
+  utterance/task arrival rate × the salience-admitted fraction. T1 derives
+  from the measured per-row cost on the serving host: the admission cap,
+  and **the G2 unit itself (GPU-seconds per second)** — limelight allocates
+  depth TIERS today, not a GPU budget, so T1 derives the number G2 compares
+  against. The WIRE RTT is counted inside the 500–1000 ms slot. Uses the
+  existing `dump_encoder_states` / `instinct_encoder_eval` harnesses; no
+  split reads. The M3-Max figure is the stand-in until the M5 host exists;
+  the number is re-measured on arrival.
 - [ ] T2 — **serve-side encoder lane (feature-gated)**: wire the landed
   arena reader (`src/encoder_arm.rs`, `arena-laya-metal`) into the serve
   path behind an opt-in feature (GPU hosts only; the default CF-shaped
@@ -112,15 +114,22 @@ posture does not.
 - [ ] T3 — **the decision_wire thin client (consumer #3, riir-ai side)**:
   the feature-gated client after the `riir-agents/decision_gates.rs`
   pattern; L3 call sites route encoder-class questions only for
-  limelight-salient entities (the depth knob). SUBSTRATE-FIRST before any
-  new System impl (the 048 T7 outbound-boundary row rides the same
+  limelight-salient entities (the depth knob). **Deadline semantics:**
+  every call carries a per-call deadline; on expiry — a down serve lane,
+  or an encode + RTT overrunning the L3 slot — the decision falls back to
+  the equipped bag class and the record notes WHICH class answered (a
+  late reply must never stall the decision nor be applied to a later
+  tick — that would break compute-once-and-record). SUBSTRATE-FIRST before
+  any new System impl (the 048 T7 outbound-boundary row rides the same
   change).
 - [ ] T4 — **arsenal vessel mint for the NLEH head** (riir-train,
   HOSTED-ONLY class) + the monotonic apply the arsenal already ships.
-- [ ] T5 — **GOAT gate**: G1 pick-parity vs the frozen reads; G2 the
-  budget share (GPU-s/s at target NPC count ≤ the limelight allocation);
-  G3 no-regression on the bag lanes (byte-identical when the feature is
-  off); G4 alloc-free outside the encode call.
+- [ ] T5 — **GOAT gate**: G1 pick-parity vs the frozen reads; **G1b a
+  deadline-miss injection produces the bag decision, recorded as such**;
+  G2 the budget share in T1's derived unit (GPU-s/s at the measured
+  arrival rate ≤ the admission-capped allocation); G3 no-regression on
+  the bag lanes (byte-identical when the feature is off); G4 alloc-free
+  outside the encode call.
 - [ ] T6 — D1 executes when the trigger fires (a real prod-shape Metal host
   serving the encoder, latency measured on that box, pin validating) — the
   sst5 cell publishes as served and 008's row flips through its own lane.
@@ -135,6 +144,13 @@ posture does not.
   quest_grammar corpus class), riir-agents task-reasoning encoding, RAG
   query encoding on the neuron-db read path. Salience gates ADMISSION
   (which utterances/tasks pay the encode), never the tick loop.
+  **Certification scope (verdict round 2): the measured +0.0535 LB95
+  evidence covers the UTTERANCE→SENTIMENT/INTENT consumer ONLY** (it IS
+  the sst5 read). riir-agents task encoding and RAG query encoding are
+  CANDIDATES, each needing its own G1 against its own frozen read —
+  "encoder class seated" must never be read as "every encoder use
+  certified". The RAG consumer is also NOT a game-layer L3 surface (it
+  is a read-path caller that reuses the same serve lane).
 - The 4090 CUDA posture (`laya-riir-cuda`) serves the same lane on that
   host class if ever needed (Issue 008 T7's riir-train 599/600 encoder
   artifacts are host-portable — the 014 M3-replay proved box-independence).
