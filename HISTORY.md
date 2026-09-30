@@ -22,9 +22,12 @@ bytes law), pinned by the read itself:
   Metal — ~49× the ~300 µs provisional text-lane bar, on a device the
   CPU-only deploy shape does not carry. `serve: ✗` stands.
 - **Publish**: the lane doc carries the encoder cell BESIDE the
-  unchanged hybrid cell (A1 serves; no manifest change). The site
-  publish + the `encoder` lane rendering ride this landing's
-  reflex-site half.
+  unchanged hybrid cell (A1 serves; no manifest change). **The site
+  half is LIVE** (reflex-site `b9b2ee1`, deployed + curl-verified): the
+  `Instinct (encoder)` lane — filter chip, table row, chart bar — with
+  the sst5 cell 0.5267 / serve: ✗; the verdict bars exclude it by
+  design. Pre-deploy battery green: publish self-test 52/52, bench
+  page smoke, head parity (flappy 96/100, lanes 84/100), demo replay.
 
 **The en-route catch — a REAL T8 serve regression, found by the gate
 battery and fixed here.** The T8 landing's "name-first noul law"

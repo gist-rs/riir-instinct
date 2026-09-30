@@ -40,11 +40,14 @@ The record-only arena read, exactly as scoped ("record, don't serve"):
   (reflex `bench_preflight.sh` PASSED before the read; the arena's own
   capture: load1m 5.92 · quotable true · refusals []).
 - **The published cell**: `serve: ✗ (encoder class refused at serve — A1
-  serves; instinct issue 014 C1)` — the lane doc carries the encoder
+  serves; instinct issue 014 C1)` — LIVE on reflex.gist.rs since
+  reflex-site `b9b2ee1` (the `Instinct (encoder)` lane: its own filter
+  chip + table row + chart bar, a paler magenta beside the hybrid slot;
+  the instinct.js verdict bars deliberately EXCLUDE the lane — a
+  serve-refused arm is not the serving lane and cannot move the
+  "Instinct vs best lane" board). The lane doc carries the encoder
   cell BESIDE the unchanged sst5 hybrid cell (A1 keeps serving; NO
-  serve change, NO manifest change). The instinct.js verdict bars
-  deliberately EXCLUDE the encoder lane (a serve-refused arm is not
-  the serving lane — it cannot move the "Instinct vs best lane" board).
+  serve change, NO manifest change).
 - **En-route catch — a REAL T8 serve regression fixed**: the arena gate
   battery red on `noul_suite_serves_positionally_through_the_bridge` —
   the T8 landing's "name-first noul law" (commit `2d20397`) dropped the
