@@ -1,8 +1,9 @@
 # Issue 014 — sst5 encoder-arm seating: lane confirmed at 0.5267, serve posture is the owner gate
 
-**Status:** OPEN — OWNER GATE (the T5 pattern: build the encoder-backed arm
-class, or keep the incumbent bag arm). The lane verdict is MEASURED and
-closed; nothing here blocks on agent work. Filed 2026-09-30 (riir-train
+**Status:** DECIDED 2026-09-30 — **conditional staged GO, class-wide** (owner
+ratified after the Claude verdict ping-pong: REVISE → AGREE, 3 rounds).
+**The serve-posture gate is CLOSED — agents: do not re-ask it.** What
+remains is C1/C2 execution (see §Decision). Filed 2026-09-30 (riir-train
 issue 600 T6 confirmed; instinct 008 T7 wave-3).
 
 ## The measured verdict (riir-train 600, `6f24cd92`)
@@ -63,6 +64,68 @@ recorded; this issue closes with the decision noted in 008's T7 row.
 - The trainer substrate is suite-generic (riir-train
   `instinct_encoder_trainer`, `--min-holdout`/`--seed`); re-training at a
   new pool is one command, not a lane rebuild.
+
+## Decision — 2026-09-30: conditional staged GO, class-wide
+
+Ratified by the owner after a 3-round Claude verdict ping-pong (round 1
+REVISE — two corrections ACCEPTED: the "1 ms serve bar" is the TETRIS bar
+(issue 009), not a text-lane bar, so it does not bind here; and a
+bag-class distillation student repeats the Tetris round-6 self-distillation
+trap — soft labels change the target, not what bag features can express.
+Round 2 AGREE, final; round 3 closed with four pre-registration pins).
+
+This ONE decision settles the encoder-class serve posture for **sst5
+(this issue), the xnli T5 gate (same pricing), and the 008 T6 re-scope**.
+009 is unaffected. Agents reading this issue: the gate is decided — do not
+re-open the serve-posture question; the remaining work is C1/C2 below.
+
+1. **REFUSED — per-request encoder inference at serve (whole encoder
+   class).** Grounds are MEASURED text-lane numbers, not the Tetris bar:
+   the serve deploys as a CPU-only standard-2 cf-container (x86-64
+   zigbuild — a ~2 GB GPU encoder cannot live there at all), and CPU-lane
+   encoder at ~157 ms/row is ~540× A0's 290 µs measured class (~78,000×
+   A1's 2 µs); GPU-posture 8–15 ms is still 27–50× A0 and no GPU tier
+   exists in the deploy shape. Working latency gate: **≤ A0-class
+   (~300 µs), PROVISIONAL** until the owner sets an explicit text-lane
+   bar — do not let it harden into a law by default.
+2. **C1 — record, don't serve.** Arena-side encoder-arm reader; sync the
+   sealed head (`.raw/t599/t6_s0.bin`) from the 4090 (one scp, no GPU time
+   needed there); ONE frozen arena read on M3 Metal (~minutes; weights +
+   dataset already cached on that box). The seat read settles ONLY the
+   cross-pool claim (+10.5 vs A1 → the T2 paired LB95 gate). The +8.8 over
+   gliner 0.4383 is same-split and stands as recorded — C1 does not
+   re-open it. Record per-row latency + box state beside the accuracy.
+   Publish the cell as `serve: ✗ (encoder class refused at serve)`. No
+   serve change.
+3. **C2 — static-vector surrogate is the primary rung.** Model2Vec-style
+   static per-token vectors from the laya-english encoder's own output
+   states, mean-pooled at serve, 128-wide sigmoid head on top — lookup +
+   mean + small MLP, µs-class, container-safe. Train on soft labels over
+   UNLABELLED in-domain volume beyond the 8544 gold rows (the 600-row
+   test split quarantined; the teacher's selection protocol — 5-head
+   sweep, best-holdout — stays frozen/spent). The bag-class surrogate is
+   pre-registered as the expected-negative control, NOT the main bet.
+   Gates: `> 0.4383` (gliner bar) on its own frozen read AND T2 paired
+   LB95 > 0 vs A1 AND latency ≤ ~300 µs (provisional).
+4. **Failure path:** sst5 stays on A1 (0.4217), both numbers on record,
+   this issue closes.
+
+**Pre-registration pins (binding before any C2 run):**
+
+- ONE static-vector extraction method, chosen in advance — corpus-
+  averaged contextual states is the default candidate (stronger for
+  sentiment); never both-then-pick against the frozen split (a hidden
+  extra selection read).
+- "Same 128-wide head" = same ARCHITECTURE, fresh fit. Pooled static
+  vectors have a different input distribution — teacher head weights are
+  NOT reusable. Standardized pooled inputs, own pool-side holdout for
+  selection.
+- Frozen-split read budget: TWO total (static-vector surrogate + bag
+  control). Nothing else touches the 600-row split.
+- Shrink the vocab×d table Model2Vec-style (PCA ~256 dims + quantization)
+  BEFORE the latency gate; the serve path gains the laya TOKENIZER-only
+  dependency (not the encoder) — run boundary-guard against BOUNDARY.md
+  before that dep lands.
 - **M3-side replay (2026-09-30, post-sync)** — the frozen read now has a
   second-box witness: `t6_s0.bin` + the test cache synced from the 4090,
   then re-read on the M3 (riir-train `instinct_encoder_eval`):
