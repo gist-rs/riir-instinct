@@ -2,6 +2,30 @@
 
 The global `~/.agents/` rules apply; this file documents repo-local context.
 
+## Naming law — this repo becomes `riir-rethink` (riir-ai Proposal 051)
+
+**Decided 2026-09-30 (owner call); the mechanical rename is Phase 1, not yet
+landed** — until it is, the on-disk directory, git remote, and workspace
+registration still read `riir-instinct`. The law, in force now:
+
+- **The product is `riir-rethink`** — the all-tier adaptive decision-serving
+  family (L1–L5 rungs inside ONE product; tiers are rungs, never per-tier
+  lanes — the reserved `riir-director` is retired, L5 curation is a job).
+- **"Instinct" retires from product/brand naming** and returns to meaning
+  exactly one thing: the game-side L1 tier word (riir-ai Proposal 048's map,
+  `Instinct (basic)` / `Instinct (vessel)`). Site lanes rebrand `Instinct
+  (hybrid)` → **`Rethink (hybrid)`**, `Instinct (encoder)` → **`Rethink
+  (encoder)`** (aliases keep history landing).
+- **Three registries, one table** — game tier / repo / product lane. The
+  disambiguation table's third axis (incl. the `rethinks`/`think_every`/
+  `since_rethink` row) lives in ONE home:
+  `../riir-game-sdk/.docs/10_multiplayer_topology/tick_tier_model.md` §(a).
+  The hero-strategy `rethinks` counter (`riir-games-mmorpg/src/hero_strategy_moe.rs`)
+  is game-side cadence vocabulary — the aligned collision this product name
+  adopts, never a reference to this repo. Greps must not cross the streams.
+- **Recorded fallback:** `riir-cogito` (zero grep hits, same meaning) if the
+  collision tax ever compounds (051 caveat 1).
+
 ## Boundary contract — read `BOUNDARY.md` first
 
 [`BOUNDARY.md`](BOUNDARY.md) is authoritative. **Domain test:** is this the
@@ -12,10 +36,13 @@ the `boundary-guard` skill (`../riir-ai/scripts/ci_boundary_contract.sh`).
 
 ## Role
 
-The trained sibling of the modelless engine. The naming follows the L0–L5
-adaptive stack (riir-ai Proposal 047): **Reflex** = hard-wired response
-(`../riir-reflex`, modelless, public), **Instinct** = learned fast response
-(trained weights, private). The flow is riir-clippy's, end to end:
+The trained sibling of the modelless engine — per Proposal 051, the
+**all-tier adaptive decision-serving family** (not just the L1 "learned fast
+response" of the original 047 naming; the rungs span L1 bags/hybrids through
+L3 encoder thinks, with L4/L5 rungs gated on 048's). **Reflex** = hard-wired
+response (`../riir-reflex`, modelless, public, the free floor — NOT a rung in
+this product); **Rethink** = this repo (trained/adaptive, private). The flow
+is riir-clippy's, end to end:
 
 ```
 arena/serve (here) ─ decisions ─▶ decstat rows (consent-gated) ─▶ riir-kat wire
