@@ -19,8 +19,10 @@ ENC is a GPU-host deployment posture). T3 LANDED (riir-ai decision_client: the
 deadline-fallback law + the G1b arms + Layer 1.33; the game call-site routing rides
 the prod host). T5 partially armed (the parity gate carries G1's pick-parity leg +
 the L3 slot bound; G1b lives in the client's arms; G2/G4 land with the consumer).**
-T4–T7 open (T4 = the HOSTED-ONLY vessel mint; T7 = the queued emotion screen + the
-per-suite run-state record, added 2026-09-30 on the owner ask; T6 = D1,
+T4 LANDED (the HOSTED-ONLY head vessel: riir-instinct 82011af reader+routes+round-trip
+gate, riir-train f3ce8973 NLEH minter; the production mint is the owner's key
+ceremony). T5–T7 open (T5's G2/G4 land with the consumer; T7 = the queued emotion
+screen + the per-suite run-state record, added 2026-09-30 on the owner ask; T6 = D1,
 trigger-blocked).**
 **Owner round 3 (2026-09-30): three clarifications folded — the no-new-product-lane note
 (nothing named "Working"/"riir-working"; L0–L5 are 048's tier vocabulary), D1's host
@@ -241,8 +243,25 @@ served Rethink (encoder) @<host>" once the rename lands. The
   floor 9, the tests are invisible to every other layer — feature is
   default-off). Clippy clean at default + decision_client + all-features;
   default lib 17 green (the module compiles out, G3).
-- [ ] T4 — **arsenal vessel mint for the NLEH head** (riir-train,
+- [x] T4 — **arsenal vessel mint for the NLEH head** (riir-train,
   HOSTED-ONLY class) + the monotonic apply the arsenal already ships.
+  **DONE 2026-09-30**: the reader half —
+  `riir-instinct/src/vessel.rs::load_hosted_head_bytes` (the same
+  authenticity / class / monotonic walk as the bag vessels, the RAW
+  decrypted NLEH payload out — the parse stays the lane's own law, zero
+  change to the specialist decoder); the boot routes — `boot_vessel` /
+  `boot_vessel_bytes` ENC arms under `vessel` + `serve-encoder` (the facts
+  flow to the arsenal's existing epoch install — the monotonic apply ships
+  unchanged, no new lineage code); a build without either feature refuses
+  the ENC vessel route loud. The mint half — riir-train `vessel-mint`
+  accepts the NLEH magic beside RISP (live-verified: the t6_s0 head minted
+  rc 0, 3.2 MB payload vessel + sidecar, test key; the PRODUCTION mint is
+  the owner's key ceremony, never a repo act) + the never-compiled Windows
+  entropy fallback fixed en-route. Gate: the T4 round-trip arm in
+  `tests/serve_encoder_parity.rs` (both features) — vessel-booted lane ==
+  raw lane decision-for-decision (32 cases), the lineage facts carry the
+  minted version, v1-over-applied-v1 refused as a downgrade. Commits:
+  riir-instinct 82011af, riir-train f3ce8973.
 - [ ] T5 — **GOAT gate**: G1 pick-parity vs the frozen reads; **G1b a
   deadline-miss injection produces the bag decision, recorded as such**;
   G2 the budget share in T1's derived unit (GPU-s/s at the measured
