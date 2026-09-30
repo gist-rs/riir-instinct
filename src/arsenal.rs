@@ -565,7 +565,7 @@ mod tests {
     }
 
     #[test]
-    fn embedded_default_parses_with_the_eight_suites() {
+    fn embedded_default_parses_with_the_nine_suites() {
         let m = ArsenalManifest::embedded_default().expect("embedded manifest parses");
         let suites: Vec<&str> = m.suites().collect();
         assert_eq!(
@@ -578,10 +578,11 @@ mod tests {
                 "banking77",
                 "xnli_en",
                 "prompt_injections",
-                "typed_decisions"
+                "typed_decisions",
+                "code_fixtures"
             ]
         );
-        assert_eq!(m.rows().len(), 8);
+        assert_eq!(m.rows().len(), 9);
     }
 
     #[test]

@@ -132,3 +132,12 @@ class   = "hosted_only"
 posture = { arm = "H2", beta = 0.5, n_min = 2.0, tau_n = 2.0 }    # best measured 0.6475 vs A0' 0.5725 (+7.5 pt, T2 LB95 +0.0580 PASS) AND vs the certified A1 0.6300 (+1.75 pt, paired LB95 +0.0062 PASS) AND vs H1 (+1.4 pt, LB95 +0.0034) — Bench 020's full-pool read; G1 PASS (platt 0.0095 vs floor 0.1701). The margin source is the option-conditioned (qid, option) tables (reflex issue 038 T7b + `oc()`, riir-instinct Issue 005's precondition — typed's options are state-field values the domain tables never speak)
 pin_keys = []
 budget  = { load = "eager", max_payload_mb = 16 }
+
+[[vessel]]
+suite   = "code_fixtures"
+digest  = "blake3:264714b9e7518e33b7540b7ba7c60691651f8ec40f6eb0ec01c5af5b24ebec37"   # the Issue-008 T8 tie-break mint (riir-train instinct_v2_gate, the wave-1 per-head NBSVM shape)
+class   = "hosted_only"
+file    = "code_fixtures_nbsvm_v2.bin"   # presence-bag convention + the MultiQuestion contract, both pinned by winner_bridge (the 579 law)
+posture = { arm = "A1" }                                          # best measured AND T2-certified (Bench 028: 0.5625 vs A0 0.3750, +18.75 pt, paired LB95 +0.0021 > 0 at n=32 — thin, disclosed; G1 PASS platt 0.1519 vs floor 0.3430). Still trails the paw 0.6250 vs-best bar (−6.25 pt) — the tie with Reflex is broken, the suite stays unsold under the amended law
+pin_keys = []
+budget  = { load = "eager", max_payload_mb = 16 }

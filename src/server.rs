@@ -658,14 +658,31 @@ impl<const N: usize> SuiteServer<N> {
             let mut pos_class = Vec::with_capacity(options.len());
             if q.kind == QKind::Noul {
                 if !self.perm.contains(&usize::MAX) {
-                    // Named join (e.g. the positional-int noul suites): the
-                    // single-question contract's law, byte-preserved — the
-                    // presented names never reorder the fixed rendering,
-                    // position p takes seat label p and the artifact's pair
-                    // row p, and the count must be exactly the seat
-                    // universe (a wider or narrower presentation has no
-                    // noul space).
-                    if options.len() != self.labels.len() {
+                    // Named join. Name-first (the arena's fill_positions
+                    // law, verbatim): NOUL_PAIR resolved through the key
+                    // map — which covers BOTH the pair-is-the-seat
+                    // suites (prompt_injections) and the pair-lives-in-
+                    // the-artifact suites (code_fixtures: the seat
+                    // offers the 8 module labels, the unified no/yes rows
+                    // join at the sentinel). The positional law stays as
+                    // the fallback for a noul suite whose pair is neither
+                    // named in the artifact nor the whole seat universe.
+                    let pair_named = NOUL_PAIR.iter().all(|n| self.key_map.contains_key(*n));
+                    if pair_named {
+                        for name in NOUL_PAIR {
+                            let Some(&(li, cls)) = self.key_map.get(name) else {
+                                unreachable!("pair_named checked the keys");
+                            };
+                            pos_label.push(li);
+                            pos_class.push(cls);
+                        }
+                    } else if options.len() != self.labels.len() {
+                        // The single-question contract's positional law,
+                        // byte-preserved: the presented names never reorder
+                        // the fixed rendering, position p takes seat label
+                        // p and the artifact's pair row p, and the count
+                        // must be exactly the seat universe (a wider or
+                        // narrower presentation has no noul space).
                         return Err(format!(
                             "suite {}: a noul presentation carries {} options — the fixed \
                              [false, true] rendering has exactly {} (pick_index speaks that \
@@ -674,10 +691,11 @@ impl<const N: usize> SuiteServer<N> {
                             options.len(),
                             self.labels.len()
                         ));
-                    }
-                    for (li, &cls) in self.perm.iter().enumerate() {
-                        pos_label.push(li);
-                        pos_class.push(cls);
+                    } else {
+                        for (li, &cls) in self.perm.iter().enumerate() {
+                            pos_label.push(li);
+                            pos_class.push(cls);
+                        }
                     }
                 } else {
                     // The CONTEXT join (the arena's fill_positions law): the
@@ -1023,6 +1041,7 @@ pub enum AnySuiteServer {
     S4(Box<SuiteServer<4>>),
     S5(Box<SuiteServer<5>>),
     S6(Box<SuiteServer<6>>),
+    S8(Box<SuiteServer<8>>),
     S59(Box<SuiteServer<59>>),
     S77(Box<SuiteServer<77>>),
 }
@@ -1090,6 +1109,7 @@ impl AnySuiteServer {
             4 => seat_arm!(S4, 4),
             5 => seat_arm!(S5, 5),
             6 => seat_arm!(S6, 6),
+            8 => seat_arm!(S8, 8),
             59 => seat_arm!(S59, 59),
             77 => seat_arm!(S77, 77),
             other => Err(format!("suite {suite}: no engine arity for {other} labels")),
@@ -1119,6 +1139,7 @@ impl AnySuiteServer {
             4 => seat_arm!(S4, 4),
             5 => seat_arm!(S5, 5),
             6 => seat_arm!(S6, 6),
+            8 => seat_arm!(S8, 8),
             59 => seat_arm!(S59, 59),
             77 => seat_arm!(S77, 77),
             other => Err(format!("suite {suite}: no engine arity for {other} labels")),
@@ -1165,6 +1186,7 @@ impl AnySuiteServer {
             4 => vessel_arm!(S4, 4),
             5 => vessel_arm!(S5, 5),
             6 => vessel_arm!(S6, 6),
+            8 => vessel_arm!(S8, 8),
             59 => vessel_arm!(S59, 59),
             77 => vessel_arm!(S77, 77),
             other => Err(format!("suite {suite}: no engine arity for {other} labels")),
@@ -1205,6 +1227,7 @@ impl AnySuiteServer {
             4 => vessel_arm!(S4, 4),
             5 => vessel_arm!(S5, 5),
             6 => vessel_arm!(S6, 6),
+            8 => vessel_arm!(S8, 8),
             59 => vessel_arm!(S59, 59),
             77 => vessel_arm!(S77, 77),
             other => Err(format!("suite {suite}: no engine arity for {other} labels")),
@@ -1222,6 +1245,7 @@ impl AnySuiteServer {
             AnySuiteServer::S4(s) => s.decide(state, options),
             AnySuiteServer::S5(s) => s.decide(state, options),
             AnySuiteServer::S6(s) => s.decide(state, options),
+            AnySuiteServer::S8(s) => s.decide(state, options),
             AnySuiteServer::S59(s) => s.decide(state, options),
             AnySuiteServer::S77(s) => s.decide(state, options),
         }
@@ -1241,6 +1265,7 @@ impl AnySuiteServer {
             AnySuiteServer::S4(s) => s.decide_multi(state, questions),
             AnySuiteServer::S5(s) => s.decide_multi(state, questions),
             AnySuiteServer::S6(s) => s.decide_multi(state, questions),
+            AnySuiteServer::S8(s) => s.decide_multi(state, questions),
             AnySuiteServer::S59(s) => s.decide_multi(state, questions),
             AnySuiteServer::S77(s) => s.decide_multi(state, questions),
         }
@@ -1253,6 +1278,7 @@ impl AnySuiteServer {
             AnySuiteServer::S4(s) => s.meta(),
             AnySuiteServer::S5(s) => s.meta(),
             AnySuiteServer::S6(s) => s.meta(),
+            AnySuiteServer::S8(s) => s.meta(),
             AnySuiteServer::S59(s) => s.meta(),
             AnySuiteServer::S77(s) => s.meta(),
         }
@@ -1267,6 +1293,7 @@ impl AnySuiteServer {
             AnySuiteServer::S4(s) => s.centroid(),
             AnySuiteServer::S5(s) => s.centroid(),
             AnySuiteServer::S6(s) => s.centroid(),
+            AnySuiteServer::S8(s) => s.centroid(),
             AnySuiteServer::S59(s) => s.centroid(),
             AnySuiteServer::S77(s) => s.centroid(),
         }

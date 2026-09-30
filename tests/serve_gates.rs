@@ -60,7 +60,7 @@ fn embedded_manifest() -> ArsenalManifest {
 /// re-run + frozen-predictions parity update law A6 demands). This is
 /// the TOML analogue of the compile-time posture table it replaced.
 const PINNED_MANIFEST_DIGEST: &str =
-    "blake3:839a7d68fcc86d8c5074d54155aff13e5ea63cdaef1b8f895f52a2b67206fcea";
+    "blake3:dbce92c684ac656b996a837d1c2e4141eee707d43a45188e16b5a761f8d6a036";
 
 #[test]
 fn arsenal_manifest_bytes_are_pinned_byte_for_byte() {
@@ -101,7 +101,13 @@ fn manifest_posture_rows_are_the_serving_law_verdict() {
     // (qid, option) tables via reflex's `oc()`) — and vs H1 (+1.4 pt,
     // LB95 +0.0034); G1 PASS (platt 0.0095 vs floor 0.1701) — its seat
     // corpus ships from the full-pool datasets dir (deploy.yaml).
-    let expected: [(&str, Arm, &str); 8] = [
+    // code_fixtures serves A1 0.5625 (the Issue-008 T8 tie-break, Bench
+    // 028): T2-certified vs A0 0.3750 (+18.75 pt, paired LB95 +0.0021 —
+    // thin at n=32, disclosed); it still trails the paw 0.6250 vs-best
+    // bar, so the suite stays unsold under the amended law — the manifest
+    // row exists because A1 IS the argmax (the serving law), and the
+    // Reflex tie is broken.
+    let expected: [(&str, Arm, &str); 9] = [
         (
             "ag_news",
             Arm::H2 { beta: 0.25, n_min: 2.0, tau_n: 2.0 },
@@ -126,11 +132,12 @@ fn manifest_posture_rows_are_the_serving_law_verdict() {
             Arm::H2 { beta: 0.5, n_min: 2.0, tau_n: 2.0 },
             "H2(β=0.5,nmin=2,τ=2)",
         ),
+        ("code_fixtures", Arm::A1, "A1"),
     ];
     assert_eq!(
         m.rows().len(),
-        8,
-        "the manifest carries exactly the eight rows"
+        9,
+        "the manifest carries exactly the nine rows"
     );
     for (suite, arm, name) in expected {
         let row = m
@@ -643,6 +650,109 @@ fn typed_decisions_serves_the_frozen_h2_picks() {
 
 fn winners_dir_for_tests() -> std::path::PathBuf {
     winners_dir()
+}
+
+/// The code_fixtures parity gate (Issue-008 T8, Bench 028): the SERVED
+/// arm is the certified A1 (0.5625 vs A0 0.3750, paired LB95 +0.0021 —
+/// thin at n=32, disclosed). Multi-question suite (which-module + is_pub
+/// per case) — the parity replays the 028 record's A1 picks question by
+/// question through `decide_multi`, exactly like typed_decisions' gate.
+#[test]
+fn code_fixtures_serves_the_frozen_a1_picks() {
+    let winner = winners_dir().join("code_fixtures_nbsvm_v2.bin");
+    if !winner.is_file() {
+        eprintln!("SKIP loud: the code_fixtures nbsvm v2 winner absent");
+        return;
+    }
+    let record = repo_root().join(".benchmarks/028_code_fixtures_tie_break/predictions.json");
+    let Some((picks, _abstained)) = frozen_picks_from(&record, "code_fixtures", "A1") else {
+        panic!(
+            "the 028 frozen record is absent or lacks the A1 arm — the serving posture's \
+             parity source; re-run the 028 read"
+        );
+    };
+    let datasets = datasets_dir();
+    let mut server = std::thread::Builder::new()
+        .stack_size(64 * 1024 * 1024)
+        .spawn(move || {
+            riir_instinct::server::AnySuiteServer::boot(
+                "code_fixtures",
+                &datasets,
+                &winners_dir_for_tests(),
+                &embedded_manifest(),
+            )
+        })
+        .expect("spawn boot thread")
+        .join()
+        .expect("boot thread panicked")
+        .expect("boot code_fixtures server");
+    assert_eq!(server.meta().arm.name(), "A1");
+
+    let seat =
+        riir_reflex::harness::runner::seat::prepare_seat("code_fixtures", &datasets_dir())
+            .expect("prepare seat for the parity cases");
+    let mut qi = 0usize;
+    let n_cases = 8.min(seat.suite.cases.len());
+    assert!(n_cases >= 4, "parity sample too small: {n_cases}");
+    for (ci, case) in seat.suite.cases.iter().enumerate().take(n_cases) {
+        assert!(!case.questions.is_empty());
+        let options_per_question: Vec<Vec<String>> = case
+            .questions
+            .iter()
+            .map(|q| {
+                // Noul questions present NO options — the fixed [no, yes]
+                // rendering speaks them (the same law typed_decisions'
+                // parity gate runs under; code_fixtures' is_pub question is
+                // noul-kind).
+                if q.kind == QKind::Noul {
+                    Vec::new()
+                } else {
+                    match &q.criteria {
+                        serde_json::Value::Object(m) => m.keys().cloned().collect(),
+                        serde_json::Value::Array(a) => a
+                            .iter()
+                            .map(|v| match v {
+                                serde_json::Value::String(s) => s.clone(),
+                                other => other.to_string(),
+                            })
+                            .collect(),
+                        _ => panic!("case {}: criteria shape drift", case.id),
+                    }
+                }
+            })
+            .collect();
+        let served: Vec<riir_instinct::server::ServedQuestion<'_>> = case
+            .questions
+            .iter()
+            .zip(options_per_question.iter())
+            .map(|(q, options)| riir_instinct::server::ServedQuestion {
+                qid: q.qid.as_str(),
+                kind: q.kind,
+                instructions: q.instructions.as_str(),
+                options: options.as_slice(),
+            })
+            .collect();
+        let decisions = server
+            .decide_multi(&seat.state_strs[ci], &served)
+            .unwrap_or_else(|e| panic!("case {}: decide_multi failed: {e}", case.id));
+        assert_eq!(decisions.len(), case.questions.len());
+        for d in &decisions {
+            assert!(
+                qi < picks.len(),
+                "question {qi}: the parity sample outran the frozen record"
+            );
+            assert_eq!(
+                d.pick_index,
+                Some(picks[qi]),
+                "question {qi} (case {}): served pick drifted from the frozen 028 A1 pick",
+                case.id
+            );
+            assert!(!d.abstained, "question {qi}: A1 abstained");
+            assert!(d.us < 100_000, "question {qi}: outside the modelless tier");
+            qi += 1;
+        }
+    }
+    assert!(qi >= 8, "parity covered too few questions: {qi}");
 }
 
 // ── face 3: the HTTP edge gates ──────────────────────────────────────

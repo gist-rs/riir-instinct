@@ -1,3 +1,49 @@
+## 2026-09-30 — Issue 008 T8 EXECUTED: the code_fixtures tie BROKEN (A1 0.5625 vs A0 0.3750, T2-certified) and the six harness families DROPPED; the serving path landed (S8 + the name-first noul law + the 9th manifest row)
+
+**The seven 0.0-edge ties are RESOLVED — one broken, six dropped.** The
+families dropped on the measured data-design reason (each is n = 12–16,
+template siblings of any trainable corpus, so a win is unfalsifiable
+memorization; two sit at reflex's own near-ceiling 11/12) — recorded in the
+issue's T8 adjudication block, the lane re-opens only with a larger
+template-disjoint reflex-side eval. code_fixtures took the pre-registered
+tie-break lane and won it end to end:
+
+- **Trainer side (riir-train `instinct_v2_gate`, the pre-registered floor
+  0.45 via the new `--abs-floor`/`--tie-break` flags):** candidate = the
+  wave-1 per-head NBSVM v2 merged, holdout **0.5536 — reproducing the
+  wave-1 number exactly** (a determinism witness for the unchanged
+  substrate); v1 per-head arm-A read 0.5000. Minted
+  `code_fixtures_nbsvm_v2.bin` (blake3 `264714b9e7518e33…`, 1.31 MB).
+- **THE FROZEN READ (`.benchmarks/028_code_fixtures_tie_break/`, one read,
+  nothing tuned against it): A1 0.5625 vs A0 0.3750 — T2 PASS** (mean
+  +0.1875, paired LB95 **+0.0021 > 0** — exactly the pre-registered
+  marginality: at n=32 the gate's whole margin is +6 net questions; G1
+  PASS platt 0.1519 vs floor 0.3430). A1 consulted 100% at **2 µs p50 vs
+  A0's 290 µs** (145×). The suite reads ahead-of-Reflex for the first
+  time; it still trails the paw 0.6250 vs-best bar (−6.3 pt, was −25.0) —
+  unsold under the amended law, untied.
+- **The serving path landed same-day:** winner_bridge entry for
+  code_fixtures (file + Presence + **MultiQuestion** — every case carries
+  TWO questions, so the SingleQuestion shape guard refuses by
+  construction; my first SingleQuestion declaration was wrong and the
+  boot refused it loud — the guard working as designed); **S8** joined
+  AnySuiteServer (the serve path had no 8-label arity — the arena had N=8
+  all along); **the name-first noul law** in `decide_multi`'s Named join
+  (NOUL_PAIR through the key map first — the arena's `fill_positions`
+  law verbatim, covering the pair-lives-in-the-artifact shape where the
+  seat offers only the 8 module labels; prompt_injections' positional law
+  byte-preserved as the fallback, its gate green); the arsenal.toml 9th
+  row (posture arm=A1, digest-pinned), the manifest digest re-pinned, the
+  9-row posture pin, and the parity gate
+  `code_fixtures_serves_the_frozen_a1_picks` (serve byte-replays the 028
+  A1 picks through decide_multi). **Gates: 53 lib + 15/15 serve gates +
+  clippy clean; live smoke: a 2-question HTTP decision with receipts.**
+  The site half (the instinct card's code_fixtures cell + the six family
+  cells leaving) rides the next reflex-site republish session.
+
+Commits: instinct `0c35063` (bridge) + the serving-path landing; riir-train
+the trainer flags. Untracked sibling WIP (`t4_4090_crosscheck*`) left alone.
+
 ## 2026-09-30 — Issue 008 T4's armed-posture caveat RESOLVED (records-only, no compute): emotion's board edge is posture-gap, not specialist value
 
 The standing T4 caveat ("re-verify emotion vs the ARMED Reflex posture before

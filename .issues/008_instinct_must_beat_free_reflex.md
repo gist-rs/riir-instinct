@@ -43,7 +43,12 @@ the training backlog.
 
 ## Measured — vs the floor (free Reflex; published data/bench.json @ reflex-site 1881624, 2026-09-29)
 
-Ahead on **8/15** suites — **6 with an arm**; emotion + xnli ahead via the armed reflex seat (the seat arms reflex's own cal-selected heads: ridge@8 on emotion reads 0.8850 = the armed reflex, so the specialist has nothing to add there — see T4's resolved caveat). tied on 7.
+Ahead on **9/15** suites — **7 with an arm** (code_fixtures joined 09-30:
+A1 0.5625, the T8 tie-break); emotion + xnli ahead via the armed reflex
+seat (the seat arms reflex's own cal-selected heads: ridge@8 on emotion
+reads 0.8850 = the armed reflex, so the specialist has nothing to add
+there — see T4's resolved caveat). Tied on 0 (the seven 0.0-edge ties are
+resolved: one broken, six dropped).
 
 | suite | Instinct arm | Instinct | Reflex (published) | edge |
 |---|---|---|---|---|
@@ -55,29 +60,32 @@ Ahead on **8/15** suites — **6 with an arm**; emotion + xnli ahead via the arm
 | typed_decisions | H2(β=0.5,oc) | 0.6300 | 0.5725 | +5.8 pt |
 | ag_news | H2(β=0.25) | 0.8975 | 0.8625 | +3.5 pt |
 | xnli_en | (seat) | 0.5233 | 0.5033 | +2.0 pt |
-| code_fixtures + 6 harness_* | — | = Reflex | — | +0.0 pt (ties) |
+| code_fixtures | A1 (nbsvm v2) | 0.5625 | 0.3750 | **+18.75 pt** |
 
 ## Measured — vs the BAR (best published lane per suite, best non-multilingual checkpoint, any host)
 
-Strictly best on **3/15** armed suites, tied on 6, **trailing on 6**:
+Strictly best on **3/15** armed suites, tied on 6, **trailing on 6**
+(09-30 re-count after T8: code_fixtures still trails the paw bar but its
+REFLEX tie is broken — 0.5625 vs 0.6250, −6.3 pt, was −25.0; the six
+harness families left the covered set, so they no longer count as ties):
 
 | suite | Instinct | best published lane | edge | the bar to beat |
 |---|---|---|---|---|
 | xnli_en | 0.5233 | 0.9000 | **−37.7 pt** | openthai-systemone 0.9000 |
-| code_fixtures | 0.3750 | 0.6250 | **−25.0 pt** | paw (hosted) 0.6250 |
+| code_fixtures | 0.5625 | 0.6250 | **−6.3 pt** | paw (hosted) 0.6250 |
 | typed_decisions | 0.6300 | 0.7715 | **−14.1 pt** | agentjev-0.6B 0.7715 |
 | massive_intent_en | 0.8267 | 0.9200 | **−9.3 pt** | openthai-systemone 0.9200 |
 | ag_news | 0.8975 | 0.9500 | **−5.2 pt** | laya (english) 0.9500 |
 | sst5 | 0.4217 | 0.4383 | **−1.7 pt** | gliner 0.4383 |
 
-Strictly best: banking77 (+14.8 vs gliner 0.7060), emotion (+11.5 vs Reflex 0.7700 — **posture-gap, not specialist value**: the seat serves A0 = reflex's own armed ridge@8 0.8850; the specialist A1 0.8550 LOSES to it by −3.0; a reflex republish at the armed posture collapses this edge to a tie), prompt_injections (+8.6 vs Reflex 0.7672). Tied at +0.0 edge:
-code_fixtures + the six harness_* families (the specialist adds nothing
-measurable on the synthetic families — a tie sells nothing). No arm:
+Strictly best: banking77 (+14.8 vs gliner 0.7060), emotion (+11.5 vs Reflex 0.7700 — **posture-gap, not specialist value**: the seat serves A0 = reflex's own armed ridge@8 0.8850; the specialist A1 0.8550 LOSES to it by −3.0; a reflex republish at the armed posture collapses this edge to a tie), prompt_injections (+8.6 vs Reflex 0.7672). Tied at +0.0 edge: NOTHING since 09-30 — the seven 0.0-edge ties are resolved (code_fixtures broken by the T8 specialist at 0.5625, the six families dropped from the covered set). No arm:
 thai_wisesight, thai_sib200 (coverage, T5).
 
 **What we don't beat yet — the work list, widest first:** xnli_en (openthai),
-code_fixtures (paw), typed_decisions (agentjev), massive_intent_en (openthai),
-ag_news (laya english), sst5 (gliner); then the seven 0.0-edge ties.
+typed_decisions (agentjev), massive_intent_en (openthai), ag_news (laya
+english), code_fixtures (paw — now −6.3 after the T8 specialist), sst5
+(gliner — the confirmed 0.5267 encoder lane would flip it, seating
+owner-gated Issue 014). The seven 0.0-edge ties are RESOLVED (T8 ✅).
 
 ## Root causes (read before training anything)
 
@@ -229,7 +237,7 @@ ag_news (laya english), sst5 (gliner); then the seven 0.0-edge ties.
   ~2 GB VRAM class): filed as **Issue 014** — same gate shape as the xnli
   T5 owner call, now priced with a bigger margin over BOTH the bar and
   the incumbent.
-- [ ] T8 — **break the seven 0.0-edge ties or drop them from the sold set**:
+- [x] T8 — **break the seven 0.0-edge ties or drop them from the sold set**:
   code_fixtures + the six harness families are ties with Reflex at +0.0 —
   a tie sells nothing (the original law). The families are synthetic:
   data-design decision first (T5's rule), then a specialist that wins, then
@@ -278,10 +286,35 @@ ag_news (laya english), sst5 (gliner); then the seven 0.0-edge ties.
   above Reflex, paired LB95 > 0) — no new gate machinery; (4) PASS →
   manifest row + lane doc + the suite reads ahead-of-Reflex (still trailing
   the paw 0.6250 bar — the amended law keeps it unsold; the tie display
-  dies); MISS → the negative is recorded, the suite joins the drop class
+  MISS → the negative is recorded, the suite joins the drop class
   (at n=32 the T2 gate needs ≈ +6 net questions — the read is honestly
   marginal, the Bench-024 sst5 precedent: a holdout PASS noise-refusing at
   the frozen read is a recorded outcome, not a protocol failure).
+  **T8 EXECUTED 2026-09-30 — ONE tie broken, six dropped; the task is
+  DONE.** The trainer-side gate PASSED with the pre-registered floor
+  (candidate = the per-head NBSVM v2 at holdout 0.5536 — reproducing the
+  wave-1 number exactly, a determinism witness; v1 arm-A read 0.5000;
+  minted `code_fixtures_nbsvm_v2.bin`, blake3 `264714b9e7518e33…`);
+  **THE FROZEN READ: A1 0.5625 vs A0 0.3750 — T2 PASS** (mean +0.1875,
+  paired LB95 **+0.0021 > 0** — as pre-registered, thin at n=32: +6 net
+  questions is the gate's whole margin; G1 PASS platt 0.1519 vs floor
+  0.3430; A1 consulted 100% at 2 µs p50 vs A0's 290 µs — 145×). Record:
+  `.benchmarks/028_code_fixtures_tie_break/`. **The serving path landed
+  same-day:** the winner_bridge entry (file + Presence + the
+  MultiQuestion contract — every case carries TWO questions, so the
+  SingleQuestion shape guard refuses by construction; `0c35063` + the
+  S8 engine arity + the name-first noul law in decide_multi — the arena's
+  fill_positions law, covering the pair-lives-in-the-artifact Named join;
+  prompt_injections' positional law byte-preserved as the fallback, its
+  gate green), the arsenal.toml row (9th; posture arm=A1, T2-certified,
+  still −6.25 under the paw bar → unsold under the amended law), the
+  manifest digest re-pinned, the 9-row posture pin, and the parity gate
+  `code_fixtures_serves_the_frozen_a1_picks` (serve byte-replays the 028
+  A1 picks through decide_multi; 15/15 serve gates green; live smoke:
+  2-question decision over HTTP with receipts). The six harness families
+  stay DROPPED (the block above); the site-side re-render (code_fixtures
+  cell serves A1 0.5625; the six family cells leave the card) rides the
+  next reflex-site republish session.
 - [ ] T9 — **the site flip**: when the measured board shows Instinct strictly
   ahead of every published lane on every suite it covers, the PoC chip on
   `/bench/#instinct` reads GOAT on the next republish (rendered from data,
