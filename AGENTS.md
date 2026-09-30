@@ -113,6 +113,30 @@ file .deploy/local/stage/decisions/app-bin   # → ELF 64-bit x86-64
 
 ## Current state
 
+**Issue 008 T8 RESOLVED (2026-09-30): the seven 0.0-edge ties are gone —
+code_fixtures BROKEN by a real specialist, the six harness families DROPPED.**
+The T8 tie-break lane ran the pre-registered protocol end to end: trainer
+floor 0.45 → the wave-1 per-head NBSVM v2 minted at holdout **0.5536**
+(reproducing wave-1's number exactly — a determinism witness; blake3
+`264714b9e7518e33…`); **THE FROZEN READ: A1 0.5625 vs A0 0.3750 — T2 PASS**
+(mean +0.1875, paired LB95 **+0.0021** — the pre-registered marginality, +6
+net questions is the whole n=32 margin; G1 PASS; A1 at 2 µs p50 vs A0's
+290 µs). Record `.benchmarks/028_code_fixtures_tie_break/`. The suite serves
+A1 (the 9th manifest row; still −6.3 under the paw bar → unsold under the
+amended law, untied). Serving-path landings that mint required: the
+winner_bridge entry (Presence + the **MultiQuestion** contract — every case
+carries TWO questions; the SingleQuestion shape guard refuses that by
+construction), **S8** in AnySuiteServer (the serve path had no 8-label
+arity), and the **name-first noul law** in `decide_multi`'s Named join
+(NOUL_PAIR through the key map first — the arena's fill_positions law; the
+pair may live in the ARTIFACT while the seat offers only the 8 module
+labels; prompt_injections' positional law byte-preserved as the fallback).
+The families' drop reason is measured (n=12–16 template-shared eval — a win
+would be unfalsifiable memorization; recorded in 008's T8 block); the lane
+re-opens only with a larger template-disjoint reflex-side eval. The site
+half (code_fixtures cell serves 0.5625; the six family cells leave the
+card) rides the next reflex-site republish session.
+
 **Issue 008 T7 wave 1 (2026-09-29, owner GO): six vs-best specialist lanes
 measured, all NEGATIVE — the sold set is unchanged (the seven serving rows of
 Bench 019/020).** sst5's holdout gate PASS (the 579 v2 lever, +3.10 pt LB95
