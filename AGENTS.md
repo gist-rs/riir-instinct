@@ -135,7 +135,10 @@ The families' drop reason is measured (n=12–16 template-shared eval — a win
 would be unfalsifiable memorization; recorded in 008's T8 block); the lane
 re-opens only with a larger template-disjoint reflex-side eval. The site
 half (code_fixtures cell serves 0.5625; the six family cells leave the
-card) rides the next reflex-site republish session.
+card) LANDED LIVE 2026-09-30 (reflex-site `7eeb936` + the instinct lane-doc
+`0d044e8`: cell serves A1 certified LB95 +0.0021, the six harness rows
+dropped, smoke floors now data-derived — board gap −25.0 → −6.3 vs the paw
+bar).
 
 **Issue 008 T7 wave 1 (2026-09-29, owner GO): six vs-best specialist lanes
 measured, all NEGATIVE — the sold set is unchanged (the seven serving rows of
