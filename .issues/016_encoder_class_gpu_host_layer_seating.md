@@ -15,10 +15,12 @@ utterance→sentiment/intent consumer; measured-vs-cited table wording). **T1 DO
 the stand-in posture + T2 LANDED (2026-09-30, Bench 031): the serve-side encoder lane
 (green: the frozen Bench-029 read replayed 316/600 EXACT through the serve surface,
 arena-runner parity 32/32, e2e HTTP smoke green; the DEFAULT manifest untouched —
-ENC is a GPU-host deployment posture). T5 partially armed (the parity gate carries
-G1's pick-parity leg + the L3 slot bound; G1b/G2/G3/G4 land with T3's consumer).**
-T3–T7 open (T3 = the decision_wire thin client, riir-ai side; T7 = the queued emotion
-screen + the per-suite run-state record, added 2026-09-30 on the owner ask; T6 = D1,
+ENC is a GPU-host deployment posture). T3 LANDED (riir-ai decision_client: the
+deadline-fallback law + the G1b arms + Layer 1.33; the game call-site routing rides
+the prod host). T5 partially armed (the parity gate carries G1's pick-parity leg +
+the L3 slot bound; G1b lives in the client's arms; G2/G4 land with the consumer).**
+T4–T7 open (T4 = the HOSTED-ONLY vessel mint; T7 = the queued emotion screen + the
+per-suite run-state record, added 2026-09-30 on the owner ask; T6 = D1,
 trigger-blocked).**
 **Owner round 3 (2026-09-30): three clarifications folded — the no-new-product-lane note
 (nothing named "Working"/"riir-working"; L0–L5 are 048's tier vocabulary), D1's host
@@ -203,7 +205,7 @@ served Thinker (encoder) @<host>" once the rename lands. The
   surface, never a default. Clippy clean at both postures; lib 58 +
   serve_gates 17 green. Full record:
   `.benchmarks/031_encoder_serve_t2_parity/RESULTS.md`.
-- [ ] T3 — **the decision_wire thin client (consumer #3, riir-ai side)**:
+- [x] T3 — **the decision_wire thin client (consumer #3, riir-ai side)**:
   the feature-gated client after the `riir-agents/decision_gates.rs`
   pattern; L3 call sites route encoder-class questions only for
   limelight-salient entities (the depth knob). **Deadline semantics:**
@@ -214,6 +216,29 @@ served Thinker (encoder) @<host>" once the rename lands. The
   tick — that would break compute-once-and-record). SUBSTRATE-FIRST before
   any new System impl (the 048 T7 outbound-boundary row rides the same
   change).
+  **DONE 2026-09-30 (the client half; the game call-site routing rides the
+  prod host)**: `riir-ai/crates/riir-agents/src/decision_client.rs`
+  (feature `decision_client` = one optional serde_json parse dep; the
+  request side hand-serialized — one writer, one parser). std TCP POST to
+  the serve edge under a per-call deadline: every failure path collapses
+  into `DecisionClass::BagFallback(reason)` — the record names WHICH class
+  answered (Encoder / Served{arm} / BagFallback{DeadlineExceeded,
+  ServeLaneDown(code), LaneAbstained}); a late-but-good response is
+  dropped ON ARRIVAL (compute-once-and-record); the connect phase is
+  capped separately at min(remaining, 250 ms) — measured Windows behavior
+  (a closed port surfaces the refusal only at connect_timeout's own
+  expiry) would otherwise eat the slot and misrecord a dead lane as a
+  slow one. Sync boundary holds structurally (the client never reads a
+  vector field). The depth knob is the CALLER's (limelight salience
+  admission is game-layer routing; documented in-module). WIRE-ONLY per
+  the BOUNDARY.md outbound-forbidden law (no dep on the serving repos).
+  Gates: 9 module tests (the G1b deadline-miss injection, the late-reply
+  arm, refused lane, error-code surfacing, bag-arm-served noted-not-
+  hidden, abstention first-class, JSON-escape wire round-trip, the
+  text_envelope C1 render) + a ci_feature_guard Layer 1.33 row (count
+  floor 9, the tests are invisible to every other layer — feature is
+  default-off). Clippy clean at default + decision_client + all-features;
+  default lib 17 green (the module compiles out, G3).
 - [ ] T4 — **arsenal vessel mint for the NLEH head** (riir-train,
   HOSTED-ONLY class) + the monotonic apply the arsenal already ships.
 - [ ] T5 — **GOAT gate**: G1 pick-parity vs the frozen reads; **G1b a
