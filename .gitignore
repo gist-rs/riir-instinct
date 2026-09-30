@@ -12,3 +12,6 @@ CLAUDE.md
 # riir-deploy build/stage trees (generated; the manifest is the source of truth)
 /.deploy/
 /dist/
+
+# cargo-heal runtime data (trajectory store + machine key; local state, never committed)
+/.heal/
