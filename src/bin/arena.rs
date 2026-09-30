@@ -43,7 +43,7 @@ use riir_reflex::engine::DecisionEngine;
 use riir_reflex::harness::metrics::{CalibrationPair, conformal_naive_floor, ece_of};
 use riir_reflex::harness::runner::seat::{
     PostureKnobs, Seat, SeatEval, SeatPosture, build_seat_engine, eval_seat, fit_posture,
-    prepare_seat,
+    prepare_seat, prepare_seat_with_synth,
 };
 use riir_reflex::harness::suites::{QKind, SuiteCase, SuiteQuestion};
 use riir_reflex::nb_scope::NbView;
@@ -281,6 +281,10 @@ struct DisclosedPosture {
     /// "count" for the v1 winners, "presence" for the banking77 nbsvm
     /// v2 lane.
     bag_convention: &'static str,
+    /// The seated synth corpus (Plan 426 T6), None = the gold corpus.
+    /// Disclosed as "rows=… extra_cap=… digest=…" — the corpus identity
+    /// rides every published row that consumed it.
+    synth_corpus: Option<String>,
 }
 
 fn main() {
@@ -316,6 +320,11 @@ fn arena_main() {
     let mut top_k = 8usize;
     let mut pin_a0 = true;
     let mut only_suites: Vec<String> = Vec::new();
+    // Plan 426 T6's seat posture: the seated synth corpus (blake3-verified
+    // by the reflex seat loader). None = the gold corpus, byte-identical
+    // to every published row.
+    let mut synth_corpus: Option<PathBuf> = None;
+    let mut synth_extra_cap = 128usize;
     let mut i = 1;
     while i < args.len() {
         match args[i].as_str() {
@@ -340,6 +349,14 @@ fn arena_main() {
                 only_suites.push(args[i].clone());
             }
             "--skip-pin-a0" => pin_a0 = false,
+            "--synth-corpus" => {
+                i += 1;
+                synth_corpus = Some(PathBuf::from(&args[i]));
+            }
+            "--synth-extra-cap" => {
+                i += 1;
+                synth_extra_cap = args[i].parse().expect("--synth-extra-cap needs a number");
+            }
             other => die(&format!("unknown arg {other}")),
         }
         i += 1;
@@ -381,7 +398,8 @@ fn arena_main() {
 
     let mut runs: Vec<SuiteRun> = Vec::new();
     for suite in &suites {
-        match run_suite(suite, &datasets_dir, &winners_dir, top_k) {
+        match run_suite(suite, &datasets_dir, &winners_dir, top_k, synth_corpus.as_deref(), synth_extra_cap)
+        {
             Ok(run) => runs.push(run),
             Err(e) => die(&format!("{suite}: {e}")),
         }
@@ -427,9 +445,25 @@ fn run_suite(
     datasets_dir: &Path,
     winners_dir: &Path,
     top_k: usize,
+    synth_corpus: Option<&Path>,
+    synth_extra_cap: usize,
 ) -> Result<SuiteRun, String> {
     eprintln!("--- {name} ---");
-    let seat = prepare_seat(name, datasets_dir)?;
+    let seat = match synth_corpus {
+        Some(path) => {
+            let s = prepare_seat_with_synth(name, datasets_dir, path, synth_extra_cap)?;
+            let synth = s.synth.as_ref().expect("with_synth seated the corpus");
+            eprintln!(
+                "  seat-synth: {} rows ({} dropped out-of-universe) · extra_cap {} · digest {}…",
+                synth.docs.len(),
+                synth.rows_dropped,
+                synth.extra_cap,
+                &synth.digest_hex[..16.min(synth.digest_hex.len())]
+            );
+            s
+        }
+        None => prepare_seat(name, datasets_dir)?,
+    };
     eprintln!(
         "  seat: {} test cases · {} cal cases · {} labels · pool {} docs",
         seat.suite.cases.len(),
@@ -1410,6 +1444,14 @@ fn run_suite_n<const N: usize>(
             score_threshold: posture.score_threshold,
             distance_threshold: posture.distance_threshold,
             bag_convention: bridge.convention.name(),
+            synth_corpus: seat.synth.as_ref().map(|s| {
+                format!(
+                    "rows={} extra_cap={} digest={}",
+                    s.docs.len(),
+                    s.extra_cap,
+                    &s.digest_hex[..16.min(s.digest_hex.len())]
+                )
+            }),
         },
         registration,
         registered,
@@ -1500,6 +1542,14 @@ fn run_suite_a0_only<const N: usize>(
             score_threshold: posture.score_threshold,
             distance_threshold: posture.distance_threshold,
             bag_convention: riir_instinct::specialist::BagConvention::Count.name(),
+            synth_corpus: seat.synth.as_ref().map(|s| {
+                format!(
+                    "rows={} extra_cap={} digest={}",
+                    s.docs.len(),
+                    s.extra_cap,
+                    &s.digest_hex[..16.min(s.digest_hex.len())]
+                )
+            }),
         },
         registration,
         registered: Cand::A0,
@@ -2170,6 +2220,11 @@ for seat-composing arms, `n_cases` disclosed)."
                 ""
             }
         ));
+        if let Some(synth) = &run.posture.synth_corpus {
+            md.push_str(&format!(
+                "Synth corpus seated: {synth} (Plan 426 T5/T6 — blake3-verified at seat \\\nload; the posture is gold-fit, the corpus is the only difference).\n\n"
+            ));
+        }
 
         // The registration table (train/cal — the instrument's output).
         // The refused pick stays visible beside the served arm.

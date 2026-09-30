@@ -67,6 +67,9 @@ const LOADER_STACK: usize = 64 * 1024 * 1024;
 const CONN_STACK: usize = 8 * 1024 * 1024;
 const READ_TIMEOUT: Duration = Duration::from_secs(10);
 const VERSION: &str = env!("CARGO_PKG_VERSION");
+/// Plan 426 T6: synth rows enter BEYOND the per-label gold cap — the V5
+/// measured posture (extra-cap 128/label, reflex bench 091).
+const SYNTH_EXTRA_CAP: usize = 128;
 
 fn main() {
     let mut datasets_dir = std::env::var("INSTINCT_DATASETS_DIR")
@@ -74,6 +77,10 @@ fn main() {
     let mut winners_dir = std::env::var("INSTINCT_WINNERS_DIR")
         .unwrap_or_else(|_| "../riir-train/data/instinct_specialists".into());
     let mut bind = std::env::var("INSTINCT_BIND").unwrap_or_else(|_| "0.0.0.0:8080".into());
+    // Plan 426 T6's serve posture: unset = the gold corpus everywhere
+    // (byte-identical boots); set = suites with a present
+    // `<dir>/<suite>_synth.jsonl` seat it.
+    let synth_corpus_dir = std::env::var("INSTINCT_SYNTH_CORPUS_DIR").ok();
     let vessel_dir = std::env::var("INSTINCT_VESSEL_DIR").ok();
     let vessel_key_hex = std::env::var("INSTINCT_VESSEL_KEY_HEX").ok();
     #[cfg(feature = "vessel")]
@@ -343,6 +350,7 @@ fn main() {
     let ctx = Arc::new(BootCtx {
         datasets_dir,
         winners_dir,
+        synth_corpus_dir,
         manifest: Arc::clone(&manifest),
         #[cfg(feature = "vessel")]
         vessel,
@@ -407,6 +415,13 @@ fn die(msg: &str) -> ! {
 struct BootCtx {
     datasets_dir: String,
     winners_dir: String,
+    /// Plan 426 T6's serve posture: when set and `<dir>/<suite>_synth.jsonl`
+    /// (+ its `.blake3` sidecar) exists for a booting suite, the seat loads
+    /// it — blake3-verified by the reflex loader, in-universe filtered —
+    /// and the lane's engine builds gold-cap-first + synth-beyond (the V5
+    /// arm-B construction). Absent file / unset env = the gold corpus,
+    /// byte-identical boots.
+    synth_corpus_dir: Option<String>,
     manifest: Arc<ArsenalManifest>,
     #[cfg(feature = "vessel")]
     vessel: Arc<Option<VesselConfig>>,
@@ -476,8 +491,40 @@ fn load_lane(
         return Err(format!("suite {suite} is not in the arsenal manifest"));
     };
     let cap = (row.budget.max_payload_mb << 20) as usize;
-    let seat =
-        riir_reflex::harness::runner::seat::prepare_seat(suite, Path::new(&ctx.datasets_dir))?;
+    // The seated synth corpus (Plan 426 T6): env dir + a present artifact
+    // for THIS suite seats it; anything else keeps the gold seat. A present
+    // artifact that FAILS verification is fatal (a corrupt corpus must
+    // never degrade into a quiet gold seat — the vessel reader's law).
+    let seat = match ctx.synth_corpus_dir.as_ref() {
+        Some(dir) => {
+            let synth = Path::new(dir).join(format!("{suite}_synth.jsonl"));
+            if synth.is_file() {
+                let s = riir_reflex::harness::runner::seat::prepare_seat_with_synth(
+                    suite,
+                    Path::new(&ctx.datasets_dir),
+                    &synth,
+                    SYNTH_EXTRA_CAP,
+                )?;
+                let meta = s.synth.as_ref().expect("with_synth seated the corpus");
+                eprintln!(
+                    "  lane {suite}: synth corpus seated — {} rows ({} dropped) · digest {}…",
+                    meta.docs.len(),
+                    meta.rows_dropped,
+                    &meta.digest_hex[..16.min(meta.digest_hex.len())]
+                );
+                s
+            } else {
+                riir_reflex::harness::runner::seat::prepare_seat(
+                    suite,
+                    Path::new(&ctx.datasets_dir),
+                )?
+            }
+        }
+        None => riir_reflex::harness::runner::seat::prepare_seat(
+            suite,
+            Path::new(&ctx.datasets_dir),
+        )?,
+    };
     #[cfg(feature = "vessel")]
     if let Some(cfg) = ctx.vessel.as_ref() {
         let name = artifact
