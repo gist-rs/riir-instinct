@@ -29,6 +29,16 @@ modelless row is canonical-pool, the arena is the t20k seat — the known
 (pool × engine) divergence, owner-gated (a)/(b)); the pin's reflex-run()
 leg HELD (arena A0 0.3967 == reflex run() on this pool).
 
+**Reproduction at the committed state** (reflex rebased past the sibling
+synth-seat landing + this repo's own reader landing (now `02f09d9` after the same-window rebase): the identical
+command re-read **A0 0.3967 · A1 0.4217 · ENC 0.5267 (316/600) · T2
++0.1050 / LB95 +0.0535** — every accuracy figure byte-identical. The
+reproduction's latency (p50 22,701 µs) ran under a sibling's heavy load
+(box refusal `load 42.50 > 6`) and is NOT quotable — the preflight-
+cleared first read's latency (14,709 µs p50) is the record's figure; the
+synth-seat change is inert on this seat (no synth input, engine output
+unchanged — the accuracy identity is the witness).
+
 Protocol: the seat posture = the CURRENT PUBLISHED reflex posture (Issue 008 T1's re-baseline: `--head-select --nb-select --oc-select --ridge-select`, registry caps, genome off — oc and ridge arm only where their cal-slice selection clears the bar: oc on typed_decisions, ridge on emotion, byte-identical to off elsewhere) fit through the SAME code reflex's runner uses (`harness::runner::seat`). The A0 drift pin asserts the arena's A0 accuracy equals reflex's own `run()` row on EVERY arena suite, and — when the reflex-site checkout stands beside the workspace — that reflex's rows equal the PUBLISHED bench.json numbers. Population (Issue 010 T1/T2): every reflex dataset suite — a suite with no winner artifact runs the A0/G0-only posture (verdict a0_stands, never a crash; Issue 010 T2). H1 top-k = 8 (default). H2 grid: β ∈ [0.0, 0.25, 0.5, 1.0, 2.0] × n_min ∈ [2.0, 4.0, 8.0] × τ ∈ [2.0, 4.0, 8.0] — 45 candidates, train-side only. Product gate (Issue 008 T2): the registered arm must be STRICTLY above the current Reflex row — paired (pick − A0) LB95 > 0 on this frozen test read — else the registration refuses and A0 serves. PICK SPACE (Issue 006, the v2 instrument): A0's probs and every gold idx speak the question's PRESENTED-option space; A1/H1/H2 resolve each presented option to its specialist class row (by name for the suites whose keys are the label strings — massive/banking77 — by index under k == N for the fixed-criteria suites), and every hybrid pick is a position, directly comparable with gold. A0 rows are PER QUESTION (reflex's hard-metrics convention; latency stays per-case for seat-composing arms, `n_cases` disclosed).Box state: power Some("AC Power") · powermode Some("high") · load1m Some(5.92) · swap_mb Some(388.06) · quotable Some(true) · refusals []
 
 ## sst5
