@@ -1,0 +1,97 @@
+{
+  "record": "0033_decstat_receipt_floor",
+  "ts_unix": 1790797771,
+  "service_url": "https://devnet.ai.gist.rs",
+  "params": {
+    "n_target": 40,
+    "rounds_max": 8,
+    "rounds_run": 1,
+    "lease_limit": 64,
+    "suite_filter": null
+  },
+  "submit": {
+    "receipts_generated": 40,
+    "stored": 40,
+    "duplicate": 0,
+    "refused": 0
+  },
+  "breakdown": {
+    "verified": 40,
+    "mismatch": 0,
+    "corpus_skew": 0,
+    "toolchain_skipped": 0,
+    "manifest_skipped": 0,
+    "duplicate_acks": 0,
+    "leased_distinct": 40
+  },
+  "rates": {
+    "reproduction_rate_verified_over_rerun": 1.0,
+    "end_to_end_yield_verified_over_leased": 1.0
+  },
+  "suites_booted": [
+    {
+      "name": "ag_news",
+      "cases": 400,
+      "arm": "H2(β=0.25,nmin=2,τ=2)"
+    },
+    {
+      "name": "emotion",
+      "cases": 400,
+      "arm": "A0"
+    },
+    {
+      "name": "sst5",
+      "cases": 600,
+      "arm": "A1"
+    },
+    {
+      "name": "massive_intent_en",
+      "cases": 300,
+      "arm": "H2(β=1,nmin=2,τ=4)"
+    },
+    {
+      "name": "banking77",
+      "cases": 500,
+      "arm": "H2(β=2,nmin=8,τ=8)"
+    },
+    {
+      "name": "xnli_en",
+      "cases": 300,
+      "arm": "A0"
+    },
+    {
+      "name": "prompt_injections",
+      "cases": 116,
+      "arm": "A1"
+    },
+    {
+      "name": "typed_decisions",
+      "cases": 400,
+      "arm": "H2(β=0.5,nmin=2,τ=2)"
+    }
+  ],
+  "suites_skipped": [
+    [
+      "code_fixtures",
+      "read ../riir-train/data/instinct_specialists/code_fixtures_nbsvm_v2.bin: No such file or directory (os error 2)"
+    ]
+  ],
+  "box": {
+    "host": "m3",
+    "cargo": "cargo 1.98.1 (797e8a9bc 2026-08-05)",
+    "rustc_release": "1.98.1",
+    "rustc_commit": "48a229ceaefd4985c50990b14116b6d856af0985",
+    "rustc_host": "aarch64-apple-darwin",
+    "features": [
+      "decstat",
+      "default"
+    ],
+    "package_version": "0.1.0",
+    "datasets_dir": "../riir-reflex/.raw/datasets_t20k",
+    "winners_dir": "../riir-train/data/instinct_specialists",
+    "synth_corpus_dir": null,
+    "manifest_digest_prefix": "cf851e2787a00724",
+    "build_fp_hex": "02164dac8817150c",
+    "manifest_fp_hex": "cf851e2787a00724"
+  }
+}
