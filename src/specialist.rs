@@ -215,6 +215,14 @@ pub fn winner_bridge(suite: &str) -> WinnerBridge {
             convention: BagConvention::Presence,
             serves: ServeContract::SingleQuestion,
         },
+        // Issue-008 T8 tie-break mint (`264714b9e7518e33`, the wave-1
+        // per-head NBSVM shape): the v2 weights train under PRESENCE bags,
+        // so the bridge pins the file AND the convention — the 579 law.
+        "code_fixtures" => WinnerBridge {
+            file: Some("code_fixtures_nbsvm_v2.bin"),
+            convention: BagConvention::Presence,
+            serves: ServeContract::SingleQuestion,
+        },
         "typed_decisions" => WinnerBridge {
             file: None,
             convention: BagConvention::Count,
@@ -444,6 +452,14 @@ mod tests {
         assert_eq!(t.file, None, "typed keeps the winner_v1 convention");
         assert_eq!(t.convention, BagConvention::Count);
         assert_eq!(t.serves, ServeContract::MultiQuestion);
+        // The T8 tie-break mint: file + Presence pinned together (the 579
+        // law — the v2 weights were trained under presence bags).
+        let c = winner_bridge("code_fixtures");
+        assert_eq!(c.file, Some("code_fixtures_nbsvm_v2.bin"));
+        assert_eq!(c.convention, BagConvention::Presence);
+        assert_eq!(c.serves, ServeContract::SingleQuestion);
+        assert!(check_winner_file("code_fixtures", "code_fixtures_nbsvm_v2.bin").is_ok());
+        assert!(check_winner_file("code_fixtures", "code_fixtures_winner_v1.bin").is_err());
         for suite in [
             "ag_news",
             "emotion",
