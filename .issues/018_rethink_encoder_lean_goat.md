@@ -231,7 +231,9 @@ prices everything before any training or kernel work is spent:
       fused-staging kernels + the MPS tension priced (MPS binds raw F32;
       default is MPS-off-under-q8 with the cost A/B'd) → Phase 3 adoption
       + the Q4 format seam; bit-identity by staging-value identity is the
-      central claim every gate proves).**
+      central claim every gate proves). ✅ PHASE 0 + PHASE 1 DONE
+      2026-10-02 (Update 4 below): host residency 2.85× (1489 vs 4238
+      MiB RSS), byte-identical everywhere, Phase 2 next.**
 - [ ] **The accuracy gate is NON-INFERIORITY, never "CI contains zero"**:
 
       | Requirement | Rule |
@@ -409,3 +411,21 @@ seated; Lane B's value is RAISED (the two-resident-checkpoint posture
 stands); Lane E NOT triggered. reflex-site untouched (no re-seat, no
 board change). **AMENDED ORDER NOW: C closed (negative) → D2b kernels →
 Q4/PQ2; B/A daylight.**
+
+**Update 4 (2026-10-02, the D2b session): Plan 616 Phase 1 DONE — host
+residency landed (riir-infer, all gates green).** The q8 GEMM weights now
+carry RAW (never widened host-side under Metal): `Weight2D { Dense | Q8 }`
+through Encoder/Head, the Backend trait's q8 family with widen-once
+defaults (CPU/CUDA/CubeCL resolve byte-identically), Metal's `q8_widen_t`
+load kernel dequant-transposing into the SAME device F32 Wᵀ (MPS
+unchanged). Bit-identity proven at three levels — synthetic (CPU + Metal,
+packed/fold/unfused/first-miss/k-tail), op-level (`metal_ops_smoke` q8
+arms), and the LIVE english artifact A/B: byte-identical answers,
+**RSS 1489 vs 4238 MiB (2.85× whole-process host cut**, the ~2.7 GB delta
+== Phase 0's derived 1.685 GB widened-f32). Kill-switch
+`LAYA_Q8_HOST_F32=1` (bit-restoring, the probe's control arm); the F16
+gate surface untouched (reflex G5 parity green against the in-flight
+substrate). Layout lesson recorded in the plan (flat-block Q8 order, not
+per-row). No bit moved ANYWHERE → the re-seat is the no-change proof when
+Phase 2 lands. Phase 2 (device-resident Q8 + fused staging + the MPS A/B)
+is the next session; Q4/PQ2 rides its format seam.
