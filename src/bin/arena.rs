@@ -2099,6 +2099,9 @@ fn pin_a0_identity(datasets_dir: &Path, runs: &[SuiteRun], suites: &[&str]) -> R
         gate_fit_calibrated: true,
         laya_python: false,
         gliner: false,
+        // The bekko JSONL-oracle comparison lane (reflex Bench 103) — off:
+        // a comparison lane, never the A0 drift pin's subject.
+        bekko: false,
         agentjev: false,
         // The OpenThai comparison lane (reflex Plan 003 Phase 2) — off:
         // their served model is a comparison lane, never the pin's
