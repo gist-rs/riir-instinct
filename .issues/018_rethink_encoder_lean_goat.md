@@ -1,6 +1,6 @@
 # Issue 018 — Rethink encoder lane: lean + GOAT plan (lazy inheritance, shared worker, one-checkpoint typed, quantization)
 
-**Status:** OPEN — filed 2026-10-01 (owner ask after the /#sizes Rethink row landed); Claude verdict CONVERGED AGREE at round 3 (2× REVISE, all reasons folded); plan ready to execute in branch order, nothing coded yet.
+**Status:** OPEN — filed 2026-10-01 (owner ask after the /#sizes Rethink row landed); Claude verdict CONVERGED AGREE at round 3 (2× REVISE, all reasons folded); plan ready to execute in branch order, nothing coded yet. Addendum 2026-10-01: two-case calibration branch wired (Δ-retention breach routes through D1's existing verdict, pre-registered refit allowed first; absolute-floor tripwire lands in Lane C's pre-declared loss options for the head C retrains, narrow filing for any other head) — katgpt-rs Research 562 addendum; nothing fired, execution order unchanged.
 
 ## Context — the numbers that triggered this
 
@@ -148,6 +148,7 @@ english becomes correct-by-completeness instead of a typed-cell blocker.
       re-seat. The ORDER BRANCH below resolves this: on a D1 pass, C runs
       AFTER D2 and trains on the adopted quant's encode cache exactly
       once; C never trains on an encoding D2 is about to change.
+- [ ] **Tripwire landing pad (562/576; wired 2026-10-01):** if the Lane D absolute-floor case ever fires on a trained head, C's retrain is where the fix lives — CE+λ·Brier becomes a PRE-DECLARED loss option for the Lane C head training (CE+Brier is Raschka's supervised form, katgpt-rs Research 576's PASS-Redirect line, author-caveated "modest gain, may not generalize"; the RL-family scoring-rule recipes are 576 §3's log/spherical/RPS — the loss form is chosen from that family at filing time; the reward-shaped twin already ships in riir-train `svr.rs::r_verify` `λ_cal`). Until a raw-FAILS reading exists, C trains plain CE — the refit-first posture is the shipped primary, now the independent consensus (562 addendum S2).
 
 ## Lane D — quantize the english checkpoint — riir-infer + riir-train
 
@@ -187,6 +188,9 @@ prices everything before any training or kernel work is spent:
       measuring; pass = the paired UPPER bound of Δ(Brier) (quant − F16)
       sits below that margin; thin families UNDECIDED, never PASS.
       Without a pre-declared margin this is a report, not a gate.
+- [ ] **Calibration-failure branch (wired 2026-10-01; two cases kept distinct — katgpt-rs Research 562 addendum):**
+  (a) **Δ-retention breach** — a per-family Δ(Brier)/Δ(ECE) read above its pre-declared margin is a QUANT retention failure, not a head defect (in D1 the heads are the existing F16-trained ones; only the encoder is fake-quantized). Response: the per-family temperature refit may run FIRST only if pre-registered in the margin declaration (argmax-preserving, the Issue-810 track-b posture; external warrant: one fitted temperature on 50–300 labels fixed most calibration error everywhere tried, but refit temps ranged 0.65–4.45 across domains → fit per family). A refit that clears the margins = PASS-with-refit (recorded); an unrefit-able breach counts as a D1/D2 calibration FAIL and takes the EXISTING branch (D1-fail → C on F16 → E distill). No new trigger beside D1's verdict.
+  (b) **Absolute-floor failure** — a G1 read of raw-FAILS-the-floor (below the conformal-naive floor — an absolute check, NOT a Δ read) on ANY gradient-trained head, F16 or quantized, is the standing 562/576 tripwire. For the head Lane C retrains, the fix is C's pre-declared loss option (Lane C's tripwire landing-pad bullet, above) — no separate filing. For any OTHER seated head (C never retrains it), the tripwire applies verbatim: the narrow riir-train calibration-aware-loss issue files THAT DAY for that head's own retrain.
 - [ ] Determinism gate: quantized kernels may not be bit-identical across
       Metal and CUDA — the frozen-read determinism re-seat runs PER DEVICE.
 - [ ] Adoption re-seats every cell (frozen reads invalidated by any
