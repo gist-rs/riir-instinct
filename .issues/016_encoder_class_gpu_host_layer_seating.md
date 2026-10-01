@@ -41,6 +41,13 @@ the 0.6475 seating bar before any lift → **the head run is EARNED**, blocked
 only on the NLEH v2 per-option scoring shape (T9). Three wire-fidelity
 witnesses: the floors reproduce published board reads byte-exactly (0.4980
 laya-english bank / 0.7445 laya-typed / 0.3575 laya-english typed).**
+**T9 train-side COMPLETE 2026-10-01 ([Bench 040](../.benchmarks/040_typed_encoder_v2_head/RESULTS.md)):
+the NLEH v2 per-option head LANDED + trained EARNED (holdout 0.7975 vs the
+reference's 0.7762) + the single frozen read 0.7550 — +10.75 pt over the
+0.6475 displayed arm (artifact `../riir-train/.raw/t608/typed_encoder_v2.bin`,
+blake3 `c2e9f346…`). The SEAT half remains: the arena replay needs the C1
+arm's multi-question flattening + the TYPED checkpoint widening, then the
+017-pattern lane-doc emit + site publish (Rethink 3/9 → 4/9).**
 **Owner round 3 (2026-09-30): three clarifications folded — the no-new-product-lane note
 (nothing named "Working"/"riir-working"; L0–L5 are 048's tier vocabulary), D1's host
 generalized to ANY real GPU serving deploy (game prod OR text-lane serve host — the
@@ -301,17 +308,29 @@ served Rethink (encoder) @<host>" once the rename lands. The
       **Verdicts (Bench 039)**: bank/prompt DEAD (above); typed ALIVE — the
       head run is earned. Artifacts: `../riir-train/.raw/t608/` (regenerable
       makers + LENC caches; gitignored data).
-- [ ] T9 — **the earned typed head run (NLEH v2 per-option scoring)** —
-      CODE then train then ONE frozen read: (1) the v2 artifact shape —
-      `score_i = MLP([marker_i ; pooled])` → per-option sigmoid (the
-      Specialist law), pick = argmax over the presented options; handles any
-      presented width and any per-case option text; (2) the trainer arm over
-      the typed-ckpt TRAIN cache (800 t20k cases ≈ 4000 questions, gold-only
-      first per the 600 wave-3 finding); (3) the single frozen test read +
-      T2-style paired LB95 vs the 0.6475 displayed arm; (4) if it beats the
-      bar: the arena `--encoder-art` read + seat + lane-doc emit (the 017 T5
-      auto-emitter) + the site publish — the fourth Rethink cell and the
-      strongest (floor alone +9.7 over the displayed arm).
+- [-] T9 — **the earned typed head run (NLEH v2 per-option scoring)** —
+      CODE then train then ONE frozen read. **Train-side COMPLETE
+      2026-10-01 ([Bench 040](../.benchmarks/040_typed_encoder_v2_head/RESULTS.md))**:
+      (1) the v2 artifact shape LANDED — `score_i =
+      MLP([marker_i ; pooled])` → per-option sigmoid (the Specialist law),
+      pick = first-argmax over the presented options; the codec + eval
+      forward in `instinct_encoder_lane.rs` (riir-train `instinct_typed_head_trainer`
+      + the eval's v2 winner path); (2) trained over the typed-ckpt TRAIN
+      cache (4000 question rows, gold-only, the v1 discipline verbatim):
+      **holdout 0.7975 vs the reference's 0.7762 → EARN YES** (+2.13 pt,
+      the issue-600 class-relative bar); (3) the SINGLE frozen test read:
+      **0.7550 (1510/2000)** — +1.05 over the reference (78 vs 57
+      head-only/ref-only-right), **+10.75 over the 0.6475 displayed arm**,
+      −1.65 under AgentJev. Artifact
+      `.raw/t608/typed_encoder_v2.bin` · blake3 `c2e9f346…`.
+      REMAINS (the seat half, the 017 pattern — its own session): (4) the
+      arena `--encoder-art` replay — `encoder_arm.rs` needs the v2 read +
+      per-option forward + the MULTI-QUESTION flattening (typed carries 5
+      questions/case; the C1 one-question refusal must widen to the A0
+      arms' per-question form) + the TYPED checkpoint selection; then the
+      cell-identity witness (0.7550 must reproduce on the live m3-Metal
+      encode) + the auto-emitted lane doc + the site publish (Rethink
+      3/9 → 4/9).
 - [x] T7 — **the emotion screen (the ONE unscreened board-relevant encoder
   run)** — a 008-track text-lane run of the same class,
   not a layer-seating task. Pre-registered per the 014 law BEFORE any run:
