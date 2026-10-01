@@ -1,3 +1,32 @@
+## 2026-10-01 — Bench 039+040: the three unscreened encoder suites screened + the EARNED typed run — the NLEH v2 per-option head reads 0.7550
+
+The `Rethink — not run` cells on the site's remaining suites are now fully
+adjudicated (016 T8/T9): **banking77 DEAD** (english floor 0.4980 + the
+class's max lift = 0.645 < the 0.8540 bar), **prompt_injections DEAD**
+(floor 0.6983 + 0.147 = 0.845 < 0.8534), **typed_decisions ALIVE** — the
+typed-checkpoint reference floor reads 0.7445 on the wire-faithful frozen
+test read (+9.7 pt OVER the 0.6475 displayed arm before any lift), so the
+head run was earned. Screens: [Bench
+039](.benchmarks/039_encoder_screens_bank_prompt_typed/RESULTS.md) — three
+wire-fidelity witnesses (the floors reproduce published board reads
+byte-exactly: 0.4980 / 0.7445 / 0.3575).
+
+The earned run LANDED the **NLEH v2 per-option scoring shape** (the CODE
+blocker the issue named): `score_i = MLP([marker_i ; pooled])` → sigmoid,
+first-argmax over the PRESENTED options — any width, any per-case option
+text (codec + trainer + eval forward in riir-train's
+`instinct_encoder_lane` / `instinct_typed_head_trainer`, commits `e118c29d`
++ `4a9e66cf`). Trained gold-only over the typed-ckpt train cache (4000
+question rows, the v1 discipline verbatim): **holdout 0.7975 vs the
+reference's 0.7762 — EARN YES**; the single frozen read: **0.7550
+(1510/2000)** — +1.05 over the reference (78 vs 57 head-only/ref-only
+right), **+10.75 over the displayed hybrid arm**, −1.65 under AgentJev.
+Record: [Bench 040](.benchmarks/040_typed_encoder_v2_head/RESULTS.md).
+The SEAT half remains (016 T9's remainder): the C1 arena arm's
+multi-question flattening + the TYPED checkpoint widening, the 017-pattern
+replay witness, the lane-doc emit + the site publish — Rethink 3/9 → 4/9,
+the strongest cell vs the displayed arm yet (sst5 was +10.5).
+
 ## 2026-10-01 — Bench 038: the emotion confusion read — ±0.0 explained with mechanism, and every remaining lever priced (records-only)
 
 The owner board question ("why emotion +0? can we do better?") answered from
