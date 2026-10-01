@@ -484,6 +484,7 @@ fn arena_main() {
     std::fs::create_dir_all(&out_dir).expect("create out dir");
     write_predictions(&out_dir, &runs);
     write_results(&out_dir, &runs, &box_summary);
+    write_encoder_lane_doc(&out_dir, &runs, &box_state);
     eprintln!("=== done — results in {} ===", out_dir.display());
 }
 
@@ -2562,4 +2563,110 @@ HOSTED-ONLY vessel wrapper is P4 (Issue 001) — disclosed, not claimed here.\n\
     let path = out_dir.join("RESULTS.md");
     std::fs::write(&path, &md).expect("write results");
     eprintln!("results: {}", path.display());
+}
+
+/// The issue-017 lane doc — AUTO-EMITTED whenever a suite ran the encoder
+/// arm. Every MEASURED field is machine-written from the run's own structs
+/// (`EncoderFace`, the box-state span, the git sha probe): the site's own
+/// law ("never type a measured number") applies to the producer side too —
+/// the 017 seating hand-typed acc/latency/LB95 into two of these and that
+/// is exactly the drift class this emitter exists to prevent. The serves
+/// text is static law (014 refusal); the gate text interpolates only this
+/// run's numbers plus the optional `--encoder-note` prose (attribution
+/// facts from the train-side record — 599/600 — which the arena cannot
+/// derive and must not invent).
+#[allow(clippy::too_many_lines)]
+fn write_encoder_lane_doc(out_dir: &Path, runs: &[SuiteRun], start: &riir_reflex::harness::box_state::BoxState) {
+    let enc_runs: Vec<&SuiteRun> = runs.iter().filter(|r| r.encoder.is_some()).collect();
+    if enc_runs.is_empty() {
+        return;
+    }
+    let end = riir_reflex::harness::box_state::capture();
+    let span = riir_reflex::harness::box_state::BoxStateSpan {
+        start: start.clone(),
+        end,
+    };
+    let git_sha = std::env::var("ARENA_GIT_SHA")
+        .ok()
+        .or_else(|| {
+            std::process::Command::new("git")
+                .args(["rev-parse", "--short", "HEAD"])
+                .output()
+                .ok()
+                .filter(|o| o.status.success())
+                .and_then(|o| String::from_utf8(o.stdout).ok())
+                .map(|s| s.trim().to_string())
+        })
+        .unwrap_or_else(|| "unknown".to_string());
+    // The host key the site's publish merges on: "m3" is the primary-host
+    // family (NOT a device-variant tag like m3-max-ane) — the sst5/xnli
+    // precedents. Env-overridable for a future non-m3 lane host.
+    let host = std::env::var("ARENA_LANE_DOC_HOST").unwrap_or_else(|_| "m3".to_string());
+    let date_utc = std::process::Command::new("date")
+        .args(["-u", "+%Y-%m-%dT%H:%M:%SZ"])
+        .output()
+        .ok()
+        .filter(|o| o.status.success())
+        .and_then(|o| String::from_utf8(o.stdout).ok())
+        .map(|s| s.trim().to_string())
+        .unwrap_or_else(|| {
+            let secs = std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .map(|d| d.as_secs())
+                .unwrap_or(0);
+            format!("unix:{secs}")
+        });
+    let suites: Vec<serde_json::Value> = enc_runs
+        .iter()
+        .map(|r| {
+            let e = r.encoder.as_ref().expect("filtered");
+            let art_name = std::path::Path::new(&e.art)
+                .file_name()
+                .and_then(|n| n.to_str())
+                .unwrap_or("nleh_v1")
+                .trim_end_matches(".bin")
+                .to_string();
+            serde_json::json!({
+                "name": r.suite,
+                "n_questions": r.n_questions,
+                "n_cases": r.n_cases,
+                "encoder": {
+                    "lane": "encoder",
+                    "model": format!("ENC-{art_name} (laya-english encoder + NLEH v1 head)"),
+                    "hard": { "n": e.n, "accuracy": e.accuracy },
+                    "consult_rate": 1.0,
+                    "latency_scope": "arm-only",
+                    "latency_rows": "questions",
+                    "latency_p50_ms": (e.p50_us / 1000.0 * 1000.0).round() / 1000.0,
+                    "latency_p99_ms": (e.p99_us / 1000.0 * 1000.0).round() / 1000.0,
+                    "serves": "\u{2717} (encoder class refused at serve — the incumbent arm serves; instinct issue 014 C1, seating per issue 017)",
+                    "gate": format!(
+                        "acc {:.4} ({}/{} rows) · paired vs the incumbent A1: mean {:+.4} · LB95 {:+.4} · per-row p50 {:.3} ms ({} device). Serve REFUSED (014 class-wide latency class); record-only cell, seated per the owner call 2026-10-01 (instinct issue 017).{}",
+                        e.accuracy, (e.accuracy * e.n as f64).round() as usize, e.n,
+                        e.mean_vs_a1, e.lb95_vs_a1,
+                        e.p50_us / 1000.0, e.device,
+                        std::env::var("ARENA_ENCODER_NOTE").map(|n| format!(" {n}")).unwrap_or_default(),
+                    ),
+                    "device": e.device,
+                    "record_only": true,
+                },
+            })
+        })
+        .collect();
+    let doc = serde_json::json!({
+        "meta": {
+            "host": host,
+            "git_sha": git_sha,
+            "date_utc": date_utc,
+            "profile": "release",
+            "laya_feature": false,
+            "box_state": span,
+            "lane_note": "instinct encoder lane doc (AUTO-EMITTED by the arena, issue 017 T5): the record-only encoder arm's frozen read. The 014 class-wide encoder-serve refusal stands — the incumbent arm keeps serving; this doc exists to seat the measured cell (progress-display law, owner call 2026-10-01).",
+        },
+        "suites": suites,
+    });
+    let path = out_dir.join("hybrid_lane_doc.json");
+    std::fs::write(&path, serde_json::to_string_pretty(&doc).expect("lane doc json"))
+        .expect("write lane doc");
+    eprintln!("encoder lane doc (auto): {}", path.display());
 }

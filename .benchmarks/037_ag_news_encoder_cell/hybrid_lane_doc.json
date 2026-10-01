@@ -2,14 +2,14 @@
   "meta": {
     "host": "m3",
     "git_sha": "0f81b54",
-    "date_utc": "2026-10-01T11:20:17Z",
+    "date_utc": "2026-10-01T11:20:42Z",
     "profile": "release",
     "laya_feature": false,
     "box_state": {
       "start": {
         "power": "AC Power",
         "power_mode": "high",
-        "load_1m": 4.95,
+        "load_1m": 4.46,
         "swap_used_mb": 3503.0,
         "latency_quotable": true,
         "refusals": []
@@ -17,7 +17,7 @@
       "end": {
         "power": "AC Power",
         "power_mode": "high",
-        "load_1m": 4.46,
+        "load_1m": 4.61,
         "swap_used_mb": 3503.0,
         "latency_quotable": true,
         "refusals": []
@@ -27,23 +27,23 @@
   },
   "suites": [
     {
-      "name": "xnli_en",
-      "n_questions": 300,
-      "n_cases": 300,
+      "name": "ag_news",
+      "n_questions": 400,
+      "n_cases": 400,
       "encoder": {
         "lane": "encoder",
-        "model": "ENC-xnli_en_encoder_v1 (laya-english encoder + NLEH v1 head)",
+        "model": "ENC-ag_news_encoder_v1 (laya-english encoder + NLEH v1 head)",
         "hard": {
-          "n": 300,
-          "accuracy": 0.86
+          "n": 400,
+          "accuracy": 0.9475
         },
         "consult_rate": 1.0,
         "latency_scope": "arm-only",
         "latency_rows": "questions",
-        "latency_p50_ms": 16.513,
-        "latency_p99_ms": 18.634,
+        "latency_p50_ms": 16.983,
+        "latency_p99_ms": 27.313,
         "serves": "✗ (encoder class refused at serve — the incumbent arm serves; instinct issue 014 C1, seating per issue 017)",
-        "gate": "acc 0.8600 (258/300 rows) · paired vs the incumbent A1: mean +0.4500 · LB95 +0.3832 · per-row p50 16.513 ms (metal device). Serve REFUSED (014 class-wide latency class); record-only cell, seated per the owner call 2026-10-01 (instinct issue 017). Reference-identified: the head ties the laya-english forward 300/300 picks (riir-train 599 T5a) — the cell is the encoder lane's own frozen read, not the trainer's lift.",
+        "gate": "acc 0.9475 (379/400 rows) · paired vs the incumbent A1: mean +0.0600 · LB95 +0.0320 · per-row p50 16.983 ms (metal device). Serve REFUSED (014 class-wide latency class); record-only cell, seated per the owner call 2026-10-01 (instinct issue 017). The head reads one question under its own reference (riir-train 600 T1).",
         "device": "metal",
         "record_only": true
       }
