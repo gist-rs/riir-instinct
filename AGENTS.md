@@ -189,6 +189,55 @@ per the boundary law (zero deps on the serving repos). **T4 (instinct
 proves vessel-lane == raw-lane + the downgrade refusal; the production
 mint is the owner's key ceremony.**
 
+**Issue 016 T8+T9 COMPLETE (2026-10-01, Benches 039/040/041; instinct `73cd6d6`
++ `10f6b8e`): the typed_decisions head run was EARNED, trained, and the cell
+SEATED record-only — `serve: ✗` (class-wide refusal stands; D1 trigger-blocked).**
+T8 screens (Bench 039): banking77 DEAD (floor 0.4980 + max lift 0.645 < 0.8540),
+prompt_injections DEAD (0.6983 + 0.147 = 0.845 < 0.8534), typed ALIVE — the
+typed-checkpoint floor 0.7445 reads +9.7 pt over the 0.6475 seating bar before
+any lift; the three wire-fidelity witnesses reproduce published board reads
+byte-exactly. T9 train half (Bench 040): the **NLEH v2 per-option head** (the
+scoring shape the v1 codec cannot express) trained EARNED (holdout 0.7975 vs
+the reference's 0.7762) + the single frozen read **0.7550** — +10.75 pt over the
+0.6475 displayed arm (`../riir-train/.raw/t608/typed_encoder_v2.bin`, blake3
+`c2e9f346…`). T9 seat half (Bench 041): `encoder_arm.rs` reads v2 — the law-copy
+mirror of riir-train's t608 codec, per-QUESTION flattening (typed's 5 q/case →
+2000 rows, the A0 arms' convention), `--encoder-ckpt typed` (parse-time
+validated; v1 keeps the C1 one-question law byte-identically) — and the
+**cell-identity witness HOLDS: 0.7550 (1510/2000) EXACT on the live m3-Metal
+typed encode**, reproduced on both runs (the third-posture law). En-route: a
+PRE-EXISTING latent `laya_face` index bug fixed (per-question escalation indices
+mapped into `cases[]` — valid only at 1 q/case; multi-question suites now SKIP
+the face loudly, never mis-measure). The lane doc is AUTO-EMITTED (see 017 T5).
+Board: the Rethink lane grew 3/9 → **4/9** (sst5 · xnli · ag_news · typed — the
+strongest cell vs the displayed arm, +10.75 pt; reflex-site `245bf34`, CF
+`8abd1add`, the Issue-021 latency ack recorded: ambient load, the 364 ms figure
+is the 3-orders-over-bar magnitude evidence). REMAINS T5–T6 (G2/G4 land with
+the consumer; T6 = D1, trigger-blocked); thai suites wait on the multilingual
+checkpoint (riir-train 603, 4090-queued); the 6 harness families are law-excluded.
+
+**Issue 017 CLOSED (2026-10-01, Bench 036 + 037; instinct `cdc92d1` + `b03fded`
++ `2960701`, reflex-site `70d9e80`, CF `eeee1b19`): the owner's progress-display
+call — seat the measured xnli cell as-is, record-only — reversing the
+014-round-3 "no separate xnli cell" decision ("no progress at all" reads worse
+than a seated −4.0).** xnli_en: **ENC 0.8600 (258/300)** cell-identical to 599
+T5a (the third-posture witness), vs A1 mean +0.4500 · LB95 +0.3832; p50
+231,709 µs (ms-class — the recorded ground of the 014 refusal, now QUOTABLE
+under the preflight-cleared box state); the head ties the laya-english reference
+300/300 picks, carried as the cell's reference-identified disclosure. ag_news
+seated (Bench 037): **ENC 0.9475 (379/400)** cell-identical to 600 T1, +5.0 pt
+over the serving H2 0.8975 (LB95 +0.0320), −0.25 pt under its own laya-english
+reference; NOT seated anywhere the encoder reads WORSE (massive 0.675 < 0.827,
+emotion ~0.62–0.74 < 0.885 — the better-only law). The owner's two follow-ups
+folded: **the arena AUTO-EMITS `hybrid_lane_doc.json`** on every `--encoder-art`
+run (`write_encoder_lane_doc`, `--encoder-note` carries the train-side
+attribution prose — measured numbers never hand-typed), and **the vs-best card
+counts the FAMILY arm** (best measured cell of Instinct-hybrid · Rethink-encoder
+per suite; encoder rows violet + record-only tag; the coverage literals are
+DATA-DERIVED in both smokes, the page prose count-free). Attribution honesty
+KEPT as disclosure, not concealment; 014's class-wide serve refusal and 599's
+record STAND — 603's multilingual screen cannot unseat these cells either way.
+
 **Bench 0029 + Plan 426 T6 (2026-09-30): the massive SYNTH SEAT serves —
 H2(β=1,nmin=2,τ=4) 0.8400 (was 0.8267), the modelless A0 0.7800 → 0.8133
 (== reflex bench 091's V5 anchor EXACTLY), every arm rose.** The synth
