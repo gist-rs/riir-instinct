@@ -224,7 +224,14 @@ prices everything before any training or kernel work is spent:
       `weight_posture: q8-artifact`). REMAINS: D2b — device-resident Q8
       buffers + dequant-fused kernels (the real device-memory tier;
       per-device determinism re-seats apply THERE), then Q4/PQ2 second,
-      then C on the adopted encoding.
+      then C on the adopted encoding. **→ C EXECUTED (negative, Bench
+      0048 — above). D2b SCOPED:
+      `../riir-infer/.plans/616_laya_q8_device_residency.md` (Plan 616 —
+      Phase 0 measure → Phase 1 host residency → Phase 2 the
+      fused-staging kernels + the MPS tension priced (MPS binds raw F32;
+      default is MPS-off-under-q8 with the cost A/B'd) → Phase 3 adoption
+      + the Q4 format seam; bit-identity by staging-value identity is the
+      central claim every gate proves).**
 - [ ] **The accuracy gate is NON-INFERIORITY, never "CI contains zero"**:
 
       | Requirement | Rule |
