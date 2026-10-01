@@ -80,3 +80,39 @@ What is NOT reversed:
       LIVE-verified: `reflex.gist.rs/data/bench.json` carries the cell
       (acc 0.86 · p50 231.709 ms · quotable · record_only) and the areas
       rollup (coverage 2/9 · index 0.599). CLOSED.
+- [x] T5 — **the owner's follow-up (same day, two parts):** (a) "only
+      xnli_en? how about other bench? any better than recent is count" —
+      the vs-best CARD counted the hybrid lane only (the sst5-era
+      serve-refused-excluded display rule) and the other suites had no
+      Rethink cells; (b) "it should be auto script not hand write?" — the
+      lane docs were hand-typed measured numbers, the exact drift class.
+      EXECUTED:
+      • **The arena AUTO-EMITS `hybrid_lane_doc.json`** on every
+        `--encoder-art` run (`write_encoder_lane_doc`, instinct
+        `2960701`): acc/n/mean/LB95/p50/p99 from `EncoderFace`, the
+        box-state SPAN (start+end captures), git sha, host — the
+        `--encoder-note` flag carries train-side attribution prose
+        (599/600 facts the arena must not invent). Both hand docs replaced
+        by emitter output (reads re-run; accuracy bit-identical; cleaner
+        latencies 16.5/17.0 ms p50).
+      • **ag_news seated (Bench 037)**: `ag_news_encoder_v1.bin` (the 600
+        T1 gold-only head, 4090 artifact scp'd, BLAKE3 `e7e17cf3…`) →
+        **0.9475 (379/400)**, cell-identical to 600 T1; +5.0 pt over the
+        serving H2 0.8975 (LB95 +0.0320 vs A1); −0.25 pt under laya
+        english (one question under its own reference). NOT seated
+        anywhere the encoder reads WORSE than the displayed arm (massive
+        0.675 < hybrid 0.827; emotion ~0.62–0.74 < A0 0.885) — the
+        better-only law.
+      • **The vs-best card counts the FAMILY arm** (reflex-site
+        instinct.js): best measured cell of (Instinct hybrid · Rethink
+        encoder) per suite; the contributing lane's color fills the line;
+        encoder-contributed rows carry a `record-only` tag; heads read
+        "Instinct · Rethink vs Reflex / vs best lane". The smoke mirrors
+        the family matcher; the coverage literals ("1/9"/"2/9") are now
+        DATA-DERIVED in both smokes (the chart smoke's suites-card
+        polyline counter repaired from dead code); the page prose is
+        count-free.
+      • Board effect: Rethink lane 3/9 suites (sst5 · xnli · ag_news,
+        index 0.709); vs-Reflex 8/9 ahead; vs-best 3/9 strictly best
+        (sst5 52.7 vs gliner 43.8 now counts); xnli_en reads −4.0 on the
+        card (was −37.7).
