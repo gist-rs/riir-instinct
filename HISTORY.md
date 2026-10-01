@@ -1,3 +1,36 @@
+## 2026-10-01 — Bench 038: the emotion confusion read — ±0.0 explained with mechanism, and every remaining lever priced (records-only)
+
+The owner board question ("why emotion +0? can we do better?") answered from
+FROZEN artifacts (Bench-016 predictions.json + the t20k emotion gold; the join
+self-checks by reproducing A0 0.8850 / A1 0.8550 / H1 0.8775 EXACTLY).
+Record: [`.benchmarks/038_emotion_confusion_read/`](.benchmarks/038_emotion_confusion_read/RESULTS.md)
+(reproducible `analysis.py` in-dir).
+
+- **Why ±0.0:** emotion serves A0 — Reflex's own ridge@8-armed base at 0.8850,
+  the highest bar on the board — and every measured challenger loses (A1
+  0.8550, H1 0.8775, the 45-cell H2 grid, the encoder class dead-by-screen
+  032+035). The cell is the honest display of "the modelless floor won on its
+  strongest suite."
+- **The error structure:** 46 misses — love→joy 15 (33%), the love/fear/surprise
+  tail 71%; sadness/joy recall ≥ 0.966. **46/46 errors at conf < 0.30 (mean
+  0.009)**, 32/46 abstained — the calibrated readout already flags every miss.
+- **Synth-seat lever REFUTED for emotion:** 0/15 love→joy errors recoverable —
+  the train pool's own lexical verdict says JOY on every signature token
+  (blessed 61/121 joy · honored 56/57 joy · generous 51/93 joy · impressed
+  61/63 surprise). Train and test disagree with each other on exactly the
+  boundary — annotation softness, not coverage; the Bench-0029 massive synth
+  lever does not transfer (massive's gap was coverage; emotion's is labels).
+- **Fusion ceiling negative at the consult subset:** on A0's 185 abstentions,
+  A1 reads 150/185 vs A0's forced 153/185 — the specialist is WORSE where
+  fusion would consult it (the mechanism behind H1's loss, and it kills the
+  H2 grid a priori). Oracle-selective 0.9225 needs a gate that does not exist
+  in the measured class.
+- **Verdict:** 0.8850 is the pool-consistent ceiling for every current class.
+  The only remaining mover is a contextual (fine-tuned LM) class — the wave-1
+  model-class re-open bar, one suite, oracle-max +3.7 pt; this record is the
+  priced refusal. `.benchmarks/.highwater` repaired 0035→038 (the 036/037
+  session never bumped it).
+
 ## 2026-10-01 — Issue 017: the xnli_en encoder cell SEATED (record-only, serve ✗) — the owner's progress-display call reversing the 014-round-3 sub-decision
 
 **The owner call (2026-10-01, verbatim intent):** "-4pt is better than
