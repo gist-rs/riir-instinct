@@ -424,8 +424,37 @@ arms), and the LIVE english artifact A/B: byte-identical answers,
 **RSS 1489 vs 4238 MiB (2.85× whole-process host cut**, the ~2.7 GB delta
 == Phase 0's derived 1.685 GB widened-f32). Kill-switch
 `LAYA_Q8_HOST_F32=1` (bit-restoring, the probe's control arm); the F16
-gate surface untouched (reflex G5 parity green against the in-flight
+gates (reflex G5 parity green against the in-flight
 substrate). Layout lesson recorded in the plan (flat-block Q8 order, not
 per-row). No bit moved ANYWHERE → the re-seat is the no-change proof when
 Phase 2 lands. Phase 2 (device-resident Q8 + fused staging + the MPS A/B)
 is the next session; Q4/PQ2 rides its format seam.
+
+**Update 5 (2026-10-02, the D2b Phase 2 session): Plan 616 Phase 2 DONE —
+device-resident Q8 + the fused staging kernels landed (riir-infer
+`8c250a2`, all gates green).** The weights now hold ONE raw-bytes buffer
+on the device (`weights_q8`, 1.0625 B/elt) and the three fused kernels
+(`sgemm_q8`/`sgemm_xwide_q8`/`sgemm_splitk_q8`) stage from the native
+blocked bytes with k-fastest lanes — one block per warp, warp-uniform
+scale, the same tile math as the f32 instances (bit-identity by
+construction, proven at all 24 dense A/B cells + 7 shared-tree gate
+shapes + the fold arms). Option (i) shipped: MPS off on the weight shapes
+under q8 (the pre-T13 split rule, one loud disclosure, fused/widen reach
+counters); `LAYA_Q8_DEVICE_F32=1` restores Phase 1. **Measured: device
+residency 1654.9 → 348.8 MiB (4.74×); whole-process RSS 1492 vs 1881
+(Phase 1) vs 4826 MiB (Phase 0); the fused posture deterministic ×2
+byte-identical; the Phase 1 tree byte-identical (device-f32 == host-widen);
+the option-(i) dispatch delta 5.4e-7 probs / 7.2e-7 conf / act exactly 0 —
+two orders under G5 (the T13-class accumulation-order change, measured and
+bounded).** THE PRICED COST, now with per-cell numbers: fused/mps
+1.22–2.07× on the dense cells (m-scaling; geo 1.42 @ m106 → 1.96 @
+m1700), fused/narrow ~1.15 (the in-staging dequant ALU — the T11 L2
+finding means the halved B bytes buy nothing); whole-forward single-question
+paired median **1.002×** (the dense cells are a small share at the serving
+shape; PROVENANCE power=AC load 4.17 powermode 2-high). **No F16 bit
+moved (Dense → matmul_w → MPS untouched) — the seated cells stand; the
+q8 posture's re-seat is Phase 3's adoption record.** The re-pricing
+condition for option (iii) is MET with numbers: long-prefill q8 serving is
+where an MSL MPS-replacement would earn its bench — owner call.
+REMAINS: Phase 3 (adoption + re-seat + the Q4/PQ2 seam — rides the
+staging's format constant); Lane B/A daylight.
