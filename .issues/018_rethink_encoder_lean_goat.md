@@ -267,3 +267,46 @@ prices everything before any training or kernel work is spent:
   floor, every gate names its instrument, the fallbacks are recorded.
   Execution is owner-triggered, in branch order: B → A → D1, then
   (D2 → C) on a pass or (C → E) on a fail.
+
+## Execution addendum (2026-10-02, overnight — the owner-triggered session)
+
+**Owner trigger recorded:** the owner referenced this issue directly
+("did this change the plan?") and delegated owner-calls for the night
+("any owner call you can ask Claude... expect all done when i woke up"),
+with the posture note "prod higher tier is gpu so i dont bother cpu that
+much, only simd is fine enough". Claude verdict round 1 (REVISE, folded):
+board-first; Lane B/A plumbing deferred to a daylight session (they are
+RAM/latency plumbing — exactly what the GPU-tier note deprioritizes); D1
+after board work if the night allows.
+
+**The bekko question (the owner's "it better than laya? or fusion?"):**
+NO plan change to this issue. Bekko is an external subprocess oracle
+(hotchpotch/bekko-system-one, reflex Bench 103) — comparison-lane only,
+not a sealed artifact (A8/A10), unservable, and cannot enter the H1/H2
+fusion lanes (fusion fuses sealed specialist artifacts). Recorded as
+SUPPORTING INTEL for Lane E's premise: bekko-68m (68M params) beat the
+reflex modelless floor on 4/7 general suites and lost to the seated
+Rethink cells on every shared suite except massive (0.8667 vs ENC
+0.6567) — a 68M model being competitive on general suites strengthens
+the sub-300M-student case Lane E prices. On S1MB (card-reported,
+unreproduced — riir-train 607): laya-typed 15.00 / laya-english 13.36 /
+laya-multilingual 9.28 vs bekko-68m 40.46 — the laya family leads the
+quality axis by a wide margin.
+
+**⚠ Two D1s exist — naming collision clarified:** instinct Issue 016's
+D1 ("the sst5 cell publishes as served") stays TRIGGER-BLOCKED (needs a
+real GPU serving deploy — owner-adjacent creds, NOT covered by tonight's
+delegation). THIS issue's Lane D1 (the fake-quant retention probe) is
+owner-triggered and measured-precondition-free; per the amended order it
+runs after the board work.
+
+**Tonight's executed state:** the Rethink board is COMPLETE (reflex-site
+`2e26f84`, CF `ef773e79`): 9 record-only encoder cells seated (4 prior +
+massive 0.6567 / banking77 0.4420 / prompt 0.8017 / thai 0.4075+0.7843),
+emotion disclosed ("no head earned" — the 6th fresh-seed fit refused on
+holdout, the test-cherry-picked 0.62 never published, per the verdict
+fold), code_fixtures + the 6 harness families disclosed (law-excluded).
+Lane D1 NOT yet run (the night went to the board + the 603 multilingual
+screen — DEAD BY LAW, 0.8433 ≤ 0.86, riir-train 603 closed); D1 remains
+NEXT in the amended order, followed by the branch (D2 → C on a pass, C →
+E on a fail). Lane B/A: daylight session.
