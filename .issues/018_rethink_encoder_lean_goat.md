@@ -129,25 +129,51 @@ failure surface closed at BOOT, not at first request:
 One checkpoint serves ALL FOUR seated cells; the serving lane's hardcoded
 english becomes correct-by-completeness instead of a typed-cell blocker.
 
-- [ ] Train typed v2 (per-option) head over the ENGLISH encode of the
-      typed pool — the inputs exist (`typed_test_lenc_english.bin`, the
-      2.4 GB english encode cache, riir-train `.raw/t608`).
-- [ ] T2 gate: paired LB95 of the english-encoded head vs the seated arms
+- [x] Train typed v2 (per-option) head over the ENGLISH encode of the
+      typed pool — **EXECUTED 2026-10-02 — NEGATIVE (Bench 0048):** the
+      adopted-encoding (q8, english) encode pass ran clean (train 4000 /
+      test 2000 rows, d 1024, Metal, 296 s + 170 s), the v2 trainer refused
+      the earn bar in the worst direction (head holdout 0.3113 BELOW its
+      own reference 0.3600; train acc flat 0.31–0.37 across all 15 epochs),
+      the frozen test read stayed RESERVED (the trainer's no-cheat law; the
+      read was never spent), and the gate never ran (no candidate head).
+      The english checkpoint is AT OR BELOW CHANCE on every width (ref-only
+      floor 0.3595; 2-wide 0.4733 vs chance 0.5, 4-wide 0.3182 vs 0.25,
+      5-wide 0.2833 vs 0.2) — corroborated by Bench 039's F16 english floor
+      0.3575 (itself a wire-fidelity witness vs reflex .issues/029) and
+      preserved at the adopted encoding (Δ +0.0020). The typed cell keeps
+      `typed_encoder_v2.bin` (typed ckpt) — the issue's negative branch,
+      no rollback. The CE+λ·Brier landing pad deliberately NOT spent: the
+      pad is a calibration-shaped fix for a head that trained; this head
+      never learned (representational deficit, ~45 pts vs the typed
+      floors). Lane B's value RAISED (the two-resident-checkpoint posture
+      stands — exactly Lane B's RAM concern); Lane E NOT triggered (no D1/D2
+      retention failure). Re-open only on a NEW substrate (an english
+      fine-tune carrying typed-shaped data — riir-train work, 039
+      screen-first).
+- [x] T2 gate: paired LB95 of the english-encoded head vs the seated arms
       on the frozen test read; the typed cell re-seats ONLY on a win (the
       third-posture cell-identity witness re-run — arena, then serve-path).
-- [ ] NEGATIVE branch: if it fails the bar, typed stays measurement-lane
+      **→ NOT RUN — no candidate head existed to pair (the earn bar refused
+      before any test read; the gate requires a head).**
+- [x] NEGATIVE branch: if it fails the bar, typed stays measurement-lane
       only and this issue records the number — no posture rollback.
-- [ ] Input-cache note (the D1-pass branch): C's training input on that
+      **→ TAKEN (Bench 0048): typed keeps the typed-checkpoint head as
+      seated; the number is the bench record.**
+- [x] Input-cache note (the D1-pass branch): C's training input on that
       branch is the adopted Q8 ENCODE of the typed pool — the existing
       2.4 GB english-encode cache is F16 and must be REGENERATED under
       the adopted quant (an encode pass over the pool, riir-train side).
       That regeneration cost is part of D2 → C, budgeted, never a
-      surprise.
-- [ ] D-interaction (recorded): heads are fit to F16 encodes — Lane D2's
+      surprise. **→ Done as declared: both sides regenerated under
+      `LAYA_WEIGHTS_VARIANT=q8` (Bench 0048 R1, ~8 min Metal total); the
+      F16 english cache was never read by C.**
+- [x] D-interaction (recorded): heads are fit to F16 encodes — Lane D2's
       adopted quant invalidates these inputs and forces a C retrain +
       re-seat. The ORDER BRANCH below resolves this: on a D1 pass, C runs
       AFTER D2 and trains on the adopted quant's encode cache exactly
-      once; C never trains on an encoding D2 is about to change.
+      once; C never trains on an encoding D2 is about to change. **→ Held
+      exactly: C trained once, on the adopted encoding, after D2a.**
 - [ ] **Tripwire landing pad (562/576; wired 2026-10-01):** if the Lane D absolute-floor case ever fires on a trained head, C's retrain is where the fix lives — CE+λ·Brier becomes a PRE-DECLARED loss option for the Lane C head training (CE+Brier is Raschka's supervised form, katgpt-rs Research 576's PASS-Redirect line, author-caveated "modest gain, may not generalize"; the RL-family scoring-rule recipes are 576 §3's log/spherical/RPS — the loss form is chosen from that family at filing time; the reward-shaped twin already ships in riir-train `svr.rs::r_verify` `λ_cal`). Until a raw-FAILS reading exists, C trains plain CE — the refit-first posture is the shipped primary, now the independent consensus (562 addendum S2).
 
 ## Lane D — quantize the english checkpoint — riir-infer + riir-train
@@ -360,3 +386,19 @@ table IS the adopted numerics' re-seat. NEXT: D2b (device-resident Q8 +
 fused kernels — the per-device determinism gate's real subject) or Lane C
 (the typed head retrain on the adopted encoding — trainable on this box;
 the D2b kernels are the multi-session job). Lane B/A: daylight session.
+
+**Update 3 (2026-10-02, the follow-on session): Lane C EXECUTED —
+NEGATIVE (Bench 0048, pre-reg `8a3b721`).** The adopted-encoding (q8,
+english) encode pass ran clean; the v2 trainer refused the earn bar
+(head holdout 0.3113 < its own reference 0.3600; train acc flat across
+all 15 epochs); the frozen test read stayed RESERVED (never spent); the
+re-seat gate never ran. The english checkpoint is AT OR BELOW CHANCE on
+every presented width (ref-only floor 0.3595 vs the F16 twin 0.3575,
+Bench 039's recorded "substrate the lane would NOT ride") — a
+representational ~45-pt deficit vs the typed floors, not a calibration
+one, so the CE+λ·Brier landing pad was deliberately NOT spent (reasoning
+in the bench record). Typed keeps `typed_encoder_v2.bin` (typed ckpt) as
+seated; Lane B's value is RAISED (the two-resident-checkpoint posture
+stands); Lane E NOT triggered. reflex-site untouched (no re-seat, no
+board change). **AMENDED ORDER NOW: C closed (negative) → D2b kernels →
+Q4/PQ2; B/A daylight.**
