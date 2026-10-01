@@ -50,6 +50,13 @@ BLAKE3-verified at load — trained on this box's CPU cache, holdout-refused).
 Metal-vs-CUDA feature drift flips ZERO cells — the third device-independence
 witness for this lane (the 014 replay was the first two).
 
+**Post-run re-witness (2026-10-01 13:58, GPU compute-clear again):** a THIRD
+CUDA encode (`emotion_test_lenc_cuda2.bin`, same 98,593,550 bytes) + read
+reproduces both cells exactly — floor 0.5950 (238/400), winner 0.6200
+(248/400) — now under post-dq614 conditions (the sibling's matrix re-run
+finished without incident). Three encodes, three identical readout pairs,
+two devices: the record's numbers are stable, not a box artifact.
+
 **The independent-seeds lift figure:** this session's best sweep head (s4,
 holdout 0.4835, trained on the quarantined 15,997-row pool) reads **0.6200**
 (248/400) on the test split — **+2.5 pt over the reference, 26.5 pts under
