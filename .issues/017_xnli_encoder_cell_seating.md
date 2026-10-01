@@ -1,9 +1,10 @@
 # Issue 017 — seat the xnli_en encoder cell (record-only, serve ✗): the owner's progress-display call
 
-**Status:** OPEN 2026-10-01 — the owner call reversing the 014-round-3
-"no separate cell" decision for xnli_en; the arena read + seating execute
-under this issue. The 4090 is NOT touched (a sibling's L4 train holds it;
-the read runs on m3 Metal).
+**Status:** CLOSED 2026-10-01 — seated + LIVE (Bench 036; instinct
+`b03fded` + reflex-site `70d9e80`; CF `eeee1b19`). The owner call
+reversing the 014-round-3 "no separate cell" decision for xnli_en;
+executed same-session. The 4090 was NOT touched (a sibling's L4 train
+holds it; the read ran on m3 Metal).
 
 ## The owner call (2026-10-01, verbatim intent)
 
@@ -71,5 +72,11 @@ What is NOT reversed:
       the renderer's read) · bench-charts.js + bench/index.html partial-
       lane prose ("one suite"→"two suites", "single-suite partial"→
       "two-suite partial").
-- [ ] T4 — commit + push both repos; ref the commit hashes back into this
+- [x] T4 — commit + push both repos; ref the commit hashes back into this
       file; close.
+      ✅ instinct `cdc92d1` (filing) + `b03fded` (bench 036 + this close) ·
+      reflex-site `70d9e80` (lane-scoped publish + smoke repairs) ·
+      deployed CF version `eeee1b19-00ae-4642-8f92-837efeb9e870` ·
+      LIVE-verified: `reflex.gist.rs/data/bench.json` carries the cell
+      (acc 0.86 · p50 231.709 ms · quotable · record_only) and the areas
+      rollup (coverage 2/9 · index 0.599). CLOSED.
