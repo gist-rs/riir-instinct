@@ -1,5 +1,5 @@
 //! The decstat capture lane (Plan 002 / Issue 004 T1): consent-gated
-//! decision-outcome aggregation for the served lane — the riir-clippy
+//! decision-outcome aggregation for the served lane — the riir-refine
 //! `--stats` semantics carried for decisions.
 //!
 //! Laws:

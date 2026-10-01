@@ -107,7 +107,7 @@ pub struct ArmStat {
 }
 
 /// `a` dominates `b` when it is ≤ on every axis and < on at least one
-/// (the `dominates` shape — riir-clippy `ruliology_search.rs`, Bench 572
+/// (the `dominates` shape — riir-refine `ruliology_search.rs`, Bench 572
 /// lineage; the same seam Proposal 042 prescribes).
 pub fn dominates(a: &ArmStat, b: &ArmStat) -> bool {
     let le = a.neg_acc_lcb <= b.neg_acc_lcb

@@ -42,7 +42,7 @@ response" of the original 047 naming; the rungs span L1 bags/hybrids through
 L3 encoder thinks, with L4/L5 rungs gated on 048's). **Reflex** = hard-wired
 response (`../riir-reflex`, modelless, public, the free floor — NOT a rung in
 this product); **Rethink** = this repo (trained/adaptive, private). The flow
-is riir-clippy's, end to end:
+is riir-refine's, end to end:
 
 ```
 arena/serve (here) ─ decisions ─▶ decstat rows (consent-gated) ─▶ riir-kat wire
