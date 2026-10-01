@@ -99,10 +99,21 @@ What is NOT reversed:
         T1 gold-only head, 4090 artifact scp'd, BLAKE3 `e7e17cf3…`) →
         **0.9475 (379/400)**, cell-identical to 600 T1; +5.0 pt over the
         serving H2 0.8975 (LB95 +0.0320 vs A1); −0.25 pt under laya
-        english (one question under its own reference). NOT seated
-        anywhere the encoder reads WORSE than the displayed arm (massive
-        0.675 < hybrid 0.827; emotion ~0.62–0.74 < A0 0.885) — the
-        better-only law.
+        english (one question under its own reference).
+      • **⚠ The better-only clause is EXPLICITLY REVERSED 2026-10-02**
+        (overnight, owner-delegated via the Claude verdict — the reversal
+        recorded here, not smuggled): the owner's overnight instruction
+        — "no more owner gated plz i need the result tmr", "can we finish
+        Rethink all bench", and the pasted board full of "Rethink — not
+        run" rows — extends this issue's own principle ("no progress at
+        all reads worse than a seated −4.0") to the measured-but-worse
+        cells. massive seats (Bench 0042, 0.6567 arena read of 600 T3's
+        unselected head; head BELOW its own reference on test, disclosed)
+        and emotion discloses (Bench 0045 + the publisher DISCLOSURES
+        table: no head earned; the 0.62 sweep number is NOT published —
+        test-cherry-picked, the verdict caught it). The vs-best card's
+        family-arm counting was confirmed: a weaker encoder cell cannot
+        lower any headline.
       • **The vs-best card counts the FAMILY arm** (reflex-site
         instinct.js): best measured cell of (Instinct hybrid · Rethink
         encoder) per suite; the contributing lane's color fills the line;
