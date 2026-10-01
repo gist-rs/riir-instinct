@@ -185,6 +185,20 @@ prices everything before any training or kernel work is spent:
       (house dequant machinery; the Bonsai PQ precedent), Q4/PQ2 second.
       English 848 MB → ~424 MB (Q8) / ~220 MB (Q4) → posture total
       ~460 MB / ~255 MB.
+      **→ D2a (the STORAGE tier) ADOPTED 2026-10-02 (Bench 0047,
+      riir-infer `10e33de`): Q8_0 artifact format + `laya-quant8`
+      converter + `LAYA_WEIGHTS_VARIANT=q8` loader seam (sidecar-verified,
+      never auto-derived at load; double-quantization refusals). english +
+      typed converted, byte-equality proofs GREEN on the real 421.2M
+      elements: 842.6 MB → 447.7 MB (53.1% — the honest number: the 80
+      skipped 1D norms/biases stay F16 by the house law). The adoption
+      re-seat is satisfied by the no-numerics-change proof (converter
+      read-back == fake-quant, bit-exact) + the end-to-end spot-check
+      (sst5 via artifact: 0.5333 = the probe read, picks byte-identical,
+      `weight_posture: q8-artifact`). REMAINS: D2b — device-resident Q8
+      buffers + dequant-fused kernels (the real device-memory tier;
+      per-device determinism re-seats apply THERE), then Q4/PQ2 second,
+      then C on the adopted encoding.
 - [ ] **The accuracy gate is NON-INFERIORITY, never "CI contains zero"**:
 
       | Requirement | Rule |
@@ -335,3 +349,14 @@ per-device determinism gate, THEN C on the adopted Q8 encode. D2 is a
 multi-session kernel job (riir-infer owns the format; the probe's block
 layout is the storage format D2 lands); C follows immediately after. Lane
 B/A remain the daylight plumbing session.
+
+**Update 2 (same session): D2a EXECUTED — the storage tier ADOPTED.**
+Bench 0047 + riir-infer `10e33de`: the Q8_0 artifact lane (converter with
+a built-in byte-equality refusal, sidecar-verified loader variant,
+`laya-quant8` bin) — english + typed converted and proven (842.6 →
+447.7 MB, 53.1%); the sst5 end-to-end spot-check reproduced the probe's
+read byte-identically through the real artifact, so Bench 0046's gate
+table IS the adopted numerics' re-seat. NEXT: D2b (device-resident Q8 +
+fused kernels — the per-device determinism gate's real subject) or Lane C
+(the typed head retrain on the adopted encoding — trainable on this box;
+the D2b kernels are the multi-session job). Lane B/A: daylight session.
