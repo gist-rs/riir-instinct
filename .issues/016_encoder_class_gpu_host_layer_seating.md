@@ -32,7 +32,15 @@ every head (holdout 0.459–0.4835 vs the reference's 0.4975; best head 0.6200 o
 test = 26.5 under the bar) and the Bench-032 cells reproduce EXACTLY at the 4090
 CUDA posture — the verdict is double-measured; the frozen read was never spent
 in either session.** T5–T6 open (T5's G2/G4 land with the consumer;
-T6 = D1, trigger-blocked).**
+T6 = D1, trigger-blocked). **T8 EXECUTED 2026-10-01 — the three unscreened
+board suites screened ([Bench 039](../.benchmarks/039_encoder_screens_bank_prompt_typed/RESULTS.md)):
+banking77 DEAD (floor 0.4980 + max lift = 0.645 < 0.8540), prompt_injections
+DEAD (floor 0.6983 + 0.147 = 0.845 < 0.8534), typed_decisions ALIVE — the
+typed-checkpoint floor reads 0.7445 on the frozen t20k wire, +9.7 pt OVER
+the 0.6475 seating bar before any lift → **the head run is EARNED**, blocked
+only on the NLEH v2 per-option scoring shape (T9). Three wire-fidelity
+witnesses: the floors reproduce published board reads byte-exactly (0.4980
+laya-english bank / 0.7445 laya-typed / 0.3575 laya-english typed).**
 **Owner round 3 (2026-09-30): three clarifications folded — the no-new-product-lane note
 (nothing named "Working"/"riir-working"; L0–L5 are 048's tier vocabulary), D1's host
 generalized to ANY real GPU serving deploy (game prod OR text-lane serve host — the
@@ -281,6 +289,29 @@ served Rethink (encoder) @<host>" once the rename lands. The
   game prod host or text-lane serve host — serving the encoder, latency
   measured on that box, pin validating) — the
   sst5 cell publishes as served and 008's row flips through its own lane.
+- [x] T8 — **the three unscreened board suites screened (the 600 law,
+      screen-first)** — banking77 / prompt_injections / typed_decisions, one
+      frozen ref-only read each on the wire-faithful t20k TEST split
+      (case-makers mirroring the reflex builders verbatim; the typed maker's
+      suite shape matches the board exactly — 400 cases → 2000 questions,
+      choice 600 / noul 600 / score 800). Enabler: the eval's ref screen
+      gained the **per-row-k** mode (mixed presented widths score each row's
+      own options against its own gold-as-presented-index; the v1 winner
+      path stays fixed-class and refuses a mixed cache loudly).
+      **Verdicts (Bench 039)**: bank/prompt DEAD (above); typed ALIVE — the
+      head run is earned. Artifacts: `../riir-train/.raw/t608/` (regenerable
+      makers + LENC caches; gitignored data).
+- [ ] T9 — **the earned typed head run (NLEH v2 per-option scoring)** —
+      CODE then train then ONE frozen read: (1) the v2 artifact shape —
+      `score_i = MLP([marker_i ; pooled])` → per-option sigmoid (the
+      Specialist law), pick = argmax over the presented options; handles any
+      presented width and any per-case option text; (2) the trainer arm over
+      the typed-ckpt TRAIN cache (800 t20k cases ≈ 4000 questions, gold-only
+      first per the 600 wave-3 finding); (3) the single frozen test read +
+      T2-style paired LB95 vs the 0.6475 displayed arm; (4) if it beats the
+      bar: the arena `--encoder-art` read + seat + lane-doc emit (the 017 T5
+      auto-emitter) + the site publish — the fourth Rethink cell and the
+      strongest (floor alone +9.7 over the displayed arm).
 - [x] T7 — **the emotion screen (the ONE unscreened board-relevant encoder
   run)** — a 008-track text-lane run of the same class,
   not a layer-seating task. Pre-registered per the 014 law BEFORE any run:
@@ -371,10 +402,17 @@ served Rethink (encoder) @<host>" once the rename lands. The
     paw bar vs the measured max head-lift of +14.7.
   - xnli_en — measured (wave-2): 0.8600 test < the 0.9000 openthai bar;
     pool-side holdout gains did not transfer.
-  - typed_decisions — NOT screenable as-built: per-case option sets need
-    a scoring-shape change first (CODE before any run).
-  - banking77 / prompt_injections — unscreened, NO board need (already
-    strictly best with the bag arms; curiosity only, ~30 min each).
+  - typed_decisions — **screened ALIVE 2026-10-01 (Bench 039, T8)**: the
+    typed-checkpoint reference floor reads **0.7445** (1489/2000, per-width
+    2/4/5 = 0.785/0.716/0.767) on the wire-faithful frozen test read — +9.7
+    pt OVER the 0.6475 seating bar. The head run is EARNED; the blocker is
+    CODE (the NLEH v2 per-option scoring shape — presented widths vary
+    2/4/5 and the option TEXTS vary per case; v1 is fixed-class by
+    construction). T9 below.
+  - banking77 / prompt_injections — **screened DEAD 2026-10-01 (Bench 039,
+    T8)**: english-ckpt floors 0.4980 / 0.6983 vs bars 0.8540 / 0.8534 —
+    floor + the class's measured-max lift (+14.7 pt) tops out 0.645 / 0.845,
+    both under. Measured negatives, never backlog.
   - thai_wisesight / thai_sib200 — need the MULTILINGUAL checkpoint (the
     english encoder is useless for Thai); 008 T5's DEFER stands until the
     vs-best gaps close.
