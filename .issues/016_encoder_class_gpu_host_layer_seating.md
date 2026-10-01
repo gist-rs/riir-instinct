@@ -51,8 +51,8 @@ blake3 `c2e9f346…`). T9 SEAT HALF COMPLETE 2026-10-01 ([Bench
 `--encoder-ckpt typed`) and the **cell-identity witness HOLDS — 0.7550
 (1510/2000) EXACT on the live m3-Metal typed encode**, reproduced on both
 runs; the lane doc is AUTO-EMITTED; a latent `laya_face` index bug fixed
-en-route. REMAINS: the lane-scoped site publish (Rethink 3/9 → 4/9) —
-the reflex-site half.**
+en-route. SITE publish DONE same day (reflex-site `245bf34`, CF
+`8abd1add`): Rethink 3/9 → **4/9**.**
 **Owner round 3 (2026-09-30): three clarifications folded — the no-new-product-lane note
 (nothing named "Working"/"riir-working"; L0–L5 are 048's tier vocabulary), D1's host
 generalized to ANY real GPU serving deploy (game prod OR text-lane serve host — the
@@ -350,8 +350,12 @@ served Rethink (encoder) @<host>" once the rename lands. The
       shrunken 700-row pool trips the slice-integrity gate (the
       silent-move class; every standard arm reproduced the published
       full-pool rows byte-exactly: A0 0.5725 · A1 0.6300 · H2 0.6475).
-      REMAINS: the lane-scoped site publish (Rethink 3/9 → 4/9) — the
-      reflex-site half of this session.
+      SITE HALF COMPLETE same day: the lane-scoped publish landed
+      (reflex-site `245bf34`, CF `8abd1add`, live-verified) — the Rethink
+      lane grows 3/9 → **4/9** (sst5 · xnli · ag_news · typed; the
+      Issue-021 latency ack recorded on the cell: ambient multi-agent
+      load, the ~364 ms figure is the 3-orders-over-bar magnitude
+      evidence, span rides the lane doc). T9 COMPLETE.
 - [x] T7 — **the emotion screen (the ONE unscreened board-relevant encoder
   run)** — a 008-track text-lane run of the same class,
   not a layer-seating task. Pre-registered per the 014 law BEFORE any run:
