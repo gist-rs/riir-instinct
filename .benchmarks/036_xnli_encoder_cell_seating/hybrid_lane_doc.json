@@ -1,0 +1,53 @@
+{
+  "meta": {
+    "host": "m3",
+    "git_sha": "cdc92d1",
+    "date_utc": "2026-10-01T10:57:17Z",
+    "profile": "release",
+    "laya_feature": false,
+    "box_state": {
+      "start": {
+        "power": "AC Power",
+        "powermode": "high",
+        "load1m": 2.38,
+        "swap_mb": 3519.0,
+        "latency_quotable": true,
+        "refusals": []
+      },
+      "end": {
+        "power": "AC Power",
+        "powermode": "high",
+        "load1m": 2.38,
+        "swap_mb": 3519.0,
+        "latency_quotable": true,
+        "refusals": []
+      }
+    },
+    "lane_note": "instinct encoder lane, lane-scoped update (issue 017): the xnli_en encoder-arm cell seated RECORD-ONLY by the owner call 2026-10-01 — the 014-round-3 'no separate cell' sub-decision is reversed on progress-display grounds (the Rethink column reading not-run reads as zero progress); the 014 class-wide encoder-serve refusal STANDS (A0 keeps serving), and the attribution record stands as the cell's own disclosure: the trained head ties the laya-english forward 300/300 picks (riir-train 599 T5a) — reference-identified, never read as the trainer's lift."
+  },
+  "suites": [
+    {
+      "name": "xnli_en",
+      "n_questions": 300,
+      "n_cases": 300,
+      "encoder": {
+        "lane": "encoder",
+        "model": "ENC-xnliv1 (laya-english encoder + NLEH v1 head)",
+        "hard": {
+          "n": 300,
+          "accuracy": 0.86
+        },
+        "consult_rate": 1.0,
+        "latency_scope": "arm-only",
+        "latency_rows": "questions",
+        "latency_p50_ms": 231.709,
+        "latency_p99_ms": 428.943,
+        "serves": "\u2717 (encoder class refused at serve \u2014 A0 serves; instinct issue 014 C1, seating per issue 017)",
+        "gate": "+33.7 pt over the incumbent A0 0.5233 (paired vs A1 mean +0.4500 \u00b7 LB95 +0.3832) \u2014 4.0 pt UNDER the openthai bar (0.9000). Reference-identified: the head ties the laya-english forward 300/300 picks (riir-train 599 T5a) \u2014 the cell is the encoder lane's own frozen read, not the trainer's lift. Serve REFUSED (014 class-wide latency class); seated record-only by the owner call 2026-10-01 (issue 017).",
+        "device": "metal",
+        "record_only": true,
+        "reference_identified": true
+      }
+    }
+  ]
+}

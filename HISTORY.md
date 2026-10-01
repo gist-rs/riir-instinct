@@ -1,3 +1,51 @@
+## 2026-10-01 — Issue 017: the xnli_en encoder cell SEATED (record-only, serve ✗) — the owner's progress-display call reversing the 014-round-3 sub-decision
+
+**The owner call (2026-10-01, verbatim intent):** "-4pt is better than
+−37.7pt rn? why can't we use as is and get better result later? currently
+it look like no progress at all and -4pt gimme some hope even next try
+failed we still get -4pt?" — the Rethink column reading not-run reads as
+zero progress; the measured cell shows the product's real posture.
+Reversed: the 014-round-3 "no separate xnli encoder cell" sub-decision.
+NOT reversed: the 014 class-wide encoder-serve refusal (A0 keeps
+serving), and the attribution record (the head ties the laya-english
+forward 300/300 picks, riir-train 599 T5a — carried ON the cell as the
+`reference-identified` disclosure, never read as the trainer's lift).
+
+**Bench 036** (`.benchmarks/036_xnli_encoder_cell_seating/`): the arena
+encoder arm replayed the sealed NLEH v1 head
+(`xnli_en_encoder_v1.bin`, BLAKE3 `a1e2380b7c6451bb…`, scp'd from the
+4090's `.raw/t599/` — the box itself untouched: a sibling's L4 train
+holds the GPU) over a live m3-Metal laya-english encode of the seat's
+own 300 test rows. Preflight-cleared read (`PROVENANCE: power=AC Power
+load=2.38 swap=3519.00M powermode=2(high)`; a first attempt under
+load-18.64 was refused and re-run after the box cleared):
+
+- **ENC 0.8600 (258/300)** — cell-identical to riir-train 599 T5a: the
+  third-posture witness HOLDS (4090 cache-witness → M3-Metal dump →
+  live arena encode, all three identical).
+- vs the incumbent A1: paired mean +0.4500 · LB95 +0.3832; +33.7 pt over
+  A0 0.5233 (the A0 pin's reflex-run() leg held); 4.0 pt under the
+  openthai bar 0.9000.
+- Latency p50 231,709 µs / p99 428,943 µs per row (encode + head;
+  xnli's long premise+hypothesis rows — quotable, the 021-cleared span).
+
+**Site half** (reflex-site, lane-scoped `PUBLISH_BENCH_LANES=encoder`):
+publish ✓ · pairing ✓ · mirror ✓ · both smokes ✓. The Rethink lane is
+now **2/9 partial** (areas: sentiment 0.408 + reasoning 0.79, index
+0.599). En-route repairs, all stale-hardcode class exposed by the lane
+growing 1→2 suites: the two smokes' "1/9" literals → "2/9", the partial-
+lane prose in `bench/index.html` + `bench-charts.js`, and a REAL smoke
+defect — `chart_render_smoke.cjs`'s suites-card polyline counter was
+dead code (`numOk(per_suite[n])` on an `{acc,cc}` object is always false,
+so the all-benchmarks card was never counted; repaired to mirror the
+renderer's read).
+
+**Standing after this seat:** xnli_en — Reflex 0.5233 serves; Rethink
+(encoder) 0.8600 record-only (−4.0 pt vs openthai 0.9000, the board's
+smallest remaining openthai-led gap beside sst5's +0.8); riir-train 603
+(the multilingual reference screen) unaffected — a negative there
+leaves this cell standing.
+
 ## 2026-09-30 — Issue 015 closed: the canonical massive winner synced to the 4090 — the serve's A5/A9 pin validates and boots (the drift was box sync, not the pin)
 
 **Remedy 1 executed** (the issue's own preferred path): scp'd the M3's
