@@ -205,8 +205,12 @@ fn serve_encoder_lane_replays_the_frozen_bench029_read() {
         let n_leg = 32.min(seat.suite.cases.len());
         let art_path = head.clone();
         let cases = &seat.suite.cases[..n_leg];
-        let arena = riir_instinct::encoder_arm::eval_encoder_arm(cases, &art_path)
-            .unwrap_or_else(|e| panic!("the arena leg failed: {e}"));
+        let arena = riir_instinct::encoder_arm::eval_encoder_arm(
+            cases,
+            &art_path,
+            riir_reflex::laya::config::Checkpoint::English,
+        )
+        .unwrap_or_else(|e| panic!("the arena leg failed: {e}"));
         let mut agree = 0usize;
         for i in 0..n_leg {
             if picks[i] == Some(arena.picks[i]) {
