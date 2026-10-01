@@ -1,3 +1,58 @@
+## 2026-10-01 — Bench 041: the typed_decisions Rethink cell SEATED — the v2 arena replay reproduces 0.7550 EXACT (016 T9 complete)
+
+The seat half of 016 T9 landed (instinct `73cd6d6` + the reflex-site
+publish `245bf34` + CF deploy `8abd1add`): the arena `--encoder-art`
+replay of the NLEH v2 per-option head over the live m3-Metal
+**typed**-checkpoint encode reproduces the trainer-side frozen read
+**cell-for-cell — 0.7550 (1510/2000)**, on BOTH runs (deterministic). The
+third-posture witness law holds: 4090 cache-witness → trainer read
+(Bench 040) → live arena encode, all three identical. vs the incumbent
+A1: paired mean +0.1250 · LB95 +0.1032 (strictly above, the T2 form).
+Record: [Bench
+041](.benchmarks/041_typed_encoder_cell_seating/RESULTS.md).
+
+The code: `encoder_arm.rs` reads NLEH v2 (the law-copy mirror of the t608
+codec — the sealed loader dispatches on the header's version word, never
+the filename), v2 flattens PER QUESTION (typed's 5 q/case → 2000 rows —
+the A0 arms' own convention), and the CHECKPOINT is the caller's
+(`--encoder-ckpt typed|english|multilingual`, parse-time validated in
+every build posture — the artifact does not carry its training
+checkpoint). v1 keeps the C1 one-question law byte-identically.
+
+En-route, a PRE-EXISTING latent bug fixed: `laya_face` mapped the
+per-question escalation indices straight into `cases[]` — valid only at
+1 q/case (every prior encoder run was a one-question suite); typed
+panicked at row 400. Multi-question suites now SKIP the face loudly (the
+reflex helper measures whole-case forwards — not comparable against a
+single question's lane µs; absent, never mis-measured).
+
+The run rode the FULL-POOL typed dir (`../riir-train/.raw/datasets_typed_full`;
+train 1200 incl. security_incidents — the t20k dir's shrunken 700-row
+pool trips the slice-integrity gate, the silent-move class). The TEST
+splits are byte-identical between the dirs (all four test-*.json
+SHA-256-verified) — the witness's rows are the frozen ones, and every
+standard arm reproduced the published full-pool rows byte-exactly (A0
+0.5725 · A1 0.6300 · H2 0.6475 — the displayed arm).
+
+The site: lane-scoped publish (`PUBLISH_BENCH_LANES=encoder`) with the
+Issue-021 ack (`PUBLISH_BENCH_ALLOW_UNQUOTABLE=m3`, 1 slot — the box's
+ambient multi-agent load held load 6-10 at the end captures; the
+latency is the ms-class magnitude evidence, 364 ms vs the ≤ ~300 µs
+serve bar, three orders — load-noise cannot flip the conclusion; the
+span rides the cell's source doc). **The Rethink lane is 4/9** (sst5
+0.5267 · xnli 0.8600 · ag_news 0.9475 · typed 0.7550 — the strongest
+cell vs the displayed arm, +10.75 pt over the serving H2). LIVE-verified
+on reflex.gist.rs. En-route site repair: the 'measured on one suite'
+hard-coded count in the bench page's naming paragraph replaced with the
+count-free 'a subset of suites' form (the exact drift class the site's
+own law names).
+
+016's board rows are now fully adjudicated: every completable cell
+measured-seated or measured-dead; thai_wisesight/thai_sib200 wait on the
+multilingual checkpoint (xnli's 603 screen, queued on the 4090); the six
+harness families are law-excluded. T5–T6 remain (the GOAT gate's G2/G4
+land with the consumer; T6 = D1, trigger-blocked).
+
 ## 2026-10-01 — Bench 039+040: the three unscreened encoder suites screened + the EARNED typed run — the NLEH v2 per-option head reads 0.7550
 
 The `Rethink — not run` cells on the site's remaining suites are now fully

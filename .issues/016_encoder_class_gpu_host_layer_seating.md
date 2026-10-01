@@ -45,9 +45,14 @@ laya-english bank / 0.7445 laya-typed / 0.3575 laya-english typed).**
 the NLEH v2 per-option head LANDED + trained EARNED (holdout 0.7975 vs the
 reference's 0.7762) + the single frozen read 0.7550 — +10.75 pt over the
 0.6475 displayed arm (artifact `../riir-train/.raw/t608/typed_encoder_v2.bin`,
-blake3 `c2e9f346…`). The SEAT half remains: the arena replay needs the C1
-arm's multi-question flattening + the TYPED checkpoint widening, then the
-017-pattern lane-doc emit + site publish (Rethink 3/9 → 4/9).**
+blake3 `c2e9f346…`). T9 SEAT HALF COMPLETE 2026-10-01 ([Bench
+041](../.benchmarks/041_typed_encoder_cell_seating/RESULTS.md), instinct
+`73cd6d6`): the arena replay LANDED (v2 codec + per-question flattening +
+`--encoder-ckpt typed`) and the **cell-identity witness HOLDS — 0.7550
+(1510/2000) EXACT on the live m3-Metal typed encode**, reproduced on both
+runs; the lane doc is AUTO-EMITTED; a latent `laya_face` index bug fixed
+en-route. REMAINS: the lane-scoped site publish (Rethink 3/9 → 4/9) —
+the reflex-site half.**
 **Owner round 3 (2026-09-30): three clarifications folded — the no-new-product-lane note
 (nothing named "Working"/"riir-working"; L0–L5 are 048's tier vocabulary), D1's host
 generalized to ANY real GPU serving deploy (game prod OR text-lane serve host — the
@@ -308,11 +313,11 @@ served Rethink (encoder) @<host>" once the rename lands. The
       **Verdicts (Bench 039)**: bank/prompt DEAD (above); typed ALIVE — the
       head run is earned. Artifacts: `../riir-train/.raw/t608/` (regenerable
       makers + LENC caches; gitignored data).
-- [-] T9 — **the earned typed head run (NLEH v2 per-option scoring)** —
+- [x] T9 — **the earned typed head run (NLEH v2 per-option scoring)** —
       CODE then train then ONE frozen read. **Train-side COMPLETE
       2026-10-01 ([Bench 040](../.benchmarks/040_typed_encoder_v2_head/RESULTS.md))**:
       (1) the v2 artifact shape LANDED — `score_i =
-      MLP([marker_i ; pooled])` → per-option sigmoid (the Specialist law),
+      MLP([marker_i ; pooled]) → per-option sigmoid (the Specialist law),
       pick = first-argmax over the presented options; the codec + eval
       forward in `instinct_encoder_lane.rs` (riir-train `instinct_typed_head_trainer`
       + the eval's v2 winner path); (2) trained over the typed-ckpt TRAIN
@@ -323,14 +328,30 @@ served Rethink (encoder) @<host>" once the rename lands. The
       head-only/ref-only-right), **+10.75 over the 0.6475 displayed arm**,
       −1.65 under AgentJev. Artifact
       `.raw/t608/typed_encoder_v2.bin` · blake3 `c2e9f346…`.
-      REMAINS (the seat half, the 017 pattern — its own session): (4) the
-      arena `--encoder-art` replay — `encoder_arm.rs` needs the v2 read +
-      per-option forward + the MULTI-QUESTION flattening (typed carries 5
-      questions/case; the C1 one-question refusal must widen to the A0
-      arms' per-question form) + the TYPED checkpoint selection; then the
-      cell-identity witness (0.7550 must reproduce on the live m3-Metal
-      encode) + the auto-emitted lane doc + the site publish (Rethink
-      3/9 → 4/9).
+      **SEAT HALF COMPLETE 2026-10-01 ([Bench
+      041](../.benchmarks/041_typed_encoder_cell_seating/RESULTS.md),
+      instinct `73cd6d6`)**: the arena `--encoder-art` replay landed —
+      `encoder_arm.rs` reads NLEH v2 (the law-copy mirror of the t608
+      codec; the sealed loader dispatches on the header's version word),
+      v2 flattens PER QUESTION (the A0 arms' own convention — typed's
+      2000 rows over 400 cases), and the checkpoint is the CALLER's
+      (`--encoder-ckpt typed`; the artifact does not carry its training
+      checkpoint). **The cell-identity witness HOLDS: 0.7550 (1510/2000)
+      EXACT on the live m3-Metal typed encode** — the third posture
+      (4090 cache → trainer read → live arena) all identical, reproduced
+      on both runs (deterministic). vs the incumbent A1: paired mean
+      +0.1250 · LB95 +0.1032 (strictly above, the T2 form). Lane doc
+      AUTO-EMITTED (the 017 T5 law). En-route: a PRE-EXISTING latent
+      `laya_face` index bug fixed (per-question escalation indices were
+      mapped into `cases[]` — valid only at 1 q/case; typed panicked at
+      row 400; multi-question suites now SKIP the face loudly). The run
+      rode the FULL-POOL typed dir (`../riir-train/.raw/datasets_typed_full`;
+      TEST byte-identical to t20k, SHA-256-verified) — the t20k dir's
+      shrunken 700-row pool trips the slice-integrity gate (the
+      silent-move class; every standard arm reproduced the published
+      full-pool rows byte-exactly: A0 0.5725 · A1 0.6300 · H2 0.6475).
+      REMAINS: the lane-scoped site publish (Rethink 3/9 → 4/9) — the
+      reflex-site half of this session.
 - [x] T7 — **the emotion screen (the ONE unscreened board-relevant encoder
   run)** — a 008-track text-lane run of the same class,
   not a layer-seating task. Pre-registered per the 014 law BEFORE any run:
@@ -421,13 +442,14 @@ served Rethink (encoder) @<host>" once the rename lands. The
     paw bar vs the measured max head-lift of +14.7.
   - xnli_en — measured (wave-2): 0.8600 test < the 0.9000 openthai bar;
     pool-side holdout gains did not transfer.
-  - typed_decisions — **screened ALIVE 2026-10-01 (Bench 039, T8)**: the
-    typed-checkpoint reference floor reads **0.7445** (1489/2000, per-width
-    2/4/5 = 0.785/0.716/0.767) on the wire-faithful frozen test read — +9.7
-    pt OVER the 0.6475 seating bar. The head run is EARNED; the blocker is
-    CODE (the NLEH v2 per-option scoring shape — presented widths vary
-    2/4/5 and the option TEXTS vary per case; v1 is fixed-class by
-    construction). T9 below.
+  - typed_decisions — **SEATED 2026-10-01 (Bench 039 screen → Bench 040
+    train → Bench 041 arena replay)**: the reference floor 0.7445 (+9.7
+    over the 0.6475 bar) earned the head run; the NLEH v2 per-option head
+    (holdout 0.7975, EARN) froze **0.7550** and the arena replay
+    reproduced it EXACT on the live m3-Metal typed encode (the
+    third-posture witness) — **+10.75 over the displayed hybrid arm**,
+    −1.65 under AgentJev (recorded honestly). Record-only (`serve: ✗`);
+    the strongest encoder cell yet.
   - banking77 / prompt_injections — **screened DEAD 2026-10-01 (Bench 039,
     T8)**: english-ckpt floors 0.4980 / 0.6983 vs bars 0.8540 / 0.8534 —
     floor + the class's measured-max lift (+14.7 pt) tops out 0.645 / 0.845,
