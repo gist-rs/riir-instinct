@@ -155,7 +155,7 @@ english becomes correct-by-completeness instead of a typed-cell blocker.
 Split into the CHEAP PROBE (D1) and the full adoption (D2) — the probe
 prices everything before any training or kernel work is spent:
 
-- [ ] **D1 — the retention probe (cheap, first):** FAKE-QUANT instrument
+- [x] **D1 — the retention probe (cheap, first):** FAKE-QUANT instrument
       (quantize-then-dequantize the weights, run the existing F16 forward
       unchanged — no riir-infer kernel work; measures weight-quantization
       error only, kernel numerics being D2's per-device determinism
@@ -168,6 +168,19 @@ prices everything before any training or kernel work is spent:
       typed-over-english head does not exist yet, so the typed cell's
       retention is NOT covered by D1; it is measured when C trains on the
       encoding D1's verdict selected.
+      **→ EXECUTED 2026-10-02 — PASS (Bench 0046): 7 suites × {fresh F16,
+      fake-quant Q8_0}, paired per pre-registration (`33d02ed`, margins
+      BEFORE any read); every fresh F16 read reproduced its frozen cell
+      (per-row picks on 6, accuracy on sst5). 5 PASS · 2 UNDECIDED
+      (massive: acc LB95 −0.0213 vs δ 0.02 at n=300; banking77: cal
+      UB95 +0.0190 vs margin 0.01 on the F16-uncalibrated head, ECE 0.494
+      at F16 — its cell's own disclosure), 0 FAIL. Retention 95.6–100%;
+      Δacc −1.0…+0.67pt; ΔECE ≤ 0.0051; quant surface 421.2M elements /
+      842.4 MB F16 → ~424 MB Q8 (the D2 estimate confirmed by
+      construction); max weight err 0.0163, mean 3.0e-4. Instrument:
+      riir-infer `294999e` + instinct `2a61105`. BRANCH ⇒ D2 (the two
+      UNDECIDED rows ride D2's own re-seat — a real-kernel read re-measures
+      them at higher resolution; the issue's lane rule never folds them).
 - [ ] **D2 — full adoption** (only on a D1 pass): Q8 quant in riir-infer
       (house dequant machinery; the Bonsai PQ precedent), Q4/PQ2 second.
       English 848 MB → ~424 MB (Q8) / ~220 MB (Q4) → posture total
@@ -310,3 +323,15 @@ Lane D1 NOT yet run (the night went to the board + the 603 multilingual
 screen — DEAD BY LAW, 0.8433 ≤ 0.86, riir-train 603 closed); D1 remains
 NEXT in the amended order, followed by the branch (D2 → C on a pass, C →
 E on a fail). Lane B/A: daylight session.
+
+**Update (2026-10-02, the follow-on session): D1 EXECUTED — PASS.**
+Bench 0046 (`.benchmarks/0046_d1_fakequant_retention/` — pre-registration
+`33d02ed` BEFORE the reads, instrument riir-infer `294999e` + instinct
+`2a61105`, record + gate arithmetic in the bench dir): 5 PASS · 2
+UNDECIDED (massive, banking77 — named, never folded) · 0 FAIL ⇒
+**the branch fires D2**: real Q8 adoption in riir-infer, re-seating every
+cell at the adopted numerics (the frozen reads invalidate BY DESIGN), the
+per-device determinism gate, THEN C on the adopted Q8 encode. D2 is a
+multi-session kernel job (riir-infer owns the format; the probe's block
+layout is the storage format D2 lands); C follows immediately after. Lane
+B/A remain the daylight plumbing session.

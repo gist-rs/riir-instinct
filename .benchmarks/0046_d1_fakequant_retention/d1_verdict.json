@@ -1,0 +1,268 @@
+[
+  {
+    "suite": "sst5",
+    "delta_margin": 0.02,
+    "cal_margin": 0.01,
+    "witness": "accuracy_only",
+    "witness_acc_frozen": 0.5266666666666666,
+    "witness_acc_fresh": 0.5266666666666666,
+    "n": 600,
+    "retention": 0.985,
+    "flips": 9,
+    "acc": {
+      "f16": 0.5266666666666666,
+      "q8": 0.5333333333333333,
+      "paired": {
+        "mean": 0.006666666666666667,
+        "se": 0.004076799367280787,
+        "ub95": 0.014657046598732692,
+        "lb95": -0.0013237132653993568
+      }
+    },
+    "acc_verdict": "PASS",
+    "low_power": false,
+    "brier": {
+      "f16": 0.233801401406809,
+      "q8": 0.2344716552288611,
+      "paired": {
+        "mean": 0.0006702538220521262,
+        "se": 0.0007880220314662862,
+        "ub95": 0.002214748622750136,
+        "lb95": -0.0008742409786458838
+      }
+    },
+    "cal_verdict": "PASS",
+    "ece_f16": 0.06316370397806165,
+    "ece_q8": 0.062393937557935694,
+    "flips_by_gold_known": false,
+    "verdict": "PASS"
+  },
+  {
+    "suite": "xnli_en",
+    "delta_margin": 0.02,
+    "cal_margin": 0.01,
+    "witness": "picks_equal",
+    "witness_acc_frozen": 0.86,
+    "witness_acc_fresh": 0.86,
+    "n": 300,
+    "retention": 1.0,
+    "flips": 0,
+    "acc": {
+      "f16": 0.86,
+      "q8": 0.86,
+      "paired": {
+        "mean": 0.0,
+        "se": 0.0,
+        "ub95": 0.0,
+        "lb95": 0.0
+      }
+    },
+    "acc_verdict": "PASS",
+    "low_power": false,
+    "brier": {
+      "f16": 0.11683624084623287,
+      "q8": 0.1164848809783508,
+      "paired": {
+        "mean": -0.00035135986788207657,
+        "se": 0.0003928781645553639,
+        "ub95": 0.0004186671849586375,
+        "lb95": -0.0011213869207227906
+      }
+    },
+    "cal_verdict": "PASS",
+    "ece_f16": 0.08831621050834654,
+    "ece_q8": 0.08941232244173679,
+    "flips_by_gold_known": false,
+    "verdict": "PASS"
+  },
+  {
+    "suite": "ag_news",
+    "delta_margin": 0.02,
+    "cal_margin": 0.01,
+    "witness": "picks_equal",
+    "witness_acc_frozen": 0.9475,
+    "witness_acc_fresh": 0.9475,
+    "n": 400,
+    "retention": 0.9975,
+    "flips": 1,
+    "acc": {
+      "f16": 0.9475,
+      "q8": 0.95,
+      "paired": {
+        "mean": 0.0025,
+        "se": 0.0025,
+        "ub95": 0.007399909961350135,
+        "lb95": -0.002399909961350135
+      }
+    },
+    "acc_verdict": "PASS",
+    "low_power": false,
+    "brier": {
+      "f16": 0.042798397569700504,
+      "q8": 0.045105106405972754,
+      "paired": {
+        "mean": 0.0023067088362722565,
+        "se": 0.002127509025663697,
+        "ub95": 0.0064765499033570045,
+        "lb95": -0.0018631322308124915
+      }
+    },
+    "cal_verdict": "PASS",
+    "ece_f16": 0.03702460741624236,
+    "ece_q8": 0.03762143321335317,
+    "flips_by_gold_known": false,
+    "verdict": "PASS"
+  },
+  {
+    "suite": "massive_intent_en",
+    "delta_margin": 0.02,
+    "cal_margin": 0.01,
+    "witness": "picks_equal",
+    "witness_acc_frozen": 0.6566666666666666,
+    "witness_acc_fresh": 0.6566666666666666,
+    "n": 300,
+    "retention": 0.9766666666666667,
+    "flips": 7,
+    "acc": {
+      "f16": 0.6566666666666666,
+      "q8": 0.6466666666666666,
+      "paired": {
+        "mean": -0.01,
+        "se": 0.005754160919975786,
+        "ub95": 0.001277948164400404,
+        "lb95": -0.021277948164400404
+      }
+    },
+    "acc_verdict": "UNDECIDED",
+    "low_power": false,
+    "brier": {
+      "f16": 0.20540108998807183,
+      "q8": 0.20068775260238716,
+      "paired": {
+        "mean": -0.004713337385684645,
+        "se": 0.0033231250361332523,
+        "ub95": 0.0017998680012598946,
+        "lb95": -0.011226542772629185
+      }
+    },
+    "cal_verdict": "PASS",
+    "ece_f16": 0.15187413620452084,
+    "ece_q8": 0.1569020328919093,
+    "flips_by_gold_known": false,
+    "verdict": "UNDECIDED"
+  },
+  {
+    "suite": "banking77",
+    "delta_margin": 0.02,
+    "cal_margin": 0.01,
+    "witness": "picks_equal",
+    "witness_acc_frozen": 0.442,
+    "witness_acc_fresh": 0.442,
+    "n": 500,
+    "retention": 0.956,
+    "flips": 22,
+    "acc": {
+      "f16": 0.442,
+      "q8": 0.438,
+      "paired": {
+        "mean": -0.004,
+        "se": 0.005659687635219502,
+        "ub95": 0.0070927839287768905,
+        "lb95": -0.01509278392877689
+      }
+    },
+    "acc_verdict": "PASS",
+    "low_power": false,
+    "brier": {
+      "f16": 0.48805106834246986,
+      "q8": 0.4930425423570776,
+      "paired": {
+        "mean": 0.004991474014607752,
+        "se": 0.00713408924563129,
+        "ub95": 0.018974031998539604,
+        "lb95": -0.0089910839693241
+      }
+    },
+    "cal_verdict": "UNDECIDED",
+    "ece_f16": 0.4941167063897615,
+    "ece_q8": 0.49915115687002065,
+    "flips_by_gold_known": false,
+    "verdict": "UNDECIDED"
+  },
+  {
+    "suite": "prompt_injections",
+    "delta_margin": 0.04,
+    "cal_margin": 0.03,
+    "witness": "picks_equal",
+    "witness_acc_frozen": 0.8017241379310345,
+    "witness_acc_fresh": 0.8017241379310345,
+    "n": 116,
+    "retention": 1.0,
+    "flips": 0,
+    "acc": {
+      "f16": 0.8017241379310345,
+      "q8": 0.8017241379310345,
+      "paired": {
+        "mean": 0.0,
+        "se": 0.0,
+        "ub95": 0.0,
+        "lb95": 0.0
+      }
+    },
+    "acc_verdict": "PASS",
+    "low_power": false,
+    "brier": {
+      "f16": 0.13880595483918612,
+      "q8": 0.14050946528850333,
+      "paired": {
+        "mean": 0.0017035104493172233,
+        "se": 0.0023573320637611537,
+        "ub95": 0.006323796393890563,
+        "lb95": -0.0029167754952561164
+      }
+    },
+    "cal_verdict": "PASS",
+    "ece_f16": 0.06724821878918286,
+    "ece_q8": 0.07033398644677522,
+    "flips_by_gold_known": false,
+    "verdict": "PASS"
+  },
+  {
+    "suite": "typed_decisions",
+    "delta_margin": 0.02,
+    "cal_margin": 0.01,
+    "witness": "picks_equal",
+    "witness_acc_frozen": 0.755,
+    "witness_acc_fresh": 0.755,
+    "n": 2000,
+    "retention": 0.9905,
+    "flips": 19,
+    "acc": {
+      "f16": 0.755,
+      "q8": 0.757,
+      "paired": {
+        "mean": 0.002,
+        "se": 0.0021213792977830557,
+        "ub95": 0.00615782702120366,
+        "lb95": -0.0021578270212036597
+      }
+    },
+    "acc_verdict": "PASS",
+    "low_power": false,
+    "brier": {
+      "f16": 0.17789839914904676,
+      "q8": 0.17664199802546507,
+      "paired": {
+        "mean": -0.001256401123581679,
+        "se": 0.0007300255902517484,
+        "ub95": 0.00017442274110434264,
+        "lb95": -0.0026872249882677005
+      }
+    },
+    "cal_verdict": "PASS",
+    "ece_f16": 0.05232631216570737,
+    "ece_q8": 0.051994779404252775,
+    "flips_by_gold_known": false,
+    "verdict": "PASS"
+  }
+]
