@@ -246,6 +246,15 @@ struct EncoderFace {
     correct: Vec<bool>,
     confs: Vec<f64>,
     durs_us: Vec<f64>,
+    /// The WEIGHT posture the encode ran under (issue 018 Lane D1):
+    /// "f16" (the shipped posture — every seated cell) or
+    /// "fake-quant-q8" (the D1 probe read).
+    #[cfg(feature = "arena-laya")]
+    weight_posture: &'static str,
+    /// The fake-quant report (Some iff the posture is fake-quant-q8),
+    /// serialized verbatim — the disclosure of what was quantized.
+    #[cfg(feature = "arena-laya")]
+    fake_quant_report: Option<riir_reflex::laya::riir::fake_quant::FakeQuantReport>,
 }
 
 struct SuiteRun {
@@ -416,6 +425,7 @@ fn arena_main() {
                 i += 1;
                 encoder.ckpt = args[i].clone();
             }
+            "--fake-quant" => encoder.fake_quant = true,
             other => die(&format!("unknown arg {other}")),
         }
         i += 1;
@@ -437,6 +447,10 @@ fn arena_main() {
              checkpoint; the pairing is the caller's call",
             encoder.ckpt
         ));
+    }
+    if encoder.fake_quant && encoder.art.is_none() {
+        die("--fake-quant needs --encoder-art — the probe reads an existing head over \
+             the quantized encode; there is nothing to score without one");
     }
     if !(1..=MAX_TOP_K).contains(&top_k) {
         die("--top-k out of range (1..=32)");
@@ -534,6 +548,11 @@ fn format_box_state(b: &riir_reflex::harness::box_state::BoxState) -> String {
 struct EncoderOpts {
     art: Option<PathBuf>,
     ckpt: String,
+    /// Issue 018 Lane D1: fake-quant the checkpoint's >=2D weights Q8_0
+    /// at load (quantize-then-dequantize, forward unchanged) — the
+    /// retention probe's read posture. Requires `--encoder-art`; the
+    /// predictions record carries the posture + the quant report.
+    fake_quant: bool,
 }
 
 fn run_suite(
@@ -1541,8 +1560,16 @@ fn run_suite_n<const N: usize>(
                 seat.suite.cases.len(),
                 encoder.ckpt
             );
-            let out =
-                riir_instinct::encoder_arm::eval_encoder_arm(&seat.suite.cases, art, ckpt)?;
+            let out = riir_instinct::encoder_arm::eval_encoder_arm_posture(
+                &seat.suite.cases,
+                art,
+                ckpt,
+                if encoder.fake_quant {
+                    riir_reflex::laya::riir::WeightPosture::FakeQuantQ8
+                } else {
+                    riir_reflex::laya::riir::WeightPosture::F16
+                },
+            )?;
             let a1 = test_arms
                 .iter()
                 .find(|a| a.name == "A1")
@@ -1576,6 +1603,10 @@ fn run_suite_n<const N: usize>(
                 correct: out.correct,
                 confs: out.confs,
                 durs_us: out.durs_us,
+                #[cfg(feature = "arena-laya")]
+                weight_posture: out.weight_posture,
+                #[cfg(feature = "arena-laya")]
+                fake_quant_report: out.fake_quant_report,
             })
         }
         #[cfg(not(feature = "arena-laya"))]
@@ -2259,6 +2290,51 @@ fn site_published_rows(
     Ok(Some(rows))
 }
 
+/// The encoder face's serialized shape. The weight-posture fields (issue
+/// 018 Lane D1) exist only under `arena-laya` — outside that feature the
+/// encoder arm cannot run at all, so the two keys are absent there (the
+/// omitted-elsewhere law); under it, the posture key is omitted when F16
+/// (the shipped posture every seated cell ran) so old records and new
+/// F16 reads keep the exact same JSON shape.
+fn encoder_arm_json(e: &EncoderFace) -> serde_json::Value {
+    // `mut` is consumed only under `arena-laya` (the posture keys); the
+    // allow keeps the default-features posture warning-free.
+    #[cfg_attr(not(feature = "arena-laya"), allow(unused_mut))]
+    let mut v = serde_json::json!({
+        "record_only": true,
+        "serve": false,
+        "serve_note": "encoder class refused at serve (instinct issue 014 decision 1) — A1 keeps serving",
+        "artifact": e.art,
+        "accuracy": e.accuracy,
+        "n": e.n,
+        "mean_vs_a1": e.mean_vs_a1,
+        "lb95_vs_a1": e.lb95_vs_a1,
+        "p50_us": e.p50_us,
+        "p99_us": e.p99_us,
+        "device": e.device,
+        "head_kind": e.head_kind,
+        "ckpt": e.ckpt,
+        "shape_desc": e.shape_desc,
+        // Per-row freezes (the doc builder's stats laws consume these
+        // where present; the 029 record predates the field and publishes
+        // aggregates only — omitted-elsewhere law).
+        "picks": e.picks,
+        "correct": e.correct,
+        "confs": e.confs,
+        "durs_us": e.durs_us,
+    });
+    #[cfg(feature = "arena-laya")]
+    {
+        if !e.weight_posture.eq_ignore_ascii_case("f16") {
+            v["weight_posture"] = serde_json::Value::String(e.weight_posture.to_string());
+        }
+        if let Some(r) = &e.fake_quant_report {
+            v["fake_quant_report"] = serde_json::to_value(r).expect("report serializes");
+        }
+    }
+    v
+}
+
 fn write_predictions(out_dir: &Path, runs: &[SuiteRun]) {
     // The freeze contract is the REGISTERED (served) arm + the controls
     // (A0/A1/H1) — the 45-point H2 grid is recomputable deterministically
@@ -2310,29 +2386,7 @@ fn write_predictions(out_dir: &Path, runs: &[SuiteRun]) {
                 "lb95": s.lb95,
                 "passed": s.passed,
             })),
-            "encoder_arm": run.encoder.as_ref().map(|e| serde_json::json!({
-                "record_only": true,
-                "serve": false,
-                "serve_note": "encoder class refused at serve (instinct issue 014 decision 1) — A1 keeps serving",
-                "artifact": e.art,
-                "accuracy": e.accuracy,
-                "n": e.n,
-                "mean_vs_a1": e.mean_vs_a1,
-                "lb95_vs_a1": e.lb95_vs_a1,
-                "p50_us": e.p50_us,
-                "p99_us": e.p99_us,
-                "device": e.device,
-                "head_kind": e.head_kind,
-                "ckpt": e.ckpt,
-                "shape_desc": e.shape_desc,
-                // Per-row freezes (the doc builder's stats laws consume
-                // these where present; the 029 record predates the field
-                // and publishes aggregates only — omitted-elsewhere law).
-                "picks": e.picks,
-                "correct": e.correct,
-                "confs": e.confs,
-                "durs_us": e.durs_us,
-            })),
+            "encoder_arm": run.encoder.as_ref().map(encoder_arm_json),
             "arms": arms,
         }));
     }

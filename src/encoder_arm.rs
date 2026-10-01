@@ -476,6 +476,16 @@ pub struct EncoderArmOut {
     /// The honest shape description for the record prose (v1: "4 classes ·
     /// feat 5120"; v2: "d 1024 · hidden 128 · widths 2/4/5").
     pub shape_desc: String,
+    /// The WEIGHT posture the encode ran under (instinct issue 018 Lane
+    /// D1): "f16" (the shipped posture) or "fake-quant-q8". Serialized
+    /// beside every read so a quantized read can never be mistaken for
+    /// the shipped posture.
+    pub weight_posture: &'static str,
+    /// The fake-quant report (`Some` iff the posture is fake-quant-q8):
+    /// what was quantized, what was skipped, the measured error — the
+    /// record's disclosure, serialized verbatim.
+    pub fake_quant_report:
+		Option<riir_reflex::laya::riir::fake_quant::FakeQuantReport>,
 }
 
 #[cfg(feature = "arena-laya")]
@@ -484,14 +494,32 @@ pub fn eval_encoder_arm(
     art_path: &std::path::Path,
     ckpt: riir_reflex::laya::config::Checkpoint,
 ) -> Result<EncoderArmOut, String> {
+    eval_encoder_arm_posture(cases, art_path, ckpt, riir_reflex::laya::riir::WeightPosture::F16)
+}
+
+/// The posture-aware form (instinct issue 018 Lane D1): the F16 read
+/// through [`eval_encoder_arm`], the fake-quant probe through
+/// [`riir_reflex::laya::riir::WeightPosture::FakeQuantQ8`] — the forward
+/// code is byte-identical, only the loaded weights differ.
+#[cfg(feature = "arena-laya")]
+pub fn eval_encoder_arm_posture(
+    cases: &[riir_reflex::harness::suites::SuiteCase],
+    art_path: &std::path::Path,
+    ckpt: riir_reflex::laya::config::Checkpoint,
+    posture: riir_reflex::laya::riir::WeightPosture,
+) -> Result<EncoderArmOut, String> {
     use riir_reflex::harness::runner::case_questions;
     use riir_reflex::laya::riir::RiirAgent;
     use riir_reflex::laya::weights::weights_root;
 
     let head = super::encoder_arm::load_sealed_head(art_path, None)?;
-    let agent = RiirAgent::load(&weights_root(), ckpt)
+    let agent = RiirAgent::load_with_posture(&weights_root(), ckpt, posture)
         .map_err(|e| format!("laya {} load: {e}", ckpt.subfolder()))?;
     let device: &'static str = agent.device();
+    let (weight_posture, fake_quant_report) = match agent.weight_posture() {
+        Some((p, r)) => (p.label(), Some(r.clone())),
+        None => (riir_reflex::laya::riir::WeightPosture::F16.label(), None),
+    };
 
     let mut picks: Vec<usize> = Vec::new();
     let mut correct: Vec<bool> = Vec::new();
@@ -594,6 +622,8 @@ pub fn eval_encoder_arm(
         head_kind,
         ckpt: ckpt.subfolder(),
         shape_desc,
+        weight_posture,
+        fake_quant_report,
     })
 }
 
