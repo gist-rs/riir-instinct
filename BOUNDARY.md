@@ -12,7 +12,7 @@ Visibility: private
 
 **The model-based and hybrid decision lanes** ("Reflex · instinct") — the
 private, trained sibling of the public modelless engine `../riir-reflex`,
-shaped like `../riir-clippy` (private product engine over public katgpt-rs):
+shaped like `../riir-refine` (private product engine over public katgpt-rs):
 
 - specialist serving: load a sealed specialist artifact (bytes, never a path
   dep) and run its forward through `../riir-infer` loaders
