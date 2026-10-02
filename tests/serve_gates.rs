@@ -69,7 +69,7 @@ fn embedded_manifest() -> ArsenalManifest {
 /// re-run + frozen-predictions parity update law A6 demands). This is
 /// the TOML analogue of the compile-time posture table it replaced.
 const PINNED_MANIFEST_DIGEST: &str =
-    "blake3:913fc2601d50e86110c163fa33ab5c89ff5719557fe331038a90a2349be4ce0e";
+    "blake3:4c4356c6d31f856e1cf2665cd55ba5e7e079f07a3da0924c5eef2296eebf56f7";
 
 #[test]
 fn arsenal_manifest_bytes_are_pinned_byte_for_byte() {
@@ -116,7 +116,7 @@ fn manifest_posture_rows_are_the_serving_law_verdict() {
     // bar, so the suite stays unsold under the amended law — the manifest
     // row exists because A1 IS the argmax (the serving law), and the
     // Reflex tie is broken.
-    let expected: [(&str, Arm, &str); 15] = [
+    let expected: [(&str, Arm, &str); 9] = [
         (
             "ag_news",
             Arm::H2 {
@@ -158,26 +158,16 @@ fn manifest_posture_rows_are_the_serving_law_verdict() {
             "H2(β=0.5,nmin=2,τ=2)",
         ),
         ("code_fixtures", Arm::A1, "A1"),
-        // The six harness families — the artifact-less A0 posture (owner
-        // 2026-10-02 full-coverage serving: "run Rethink.exe or api ->
-        // get the result"). A0 IS the argmax on these suites by the same
-        // best-measured law that serves emotion/xnli: Issue 008 T8's drop
-        // was the SPECIALIST lane's scope (n=12–16 template-shared evals
-        // — a trained win would be unfalsifiable memorization), never a
-        // refusal to serve. Bench 011 froze the family A0 reads
-        // (0.375–0.500), Bench 016/072 froze cache_reuse (0.9167).
-        ("harness_visibility", Arm::A0, "A0"),
-        ("harness_permissions", Arm::A0, "A0"),
-        ("harness_tool_fit", Arm::A0, "A0"),
-        ("harness_routing", Arm::A0, "A0"),
-        ("harness_sensitivity", Arm::A0, "A0"),
-        ("harness_cache_reuse", Arm::A0, "A0"),
+        // (The six harness families' artifact-less A0 rows were REMOVED
+        // 2026-10-02 — owner call: the suites are retired from the reflex
+        // harness itself. Bench 011/016's frozen reads remain in
+        // .benchmarks as history.)
     ];
     assert_eq!(
         m.rows().len(),
-        15,
-        "the manifest carries exactly the fifteen rows (9 specialist suites + the 6 \
-         artifact-less A0 families)"
+        9,
+        "the manifest carries exactly the nine rows (the measured suites; the \
+         six artifact-less A0 families left with their retirement)"
     );
     for (suite, arm, name) in expected {
         let row = m
@@ -196,24 +186,6 @@ fn manifest_posture_rows_are_the_serving_law_verdict() {
         m.row("typed_decisions").is_some(),
         "the typed_decisions serving row vanished — Bench 015's certified posture must keep it"
     );
-    // The artifact-less posture's invariant: the six family rows pin no
-    // digest (the modelless tier serves; there is no artifact to drift).
-    for suite in [
-        "harness_visibility",
-        "harness_permissions",
-        "harness_tool_fit",
-        "harness_routing",
-        "harness_sensitivity",
-        "harness_cache_reuse",
-    ] {
-        let row = m
-            .row(suite)
-            .unwrap_or_else(|| panic!("{suite}: missing from the arsenal manifest"));
-        assert!(
-            row.digest.is_none(),
-            "{suite}: the family row must carry no digest"
-        );
-    }
 }
 
 /// The deployment half of the manifest pin: validation against the real
@@ -411,91 +383,6 @@ fn served_decisions_are_the_frozen_goat_picks() {
     }
 }
 
-/// The FAMILY parity gate (the full-coverage serving posture, owner
-/// 2026-10-02): the six harness families serve through the ARTIFACT-LESS
-/// A0 boot (HybridLane::ReflexOnly — byte-identical to A0), and the
-/// served decisions must match the frozen arena records exactly. Runs
-/// EVERYWHERE: the family seats are synthetic (reflex's in-process
-/// builds — no datasets, no winner bytes), so a bare clone still proves
-/// the served product. The frozen read: Bench 0051 — the WIDE-eval
-/// re-baseline (reflex Plan 009 REVISED-2 swapped the five families'
-/// evals to 96–100-case template-disjoint populations, invalidating
-/// Bench 049's n=12–16 record by construction; the same re-baseline
-/// class as 049 itself), and 0051's A0 identity leg (arena == reflex
-/// run(), held on all six before the stale site leg forced
-/// --skip-pin-a0 — see the 0051 README) is what makes these numbers the
-/// SERVED product's.
-#[test]
-fn served_family_decisions_are_the_frozen_a0_picks() {
-    let records: &[(&str, &str)] = &[
-        ("harness_visibility", "0051_families_wide_eval"),
-        ("harness_permissions", "0051_families_wide_eval"),
-        ("harness_tool_fit", "0051_families_wide_eval"),
-        ("harness_routing", "0051_families_wide_eval"),
-        ("harness_sensitivity", "0051_families_wide_eval"),
-        ("harness_cache_reuse", "0051_families_wide_eval"),
-    ];
-    for (suite, record) in records {
-        let path = repo_root().join(format!(".benchmarks/{record}/predictions.json"));
-        let (picks, abstained) = frozen_picks_from(&path, suite, "A0")
-            .unwrap_or_else(|| panic!("frozen {record} record lacks {suite} A0"));
-        let seat = riir_reflex::harness::runner::seat::prepare_seat(suite, &datasets_dir())
-            .unwrap_or_else(|e| panic!("prepare {suite} seat: {e}"));
-        let state_strs = seat.state_strs.clone();
-        let cases_n = seat.suite.cases.len();
-        // The artifact-less boot (the loader's branch, mirrored): a row
-        // with no digest boots ReflexOnly over the seat engine alone.
-        let manifest = embedded_manifest();
-        let mut server = std::thread::Builder::new()
-            .stack_size(64 * 1024 * 1024)
-            .spawn(move || {
-                assert!(manifest.row(suite).unwrap().digest.is_none());
-                riir_instinct::server::AnySuiteServer::boot_a0_from_seat(suite, seat, &manifest)
-            })
-            .expect("spawn boot thread")
-            .join()
-            .expect("boot thread panicked")
-            .unwrap_or_else(|e| panic!("boot {suite} server: {e}"));
-        // The artifact-less posture's receipt: the boot arm is A0 and the
-        // weight source is ReflexOnly — a no-artifact answer can never
-        // masquerade as a weighted one.
-        assert_eq!(server.meta().arm.name(), "A0", "{suite}: serving arm");
-        assert_eq!(
-            server.meta().source,
-            riir_instinct::server::WeightSource::ReflexOnly,
-            "{suite}: the family lane must serve ReflexOnly"
-        );
-        let n = picks.len().min(cases_n);
-        assert!(n >= 8, "{suite}: parity sample too small: {n}");
-        // A second prepare supplies the case shapes (the seats are
-        // synthetic + deterministic — the same bytes both times).
-        let seat2 = riir_reflex::harness::runner::seat::prepare_seat(suite, &datasets_dir())
-            .unwrap_or_else(|e| panic!("prepare {suite} seat (2nd): {e}"));
-        for (ci, _state) in state_strs.iter().take(n).enumerate() {
-            // Noul questions carry NO option list (the decision_wire law:
-            // the fixed [false, true] rendering speaks it) — cache_reuse's
-            // cases have no criteria to key.
-            let options = match seat2.suite.cases[ci].questions[0].kind {
-                riir_reflex::harness::suites::QKind::Noul => None,
-                _ => Some(case_option_keys(&seat2.suite.cases[ci])),
-            };
-            let d = server
-                .decide(&state_strs[ci], options.as_deref())
-                .unwrap_or_else(|e| panic!("{suite} case {ci}: decide failed: {e}"));
-            assert_eq!(
-                d.abstained, abstained[ci],
-                "{suite} case {ci}: served abstention drifted from the frozen record"
-            );
-            if !d.abstained {
-                assert_eq!(
-                    d.pick_index,
-                    Some(picks[ci]),
-                    "{suite} case {ci}: served pick drifted from the frozen pick"
-                );
-            }
-        }
-    }
-}
 
 /// The massive sentinel face: the seat's t20k test split lacks
 /// `cooking_query` (the artifact carries 60 intents, the seat offers 59);

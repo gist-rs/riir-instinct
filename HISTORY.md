@@ -1,3 +1,20 @@
+## 2026-10-02 — the six harness families RETIRED (owner call, reflex `31b11d2` + instinct this commit)
+
+The owner removed the six home-made harness families (`harness_visibility` ·
+`harness_permissions` · `harness_tool_fit` · `harness_routing` ·
+`harness_sensitivity` · `harness_cache_reuse`) from the reflex harness itself —
+at-chance on the modelless lane at the honest wide-eval populations
+(0.22–0.31 vs ~0.2–0.33 chance; the small-n template-shared reads 0.56–0.92
+were the artifact) — "so no one benches it anymore". Instinct-side, the
+six artifact-less A0 rows left `arsenal.toml` (digest re-pinned `4c4356c6…`),
+the arena population moved 15 → 9 (`arena.rs` SUITES), and the gates moved
+with them (`embedded_default_parses_with_the_nine_suites`, the posture table
+at 9 rows, the family frozen-picks parity gate removed — its Bench 0051
+record stays in `.benchmarks/` as history). The manifest-digest law (A6) was
+honored: the digest pin moved in the SAME commit as the TOML edit. Gates:
+full `cargo test` green (0 failures; the seat/boot gates ran the real seats)
++ clippy `--all-targets` `-D` clean.
+
 ## 2026-10-02 — Issue 018 closed: the Rethink encoder lean+GOAT arc — the shared encode worker PROMOTED default, Q8 adopted end-to-end, Q4 measured out
 
 All five lanes executed; the issue's own task rows + Benches 0046–0048, 0050,

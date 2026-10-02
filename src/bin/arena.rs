@@ -54,18 +54,13 @@ use riir_reflex::nb_scope::NbView;
 /// winners through Plan 003's noul bridge. Label-arity dispatch below must
 /// cover their train-derived label counts (4 workflows / 2 noul classes,
 /// measured 2026-09-28 — the plan's 3-workflow guess was stale).
-/// Issue 010 T6 (2026-09-28): the harness families + `code_fixtures` join
-/// — the reflex Issue-049 seat seam now seats them (marked synthetic);
-/// no winner artifacts exist for them, so they run the A0/G0-only
-/// posture and publish `a0_stands` rows (the expected outcome per 049's
-/// scope note). `harness_cache_reuse` joins (Issue 010's OWED item,
-/// unblocked 2026-09-28: reflex Issue 045 REVERSED the old LLM-only
-/// carve-out — the seat no longer refuses it; the family is text-decidable
-/// ("does the described prefix still cover the described next turn") and
-/// ships its authored corpus + cal, the cal-selected noul polarity being
-/// the lever that arms it; reflex Bench 072 measured the modelless lane
-/// at 0.9167). No winner artifact exists for it, so it runs the A0/G0-only
-/// posture and publishes an `a0_stands` row.
+/// Issue 010 T6 (2026-09-28): `code_fixtures` joined — the reflex
+/// Issue-049 seat seam seats it (marked synthetic); no winner artifact
+/// exists, so it runs the A0/G0-only posture and publishes an
+/// `a0_stands` row. (The six harness families joined the same day and
+/// LEFT 2026-10-02 — owner call: the suites are retired from the reflex
+/// harness itself, at-chance on the modelless lane; their Bench 011/016
+/// rows remain in .benchmarks as history.)
 const SUITES: &[&str] = &[
     "ag_news",
     "emotion",
@@ -75,14 +70,12 @@ const SUITES: &[&str] = &[
     "banking77",
     "typed_decisions",
     "prompt_injections",
-    "harness_visibility",
-    "harness_permissions",
-    "harness_tool_fit",
-    "harness_routing",
-    "harness_sensitivity",
-    "harness_cache_reuse",
     "code_fixtures",
 ];
+// (The six harness families left this population 2026-10-02 — owner call:
+// the suites are retired from the reflex harness itself, at-chance on the
+// modelless lane at the honest wide-eval populations. Bench 011/016's
+// family rows remain in .benchmarks as history.)
 /// Reflex already wins these (Bench 051) — G3's non-inferiority duty.
 const REFLEX_WON: &[&str] = &["emotion", "sst5", "massive_intent_en", "banking77"];
 /// Laya wins these (Bench 051) — G5's pre-registration duty.

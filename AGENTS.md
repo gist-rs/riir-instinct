@@ -226,7 +226,7 @@ strongest cell vs the displayed arm, +10.75 pt; reflex-site `245bf34`, CF
 `8abd1add`, the Issue-021 latency ack recorded: ambient load, the 364 ms figure
 is the 3-orders-over-bar magnitude evidence). REMAINS T5–T6 (G2/G4 land with
 the consumer; T6 = D1, trigger-blocked); thai suites wait on the multilingual
-checkpoint (riir-train 603, 4090-queued); the 6 harness families are law-excluded.
+checkpoint (riir-train 603, 4090-queued). **The 6 harness families are RETIRED (owner call, 2026-10-02 — reflex `31b11d2` removed the suites from the harness itself; the six artifact-less A0 manifest rows + the arena population rows left with them, board 15 → 9).**
 
 **Issue 017 CLOSED (2026-10-01, Bench 036 + 037; instinct `cdc92d1` + `b03fded`
 + `2960701`, reflex-site `70d9e80`, CF `eeee1b19`): the owner's progress-display
@@ -395,8 +395,8 @@ silently carrying `oc_select: false` (a pure-A1 fusion would have
 served wearing the H2 name; the knobs now mirror the arena's).
 
 **Bench 016 (2026-09-28) — `harness_cache_reuse` SEATED (Issue 010's OWED
-item): the arena population is 15 suites, every reflex dataset suite now
-carries a measured row.** A0 0.9167 == reflex `run()` == Bench 072,
+item): the arena population was 15 suites then; every reflex dataset suite
+carried a measured row.** A0 0.9167 == reflex `run()` == Bench 072,
 verdict `a0_stands` (no specialist artifact); the noul polarity armed
 through the seat's synthetic cal-front selection fallback. The other 14
 suites reproduced their published rows byte-identically, serving arms
@@ -570,7 +570,9 @@ every negative recorded.** Master plan:
   republish + card three-state render) belongs to the session holding
   the reflex-site checkout (outside this workspace).
 - **Bench 011** (`.benchmarks/011_hybrid_families_seated/`, Issue 010 T6
-  + reflex Issue 049, 2026-09-28): the harness families + `code_fixtures`
+  + reflex Issue 049, 2026-09-28 — HISTORY: the families this bench seated
+  were RETIRED 2026-10-02, owner call, reflex `31b11d2`; the record and
+  its frozen reads survive here): the harness families + `code_fixtures`
   joined the arena population through reflex `03415e5`'s synthetic seat
   seam (the `Seat.synthetic` marker; `harness_cache_reuse` stays a
   disclosed refusal). All six publish `a0_stands` (A0 0.375–0.500 —

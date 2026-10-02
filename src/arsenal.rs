@@ -624,7 +624,7 @@ mod tests {
     }
 
     #[test]
-    fn embedded_default_parses_with_the_fifteen_suites() {
+    fn embedded_default_parses_with_the_nine_suites() {
         let m = ArsenalManifest::embedded_default().expect("embedded manifest parses");
         let suites: Vec<&str> = m.suites().collect();
         assert_eq!(
@@ -638,50 +638,18 @@ mod tests {
                 "xnli_en",
                 "prompt_injections",
                 "typed_decisions",
-                "code_fixtures",
-                // The six harness families — the artifact-less A0 posture
-                // (owner 2026-10-02 full-coverage serving: the binary
-                // serves every board suite; the modelless tier IS the
-                // served arm there, per the best-measured law).
-                "harness_visibility",
-                "harness_permissions",
-                "harness_tool_fit",
-                "harness_routing",
-                "harness_sensitivity",
-                "harness_cache_reuse"
+                "code_fixtures"
             ]
         );
-        assert_eq!(m.rows().len(), 15);
-    }
-
-    #[test]
-    fn family_rows_are_artifact_less_a0() {
-        // The full-coverage serving posture: the six family rows pin no
-        // digest (the modelless tier serves), are A0, hosted_only, eager.
-        let m = ArsenalManifest::embedded_default().expect("embedded manifest parses");
-        for suite in [
-            "harness_visibility",
-            "harness_permissions",
-            "harness_tool_fit",
-            "harness_routing",
-            "harness_sensitivity",
-            "harness_cache_reuse",
-        ] {
-            let row = m
-                .row(suite)
-                .unwrap_or_else(|| panic!("{suite} missing from the embedded manifest"));
-            assert!(row.digest.is_none(), "{suite}: must carry no digest");
-            assert_eq!(
-                row.posture.to_arm().expect("posture arm"),
-                Arm::A0,
-                "{suite}: must be A0"
-            );
-            assert_eq!(row.class, "hosted_only");
-            assert_eq!(row.budget.load, "eager");
-        }
-        // And the INVARIANT direction: a non-A0 row with no digest is a
-        // validation refusal (posture-as-data, never a defaulted
-        // artifact).
+        // The six harness families' artifact-less A0 rows were REMOVED
+        // 2026-10-02 (owner call — the suites are retired from the reflex
+        // harness itself); the manifest carries exactly the nine measured
+        // suites.
+        assert_eq!(m.rows().len(), 9);
+        // The INVARIANT direction survives the removal: a non-A0 row with
+        // no digest is a validation refusal (posture-as-data, never a
+        // defaulted artifact) — the assert the retired
+        // family_rows_are_artifact_less_a0 carried.
         let winners = std::path::Path::new("/nonexistent-winners");
         let bad = ArsenalManifest::parse(
             "[[vessel]]\
