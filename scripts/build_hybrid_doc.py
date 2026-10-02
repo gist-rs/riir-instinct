@@ -449,7 +449,8 @@ def selftest() -> int:
 
 
 def build_doc_from(preds: dict, git_sha: str, date_utc: str,
-                   serving: dict[str, str] | None = None) -> dict:
+                   serving: dict[str, str] | None = None,
+                   box_state: dict | None = None) -> dict:
     """`build_doc` over an already-parsed predictions dict (the self-test
     seam; the file path halves share the body).
 
@@ -514,17 +515,25 @@ def build_doc_from(preds: dict, git_sha: str, date_utc: str,
             "serving selector."
         ),
     }
+    if box_state is not None:
+        # The Issue-021 verdict the run stamped (arena box_state.json) —
+        # without it the site can never JUDGE the lane's latency and the
+        # frontier refuses to plot the rung. The arena's span rides the
+        # doc verbatim; publish_bench stamps per-cell verdicts from it.
+        meta["box_state"] = box_state
     return {"meta": meta, "suites": suites}
 
 
 def build_doc(predictions_path: Path, git_sha: str, date_utc: str,
-              serving: dict[str, str] | None = None) -> dict:
+              serving: dict[str, str] | None = None,
+              box_state: dict | None = None) -> dict:
     preds = json.loads(predictions_path.read_text(encoding="utf-8"))
-    return build_doc_from(preds, git_sha, date_utc, serving)
+    return build_doc_from(preds, git_sha, date_utc, serving, box_state)
 
 
 def build_doc_merged(paths: list[Path], git_sha: str, date_utc: str,
-                     serving: dict[str, str] | None = None) -> dict:
+                     serving: dict[str, str] | None = None,
+                     box_state: dict | None = None) -> dict:
     """`build_doc` over a SUITE-LEVEL UNION of several frozen records —
     for the mixed-pool posture: the serving arm may be measured in a
     per-suite record (typed_decisions' full-pool H2, Bench 020) while the
@@ -543,7 +552,7 @@ def build_doc_merged(paths: list[Path], git_sha: str, date_utc: str,
                 order.append(name)
             merged[name] = run
     preds = {"frozen_test_predictions": [merged[n] for n in order]}
-    doc = build_doc_from(preds, git_sha, date_utc, serving)
+    doc = build_doc_from(preds, git_sha, date_utc, serving, box_state)
     doc["meta"]["lane_note"] += (
         " Record merge: "
         + ", ".join(p.name for p in paths)
@@ -564,6 +573,12 @@ def main() -> int:
     ap.add_argument("--git-sha", default=None,
                     help="the arena build's sha (default: git rev-parse HEAD)")
     ap.add_argument("--date-utc", default=None)
+    ap.add_argument("--box-state", type=Path, default=None,
+                    help="the arena's box_state.json (the Issue-021 "
+                         "structured span) — embedded in meta so the site "
+                         "can JUDGE the lane's latency; without it every "
+                         "hybrid timing cell stays unjudged and the "
+                         "frontier refuses to plot the rung")
     ap.add_argument("--arsenal", type=Path, default=None,
                     help="the arsenal manifest (the serving truth; "
                          "default: arsenal.toml beside this script)")
@@ -586,9 +601,14 @@ def main() -> int:
         "%Y-%m-%dT%H:%M:%SZ")
     arsenal = args.arsenal or Path(__file__).resolve().parent.parent / "arsenal.toml"
     serving = serving_arms(arsenal)
-    doc = (build_doc(args.predictions[0], git_sha, date_utc, serving)
+    box_state = None
+    if args.box_state is not None:
+        box_state = json.loads(args.box_state.read_text(encoding="utf-8"))
+        if not isinstance(box_state.get("start"), dict) or not isinstance(box_state.get("end"), dict):
+            ap.error(f"--box-state {args.box_state} carries no start/end span")
+    doc = (build_doc(args.predictions[0], git_sha, date_utc, serving, box_state)
            if len(args.predictions) == 1
-           else build_doc_merged(args.predictions, git_sha, date_utc, serving))
+           else build_doc_merged(args.predictions, git_sha, date_utc, serving, box_state))
     args.out.write_text(json.dumps(doc, indent=1) + "\n", encoding="utf-8")
     names = [s["name"] for s in doc["suites"]]
     a0 = [s["name"] for s in doc["suites"] if s["verdict"] == "a0_stands"]
