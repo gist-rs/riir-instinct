@@ -169,8 +169,11 @@ eager-only — a lazy ENC row is an L9 violation). **Issue 018 Update 10
 0054 addendum). The runtime demote switch **`RIIR_INSTINCT_ENCODER_SHARED=0`**
 (the exact literal) bit-restores per-lane keys; `encoder_topology_label()`
 is the one topology-label home. The arena's fake-quant probes:
-`--fake-quant` (Q8, Lane D1) / `--fake-quant-q4` (Q4, Lane D4 — Bench 0055
-pre-registered; the verdict gates `LAYA_WEIGHTS_VARIANT=q4` serving).
+`--fake-quant` (Q8, Lane D1 — Bench 0046 PASS, the Q8 tier adopted) /
+`--fake-quant-q4` (Q4, Lane D4 — Bench 0055, Update 11: **FAILED** — banking77
+Δacc −10.0pt UB95 −0.1410, retention 0.568; `LAYA_WEIGHTS_VARIANT=q4` may not
+serve anything, the Q4 tier stays measurement-only, re-open bar = a head-class
+change).
 **The DEFAULT manifest is
 UNTOUCHED** (the byte pin holds; sst5 keeps serving A1) — ENC rows are a
 GPU-host deployment surface; a build without the feature refuses an ENC

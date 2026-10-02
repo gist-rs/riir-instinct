@@ -1,3 +1,51 @@
+## 2026-10-02 — Issue 018 closed: the Rethink encoder lean+GOAT arc — the shared encode worker PROMOTED default, Q8 adopted end-to-end, Q4 measured out
+
+All five lanes executed; the issue's own task rows + Benches 0046–0048, 0050,
+0054, 0055 are the detail record. The lane map, durably:
+
+- **Lane B (shared encode worker) + Lane A (lazy/evict inheritance) LANDED**
+  (`41234d4`, Bench 0050): the residency unit moved from the LANE to the
+  WORKER — one worker + one agent per registry key, weak-handle residency,
+  per-lane in-flight cap, template validation at attach, streamed-BLAKE3
+  checkpoint digest; `budget.load = "lazy"` became legal on ENC rows with a
+  boot preflight (weights presence + pin verify-only, the per-shared-worker
+  memory budget, healthz `readiness`). Parity PASS interleaved (cross-build
+  pick digests byte-identical); RAM 3 lanes/1 ckpt 4938→1690 MB = 2.92×.
+  The twin-landing residue (`eef77d1`) fixed ENC rows skipping the bag-winner
+  coupling in `load_lane` — banking77 ENC could never boot through the serve
+  binary before it (the parity gates bypass `load_lane`, which is why both
+  016 and 0050 missed it).
+- **Lane B PROMOTED to the default** (Update 10, owner-approved, `e6e703b`):
+  `serve-encoder` implies `serve-encoder-shared` after the green soak —
+  Bench 0054's public-surface confirmation (8 clients × 40 rounds × 3 suites,
+  PROVENANCE-quoted, `b6d40de`+`1c8b6e4`+`fc97eac`) reads shared/per-lane
+  p50 1.438× · p99 0.368× · RSS 3.12× with decision parity OK across builds;
+  the runtime demote switch `RIIR_INSTINCT_ENCODER_SHARED=0` bit-restores
+  per-lane keys. The DEFAULT manifest stays untouched (ENC rows remain a
+  GPU-host deployment surface).
+- **Lane C NEGATIVE** (`8a3b721`+`f3ae573`, Bench 0048): the typed head over
+  the adopted (Q8, english) encode does not carry the typed signal — the
+  typed cell keeps its incumbent `typed_encoder_v2.bin` exactly as seated;
+  no frozen read spent (the trainer's reserve law), no site change.
+- **Lane D closed**: D1 fake-quant PASS (Bench 0046, 14 paired reads — 5 PASS
+  / 2 UNDECIDED / 0 FAIL) → the Q8_0 artifact tier ADOPTED end-to-end (D2a
+  Bench 0047, riir-infer `10e33de`: english + typed converted 842.6 → 447.7
+  MB = 53.1%, converter read-back bit-exact; D2b via riir-infer Plan 616,
+  Updates 4–6). **Q4 FAILED its D1-shaped probe** (Update 11, Bench 0055,
+  `6f8ec72`, owner-approved menu item B): banking77 Δacc −10.0pt (UB95
+  −0.1410) + retention 0.568 (216/500 picks moved) + ΔBrier UB95 +0.1330 —
+  `LAYA_WEIGHTS_VARIANT=q4` may not serve anything; the Q8 adoption stands
+  untouched and the Q4 format seam stays landed (measurement-only). Option
+  (iii) re-priced and DECLINED (Update 10); PQ2 recorded as a format-row
+  dependency. Re-open bar: a head-class change (finer grid variant / per-head
+  quant mix / a head trained at Q4 — riir-train territory).
+- **Lane E never triggered** (its D1-fail condition never fired).
+
+The two-case calibration branch (katgpt-rs Research 562 addendum) stayed
+armed and unfired throughout. Issue file removed per the noise-reduction
+rule — AGENTS.md carries the Update 10 posture + the Q4 verdict row; this
+row is the record.
+
 ## 2026-10-02 — Bench 0051: the families wide-eval re-baseline — the serve-parity gate re-pinned on the template-disjoint populations
 
 reflex `e78c0e6` (Plan 009 REVISED-2) widened the five families' evals to 96–100-case
