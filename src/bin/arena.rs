@@ -523,7 +523,24 @@ fn arena_main() {
     write_predictions(&out_dir, &runs);
     write_results(&out_dir, &runs, &box_summary);
     write_encoder_lane_doc(&out_dir, &runs, &box_state);
+    write_box_state(&out_dir, &box_state);
     eprintln!("=== done — results in {} ===", out_dir.display());
+}
+
+// The structured Issue-021 verdict the run already captures, written where
+// build_hybrid_doc.py can embed it into the lane doc's meta — without it
+// the site can never JUDGE the hybrid lane's latency (the backfill's
+// measured verdict: zero instinct docs carry box_state, so every hybrid
+// timing cell stays unjudged and the frontier refuses to plot the rung).
+fn write_box_state(out_dir: &Path, start: &riir_reflex::harness::box_state::BoxState) {
+    let span = riir_reflex::harness::box_state::BoxStateSpan {
+        start: start.clone(),
+        end: riir_reflex::harness::box_state::capture(),
+    };
+    let path = out_dir.join("box_state.json");
+    std::fs::write(&path, serde_json::to_string_pretty(&span).expect("box state json"))
+        .expect("write box state");
+    eprintln!("box state (structured): {}", path.display());
 }
 
 fn die(msg: &str) -> ! {
@@ -2138,6 +2155,9 @@ fn pin_a0_identity(datasets_dir: &Path, runs: &[SuiteRun], suites: &[&str]) -> R
         // their served model is a comparison lane, never the pin's
         // subject.
         openthai: false,
+        // The Cloudflare Clef comparison lane (reflex plan 011 Phase A) —
+        // off: a comparison lane, never the A0 drift pin's subject.
+        clef: false,
         paw: false,
         corpus_cap_override: 0,
         cal_select_caps: vec![],

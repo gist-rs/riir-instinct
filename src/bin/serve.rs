@@ -690,8 +690,18 @@ fn load_lane(
         .map(str::to_string)
         .unwrap_or_else(|| row.artifact_file(format!("{suite}_winner_v1.bin")));
     // The raw-mode convention coupling (Issue 579): a bridged suite loads
-    // EXACTLY its bridged file, loud refusal otherwise.
-    riir_instinct::specialist::check_winner_file(suite, &name)?;
+    // EXACTLY its bridged file, loud refusal otherwise. RAW-mode BAG rows
+    // only — the ENC lane's head is NOT a suite winner (the bag-convention
+    // coupling guards nothing here; the lane's own template guards own its
+    // artifact), so the skip mirrors server.rs's ENC route. Without it, a
+    // banking77 ENC row (head ≠ the bridged banking77_nbsvm_v2.bin) could
+    // never boot through the serve binary — the parity gates bypass
+    // load_lane, which is why the class survived 016 AND the Lane B/A
+    // landing (found by the duplicate session's Lane A trigger-path read,
+    // 2026-10-02).
+    if row.to_arm() != Ok(riir_instinct::server::Arm::Enc) {
+        riir_instinct::specialist::check_winner_file(suite, &name)?;
+    }
     let path = Path::new(&ctx.winners_dir).join(&name);
     let bytes = read_bounded(&path, cap)?;
     let digest = *blake3::hash(&bytes).as_bytes();

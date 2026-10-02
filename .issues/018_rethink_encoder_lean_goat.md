@@ -562,3 +562,41 @@ fallback are the recorded hedges). REMAINS: promotion of
 `serve-encoder-shared` to the serve-encoder default (rides the soak);
 the concurrent-load p50/p99 A/B at the soak; option (iii) re-price and
 the Q4 retention probe stay owner-gated as before.
+
+**Update 8 (2026-10-02, the duplicate session — TWIN LANDING, disclosed):**
+an M3 session implemented Lane B + Lane A INDEPENDENTLY in parallel with
+the 4090 session and pushed second — origin's commit `41234d4` is
+canonical, the duplicate (`dbf790d`, flag name `shared-encoder-worker`,
+own pool module) died in the reflog per the twin-landing law. What
+survives from it, disclosed as evidence rather than re-landed:
+
+- **The deferred concurrency cell, MEASURED at the Metal posture** (M3
+  Max, AC, F16, dev profile BOTH sides, like-for-like; 6 clients × 12
+  decisions round-robining 3 lanes, n=72, tail support 1/72):
+  per-lane p50 51,227 µs / p99 195,727 µs; shared p50 93,296 µs
+  (**1.82× — the head-of-line cost**) / p99 236,456 µs
+  (**1.208× ≤ the 1.217× loaded-box envelope — HELD, ~0.9 pt margin**);
+  RSS 10,207 → 4,153 MiB whole-process (**2.46×**) at 3 lanes / 1
+  worker. ⚠ The p99 margin is THIN — a busier box can breach it; the
+  share-weights-only fallback is the recorded remedy. **Instrument
+  disclosure: the probe targeted the DUPLICATE's internals (its own
+  pool API) and died with it — these numbers are a one-session reading,
+  not a landed gate; the soak owns the decision cell.**
+- **The frozen-read parity through a shared lane**: the Bench-029 sst5
+  replay (316/600 EXACT, arena leg 32/32) passed through the DUPLICATE's
+  shared-worker lane at Metal — cross-posture bit-identity evidence of
+  the same design shape 0050 proved by fingerprints.
+- **TWO landed fixes found en-route** (both on top of `41234d4`):
+  (1) `load_lane`'s `check_winner_file` applied the BAG winner coupling
+  to ENC rows — a banking77 ENC row (head ≠ the bridged
+  `banking77_nbsvm_v2.bin`) could never boot through the serve binary;
+  the parity gates bypass `load_lane`, which is why the class survived
+  both 016 and 0050 (fixed: the ENC skip, mirroring server.rs's route);
+  (2) the reflex sibling's plan-011 `RunOptions.clef` — arena.rs's A0
+  drift pin took the one-field ripple (`clef: false`; origin/develop
+  was RED without it).
+- **FOLLOW-UP (explicit, not silently dropped):** a runnable
+  concurrent-load A/B instrument on the LANDED implementation (public
+  surface only — the registry is private by design) so the soak cell
+  re-measures without re-deriving; plus the promotion pull of
+  `serve-encoder-shared` after the soak.
