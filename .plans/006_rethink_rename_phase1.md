@@ -1,6 +1,7 @@
 # Plan 006 — `riir-rethink` Phase 1: the repo rename + registration re-pin
 
 **Status:** OPEN — filed 2026-09-30 as riir-ai Proposal 051 T0.4. **EXECUTION IS OWNER-GATED** (051's closer: *"open the Phase-1 plan when the owner waves it through"*); this plan is the ready-to-fire checklist, not permission to start.
+**HOLD 2026-10-03 — SUPERSEDED AS SCOPED by [riir-ai Proposal 052](../../riir-ai/.proposals/052_rethink_l1_open_source_teaching_carve.md) (owner directive): the SPLIT replaces the RENAME — Instinct stays a product (the open teaching lane; `riir-instinct` opens) and Rethink becomes a NEW PRIVATE repo receiving the moat modules (encoder arm, HOSTED-ONLY vessels, economy client, production artifacts). The rename-as-rename tasks below (T1.1a rename, T1.2 lane rebrands to "Rethink (hybrid)", the site family) are re-scoped at the wave: what fires instead is the moat MOVE (052 Phase B) then the Instinct opening (052 Phase C). The reusable parts: the registration one-commit-family law, the dual-box law, the census discipline, the fence-gate precedent.
 Owner: katopz (051 consolidation directive 2026-09-30)
 Parent: [riir-ai Proposal 051](../riir-ai/.proposals/051_rethink_all_tier_adaptive_serving_family.md) Phase 1 (T1.1–T1.3 there)
 Precedents: the riir-llm registration (katgpt-rs Issue 793 — 19-of-21 sweeps red when done partially); the reflex `LANE_DISPLAY` cap-case rename (aliases keep history landing); the reflex bin-rename v0.2.2 (dist-side follow-ups).
