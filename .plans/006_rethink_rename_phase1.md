@@ -70,6 +70,7 @@ Rename the repo `riir-instinct` → `riir-rethink` everywhere the name is LIVE, 
 - [ ] T1.3c riir-reflex: bench/seat docs naming the sibling
 - [ ] T1.3d riir-kat, riir-deployer, riir-clippy, riir-reflexer, riir-infer, riir-ai: live cross-references
 - [ ] T1.3e HISTORY one-liners: each swept repo's HISTORY gets the rename record line (dated, citing 051 + this plan)
+- [ ] T1.3f the relative-link sweep: rewrite `../../../riir-instinct/` relative links in OPEN plans/proposals (riir-instinct Plan 007, riir-ai Proposal 051 — the paths go dead when the directory moves, filed 2026-10-02; `LANE_DISPLAY` aliases cover lane LABELS, never file paths)
 
 ### T1.4 — close out
 - [ ] T1.4a the commit family pushed (all repos, `develop`); both boxes `develop == origin/develop`
