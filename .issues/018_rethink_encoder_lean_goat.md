@@ -458,3 +458,44 @@ condition for option (iii) is MET with numbers: long-prefill q8 serving is
 where an MSL MPS-replacement would earn its bench — owner call.
 REMAINS: Phase 3 (adoption + re-seat + the Q4/PQ2 seam — rides the
 staging's format constant); Lane B/A daylight.
+
+**Update 6 (2026-10-02, the D2b Phase 3 session): Plan 616 Phase 3 DONE —
+D2b ADOPTED (the no-change re-seat), the /#sizes row re-measured at the
+adopted posture, and the Q4 seam LANDED (riir-infer, all gates green).**
+- **The adoption re-seat is the no-change proof, recorded like 0047's:**
+  no bit moved at any seated cell's surface. The F16 path (Dense →
+  `matmul_w` → MPS) is byte-untouched — G5 parity green at BOTH postures
+  against the in-flight substrate (CPU 27.5 s / Metal 10.7 s), so sst5
+  0.5267 / xnli 0.8600 / ag_news 0.9475 / typed 0.7550 STAND (the third-
+  posture witnesses carry). The q8 posture's own evidence: the live probe
+  re-run at HEAD reproduced Phase 2 exactly (fused deterministic ×2
+  byte-identical; the option-(i) dispatch delta 5.364e-7 probs / act
+  exactly 0, two orders under G5; RSS 1491/1880/4825 MiB; device
+  residency 348.8 vs 1654.9 MiB = 4.74×). D2b is the q8 serving posture.
+- **/#sizes re-measured** (reflex-site `78488db`): the rethink_encoder
+  row's model = the adopted q8 artifact 447,729,135 B + heads 7,994,976 B
+  = 455,724,111 B (total 484,472,795 with the engine — 44% under the F16
+  row); the note leads with the served posture's memory line (348.8 MiB
+  device / 4.74×, RSS 1,492 vs 4,825 MiB); F16 stays as the legacy
+  reference line.
+- **The Q4 seam landed — the FORMAT tier only; Q4 RETENTION IS D1-PRICED
+  SEPARATELY before `LAYA_WEIGHTS_VARIANT=q4` serves anything.** The
+  staging decode's format constant is the seam, exactly as scoped:
+  decoder (`RawQ4`/`widen_q4_0` — the house Q8 law's 4-bit shape: block
+  32, scale f16(amax/7), signed grid [-7,+7], GGML nibble order,
+  0.5625 B/elt), converter (`laya-quant4` over the NEW shared
+  `blocked_artifact` container machinery — a third format lands as a
+  decode + an encode loop), device tier through `QFmt` (the q4 MSL
+  kernels DERIVED from the shipped q8 texts by exact token replacement —
+  the decode block swapped, the tile math verbatim; `q4_widen_t` the
+  load-kernel twin; per-format reach counters), and the bit-identity
+  battery at Q4's OWN fidelity ALL GREEN (`q4_widen_identity` 6/6 + the
+  metal_ops_smoke q4 arms at 7 shapes + folds + kill-switch; the q8
+  battery byte-unchanged; lib 56/56; clippy -D ×4 postures; G5 both
+  postures green). PQ2 rides the same seam as the next format row.
+- **The cell-identity law stays**: the q8/Q4 postures carry their OWN
+  batteries at their own grids; no seated F16 cell is re-read at a
+  quant grid without its own D1 pass (the D1 branch law, unchanged).
+  REMAINS: option (iii) re-price (owner call, the numbers stand); Lane
+  B/A daylight; Q4 retention probe (D1-shaped) when the Q4 tier is
+  wanted for serving.
