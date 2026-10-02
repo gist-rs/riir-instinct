@@ -1,6 +1,6 @@
 # Issue 018 — Rethink encoder lane: lean + GOAT plan (lazy inheritance, shared worker, one-checkpoint typed, quantization)
 
-**Status:** OPEN — filed 2026-10-01 (owner ask after the /#sizes Rethink row landed); Claude verdict CONVERGED AGREE at round 3 (2× REVISE, all reasons folded). **Lanes B + A LANDED 2026-10-02 (Bench 0050, the 4090 box) — the daylight session executed; lazy ENC rows legal with `eager` still the embedded default. Update 10 (2026-10-02, owner-approved menu items A+B): the shared worker is PROMOTED to the serve-encoder default (the serving soak completed GREEN — the 0054 confirmation addendum; the runtime demote switch is the recorded hedge), option (iii) re-priced and DECLINED at today's shapes, and the Q4 retention probe (Lane D4) pre-registered + running (Bench 0055).** Addendum 2026-10-01: two-case calibration branch wired (Δ-retention breach routes through D1's existing verdict, pre-registered refit allowed first; absolute-floor tripwire lands in Lane C's pre-declared loss options for the head C retrains, narrow filing for any other head) — katgpt-rs Research 562 addendum; nothing fired, execution order unchanged.
+**Status:** RESOLVED-PENDING-NOISE-REDUCTION — filed 2026-10-01 (owner ask after the /#sizes Rethink row landed); Claude verdict CONVERGED AGREE at round 3 (2× REVISE, all reasons folded). **ALL LANES EXECUTED by 2026-10-02: Lane B landed (0050) AND PROMOTED to the serve-encoder default after the green soak (Update 10); Lane A landed (0050); Lane C negative (0048); Lane D closed — D1 PASS (0046) → Q8 adopted end-to-end (D2a+D2b, Updates 2–6), Q4 retention FAILED its D1-shaped probe (Update 11, Bench 0055 — the Q4 tier stays measurement-only), option (iii) re-priced and DECLINED (Update 10), PQ2 recorded as a format-row dependency; Lane E never triggered (its D1-fail condition never fired). Close + HISTORY-row + citation sweep under the noise-reduction rule is the standing follow-up.** Addendum 2026-10-01: two-case calibration branch wired (Δ-retention breach routes through D1's existing verdict, pre-registered refit allowed first; absolute-floor tripwire lands in Lane C's pre-declared loss options for the head C retrains, narrow filing for any other head) — katgpt-rs Research 562 addendum; nothing fired, execution order unchanged.
 
 ## Context — the numbers that triggered this
 
@@ -252,10 +252,14 @@ prices everything before any training or kernel work is spent:
       (house dequant machinery; the Bonsai PQ precedent), Q4/PQ2 second.
       English 848 MB → ~424 MB (Q8) / ~220 MB (Q4) → posture total
       ~460 MB / ~255 MB. **CHECKBOX 2026-10-02: the Q8 half is ADOPTED
+      **CHECKBOX 2026-10-02: the Q8 half is ADOPTED
       end-to-end (D2a storage + D2b device residency + the no-change
-      re-seat — Updates 2/4/5/6 below); the remainder DEFERRED by its own
-      law — Q4 retention is D1-priced separately before `q4` serves
-      anything, PQ2 rides the same seam.**
+      re-seat — Updates 2/4/5/6 below); the remainder is CLOSED BY
+      MEASUREMENT — Q4 retention FAILED its D1-shaped probe (Update 11,
+      Bench 0055: banking77 −10pt/retention 0.568 ⇒ the Q4 tier stays
+      MEASUREMENT-ONLY, `LAYA_WEIGHTS_VARIANT=q4` may not serve);
+      PQ2 remains a format-row dependency (Update 10 — no grid exists
+      to probe).**
       **→ D2a (the STORAGE tier) ADOPTED 2026-10-02 (Bench 0047,
       riir-infer `10e33de`): Q8_0 artifact format + `laya-quant8`
       converter + `LAYA_WEIGHTS_VARIANT=q8` loader seam (sidecar-verified,
@@ -725,3 +729,22 @@ a looser Q4 bar would make the two format verdicts incomparable). The declared p
 Q4's grid is ~16× coarser; the likeliest failure candidates are the fine-grained heads
 (banking77, massive) — written before the read. The verdict gates ONLY the Q4 tier's
 serving eligibility; it never re-opens the Q8 adoption.
+
+**Update 11 (2026-10-02, same session — Lane D4 EXECUTED: FAIL, the Q4 tier stays
+measurement-only).** Bench 0055 (`.benchmarks/0055_d4_q4_fakequant_retention/`, the 14
+reads + the pre-registered arithmetic + the full record): **banking77 FAILED BOTH gates
+decisively** — Δacc −10.0pt (UB95 −0.1410, entirely past the −0.02 margin), retention
+0.568 (216/500 picks moved), ΔBrier UB95 +0.1330 ≥ its 0.01 margin — the declared
+prior's likeliest-failure candidate (77-way, F16-borderline, the 0043 screened-DEAD
+class) failing at the coarsest grid. 5 suites UNDECIDED (sst5, massive, prompt, typed on
+accuracy; four of them on calibration too), xnli_en the one clean PASS; mean Δacc −2.5pt
+across 4216 rows (Q8 read +0.09pt). The pre-registered temperature refit is MOOT and was
+recorded-not-run: it is argmax-preserving — it cannot touch an accuracy fail. **Per the
+pre-registered branch: `LAYA_WEIGHTS_VARIANT=q4` may not serve anything.** The Q8
+adoption stands untouched (no seated cell re-read); the Q4 format seam stays landed
+(the machinery is real — what failed is the retention of the values it would serve);
+the re-open bar is a head-class change (finer grid variant, per-head quant mix, or a
+head retrained at Q4 — riir-train territory), priced as its own lane if ever wanted.
+Witnesses held exactly (fresh F16 == frozen on every suite, the 0046 pattern), so the
+pairings are valid measurements. PQ2's prior is now THIS record: a format whose
+per-family walk cannot clear banking77 cannot serve the seated set wholesale.
