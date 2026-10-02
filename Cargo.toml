@@ -70,6 +70,12 @@ arena-laya-metal = ["arena-laya", "riir-reflex/laya-riir-metal"]
 serve-encoder = ["arena-laya"]
 serve-encoder-metal = ["serve-encoder", "riir-reflex/laya-riir-metal"]
 serve-encoder-cuda = ["serve-encoder", "riir-reflex/laya-riir-cuda"]
+# Issue 018 Lane B: ONE encode worker per CHECKPOINT, shared by every ENC
+# lane on it (the unit of residency moves from the lane to the worker —
+# N × 848 MB → 1 × 848 MB). Opt-in until the GOAT gates pass (interleaved
+# parity + RAM + mixed-load latency + fairness); the default keeps the
+# per-lane worker (byte-identical serving, same code path).
+serve-encoder-shared = ["serve-encoder"]
 # The decstat flywheel capture (Plan 002 / Issue 004 T1): consent-gated
 # decision-outcome stats over the riir-kat wire (lane "dec"). Opt-in —
 # default builds never resolve the wire/transport tree and the /decide
@@ -135,6 +141,15 @@ required-features = ["tetris"]
 # datasets / the laya weights — a skip is a deferral, never a green.
 [[test]]
 name = "serve_encoder_parity"
+required-features = ["serve-encoder"]
+
+# The Lane B shared-worker parity gate (instinct issue 018): interleaved
+# replay through the shared worker vs isolated per-lane runs — bit-identical
+# features/picks (state leaking between suites is the defect class).
+# Env-driven (INSTINCT_ENCODER_SHARED_PARITY=1) + material-gated, same
+# discipline as the parity gate above.
+[[test]]
+name = "encoder_shared_parity"
 required-features = ["serve-encoder"]
 
 # The arsenal GOAT bench (Proposal 001 T8) — whole-target gated; the

@@ -47,13 +47,13 @@ use std::time::Duration;
 
 use katgpt_core::set_admission::SetAdmissionConfig;
 use riir_instinct::arsenal::ArsenalManifest;
-use riir_instinct::receipt::{decision_blake3, fingerprint, input_blake3};
-use riir_reflex::harness::suites::QKind;
 use riir_instinct::arsenal_ops::{
-    EpochApply, EpochTag, LaneSlot, LaneState, SwapRefusal, check_epoch_tag, hoard_check,
-    hoard_gate_armed,
+    check_epoch_tag, hoard_check, hoard_gate_armed, EpochApply, EpochTag, LaneSlot, LaneState,
+    SwapRefusal,
 };
+use riir_instinct::receipt::{decision_blake3, fingerprint, input_blake3};
 use riir_instinct::server::AnySuiteServer;
+use riir_reflex::harness::suites::QKind;
 
 include!(concat!(env!("OUT_DIR"), "/build_stamp.rs"));
 
@@ -240,9 +240,7 @@ fn main() {
             &cfg.dir,
             &cfg.pins,
         ),
-        None => {
-            riir_instinct::arsenal::ValidateCtx::raw(std::path::Path::new(&winners_dir))
-        }
+        None => riir_instinct::arsenal::ValidateCtx::raw(std::path::Path::new(&winners_dir)),
     };
     #[cfg(not(feature = "vessel"))]
     let vctx = riir_instinct::arsenal::ValidateCtx::raw(std::path::Path::new(&winners_dir));
@@ -269,16 +267,119 @@ fn main() {
         Some(filter) => filter
             .iter()
             .map(|s| {
-                all_suites.iter().copied().find(|r| *r == s).unwrap_or_else(|| {
-                    die(&format!(
-                        "--suites: {s:?} is not in the arsenal manifest ({arsenal_desc})"
-                    ))
-                })
+                all_suites
+                    .iter()
+                    .copied()
+                    .find(|r| *r == s)
+                    .unwrap_or_else(|| {
+                        die(&format!(
+                            "--suites: {s:?} is not in the arsenal manifest ({arsenal_desc})"
+                        ))
+                    })
             })
             .collect(),
     };
     if suites.is_empty() {
         die("no suites to serve");
+    }
+
+    // The lazy-ENC boot preflight (issue 018 Lane A): a lazy encoder row
+    // must refuse its config errors HERE, at boot — never on the first
+    // request. Three halves, all loud: the weights (pinned files present
+    // + digest-matching, the ACTIVE variant sidecar), the memory budget
+    // (counted per SHARED worker — distinct checkpoints × artifact bytes,
+    // never per lane), and per-row the template-vs-head class count
+    // WITHOUT a forward pass (the seat is rebuilt at the row's first
+    // load — disclosed, boot-time cost only). Compiled with the lane —
+    // the default build has no ENC lane to preflight.
+    #[cfg(feature = "serve-encoder")]
+    {
+        let enc_lazy_suites: Vec<&'static str> = suites
+            .iter()
+            .copied()
+            .filter(|s| {
+                let row = manifest.row(s).unwrap_or_else(|| {
+                    die(&format!("suite {s}: vanished from the validated manifest"))
+                });
+                row.to_arm() == Ok(riir_instinct::server::Arm::Enc) && row.budget.load == "lazy"
+            })
+            .collect();
+        if !enc_lazy_suites.is_empty() {
+            let facts = riir_instinct::encoder_serve::preflight_enc_weights()
+                .unwrap_or_else(|e| die(&format!("ENC lazy preflight: {e}")));
+            eprintln!(
+                "[riir-instinct] ENC preflight: weights ok — {} MiB at {} (variant {}, digest {})",
+                facts.bytes >> 20,
+                facts.weights_path.display(),
+                facts.variant.unwrap_or("f16"),
+                facts.digest16
+            );
+            match std::env::var("INSTINCT_ENCODER_MEM_BUDGET_MB") {
+                Ok(raw) => {
+                    let budget_mb: u64 = raw.trim().parse().unwrap_or_else(|_| {
+                        die(&format!(
+                            "INSTINCT_ENCODER_MEM_BUDGET_MB={raw:?} is not a number"
+                        ))
+                    });
+                    // Per SHARED worker: the distinct-checkpoint charge.
+                    // ONE checkpoint serves today (`ENC_CHECKPOINT_LABEL`),
+                    // so the sum is that artifact once — three english
+                    // lanes must never charge it three times.
+                    let total = facts.bytes;
+                    if total > budget_mb << 20 {
+                        die(&format!(
+                            "ENC memory budget: {} distinct checkpoint worker(s) charge {} MiB, \
+                             over INSTINCT_ENCODER_MEM_BUDGET_MB={budget_mb} — shrink the seated \
+                             ENC rows or raise the budget (device capacity is the operator's \
+                             declared ceiling; this box does not expose a portable GPU-memory \
+                             query)",
+                            1,
+                            total >> 20
+                        ));
+                    }
+                    eprintln!(
+                        "[riir-instinct] ENC preflight: memory budget ok — {} MiB charged (1 \
+                         distinct checkpoint worker) of {budget_mb} MiB",
+                        total >> 20
+                    );
+                }
+                Err(_) => {
+                    eprintln!(
+                        "[riir-instinct] ENC preflight: no INSTINCT_ENCODER_MEM_BUDGET_MB — \
+                         residency is disclosed ({} MiB/worker), not gated",
+                        facts.bytes >> 20
+                    );
+                }
+            }
+            for s in &enc_lazy_suites {
+                let row = manifest.row(s).expect("row from the validated manifest");
+                #[cfg(feature = "vessel")]
+                if vessel.is_some() {
+                    eprintln!(
+                        "[riir-instinct] ENC preflight: {s} — vessel mode: the template half \
+                         rides the first load (the head ships inside the signed vessel; \
+                         authenticity + template checks run there) — disclosed, not skipped"
+                    );
+                    continue;
+                }
+                let head_name = row.artifact_file(format!("{s}_encoder_head_v1.bin"));
+                let head_path = std::path::Path::new(&winners_dir).join(&head_name);
+                let bytes = std::fs::read(&head_path)
+                    .unwrap_or_else(|e| die(&format!("ENC preflight: read head {head_name}: {e}")));
+                let seat = riir_reflex::harness::runner::seat::prepare_seat(
+                    s,
+                    std::path::Path::new(&datasets_dir),
+                )
+                .unwrap_or_else(|e| die(&format!("ENC preflight: prepare {s} seat: {e}")));
+                let n_classes =
+                    riir_instinct::encoder_serve::preflight_enc_template(s, &bytes, &seat)
+                        .unwrap_or_else(|e| die(&format!("ENC preflight: {s}: {e}")));
+                eprintln!(
+                    "[riir-instinct] ENC preflight: {s} template ok (head {n_classes} classes) \
+                     — the seat rebuilds at the row's first load (lazy)"
+                );
+            }
+        }
     }
 
     let listener = match TcpListener::bind(&bind) {
@@ -294,7 +395,10 @@ fn main() {
     if allow.is_empty() {
         eprintln!("[riir-instinct] CORS: closed (no RIIR_INSTINCT_ALLOWED_ORIGIN)");
     } else {
-        eprintln!("[riir-instinct] CORS: allowed origins — {}", allow.join(", "));
+        eprintln!(
+            "[riir-instinct] CORS: allowed origins — {}",
+            allow.join(", ")
+        );
     }
 
     // The decstat capture lane (Plan 002 / Issue 004 T1): consent-gated
@@ -453,7 +557,10 @@ fn read_bounded(path: &Path, cap: usize) -> Result<Vec<u8>, String> {
     use std::io::Read as _;
     let md = std::fs::metadata(path).map_err(|e| format!("read {}: {e}", path.display()))?;
     if !md.is_file() {
-        return Err(format!("{} is not a regular file (artifacts are files)", path.display()));
+        return Err(format!(
+            "{} is not a regular file (artifacts are files)",
+            path.display()
+        ));
     }
     if md.len() > cap as u64 + 1 {
         return Err(format!(
@@ -531,10 +638,9 @@ fn load_lane(
                 )?
             }
         }
-        None => riir_reflex::harness::runner::seat::prepare_seat(
-            suite,
-            Path::new(&ctx.datasets_dir),
-        )?,
+        None => {
+            riir_reflex::harness::runner::seat::prepare_seat(suite, Path::new(&ctx.datasets_dir))?
+        }
     };
     #[cfg(feature = "vessel")]
     if let Some(cfg) = ctx.vessel.as_ref() {
@@ -649,7 +755,11 @@ fn hoard_gate(
                     rep.floor,
                     rep.k,
                     rep.participation_ratio,
-                    if rep.saturated { ", saturated at d=8" } else { "" }
+                    if rep.saturated {
+                        ", saturated at d=8"
+                    } else {
+                        ""
+                    }
                 );
             }
             Ok(())
@@ -670,7 +780,10 @@ fn spawn_loader(state: &Arc<SrvState>, idx: usize) {
         Ok(_) => {}
         Err(e) => {
             let msg = format!("spawn loader thread: {e}");
-            eprintln!("[riir-instinct] lane {} FAILED: {msg}", state.slots[idx].suite);
+            eprintln!(
+                "[riir-instinct] lane {} FAILED: {msg}",
+                state.slots[idx].suite
+            );
             state.slots[idx].fail(msg);
         }
     }
@@ -888,12 +1001,7 @@ fn drain_body(reader: &mut BufReader<TcpStream>, n: usize) {
     }
 }
 
-fn respond(
-    stream: &mut TcpStream,
-    status: &str,
-    body: &str,
-    cors: Option<&str>,
-) {
+fn respond(stream: &mut TcpStream, status: &str, body: &str, cors: Option<&str>) {
     let bytes = body.as_bytes();
     let cors_hdr = cors
         .map(|o| format!("Access-Control-Allow-Origin: {o}\r\nVary: Origin\r\n"))
@@ -921,11 +1029,7 @@ fn json_error(stream: &mut TcpStream, status: &str, code: &str, text: &str, cors
     );
 }
 
-fn handle_conn(
-    stream: TcpStream,
-    state: &Arc<SrvState>,
-    allow: &[String],
-) -> std::io::Result<()> {
+fn handle_conn(stream: TcpStream, state: &Arc<SrvState>, allow: &[String]) -> std::io::Result<()> {
     stream.set_read_timeout(Some(READ_TIMEOUT))?;
     // The arsenal admin endpoints' recorded auth posture: loopback only
     // (this server has no token surface; anything off the loopback
@@ -950,7 +1054,8 @@ fn handle_conn(
                 let _ = writer.flush();
             }
             None => {
-                let head = "HTTP/1.1 403 Forbidden\r\nContent-Length: 0\r\nConnection: close\r\n\r\n";
+                let head =
+                    "HTTP/1.1 403 Forbidden\r\nContent-Length: 0\r\nConnection: close\r\n\r\n";
                 let _ = writer.write_all(head.as_bytes());
                 let _ = writer.flush();
             }
@@ -972,7 +1077,13 @@ fn handle_conn(
         ("POST", "/decide") => {
             if req.content_length > MAX_BODY {
                 drain_body(&mut reader, req.content_length);
-                json_error(&mut writer, "413 Payload Too Large", "too_large", "body too large", cors.as_deref());
+                json_error(
+                    &mut writer,
+                    "413 Payload Too Large",
+                    "too_large",
+                    "body too large",
+                    cors.as_deref(),
+                );
                 return Ok(());
             }
             let mut body = vec![0u8; req.content_length];
@@ -982,7 +1093,13 @@ fn handle_conn(
         ("POST", "/arsenal/release") | ("POST", "/arsenal/swap") if local => {
             if req.content_length > MAX_BODY {
                 drain_body(&mut reader, req.content_length);
-                json_error(&mut writer, "413 Payload Too Large", "too_large", "body too large", cors.as_deref());
+                json_error(
+                    &mut writer,
+                    "413 Payload Too Large",
+                    "too_large",
+                    "body too large",
+                    cors.as_deref(),
+                );
                 return Ok(());
             }
             let mut body = vec![0u8; req.content_length];
@@ -1004,7 +1121,10 @@ fn handle_conn(
                 cors.as_deref(),
             );
         }
-        ("GET", "/decide") | ("POST", "/healthz") | ("GET", "/arsenal/release") | ("GET", "/arsenal/swap") => {
+        ("GET", "/decide")
+        | ("POST", "/healthz")
+        | ("GET", "/arsenal/release")
+        | ("GET", "/arsenal/swap") => {
             drain_body(&mut reader, req.content_length);
             json_error(
                 &mut writer,
@@ -1016,7 +1136,13 @@ fn handle_conn(
         }
         _ => {
             drain_body(&mut reader, req.content_length);
-            json_error(&mut writer, "404 Not Found", "not_found", "not found", cors.as_deref());
+            json_error(
+                &mut writer,
+                "404 Not Found",
+                "not_found",
+                "not found",
+                cors.as_deref(),
+            );
         }
     }
     Ok(())
@@ -1034,27 +1160,64 @@ fn healthz(state: &SrvState) -> String {
         // The budget posture + the applied epoch tag (the curator's read;
         // epoch 0 at boot from the manifest, T6).
         if let Some(row) = state.ctx.manifest.row(slot.suite) {
-            entry.insert("load".into(), serde_json::Value::String(row.budget.load.clone()));
+            entry.insert(
+                "load".into(),
+                serde_json::Value::String(row.budget.load.clone()),
+            );
         }
+        // The readiness word (issue 018 Lane A): a lazy-Unloaded lane is
+        // `ready-cold` — it WILL serve after one load+compile — so a load
+        // balancer never routes the first user into the compile window
+        // blind. `ready` | `ready-cold` | `loading` | `failed`.
+        entry.insert(
+            "readiness".into(),
+            serde_json::Value::String(
+                match &*st {
+                    LaneState::Ready { .. } => "ready",
+                    LaneState::Unloaded { .. } => "ready-cold",
+                    LaneState::Loading { .. } => "loading",
+                    LaneState::Failed { .. } => "failed",
+                }
+                .into(),
+            ),
+        );
         if let Some(tag) = st.applied() {
             entry.insert("epoch".into(), serde_json::json!(tag.epoch));
         }
         if let LaneState::Ready { server, .. } = &*st {
             let meta = server.meta();
             entry.insert("arm".into(), serde_json::Value::String(meta.arm.name()));
-            entry.insert("source".into(), serde_json::json!(match meta.source {
-                riir_instinct::server::WeightSource::RawWinner => "raw_winner",
-                riir_instinct::server::WeightSource::Vessel => "vessel",
-                riir_instinct::server::WeightSource::ReflexOnly => "reflex_only",
-            }));
+            entry.insert(
+                "source".into(),
+                serde_json::json!(match meta.source {
+                    riir_instinct::server::WeightSource::RawWinner => "raw_winner",
+                    riir_instinct::server::WeightSource::Vessel => "vessel",
+                    riir_instinct::server::WeightSource::ReflexOnly => "reflex_only",
+                }),
+            );
             entry.insert("labels".into(), serde_json::json!(meta.labels));
-            entry.insert("artifact_labels".into(), serde_json::json!(meta.artifact_labels));
-            entry.insert("effective_cap".into(), serde_json::json!(meta.effective_cap));
+            entry.insert(
+                "artifact_labels".into(),
+                serde_json::json!(meta.artifact_labels),
+            );
+            entry.insert(
+                "effective_cap".into(),
+                serde_json::json!(meta.effective_cap),
+            );
             entry.insert("head_scale".into(), serde_json::json!(meta.head_scale));
             entry.insert("nb_scale".into(), serde_json::json!(meta.nb_scale));
-            entry.insert("score_threshold".into(), serde_json::json!(meta.score_threshold));
-            entry.insert("distance_threshold".into(), serde_json::json!(meta.distance_threshold));
-            entry.insert("winner_blake3".into(), serde_json::json!(meta.winner_blake3));
+            entry.insert(
+                "score_threshold".into(),
+                serde_json::json!(meta.score_threshold),
+            );
+            entry.insert(
+                "distance_threshold".into(),
+                serde_json::json!(meta.distance_threshold),
+            );
+            entry.insert(
+                "winner_blake3".into(),
+                serde_json::json!(meta.winner_blake3),
+            );
         }
         if let LaneState::Failed { error, .. } = &*st {
             entry.insert("error".into(), serde_json::Value::String(error.clone()));
@@ -1120,21 +1283,18 @@ fn decide_edge(stream: &mut TcpStream, srv: &Arc<SrvState>, body: &[u8], cors: O
     /// instructions, options). A type alias — the tuple rides the
     /// borrow checker, not the reader.
     type WireTuple<'a> = (&'a str, &'a str, &'a str, Vec<String>);
-    let wire_questions: Option<Vec<WireTuple<'_>>> = req
-        .questions
-        .as_ref()
-        .map(|qs| {
-            qs.iter()
-                .map(|q| {
-                    (
-                        q.id.as_str(),
-                        q.kind.as_str(),
-                        q.instructions.as_str(),
-                        q.options.clone(),
-                    )
-                })
-                .collect()
-        });
+    let wire_questions: Option<Vec<WireTuple<'_>>> = req.questions.as_ref().map(|qs| {
+        qs.iter()
+            .map(|q| {
+                (
+                    q.id.as_str(),
+                    q.kind.as_str(),
+                    q.instructions.as_str(),
+                    q.options.clone(),
+                )
+            })
+            .collect()
+    });
     if let Some(questions) = &wire_questions {
         for (id, kind, _, _) in questions {
             if !matches!(*kind, "choice" | "score" | "noul") {
@@ -1151,7 +1311,11 @@ fn decide_edge(stream: &mut TcpStream, srv: &Arc<SrvState>, body: &[u8], cors: O
             }
         }
     }
-    let Some((idx, slot)) = srv.slots.iter().enumerate().find(|(_, s)| s.suite == req.suite)
+    let Some((idx, slot)) = srv
+        .slots
+        .iter()
+        .enumerate()
+        .find(|(_, s)| s.suite == req.suite)
     else {
         let registered: Vec<&str> = srv.slots.iter().map(|s| s.suite).collect();
         json_error(
@@ -1189,14 +1353,17 @@ fn decide_edge(stream: &mut TcpStream, srv: &Arc<SrvState>, body: &[u8], cors: O
         return;
     }
     let mut guard = slot.state.lock().expect("slot lock");
-    let server = match &mut *guard {
-        LaneState::Ready { server, .. } => server,
+    let (server, lane_load): (&mut AnySuiteServer, &str) = match &mut *guard {
+        LaneState::Ready { server, .. } => (server, "ready"),
         LaneState::Loading { .. } => {
             json_error(
                 stream,
                 "503 Service Unavailable",
                 "loading",
-                &format!("suite {:?} is still loading (seat boot or lazy load) — retry shortly", req.suite),
+                &format!(
+                    "suite {:?} is still loading (seat boot or lazy load) — retry shortly",
+                    req.suite
+                ),
                 cors,
             );
             return;
@@ -1218,13 +1385,14 @@ fn decide_edge(stream: &mut TcpStream, srv: &Arc<SrvState>, body: &[u8], cors: O
     // single-question form byte-for-byte. The responses share one shape
     // per decision; the multi form wraps them in a top-level `decisions`
     // array (each element carries the same fields + receipt the single
-    // form returns).
+    // form returns). `lane_load` (issue 018 Lane A's disclosure) names
+    // the lane's residency state at the decision.
     let result = match (&wire_questions, req.options.as_deref()) {
         (Some(wire), None) => {
             let served: Vec<riir_instinct::server::ServedQuestion<'_>> = wire
                 .iter()
-                .map(|(id, kind, instructions, options)| {
-                    riir_instinct::server::ServedQuestion {
+                .map(
+                    |(id, kind, instructions, options)| riir_instinct::server::ServedQuestion {
                         qid: id,
                         kind: match *kind {
                             "choice" => QKind::Choice,
@@ -1233,8 +1401,8 @@ fn decide_edge(stream: &mut TcpStream, srv: &Arc<SrvState>, body: &[u8], cors: O
                         },
                         instructions,
                         options,
-                    }
-                })
+                    },
+                )
                 .collect();
             server
                 .decide_multi(&req.state, &served)
@@ -1260,6 +1428,7 @@ fn decide_edge(stream: &mut TcpStream, srv: &Arc<SrvState>, body: &[u8], cors: O
                 "escalated": d.escalated,
                 "abstained": d.abstained,
                 "us": d.us,
+                "lane_load": lane_load,
                 "receipt": {
                     "build": fingerprint(),
                     "features": COMPILED_FEATURES,
@@ -1300,6 +1469,7 @@ fn decide_edge(stream: &mut TcpStream, srv: &Arc<SrvState>, body: &[u8], cors: O
                         "escalated": d.escalated,
                         "abstained": d.abstained,
                         "us": d.us,
+                        "lane_load": lane_load,
                         "receipt": {
                             "build": fingerprint(),
                             "features": COMPILED_FEATURES,
@@ -1377,7 +1547,10 @@ fn release_edge(stream: &mut TcpStream, srv: &SrvState, body: &[u8], cors: Optio
             stream,
             "404 Not Found",
             "unknown_suite",
-            &format!("suite {:?} is not served here (served: {registered:?})", req.suite),
+            &format!(
+                "suite {:?} is not served here (served: {registered:?})",
+                req.suite
+            ),
             cors,
         );
         return;
@@ -1437,7 +1610,10 @@ fn release_edge(stream: &mut TcpStream, srv: &SrvState, body: &[u8], cors: Optio
                 stream,
                 "409 Conflict",
                 "loading_in_progress",
-                &format!("suite {:?} has a load in flight — retry after it settles", req.suite),
+                &format!(
+                    "suite {:?} has a load in flight — retry after it settles",
+                    req.suite
+                ),
                 cors,
             );
         }
@@ -1490,7 +1666,10 @@ fn swap_edge(stream: &mut TcpStream, srv: &Arc<SrvState>, body: &[u8], cors: Opt
             stream,
             "404 Not Found",
             "unknown_suite",
-            &format!("suite {:?} is not served here (served: {registered:?})", req.suite),
+            &format!(
+                "suite {:?} is not served here (served: {registered:?})",
+                req.suite
+            ),
             cors,
         );
         return;
@@ -1500,7 +1679,12 @@ fn swap_edge(stream: &mut TcpStream, srv: &Arc<SrvState>, body: &[u8], cors: Opt
     // full-coverage serving): the lane IS the modelless tier, and a
     // posture change is a manifest edit — posture-as-data, never a
     // runtime artifact push onto a row that pins no digest.
-    if srv.ctx.manifest.row(suite).is_some_and(|r| r.digest.is_none()) {
+    if srv
+        .ctx
+        .manifest
+        .row(suite)
+        .is_some_and(|r| r.digest.is_none())
+    {
         json_error(
             stream,
             "400 Bad Request",
@@ -1549,7 +1733,13 @@ fn swap_edge(stream: &mut TcpStream, srv: &Arc<SrvState>, body: &[u8], cors: Opt
         }
     }
     let Some(row) = srv.ctx.manifest.row(suite) else {
-        json_error(stream, "404 Not Found", "unknown_suite", "row vanished", cors);
+        json_error(
+            stream,
+            "404 Not Found",
+            "unknown_suite",
+            "row vanished",
+            cors,
+        );
         return;
     };
     let cap = (row.budget.max_payload_mb << 20) as usize;

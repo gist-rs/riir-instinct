@@ -119,26 +119,42 @@ fn manifest_posture_rows_are_the_serving_law_verdict() {
     let expected: [(&str, Arm, &str); 15] = [
         (
             "ag_news",
-            Arm::H2 { beta: 0.25, n_min: 2.0, tau_n: 2.0 },
+            Arm::H2 {
+                beta: 0.25,
+                n_min: 2.0,
+                tau_n: 2.0,
+            },
             "H2(β=0.25,nmin=2,τ=2)",
         ),
         ("emotion", Arm::A0, "A0"),
         ("sst5", Arm::A1, "A1"),
         (
             "massive_intent_en",
-            Arm::H2 { beta: 1.0, n_min: 2.0, tau_n: 4.0 },
+            Arm::H2 {
+                beta: 1.0,
+                n_min: 2.0,
+                tau_n: 4.0,
+            },
             "H2(β=1,nmin=2,τ=4)",
         ),
         (
             "banking77",
-            Arm::H2 { beta: 2.0, n_min: 8.0, tau_n: 8.0 },
+            Arm::H2 {
+                beta: 2.0,
+                n_min: 8.0,
+                tau_n: 8.0,
+            },
             "H2(β=2,nmin=8,τ=8)",
         ),
         ("xnli_en", Arm::A0, "A0"),
         ("prompt_injections", Arm::A1, "A1"),
         (
             "typed_decisions",
-            Arm::H2 { beta: 0.5, n_min: 2.0, tau_n: 2.0 },
+            Arm::H2 {
+                beta: 0.5,
+                n_min: 2.0,
+                tau_n: 2.0,
+            },
             "H2(β=0.5,nmin=2,τ=2)",
         ),
         ("code_fixtures", Arm::A1, "A1"),
@@ -193,7 +209,10 @@ fn manifest_posture_rows_are_the_serving_law_verdict() {
         let row = m
             .row(suite)
             .unwrap_or_else(|| panic!("{suite}: missing from the arsenal manifest"));
-        assert!(row.digest.is_none(), "{suite}: the family row must carry no digest");
+        assert!(
+            row.digest.is_none(),
+            "{suite}: the family row must carry no digest"
+        );
     }
 }
 
@@ -249,12 +268,7 @@ fn boot_suite_synth(
                 )?,
                 None => riir_reflex::harness::runner::seat::prepare_seat(suite, &datasets)?,
             };
-            riir_instinct::server::AnySuiteServer::boot_from_seat(
-                suite,
-                seat,
-                &winners,
-                &manifest,
-            )
+            riir_instinct::server::AnySuiteServer::boot_from_seat(suite, seat, &winners, &manifest)
         })
         .expect("spawn boot thread")
         .join()
@@ -270,9 +284,12 @@ fn boot_suite_synth(
 /// record the suite's frozen read lives in (the Bench-004 re-baseline
 /// for the six legacy suites; the per-suite Issue 578 records for the
 /// Plan 003 lanes).
-fn frozen_picks_from(path: &std::path::Path, suite: &str, arm_name: &str) -> Option<(Vec<usize>, Vec<bool>)> {
-    let doc: serde_json::Value =
-        serde_json::from_reader(std::fs::File::open(path).ok()?).ok()?;
+fn frozen_picks_from(
+    path: &std::path::Path,
+    suite: &str,
+    arm_name: &str,
+) -> Option<(Vec<usize>, Vec<bool>)> {
+    let doc: serde_json::Value = serde_json::from_reader(std::fs::File::open(path).ok()?).ok()?;
     for s in doc["frozen_test_predictions"].as_array()? {
         if s["suite"].as_str()? == suite {
             for arm in s["arms"].as_array()? {
@@ -386,7 +403,11 @@ fn served_decisions_are_the_frozen_goat_picks() {
                 "case {ci}: served pick drifted from the frozen pick"
             );
         }
-        assert!(d.us < 100_000, "case {ci}: decision took {} µs — outside the modelless tier", d.us);
+        assert!(
+            d.us < 100_000,
+            "case {ci}: decision took {} µs — outside the modelless tier",
+            d.us
+        );
     }
 }
 
@@ -429,11 +450,7 @@ fn served_family_decisions_are_the_frozen_a0_picks() {
             .stack_size(64 * 1024 * 1024)
             .spawn(move || {
                 assert!(manifest.row(suite).unwrap().digest.is_none());
-                riir_instinct::server::AnySuiteServer::boot_a0_from_seat(
-                    suite,
-                    seat,
-                    &manifest,
-                )
+                riir_instinct::server::AnySuiteServer::boot_a0_from_seat(suite, seat, &manifest)
             })
             .expect("spawn boot thread")
             .join()
@@ -528,16 +545,17 @@ fn massive_artifact_known_seat_unknown_option_stays_scorable() {
     let seat_has_it = seat.labels.iter().any(|l| l == "cooking_query");
     let artifact_labels: Vec<String> = {
         // the winner artifact's label list, read through the loader
-        let bytes = std::fs::read(
-            winners_dir().join("massive_intent_en_winner_v1.bin"),
-        )
-        .expect("winner bytes");
+        let bytes = std::fs::read(winners_dir().join("massive_intent_en_winner_v1.bin"))
+            .expect("winner bytes");
         riir_instinct::specialist::decode_artifact(&bytes)
             .expect("decode")
             .labels
     };
     assert!(artifact_labels.iter().any(|l| l == "cooking_query"));
-    assert!(!seat_has_it, "the t20k seat unexpectedly gained cooking_query — update the sentinel face");
+    assert!(
+        !seat_has_it,
+        "the t20k seat unexpectedly gained cooking_query — update the sentinel face"
+    );
 
     let case = &seat.suite.cases[0];
     let mut options = case_option_keys(case);
@@ -573,7 +591,11 @@ fn undefined_bridge_refuses_loud() {
 /// specialist scores BOTH class rows at every position.
 #[test]
 fn noul_suite_serves_positionally_through_the_bridge() {
-    if !data_present() || !winners_dir().join("prompt_injections_winner_v1.bin").is_file() {
+    if !data_present()
+        || !winners_dir()
+            .join("prompt_injections_winner_v1.bin")
+            .is_file()
+    {
         eprintln!(
             "SKIP loud: datasets / the prompt_injections winner absent — the noul \
              serve bridge needs the bytes"
@@ -587,11 +609,9 @@ fn noul_suite_serves_positionally_through_the_bridge() {
     let mut server = std::thread::Builder::new()
         .stack_size(64 * 1024 * 1024)
         .spawn(move || {
-            let seat = riir_reflex::harness::runner::seat::prepare_seat(
-                "prompt_injections",
-                &datasets,
-            )
-            .expect("prepare prompt_injections seat");
+            let seat =
+                riir_reflex::harness::runner::seat::prepare_seat("prompt_injections", &datasets)
+                    .expect("prepare prompt_injections seat");
             riir_instinct::server::SuiteServer::<2>::from_seat(
                 "prompt_injections",
                 seat,
@@ -630,7 +650,10 @@ fn noul_suite_serves_positionally_through_the_bridge() {
         );
     }
     // The specialist scored BOTH class rows (one per presented position).
-    assert_eq!(d_default.specialist_scores.as_ref().map(|s| s.len()), Some(2));
+    assert_eq!(
+        d_default.specialist_scores.as_ref().map(|s| s.len()),
+        Some(2)
+    );
     // A wider presentation has no noul space.
     let err = server
         .decide(state, Some(&["a".into(), "b".into(), "c".into()]))
@@ -651,7 +674,11 @@ fn noul_suite_serves_positionally_through_the_bridge() {
 /// read), not the Bench-004 re-baseline (which predates the specialist).
 #[test]
 fn prompt_injections_serves_the_frozen_a1_picks() {
-    if !data_present() || !winners_dir().join("prompt_injections_winner_v1.bin").is_file() {
+    if !data_present()
+        || !winners_dir()
+            .join("prompt_injections_winner_v1.bin")
+            .is_file()
+    {
         eprintln!("SKIP loud: datasets / the prompt_injections winner absent");
         return;
     }
@@ -667,11 +694,9 @@ fn prompt_injections_serves_the_frozen_a1_picks() {
     let mut server = std::thread::Builder::new()
         .stack_size(64 * 1024 * 1024)
         .spawn(move || {
-            let seat = riir_reflex::harness::runner::seat::prepare_seat(
-                "prompt_injections",
-                &datasets,
-            )
-            .expect("prepare prompt_injections seat");
+            let seat =
+                riir_reflex::harness::runner::seat::prepare_seat("prompt_injections", &datasets)
+                    .expect("prepare prompt_injections seat");
             riir_instinct::server::SuiteServer::<2>::from_seat(
                 "prompt_injections",
                 seat,
@@ -685,14 +710,18 @@ fn prompt_injections_serves_the_frozen_a1_picks() {
         .expect("boot prompt_injections server");
     assert_eq!(server.meta().arm.name(), "A1");
 
-    let seat = riir_reflex::harness::runner::seat::prepare_seat("prompt_injections", &datasets_dir())
-        .expect("prepare seat for the parity cases");
+    let seat =
+        riir_reflex::harness::runner::seat::prepare_seat("prompt_injections", &datasets_dir())
+            .expect("prepare seat for the parity cases");
     let n = 16.min(seat.suite.cases.len()).min(picks.len());
     assert!(n >= 8, "parity sample too small: {n}");
     for (ci, _case) in seat.suite.cases.iter().take(n).enumerate() {
         // A1 never abstains; the frozen record's flags agree by
         // construction and the pick parity is exact.
-        assert!(!abstained[ci], "case {ci}: A1 abstained in the frozen record");
+        assert!(
+            !abstained[ci],
+            "case {ci}: A1 abstained in the frozen record"
+        );
         let d = server
             .decide(&seat.state_strs[ci], None)
             .unwrap_or_else(|e| panic!("case {ci}: decide failed: {e}"));
@@ -723,13 +752,13 @@ fn typed_decisions_serves_the_frozen_h2_picks() {
     let full_pool = repo_root().join("../riir-train/.raw/datasets_typed_full");
     let winner = winners_dir().join("typed_decisions_winner_v1.bin");
     if !full_pool.join("typed_decisions").is_dir() || !winner.is_file() {
-        eprintln!(
-            "SKIP loud: the full-pool datasets dir / the typed_decisions winner absent"
-        );
+        eprintln!("SKIP loud: the full-pool datasets dir / the typed_decisions winner absent");
         return;
     }
     let record = repo_root().join(".benchmarks/020_typed_h2_full_pool/predictions.json");
-    let Some((picks, _abstained)) = frozen_picks_from(&record, "typed_decisions", "H2(β=0.5,nmin=2,τ=2)") else {
+    let Some((picks, _abstained)) =
+        frozen_picks_from(&record, "typed_decisions", "H2(β=0.5,nmin=2,τ=2)")
+    else {
         panic!(
             "the 020 frozen record is absent or lacks the H2 arm — the serving posture's \
              parity source; re-run the 020 read"
@@ -752,9 +781,8 @@ fn typed_decisions_serves_the_frozen_h2_picks() {
         .expect("boot typed_decisions server");
     assert_eq!(server.meta().arm.name(), "H2(β=0.5,nmin=2,τ=2)");
 
-    let seat =
-        riir_reflex::harness::runner::seat::prepare_seat("typed_decisions", &full_pool)
-            .expect("prepare seat for the parity cases");
+    let seat = riir_reflex::harness::runner::seat::prepare_seat("typed_decisions", &full_pool)
+        .expect("prepare seat for the parity cases");
     let mut qi = 0usize;
     let n_cases = 12.min(seat.suite.cases.len());
     assert!(n_cases >= 8, "parity sample too small: {n_cases}");
@@ -855,9 +883,8 @@ fn code_fixtures_serves_the_frozen_a1_picks() {
         .expect("boot code_fixtures server");
     assert_eq!(server.meta().arm.name(), "A1");
 
-    let seat =
-        riir_reflex::harness::runner::seat::prepare_seat("code_fixtures", &datasets_dir())
-            .expect("prepare seat for the parity cases");
+    let seat = riir_reflex::harness::runner::seat::prepare_seat("code_fixtures", &datasets_dir())
+        .expect("prepare seat for the parity cases");
     let mut qi = 0usize;
     let n_cases = 8.min(seat.suite.cases.len());
     assert!(n_cases >= 4, "parity sample too small: {n_cases}");
@@ -936,8 +963,9 @@ fn enc_manifest_text(file: &str, digest_hex: &str, load: &str) -> String {
 
 /// The ENC grammar + validator rules, data-independent: the arm parses to
 /// [`Arm::Enc`] (params forbidden), the winner-convention default is
-/// refused (an ENC row must name its `file`), and a lazy budget is
-/// refused (L9: the encoder weights are resident from boot).
+/// refused (an ENC row must name its `file`), and `eager | lazy` are BOTH
+/// valid budgets (issue 018 Lane A: L2's lazy-once-then-resident contract
+/// inherited; eager stays the embedded default posture).
 #[test]
 fn enc_posture_grammar_and_validator_rules() {
     let text = enc_manifest_text("t6_s0.bin", &"0".repeat(64), "eager");
@@ -965,17 +993,25 @@ fn enc_posture_grammar_and_validator_rules() {
     let err = nofile_m.validate(&ctx).unwrap_err();
     assert!(err.contains("must name its artifact `file`"), "{err}");
 
-    // Lazy refuses: resident from boot (Proposal 048 L9, issue 016 T2).
+    // `eager | lazy` both VALIDATE for ENC (issue 018 Lane A — the L9
+    // revisit; the lazy row's config errors are the BOOT PREFLIGHT's
+    // subject now, and L9's residue is G3 + the sticky-`Failed` bound).
     let lazy = text.replace("load = \"eager\"", "load = \"lazy\"");
     let lazy_m = ArsenalManifest::parse(&lazy).expect("parses");
-    let err = lazy_m.validate(&ctx).unwrap_err();
-    assert!(err.contains("resident from boot"), "{err}");
+    lazy_m
+        .validate(&ctx)
+        .expect("a lazy ENC row validates (issue 018 Lane A)");
+
+    // An unknown load word still refuses (the BudgetSpec arm — unchanged).
+    let typo = text.replace("load = \"eager\"", "load = \"warm\"");
+    let typo_m = ArsenalManifest::parse(&typo).expect("parses");
+    let err = typo_m.validate(&ctx).unwrap_err();
+    assert!(err.contains("unknown load policy"), "{err}");
 
     // A well-formed row validates (the head file is absent from the probe
     // dir — the file checks skip, the schema checks ran).
     let m2 = ArsenalManifest::parse(&text).expect("parses");
-    m2.validate(&ctx)
-        .expect("a well-formed ENC row validates");
+    m2.validate(&ctx).expect("a well-formed ENC row validates");
 }
 
 /// The default-build refusal: without the `serve-encoder` feature, an ENC
@@ -990,8 +1026,9 @@ fn enc_row_boots_to_a_loud_feature_refusal_without_the_lane() {
         eprintln!("SKIP loud: datasets absent (the seat is the refusal's vehicle)");
         return;
     }
-    let manifest = ArsenalManifest::parse(&enc_manifest_text("t6_s0.bin", &"0".repeat(64), "eager"))
-        .expect("parses");
+    let manifest =
+        ArsenalManifest::parse(&enc_manifest_text("t6_s0.bin", &"0".repeat(64), "eager"))
+            .expect("parses");
     let datasets = datasets_dir();
     let out = std::thread::Builder::new()
         .stack_size(64 * 1024 * 1024)
@@ -1005,9 +1042,9 @@ fn enc_row_boots_to_a_loud_feature_refusal_without_the_lane() {
         .expect("boot thread panicked");
     let err = match out {
         Err(e) => e,
-        Ok(_) => panic!(
-            "the ENC row must refuse on a build without serve-encoder — it booted instead"
-        ),
+        Ok(_) => {
+            panic!("the ENC row must refuse on a build without serve-encoder — it booted instead")
+        }
     };
     assert!(
         err.contains("--features serve-encoder"),
@@ -1055,11 +1092,7 @@ fn assert_cmd_env(var: &str) -> String {
     })
 }
 
-fn http(
-    port: u16,
-    req: &str,
-    body: Option<&str>,
-) -> (u16, String) {
+fn http(port: u16, req: &str, body: Option<&str>) -> (u16, String) {
     let mut s = None;
     for _ in 0..40 {
         match TcpStream::connect(("127.0.0.1", port)) {
@@ -1071,7 +1104,8 @@ fn http(
         }
     }
     let mut s = s.expect("connect: the server never accepted");
-    s.set_read_timeout(Some(std::time::Duration::from_secs(5))).unwrap();
+    s.set_read_timeout(Some(std::time::Duration::from_secs(5)))
+        .unwrap();
     let head = match body {
         Some(b) => format!(
             "{req}\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{b}",
@@ -1128,7 +1162,10 @@ fn http_edge_refusal_and_healthz_faces() {
     assert!(body.contains("\"code\":\"bad_json\""), "{body}");
 
     // 413 for an oversized body.
-    let big = format!(r#"{{"suite":"ag_news","state":"{}"}}"#, "x".repeat(1024 * 1024 + 64));
+    let big = format!(
+        r#"{{"suite":"ag_news","state":"{}"}}"#,
+        "x".repeat(1024 * 1024 + 64)
+    );
     let (status, body) = http(srv.port, "POST /decide HTTP/1.1", Some(&big));
     assert_eq!(status, 413, "{body}");
     assert!(body.contains("\"code\":\"too_large\""), "{body}");
@@ -1158,14 +1195,20 @@ fn http_edge_refusal_and_healthz_faces() {
     let mut resp = String::new();
     let _ = BufReader::new(s).read_to_string(&mut resp);
     assert!(resp.contains("204 No Content"), "{resp}");
-    assert!(resp.contains("Access-Control-Allow-Origin: https://reflex.gist.rs"), "{resp}");
+    assert!(
+        resp.contains("Access-Control-Allow-Origin: https://reflex.gist.rs"),
+        "{resp}"
+    );
 
     let (status, _) = http(
         srv.port,
         "OPTIONS /decide HTTP/1.1\r\nOrigin: https://evil.example",
         None,
     );
-    assert_eq!(status, 403, "a foreign origin must not receive a preflight grant");
+    assert_eq!(
+        status, 403,
+        "a foreign origin must not receive a preflight grant"
+    );
 }
 
 /// The decide happy path over HTTP — needs the DATA (the lane must be
@@ -1200,8 +1243,7 @@ fn http_decide_happy_path_with_data() {
     let seat = riir_reflex::harness::runner::seat::prepare_seat("ag_news", &datasets_dir())
         .expect("prepare ag_news seat");
     let serving = serving_arm_name("ag_news");
-    let (_, abstained) =
-        frozen_picks("ag_news", &serving).expect("frozen ag_news record");
+    let (_, abstained) = frozen_picks("ag_news", &serving).expect("frozen ag_news record");
     let answered = abstained
         .iter()
         .position(|a| !a)
@@ -1216,11 +1258,7 @@ fn http_decide_happy_path_with_data() {
     };
     let req = serde_json::json!({ "suite": "ag_news", "state": state, "options": options });
     let req_body = req.to_string();
-    let (status, body) = http(
-        srv.port,
-        "POST /decide HTTP/1.1",
-        Some(&req_body),
-    );
+    let (status, body) = http(srv.port, "POST /decide HTTP/1.1", Some(&req_body));
     assert_eq!(status, 200, "{body}");
     let doc: serde_json::Value = serde_json::from_str(&body).expect("decide body parses");
     assert_eq!(doc["lane"], "hybrid");
@@ -1235,7 +1273,9 @@ fn http_decide_happy_path_with_data() {
     assert_eq!(doc["abstained"], false, "{body}");
     assert!(doc["pick"].is_string(), "{body}");
     if serving == "A0" {
-        let probs = doc["probabilities"].as_array().expect("A0 answers with probabilities");
+        let probs = doc["probabilities"]
+            .as_array()
+            .expect("A0 answers with probabilities");
         assert!(probs.len() == 4, "{body}");
         assert!(
             probs.iter().all(|p| p.is_f64()),
@@ -1274,7 +1314,8 @@ fn http_to(port: u16, req: &str, body: Option<&str>, timeout: u64) -> (u16, Stri
         }
     }
     let mut s = s.expect("connect: the server never accepted");
-    s.set_read_timeout(Some(std::time::Duration::from_secs(timeout))).unwrap();
+    s.set_read_timeout(Some(std::time::Duration::from_secs(timeout)))
+        .unwrap();
     let head = match body {
         Some(b) => format!(
             "{req}\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{b}",
@@ -1353,10 +1394,7 @@ fn arsenal_release_refuses_the_eager_posture() {
     // Data-independent: the refusal is manifest-level, before any lane
     // state matters.
     let srv = spawn_server_cfg(&["--suites", "ag_news"], &[]);
-    assert!(
-        wait_bind(srv.port),
-        "the server never bound"
-    );
+    assert!(wait_bind(srv.port), "the server never bound");
     let (status, body) = http_to(
         srv.port,
         "POST /arsenal/release HTTP/1.1",
@@ -1386,7 +1424,10 @@ fn arsenal_lazy_release_reload_cycle_over_http() {
         return;
     }
     let manifest = lazy_ag_news_manifest();
-    assert!(manifest.contains("load = \"lazy\""), "the surgery must flip ag_news's row");
+    assert!(
+        manifest.contains("load = \"lazy\""),
+        "the surgery must flip ag_news's row"
+    );
     let dir = std::env::temp_dir();
     let path = dir.join(format!("instinct_arsenal_lazy_{}.toml", std::process::id()));
     std::fs::write(&path, &manifest).expect("write lazy manifest");

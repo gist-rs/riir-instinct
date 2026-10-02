@@ -158,8 +158,8 @@ impl ArsenalManifest {
     /// Parse a manifest from TOML text. Parse failures name the field
     /// (serde + toml spans); they never name a row that was not at fault.
     pub fn parse(toml_text: &str) -> Result<Self, String> {
-        let manifest: Self = toml::from_str(toml_text)
-            .map_err(|e| format!("manifest parse refused: {e}"))?;
+        let manifest: Self =
+            toml::from_str(toml_text).map_err(|e| format!("manifest parse refused: {e}"))?;
         Ok(manifest)
     }
 
@@ -217,8 +217,7 @@ impl ArsenalManifest {
         let vessel_mode = ctx.vessels_dir.is_some();
         if vessel_mode && !cfg!(feature = "vessel") {
             return Err(
-                "vessel mode requires the `vessel` feature (rebuild with --features vessel)"
-                    .into(),
+                "vessel mode requires the `vessel` feature (rebuild with --features vessel)".into(),
             );
         }
         #[cfg(feature = "vessel")]
@@ -368,17 +367,19 @@ impl VesselRow {
             // convention would silently load the bag lane's artifact as a
             // head, so an ENC row must name its `file` explicitly.
             if self.file.is_none() {
-                return Err("posture ENC: the trained head must name its artifact `file` — the \
+                return Err(
+                    "posture ENC: the trained head must name its artifact `file` — the \
                             suite winner convention does not apply to a head artifact"
-                    .into());
+                        .into(),
+                );
             }
-            // Resident from boot (Proposal 048 L9, issue 016 T2): a lazy
-            // first-route load would be L3 doing a load, which L9 forbids.
-            if self.budget.load != "eager" {
-                return Err("budget.load: posture ENC must be eager — the encoder weights are \
-                            resident from boot (Proposal 048 L9: never loads)"
-                    .into());
-            }
+            // Issue 018 Lane A (the L9 revisit): `eager | lazy` are BOTH
+            // valid for ENC — L2's lazy-once-then-resident contract is
+            // inherited verbatim (the first decision loads; the boot
+            // preflight refuses the row's config errors at boot; the
+            // release wire evicts). L9's residue is G3 (exactly one load
+            // per activation) + the sticky-`Failed` bound, not a refusal.
+            // `eager` stays the embedded default (the production posture).
         }
         self.budget.validate()?;
         if let Some(f) = &self.file {
@@ -455,11 +456,7 @@ impl PostureSpec {
                 self.forbid_params(&["top_k"])?;
                 let (beta, n_min, tau_n) = match (self.beta, self.n_min, self.tau_n) {
                     (Some(b), Some(n), Some(t)) => (b, n, t),
-                    _ => {
-                        return Err(
-                            "posture: arm H2 requires beta, n_min and tau_n".to_string()
-                        )
-                    }
+                    _ => return Err("posture: arm H2 requires beta, n_min and tau_n".to_string()),
                 };
                 if !beta.is_finite() || !n_min.is_finite() || !tau_n.is_finite() {
                     return Err("posture: H2 params must be finite".into());
@@ -557,7 +554,9 @@ fn validate_vessel_header(
         return Err(format!(
             "suite {:?}: file {name}: format version {} ≠ the reader's {} (law A9 — \
              same-engine-class only)",
-            row.suite, header.format_version, reflexer_vessel::FORMAT_VERSION
+            row.suite,
+            header.format_version,
+            reflexer_vessel::FORMAT_VERSION
         ));
     }
     // The row class must match the artifact's SIGNED class. The
@@ -703,7 +702,9 @@ mod tests {
     #[test]
     fn unknown_posture_arm_refuses_never_defaulted() {
         let m = manifest_with(&one_row("{ arm = \"H3\" }")).expect("parse");
-        let err = m.validate(&ValidateCtx::raw(Path::new("/nonexistent"))).unwrap_err();
+        let err = m
+            .validate(&ValidateCtx::raw(Path::new("/nonexistent")))
+            .unwrap_err();
         assert!(err.contains("unknown arm"), "{err}");
         assert!(err.contains("never defaulted"), "{err}");
         assert!(err.contains("ag_news"), "{err}");
@@ -712,52 +713,47 @@ mod tests {
     #[test]
     fn posture_params_must_match_the_arm() {
         // H2 missing tau_n.
-        let m = manifest_with(&one_row("{ arm = \"H2\", beta = 1.0, n_min = 2.0 }"))
-            .expect("parse");
-        assert!(
-            m.validate(&ValidateCtx::raw(Path::new("/nonexistent")))
-                .unwrap_err()
-                .contains("H2 requires beta, n_min and tau_n")
-        );
+        let m =
+            manifest_with(&one_row("{ arm = \"H2\", beta = 1.0, n_min = 2.0 }")).expect("parse");
+        assert!(m
+            .validate(&ValidateCtx::raw(Path::new("/nonexistent")))
+            .unwrap_err()
+            .contains("H2 requires beta, n_min and tau_n"));
         // H2 carrying top_k.
         let m = manifest_with(&one_row(
             "{ arm = \"H2\", beta = 1.0, n_min = 2.0, tau_n = 8.0, top_k = 4 }",
         ))
         .expect("parse");
-        assert!(
-            m.validate(&ValidateCtx::raw(Path::new("/nonexistent")))
-                .unwrap_err()
-                .contains("takes no top_k")
-        );
+        assert!(m
+            .validate(&ValidateCtx::raw(Path::new("/nonexistent")))
+            .unwrap_err()
+            .contains("takes no top_k"));
         // A0 carrying beta.
         let m = manifest_with(&one_row("{ arm = \"A0\", beta = 0.5 }")).expect("parse");
-        assert!(
-            m.validate(&ValidateCtx::raw(Path::new("/nonexistent")))
-                .unwrap_err()
-                .contains("takes no beta")
-        );
+        assert!(m
+            .validate(&ValidateCtx::raw(Path::new("/nonexistent")))
+            .unwrap_err()
+            .contains("takes no beta"));
         // H1 missing top_k.
         let m = manifest_with(&one_row("{ arm = \"H1\" }")).expect("parse");
-        assert!(
-            m.validate(&ValidateCtx::raw(Path::new("/nonexistent")))
-                .unwrap_err()
-                .contains("H1 requires top_k")
-        );
+        assert!(m
+            .validate(&ValidateCtx::raw(Path::new("/nonexistent")))
+            .unwrap_err()
+            .contains("H1 requires top_k"));
         // H1 out of range.
         let m = manifest_with(&one_row("{ arm = \"H1\", top_k = 64 }")).expect("parse");
-        assert!(
-            m.validate(&ValidateCtx::raw(Path::new("/nonexistent")))
-                .unwrap_err()
-                .contains("outside 1..=")
-        );
+        assert!(m
+            .validate(&ValidateCtx::raw(Path::new("/nonexistent")))
+            .unwrap_err()
+            .contains("outside 1..="));
     }
 
     #[test]
     fn digest_format_is_strict() {
         for bad in [
-            "ec32aac3",                      // no tag
-            "blake3:EC327AC30250205B",       // wrong everything
-            "blake3:ec327ac3",               // too short
+            "ec32aac3",                // no tag
+            "blake3:EC327AC30250205B", // wrong everything
+            "blake3:ec327ac3",         // too short
             "sha3:ec327ac30250205b2b26c6b00976f9fb50bdf44a9bcbb1d87e35c6ca06f5cf33",
             "blake3:EC327AC30250205B2B26C6B00976F9FB50BDF44A9BCBB1D87E35C6CA06F5CF33",
         ] {
@@ -775,66 +771,62 @@ mod tests {
 
     #[test]
     fn class_vocabulary_and_moat_law() {
-        let m = manifest_with(&one_row("{ arm = \"A0\" }").replace(
-            "class = \"hosted_only\"",
-            "class = \"public_release\"",
-        ))
+        let m = manifest_with(
+            &one_row("{ arm = \"A0\" }")
+                .replace("class = \"hosted_only\"", "class = \"public_release\""),
+        )
         .expect("parse");
         let err = m
             .validate(&ValidateCtx::raw(Path::new("/nonexistent")))
             .unwrap_err();
         assert!(err.contains("public_release refused"), "{err}");
-        let m = manifest_with(&one_row("{ arm = \"A0\" }").replace(
-            "class = \"hosted_only\"",
-            "class = \"sealed\"",
-        ))
+        let m = manifest_with(
+            &one_row("{ arm = \"A0\" }").replace("class = \"hosted_only\"", "class = \"sealed\""),
+        )
         .expect("parse");
-        assert!(
-            m.validate(&ValidateCtx::raw(Path::new("/nonexistent")))
-                .unwrap_err()
-                .contains("unknown class")
-        );
+        assert!(m
+            .validate(&ValidateCtx::raw(Path::new("/nonexistent")))
+            .unwrap_err()
+            .contains("unknown class"));
     }
 
     #[test]
     fn budget_is_validated() {
-        let m = manifest_with(&one_row("{ arm = \"A0\" }").replace(
-            "load = \"eager\"",
-            "load = \"whenever\"",
-        ))
+        let m = manifest_with(
+            &one_row("{ arm = \"A0\" }").replace("load = \"eager\"", "load = \"whenever\""),
+        )
         .expect("parse");
-        assert!(
-            m.validate(&ValidateCtx::raw(Path::new("/nonexistent")))
-                .unwrap_err()
-                .contains("budget.load")
-        );
-        let m = manifest_with(&one_row("{ arm = \"A0\" }").replace(
-            "max_payload_mb = 16",
-            "max_payload_mb = 64",
-        ))
+        assert!(m
+            .validate(&ValidateCtx::raw(Path::new("/nonexistent")))
+            .unwrap_err()
+            .contains("budget.load"));
+        let m = manifest_with(
+            &one_row("{ arm = \"A0\" }").replace("max_payload_mb = 16", "max_payload_mb = 64"),
+        )
         .expect("parse");
-        assert!(
-            m.validate(&ValidateCtx::raw(Path::new("/nonexistent")))
-                .unwrap_err()
-                .contains("budget.max_payload_mb")
-        );
+        assert!(m
+            .validate(&ValidateCtx::raw(Path::new("/nonexistent")))
+            .unwrap_err()
+            .contains("budget.max_payload_mb"));
     }
 
     #[test]
     fn duplicates_and_empty_manifests_refuse() {
-        let text = format!("{}{}", one_row("{ arm = \"A0\" }"), one_row("{ arm = \"A1\" }"));
+        let text = format!(
+            "{}{}",
+            one_row("{ arm = \"A0\" }"),
+            one_row("{ arm = \"A1\" }")
+        );
         let m = manifest_with(&text).expect("parse");
-        assert!(
-            m.validate(&ValidateCtx::raw(Path::new("/nonexistent")))
-                .unwrap_err()
-                .contains("duplicate row")
-        );
+        assert!(m
+            .validate(&ValidateCtx::raw(Path::new("/nonexistent")))
+            .unwrap_err()
+            .contains("duplicate row"));
         let m = manifest_with("").expect("empty parses");
-        assert!(
-            m.validate(&ValidateCtx::raw(Path::new("/nonexistent")))
-                .unwrap_err()
-                .contains("no [[vessel]] rows")
-        );
+        assert!(m
+            .validate(&ValidateCtx::raw(Path::new("/nonexistent")))
+            .unwrap_err()
+            .contains("no [[vessel]] rows"));
     }
 
     #[test]
@@ -846,8 +838,10 @@ mod tests {
             // backslash the basic-string form would escape.
             ("back\\slash.bin", "'back\\slash.bin'"),
         ] {
-            let text = one_row("{ arm = \"A0\" }")
-                .replace("pin_keys = []", &format!("pin_keys = []\nfile = {toml_value}"));
+            let text = one_row("{ arm = \"A0\" }").replace(
+                "pin_keys = []",
+                &format!("pin_keys = []\nfile = {toml_value}"),
+            );
             let m = manifest_with(&text).expect("parse");
             assert!(
                 m.validate(&ValidateCtx::raw(Path::new("/nonexistent")))
@@ -860,10 +854,8 @@ mod tests {
 
     #[test]
     fn unknown_fields_refuse_loud() {
-        let text = one_row("{ arm = \"A0\" }").replace(
-            "pin_keys = []",
-            "pin_keys = []\ndgest = \"typo\"",
-        );
+        let text =
+            one_row("{ arm = \"A0\" }").replace("pin_keys = []", "pin_keys = []\ndgest = \"typo\"");
         assert!(manifest_with(&text).is_err(), "a typo'd field must refuse");
     }
 

@@ -1,6 +1,6 @@
 # Issue 018 — Rethink encoder lane: lean + GOAT plan (lazy inheritance, shared worker, one-checkpoint typed, quantization)
 
-**Status:** OPEN — filed 2026-10-01 (owner ask after the /#sizes Rethink row landed); Claude verdict CONVERGED AGREE at round 3 (2× REVISE, all reasons folded); plan ready to execute in branch order, nothing coded yet. Addendum 2026-10-01: two-case calibration branch wired (Δ-retention breach routes through D1's existing verdict, pre-registered refit allowed first; absolute-floor tripwire lands in Lane C's pre-declared loss options for the head C retrains, narrow filing for any other head) — katgpt-rs Research 562 addendum; nothing fired, execution order unchanged.
+**Status:** OPEN — filed 2026-10-01 (owner ask after the /#sizes Rethink row landed); Claude verdict CONVERGED AGREE at round 3 (2× REVISE, all reasons folded). **Lanes B + A LANDED 2026-10-02 (Bench 0050, the 4090 box) — the daylight session executed; `serve-encoder-shared` ships opt-in (promotion rides the serving soak), lazy ENC rows legal with `eager` still the embedded default.** Addendum 2026-10-01: two-case calibration branch wired (Δ-retention breach routes through D1's existing verdict, pre-registered refit allowed first; absolute-floor tripwire lands in Lane C's pre-declared loss options for the head C retrains, narrow filing for any other head) — katgpt-rs Research 562 addendum; nothing fired, execution order unchanged.
 
 ## Context — the numbers that triggered this
 
@@ -45,34 +45,55 @@ is a ruling, not a benchmark.
 The unit of residency moves from the LANE to the shared worker. Every
 semantics change below is written against that unit.
 
-- [ ] One worker thread + one `RiirAgent` per (Checkpoint, device), shared
+- [x] One worker thread + one `RiirAgent` per (Checkpoint, device), shared
       by every ENC lane on that checkpoint; heads stay per-lane (KB-MB).
       The worker carries the CHECKPOINT DIGEST — the epoch stays per-lane
       with its head (swap/monotonicity must NOT attach to the shared
-      worker).
-- [ ] Per-suite warmup + template validation move to LANE ATTACH (the
+      worker). **→ LANDED 2026-10-02 (Bench 0050):** the registry keys the
+      worker by checkpoint under `serve-encoder-shared` (`ckpt:english`) or
+      lane+head in the default build (`lane:<suite>` — byte-identical
+      per-lane behavior, same code path); weak-handle residency (lanes own
+      the worker; last release frees the RAM); the worker carries the
+      streamed-BLAKE3 checkpoint digest. In-process the device is
+      process-global (`LAYA_DEVICE`), so (Checkpoint, device) reduces to
+      Checkpoint — recorded, not lost.
+- [x] Per-suite warmup + template validation move to LANE ATTACH (the
       worker no longer knows a suite's template at boot); a template drift
       fails that lane's attach loudly, never the shared worker.
-- [ ] Ship behind a GOAT feature flag; promote to default only after
+      **→ LANDED: attach validation job with the lane's real template
+      fields; a drift fails the lane, the worker keeps serving.**
+- [x] Ship behind a GOAT feature flag; promote to default only after
       parity + RAM + mixed-load latency all pass (the promotion gates
-      below).
-- [ ] RAM gate: measured N × 848 MB → 1 × 848 MB for the 3-suite host.
-- [ ] Parity gate — INTERLEAVED, not sequential: replay all served suites
+      below). **→ `serve-encoder-shared` (opt-in); promotion rides the
+      soak.**
+- [x] RAM gate: measured N × 848 MB → 1 × 848 MB for the 3-suite host.
+      **→ MEASURED (Bench 0050): 3 lanes / 1 checkpoint / CPU / F16 —
+      per-lane 4938 MB private vs shared 1690 MB = 2.92×.**
+- [x] Parity gate — INTERLEAVED, not sequential: replay all served suites
       interleaved through the shared worker and compare bit-identical
       against isolated per-lane runs (catches state leaking between
       suites: agent scratch, the reused `y` buffer, device caches).
-- [ ] Concurrency gate: mixed-suite p50/p99 under concurrent load, shared
+      **→ PASS both modes; cross-build fingerprints byte-identical (sst5
+      c35a50b77602c063 · xnli_en 7c237555b7ab47fd; Bench 0050).**
+- [x] Concurrency gate: mixed-suite p50/p99 under concurrent load, shared
       vs per-lane, interleaved A/B with `bench_preflight.sh` box state
       quoted (±6%/±21.7% envelope law). Serialization is the law WITHIN a
       lane; across lanes today's three workers can overlap on the device —
       one shared worker adds head-of-line blocking, and that cost is
-      measured, never assumed.
-- [ ] Fairness/queue gate: per-lane fairness and queue bounds (today each
+      measured, never assumed. **→ PARTIAL, honestly scoped: the lockstep
+      interleaved replay is the mixed-load instrument and it is
+      bit-identical (wall 1216 s per-lane vs 1194 s shared, 6 boots
+      included — no head-of-line regression visible at that shape); the
+      full concurrent-HTTP p50/p99 A/B DEFERS to the serving soak.**
+- [x] Fairness/queue gate: per-lane fairness and queue bounds (today each
       lane owns `sync_channel(64)`; one shared queue lets a burst on one
-      suite back-pressure the others — bound it or shard it).
-- [ ] FALLBACK (recorded, not silent): if p99 regresses beyond the
+      suite back-pressure the others — bound it or shard it). **→
+      `LaneGate` (per-lane in-flight cap 64) unit-tested to block at the
+      cap and release on drop.**
+- [x] FALLBACK (recorded, not silent): if p99 regresses beyond the
       envelope, keep per-lane workers and share only the WEIGHTS
       (mmap/Arc of the checkpoint) — RAM win kept, latency trade recorded.
+      **→ recorded, dormant — no regression observed.**
 
 ## Lane A — L3 inherits L2's lazy + evict (the L9 revisit) — riir-instinct
 
@@ -80,12 +101,15 @@ Preserve L9's REAL intent (never a load ON the hot request path, never
 per-request loads) while inheriting A7's semantics verbatim — with lazy's
 failure surface closed at BOOT, not at first request:
 
-- [ ] Allow `budget.load = "lazy"` on ENC rows: the lane boots `Unloaded`;
+- [x] Allow `budget.load = "lazy"` on ENC rows: the lane boots `Unloaded`;
       the FIRST decision triggers the load (agent + head + one warmup
       encode paying the Metal/CUDA pipeline compile); the 503 `loading`
       window covers it (the bag-lane posture, state named, never a silent
-      fallback); the lane is resident after.
-- [ ] **Boot preflight runs for lazy rows too** — lazy must not move
+      fallback); the lane is resident after. **→ LANDED (Bench 0050): the
+      validator accepts `eager | lazy` for ENC; `eager` stays the embedded
+      default; the bag machinery (Unloaded→Loading→Ready, the 503 window,
+      the release wire) already generic — consumed, never duplicated.**
+- [x] **Boot preflight runs for lazy rows too** — lazy must not move
       boot-time refusals onto the first request: weights present + BLAKE3
       digest check; head digest check; template-vs-head class-count check
       WITHOUT a forward pass (a property of template + tokenizer); a
@@ -93,23 +117,39 @@ failure surface closed at BOOT, not at first request:
       worker** (the sum over DISTINCT (Checkpoint, device) workers, never
       over lanes: three english lanes share one worker and must be charged
       848 MB once, or a host that fits gets refused). A config error is a
-      boot refusal, never a production 503.
-- [ ] **Readiness semantics**: healthz reports a lazy-Unloaded lane as
+      boot refusal, never a production 503. **→ LANDED: substrate fn
+      `verify_checkpoint_present` (pin verification, never downloads), the
+      ACTIVE-variant sidecar resolution + streamed checkpoint digest,
+      `INSTINCT_ENCODER_MEM_BUDGET_MB` counted per distinct checkpoint
+      (unset = disclosed, not gated — no portable GPU-memory query; the
+      operator declares the ceiling), template-vs-head class count from
+      the seat + head parse. The head digest check already ran at
+      manifest validation for every row incl. lazy.**
+- [x] **Readiness semantics**: healthz reports a lazy-Unloaded lane as
       `ready-cold`, distinct from `ready` — a load balancer must not route
-      the first user into the compile window blind.
-- [ ] `POST /arsenal/release` evicts back to Unloaded (epoch kept) — the
+      the first user into the compile window blind. **→ LANDED (healthz
+      `readiness`: ready | ready-cold | loading | failed; /decide
+      responses disclose `lane_load`).**
+- [x] `POST /arsenal/release` evicts back to Unloaded (epoch kept) — the
       existing wire, no new lineage code. Under the shared worker (Lane
       B), release drops the lane's SENDER; the worker and its 848 MB
       survive while another lane holds one; RAM is freed when the LAST
-      holder releases — the disclosure says so.
-- [ ] `eager` stays the DEFAULT (the production posture unchanged);
+      holder releases — the disclosure says so. **→ LANDED: the weak-handle
+      registry IS those semantics (the release-free/recall unit tests pin
+      them); the wire needed zero changes.**
+- [x] `eager` stays the DEFAULT (the production posture unchanged);
       `lazy` is the opt-in for memory-constrained / multi-checkpoint hosts.
-- [ ] Disclosure: healthz + the decision receipt carry the lane's load
+- [x] Disclosure: healthz + the decision receipt carry the lane's load
       state; a cold first decision names the load+compile cost it paid; a
       released-then-recalled lane re-pays the compile ONCE per activation
-      (bounded, disclosed).
-- [ ] The validator's ENC eager-only refusal becomes: `eager | lazy` both
-      valid for ENC (lazy rows carry the one-time-load contract).
+      (bounded, disclosed). **→ LANDED: healthz `readiness` + `load`,
+      /decide `lane_load`, the boot/attach/warm log lines; the hashed
+      receipt envelope stays the decision's, the load state rides beside
+      it.**
+- [x] The validator's ENC eager-only refusal becomes: `eager | lazy` both
+      valid for ENC (lazy rows carry the one-time-load contract). **→
+      LANDED (the serve_gates arm flipped; unknown load words still
+      refuse).**
 
 **GOAT gates (Lane A):**
 - G1: post-load answers BIT-IDENTICAL eager vs lazy (same head bytes, same
@@ -503,3 +543,22 @@ adopted posture, and the Q4 seam LANDED (riir-infer, all gates green).**
   REMAINS: option (iii) re-price (owner call, the numbers stand); Lane
   B/A daylight; Q4 retention probe (D1-shaped) when the Q4 tier is
   wanted for serving.
+
+**Update 7 (2026-10-02, the daylight session — Lane B + Lane A LANDED,
+Bench 0050):** the checkboxes above carry the per-gate evidence; the
+record is `.benchmarks/0050_lane_b_a_serving/RESULTS.md`. Headlines:
+**RAM 4938 → 1690 MB private (2.92×)** at 3 ENC lanes / 1 checkpoint
+(CPU/F16 posture); **cross-build parity byte-identical** (per-lane vs
+shared-worker fingerprints sst5 `c35a50b77602c063` · xnli_en
+`7c237555b7ab47fd`); the six weight-free registry gates (exactly-once
+load, release-frees, recall-one-load, fairness cap, attach drift,
+failed-boot retry) all pass; the lazy ENC posture + boot preflight +
+`ready-cold` landed; the substrate gained `verify_checkpoint_present`
+(riir-infer — the verify-only half of ensure_checkpoint, never
+downloads). Concurrency gate honestly PARTIAL (the lockstep replay is
+the instrument and it is bit-identical; the concurrent-HTTP p50/p99 A/B
+defers to the serving soak — the fairness cap and the share-weights-only
+fallback are the recorded hedges). REMAINS: promotion of
+`serve-encoder-shared` to the serve-encoder default (rides the soak);
+the concurrent-load p50/p99 A/B at the soak; option (iii) re-price and
+the Q4 retention probe stay owner-gated as before.
