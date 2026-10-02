@@ -59,7 +59,7 @@ public view + per-epoch commitment root → (later) retrain threshold.
       recorded candidate). Pricing is owner territory besides
       (Proposal 014: the never-lever doctrine). The commitment root +
       views land now; rewards re-open with a priced verification design.
-- [ ] **T4 — riir-train intake** (filed, deferred): settled rows join the
+- [-] **T4 — riir-train intake** (filed, deferred): settled rows join the
       specialist corpus; retrain at the measured threshold, GOAT-gated,
       then vessel mint + P5 redeploy. Filed as riir-train Issue 577 —
       blocked on accumulated rows. PROGRESS 2026-09-27: 577 T1+T2 (the
