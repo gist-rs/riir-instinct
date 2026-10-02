@@ -89,6 +89,27 @@ the confirmed 0.5267 encoder lane would flip it; C2's surrogate is the
 owner-ratified rung, Issue 014). The seven 0.0-edge ties are RESOLVED
 (T8 ✅).
 
+**ADDENDUM 2026-10-02 — the record-only encoder cells (the 016/017/018
+lane) re-price five of the six gaps; NONE flips a served row yet — every
+encoder cell is `serve: ✗` until 016's D1 trigger fires, and the sold set
+is unchanged:**
+
+| suite | best Instinct now (arm) | bar | edge now | edge was (served arm) |
+|---|---|---|---|---|
+| sst5 | 0.5267 ENC record-only (Bench 029) | gliner 0.4383 | **+8.8 — the ONE flip candidate, pending D1** | −1.7 (served A1 0.4217) |
+| typed_decisions | 0.7550 ENC record-only (Bench 041) | agentjev 0.7715 | −1.65 | −12.4 (served H2 0.6475) |
+| ag_news | 0.9475 ENC record-only (Bench 037) | laya en 0.9500 | −0.25 | −5.2 (served H2 0.8975) |
+| xnli_en | 0.8600 ENC record-only (Bench 036) | openthai 0.9000 | −4.0 | −37.7 (served seat 0.5233) |
+| thai_sib200 | 0.7843 ENC record-only (board `2e26f84`) | openthai 0.8382 | −5.4 | no arm (T5 defer) |
+| thai_wisesight | 0.4075 ENC record-only (board `2e26f84`) | openthai 0.475 | −6.8 | no arm (T5 defer) |
+
+Unchanged rows (the served arm stays best Instinct): massive −8.0 (ENC cell
+0.6567 under the hybrid), code_fixtures −6.3 (law-excluded from the encoder
+lane), banking77 +14.8 / prompt +8.6 / emotion +11.5 posture-gap (their ENC
+cells 0.4420 / 0.8017 / no-head-earned sit under the served arms). T9's
+PoC→GOAT chip flip and every "sold" claim still key on SERVED cells; the
+addendum is the board's measured state, not a promotion.
+
 ## Root causes (read before training anything)
 
 1. **Instinct is scored against an older Reflex than the one it competes with.**

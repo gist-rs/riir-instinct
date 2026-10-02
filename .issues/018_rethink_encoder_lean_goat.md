@@ -207,10 +207,14 @@ prices everything before any training or kernel work is spent:
       riir-infer `294999e` + instinct `2a61105`. BRANCH ⇒ D2 (the two
       UNDECIDED rows ride D2's own re-seat — a real-kernel read re-measures
       them at higher resolution; the issue's lane rule never folds them).
-- [ ] **D2 — full adoption** (only on a D1 pass): Q8 quant in riir-infer
+- [-] **D2 — full adoption** (only on a D1 pass): Q8 quant in riir-infer
       (house dequant machinery; the Bonsai PQ precedent), Q4/PQ2 second.
       English 848 MB → ~424 MB (Q8) / ~220 MB (Q4) → posture total
-      ~460 MB / ~255 MB.
+      ~460 MB / ~255 MB. **CHECKBOX 2026-10-02: the Q8 half is ADOPTED
+      end-to-end (D2a storage + D2b device residency + the no-change
+      re-seat — Updates 2/4/5/6 below); the remainder DEFERRED by its own
+      law — Q4 retention is D1-priced separately before `q4` serves
+      anything, PQ2 rides the same seam.**
       **→ D2a (the STORAGE tier) ADOPTED 2026-10-02 (Bench 0047,
       riir-infer `10e33de`): Q8_0 artifact format + `laya-quant8`
       converter + `LAYA_WEIGHTS_VARIANT=q8` loader seam (sidecar-verified,

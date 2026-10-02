@@ -192,7 +192,7 @@ The staged plan T1–T8 stands unchanged; D1's wording becomes "publishes as
 served Rethink (encoder) @<host>" once the rename lands. The
 "Instinct (encoder)" site lane rebrands with aliases (Phase 1).****
 
-## Staged plan (pending verdict round)
+## Staged plan (verdict RATIFIED — rounds 1–2 AGREE + owner round 3; T5–T6 open, trigger-blocked)
 
 - [-] T1 — **budget pricing (measured, no new lane)**: the demand model is
   **EVENT-ARRIVAL × ADMISSION**, not NPC population — the named consumers
@@ -460,6 +460,11 @@ served Rethink (encoder) @<host>" once the rename lands. The
     both under. Measured negatives, never backlog.
   - thai_wisesight / thai_sib200 — need the MULTILINGUAL checkpoint (the
     english encoder is useless for Thai); 008 T5's DEFER stands until the
-    vs-best gaps close.
+    vs-best gaps close. **UPDATE 2026-10-02: the encoder cells for BOTH
+    thai suites seated record-only on the completed board (0.4075
+    wisesight / 0.7843 sib200, reflex-site `2e26f84`) — both under their
+    openthai bars (0.475 / 0.8382); the 603 trained-head lane is DEAD BY
+    LAW (0.8433 ≤ 0.86, riir-train 603 closed). Record-only; the row's
+    posture still waits on D1.**
   - No new DATA anywhere — the t20k pools exist; per-suite cost is encode
     (~36 ms/row M3-Metal stand-in) + sweep + one read ≈ 20–30 min/suite.
