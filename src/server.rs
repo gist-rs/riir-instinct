@@ -147,6 +147,11 @@ pub enum WeightSource {
     RawWinner,
     /// A HOSTED-ONLY vessel (the minted path; lineage in the commitment).
     Vessel,
+    /// No artifact — the artifact-less A0 posture (owner 2026-10-02
+    /// full-coverage serving): the lane IS the modelless tier, the G0a
+    /// `HybridLane::ReflexOnly` arm. The receipt names this source so a
+    /// no-artifact answer can never masquerade as a weighted one.
+    ReflexOnly,
 }
 
 /// What the host persists after a successful vessel boot — the monotonic
@@ -357,6 +362,24 @@ impl<const N: usize> SuiteServer<N> {
         source: WeightSource,
         arm: Arm,
     ) -> Result<Self, String> {
+        Self::from_parts_opt(suite, seat, Some(spec), weight_id, source, arm)
+    }
+
+    /// The [`Self::from_parts`] tail with the specialist OPTIONAL — the
+    /// artifact-less A0 posture (owner 2026-10-02 full-coverage serving):
+    /// `spec: None` boots `HybridLane::ReflexOnly` (the G0a first-class
+    /// arm — the output is A0 byte-identical, no escalation ever fires)
+    /// over the seat engine alone. The identity label join is built from
+    /// the seat's own labels so the bridge/noul resolution paths keep
+    /// their Named-join shape; under A0 the specialist is never scored.
+    fn from_parts_opt(
+        suite: &'static str,
+        seat: Seat,
+        spec: Option<crate::specialist::Specialist>,
+        weight_id: String,
+        source: WeightSource,
+        arm: Arm,
+    ) -> Result<Self, String> {
         // The encoder class never seats on the bag server (issue 016 T2):
         // the ENC arm routes to the serve-encoder lane at the loader, and
         // a SuiteServer constructed with it is a layer mix — refuse here
@@ -460,23 +483,56 @@ impl<const N: usize> SuiteServer<N> {
         let (engine, _fallbacks) =
             build_seat_engine::<N>(suite, &seat, posture.effective_cap, posture.cfg.clone())?;
 
-        let artifact_labels_n = spec.labels.len();
-        let artifact_labels = spec.labels.clone();
-        let top_k = arm.join_top_k();
-        // The seat↔artifact label join (Plan 003's bridge — the arena's
-        // run_suite_n law verbatim): named (incl. the positional noul
-        // pair) or the context join; a partial overlap refuses in the
-        // join.
-        let joined = match crate::hybrid::seat_join(&seat.labels, &spec.labels) {
-            crate::hybrid::SeatJoin::Named(labels) => {
-                SpecialistLane::join(spec, suite, &labels, Cascade { top_k })?
-            }
-            crate::hybrid::SeatJoin::Context => {
-                SpecialistLane::join_context(spec, suite, &seat.labels, Cascade { top_k })?
-            }
-        };
-        let context_joined = joined.perm.contains(&usize::MAX);
-        let perm: Vec<usize> = joined.perm.clone();
+        let (artifact_labels_n, artifact_labels, joined_lane, perm, context_joined) =
+            match spec {
+                Some(spec) => {
+                    let artifact_labels_n = spec.labels.len();
+                    let artifact_labels = spec.labels.clone();
+                    let top_k = arm.join_top_k();
+                    // The seat↔artifact label join (Plan 003's bridge — the arena's
+                    // run_suite_n law verbatim): named (incl. the positional noul
+                    // pair) or the context join; a partial overlap refuses in the
+                    // join.
+                    let joined = match crate::hybrid::seat_join(&seat.labels, &spec.labels) {
+                        crate::hybrid::SeatJoin::Named(labels) => {
+                            SpecialistLane::join(spec, suite, &labels, Cascade { top_k })?
+                        }
+                        crate::hybrid::SeatJoin::Context => {
+                            SpecialistLane::join_context(spec, suite, &seat.labels, Cascade { top_k })?
+                        }
+                    };
+                    let context_joined = joined.perm.contains(&usize::MAX);
+                    let perm: Vec<usize> = joined.perm.clone();
+                    (
+                        artifact_labels_n,
+                        artifact_labels,
+                        HybridLane::Specialist(joined),
+                        perm,
+                        context_joined,
+                    )
+                }
+                None => {
+                    // The artifact-less A0 posture: ReflexOnly — the G0a
+                    // first-class arm, byte-identical to A0, never a
+                    // missing-file fallback. The join is the seat's own
+                    // identity (the specialist space IS the seat space);
+                    // the A0 decide path never consults it.
+                    if arm != Arm::A0 {
+                        return Err(format!(
+                            "suite {suite}: an artifact-less lane requires posture A0 (ReflexOnly), \
+                             got {}",
+                            arm.name()
+                        ));
+                    }
+                    (
+                        0,
+                        Vec::new(),
+                        HybridLane::ReflexOnly,
+                        (0..N).collect(),
+                        false,
+                    )
+                }
+            };
 
         // The presented-option bridge (the arena's SuiteCtx::key_map):
         // every JOINED seat label → (its own index, its artifact class
@@ -490,7 +546,7 @@ impl<const N: usize> SuiteServer<N> {
             seat.labels
                 .iter()
                 .enumerate()
-                .map(|(li, l)| (l.clone(), (li, joined.perm[li])))
+                .map(|(li, l)| (l.clone(), (li, perm[li])))
                 .collect()
         };
         for (ci, name) in artifact_labels.iter().enumerate() {
@@ -530,7 +586,7 @@ impl<const N: usize> SuiteServer<N> {
             nb_armed: posture.cfg.nb_scale > 0.0 && engine.nb_scope().is_some(),
             oc_armed: posture.cfg.oc_scale > 0.0 && engine.oc().is_some(),
             engine,
-            lane: HybridLane::Specialist(joined),
+            lane: joined_lane,
             labels: seat.labels,
             key_map,
             perm,
@@ -856,8 +912,15 @@ impl<const N: usize> SuiteServer<N> {
             let options = &all_options[qi];
             self.pos_spec.clear();
             self.pos_spec.resize(pos_class.len(), 0.0);
-            self.lane
-                .scores_classes_into(&self.bag, pos_class, &mut self.pos_spec);
+            // The specialist scores unconditionally for the weighted arms
+            // (the A0 dispatch never reads pos_spec); the ReflexOnly lane
+            // has no specialist — the G0a arm is A0 byte-identical, so the
+            // scores slot stays at zero and the decision's
+            // specialist_scores report `None` (the honest receipt).
+            if matches!(self.lane, crate::hybrid::HybridLane::Specialist(_)) {
+                self.lane
+                    .scores_classes_into(&self.bag, pos_class, &mut self.pos_spec);
+            }
             let a0_ans = A0Answer {
                 probs: &qo.probs,
                 pick: qo.pick,
@@ -1160,6 +1223,49 @@ impl AnySuiteServer {
     ) -> Result<Self, String> {
         let arm = Self::posture_of(manifest, suite)?;
         Self::boot_from_seat_arm(suite, seat, winners_dir, manifest, arm)
+    }
+
+    /// The ARTIFACT-LESS boot (owner 2026-10-02 full-coverage serving):
+    /// the manifest row carries no digest, so the lane is the modelless
+    /// tier alone — `HybridLane::ReflexOnly` (the G0a arm, byte-identical
+    /// to A0) over the seat engine. Only an `A0` row may boot here; the
+    /// refusal is posture-as-data, never a defaulted specialist.
+    pub fn boot_a0_from_seat(
+        suite: &'static str,
+        seat: Seat,
+        manifest: &ArsenalManifest,
+    ) -> Result<Self, String> {
+        let arm = Self::posture_of(manifest, suite)?;
+        if arm != Arm::A0 {
+            return Err(format!(
+                "suite {suite}: artifact-less boot requires posture A0, got {}",
+                arm.name()
+            ));
+        }
+        macro_rules! a0_arm {
+            ($variant:ident, $n:literal) => {{
+                let server = SuiteServer::<$n>::from_parts_opt(
+                    suite,
+                    seat,
+                    None,
+                    "a0-reflex-only".to_string(),
+                    WeightSource::ReflexOnly,
+                    arm,
+                )?;
+                Ok(AnySuiteServer::$variant(Box::new(server)))
+            }};
+        }
+        match seat.labels.len() {
+            2 => a0_arm!(S2, 2),
+            3 => a0_arm!(S3, 3),
+            4 => a0_arm!(S4, 4),
+            5 => a0_arm!(S5, 5),
+            6 => a0_arm!(S6, 6),
+            8 => a0_arm!(S8, 8),
+            59 => a0_arm!(S59, 59),
+            77 => a0_arm!(S77, 77),
+            other => Err(format!("suite {suite}: no engine arity for {other} labels")),
+        }
     }
 
     fn boot_from_seat_arm(

@@ -1,0 +1,86 @@
+[
+  {
+    "suite": "harness_visibility",
+    "registered": "A0",
+    "rows": [
+      {
+        "arm": "A0",
+        "cal_acc": 0.75,
+        "acc_lcb": 0.5630236864089966,
+        "consult": 0.0,
+        "p99_us": 20.0,
+        "rank0": true
+      }
+    ]
+  },
+  {
+    "suite": "harness_permissions",
+    "registered": "A0",
+    "rows": [
+      {
+        "arm": "A0",
+        "cal_acc": 0.7777777777777778,
+        "acc_lcb": 0.5808797478675842,
+        "consult": 0.0,
+        "p99_us": 16.0,
+        "rank0": true
+      }
+    ]
+  },
+  {
+    "suite": "harness_tool_fit",
+    "registered": "A0",
+    "rows": [
+      {
+        "arm": "A0",
+        "cal_acc": 0.7777777777777778,
+        "acc_lcb": 0.5808797478675842,
+        "consult": 0.0,
+        "p99_us": 16.0,
+        "rank0": true
+      }
+    ]
+  },
+  {
+    "suite": "harness_routing",
+    "registered": "A0",
+    "rows": [
+      {
+        "arm": "A0",
+        "cal_acc": 0.8125,
+        "acc_lcb": 0.6043585538864136,
+        "consult": 0.0,
+        "p99_us": 15.0,
+        "rank0": true
+      }
+    ]
+  },
+  {
+    "suite": "harness_sensitivity",
+    "registered": "A0",
+    "rows": [
+      {
+        "arm": "A0",
+        "cal_acc": 0.8,
+        "acc_lcb": 0.615591824054718,
+        "consult": 0.0,
+        "p99_us": 16.0,
+        "rank0": true
+      }
+    ]
+  },
+  {
+    "suite": "harness_cache_reuse",
+    "registered": "A0",
+    "rows": [
+      {
+        "arm": "A0",
+        "cal_acc": 0.75,
+        "acc_lcb": 0.5630236864089966,
+        "consult": 0.0,
+        "p99_us": 17.0,
+        "rank0": true
+      }
+    ]
+  }
+]

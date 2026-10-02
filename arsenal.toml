@@ -141,3 +141,58 @@ file    = "code_fixtures_nbsvm_v2.bin"   # presence-bag convention + the MultiQu
 posture = { arm = "A1" }                                          # best measured AND T2-certified (Bench 028: 0.5625 vs A0 0.3750, +18.75 pt, paired LB95 +0.0021 > 0 at n=32 — thin, disclosed; G1 PASS platt 0.1519 vs floor 0.3430). Still trails the paw 0.6250 vs-best bar (−6.25 pt) — the tie with Reflex is broken, the suite stays unsold under the amended law
 pin_keys = []
 budget  = { load = "eager", max_payload_mb = 16 }
+
+# ── the six harness families — FULL-COVERAGE SERVING (owner call 2026-10-02) ──
+# "run Rethink.exe or api -> get the result": the binary serves EVERY
+# board suite. These six rows carry NO digest — the artifact-less A0
+# posture (ReflexOnly, the G0a first-class arm): the modelless tier IS
+# the served arm, which is exactly the best-measured serving law's
+# verdict here. Issue 008 T8 dropped the families from the SPECIALIST
+# lane (n=12–16 template-shared evals — a trained win would be
+# unfalsifiable memorization; Bench 011 seats A0 0.375–0.500, Bench 016
+# seats cache_reuse A0 0.9167) — that scope decision was never a refusal
+# to serve: A0 is the argmax by the same law that serves emotion/xnli.
+# The specialist lane re-opens only with a larger template-disjoint eval
+# (the recorded condition).
+
+[[vessel]]
+suite   = "harness_visibility"
+class   = "hosted_only"
+posture = { arm = "A0" }                                          # best measured IS A0 0.3750 (Bench 011; n=16 template-shared — no defensible specialist, unfalsifiable-memorization scope)
+pin_keys = []
+budget  = { load = "eager", max_payload_mb = 16 }
+
+[[vessel]]
+suite   = "harness_permissions"
+class   = "hosted_only"
+posture = { arm = "A0" }                                          # best measured IS A0 0.4167 (Bench 011; n=12 template-shared)
+pin_keys = []
+budget  = { load = "eager", max_payload_mb = 16 }
+
+[[vessel]]
+suite   = "harness_tool_fit"
+class   = "hosted_only"
+posture = { arm = "A0" }                                          # best measured IS A0 0.5000 (Bench 011; n=12 template-shared)
+pin_keys = []
+budget  = { load = "eager", max_payload_mb = 16 }
+
+[[vessel]]
+suite   = "harness_routing"
+class   = "hosted_only"
+posture = { arm = "A0" }                                          # best measured IS A0 0.4375 (Bench 011; n=16 template-shared)
+pin_keys = []
+budget  = { load = "eager", max_payload_mb = 16 }
+
+[[vessel]]
+suite   = "harness_sensitivity"
+class   = "hosted_only"
+posture = { arm = "A0" }                                          # best measured IS A0 0.4000 (Bench 011; n=15 template-shared)
+pin_keys = []
+budget  = { load = "eager", max_payload_mb = 16 }
+
+[[vessel]]
+suite   = "harness_cache_reuse"
+class   = "hosted_only"
+posture = { arm = "A0" }                                          # best measured IS A0 0.9167 (Bench 016/072 — reflex Issue 045's authored 12-doc reuse corpus; n=12)
+pin_keys = []
+budget  = { load = "eager", max_payload_mb = 16 }

@@ -72,6 +72,16 @@ const VERSION: &str = env!("CARGO_PKG_VERSION");
 /// measured posture (extra-cap 128/label, reflex bench 091).
 const SYNTH_EXTRA_CAP: usize = 128;
 
+/// The lane's tag digest: the manifest row's pinned artifact digest, or —
+/// for an artifact-less A0 row — the suite name's BLAKE3 (the stable lane
+/// identity where no artifact exists). The ONE expression both the slot's
+/// birth tag and the loader's install tag use, so the epoch gate sees the
+/// same digest on both sides (a fork refusal here is a bug, not a gate).
+fn lane_tag_digest(row: &riir_instinct::arsenal::VesselRow, suite: &str) -> [u8; 32] {
+    row.digest_bytes()
+        .unwrap_or_else(|| *blake3::hash(suite.as_bytes()).as_bytes())
+}
+
 fn main() {
     let mut datasets_dir = std::env::var("INSTINCT_DATASETS_DIR")
         .unwrap_or_else(|_| "../riir-reflex/.raw/datasets_t20k".into());
@@ -364,7 +374,7 @@ fn main() {
             .unwrap_or_else(|| die(&format!("suite {s}: vanished from the validated manifest")));
         let tag = EpochTag {
             epoch: 0,
-            digest: row.digest_bytes().unwrap_or([0u8; 32]),
+            digest: lane_tag_digest(row, s),
         };
         let st = if row.budget.load == "lazy" {
             LaneState::Unloaded { applied: tag }
@@ -528,6 +538,12 @@ fn load_lane(
     };
     #[cfg(feature = "vessel")]
     if let Some(cfg) = ctx.vessel.as_ref() {
+        if row.digest.is_none() {
+            return Err(format!(
+                "suite {suite}: the row carries no artifact digest — the vessel lane loads \
+                 artifacts only (an artifact-less A0 row is a raw-posture row)"
+            ));
+        }
         let name = artifact
             .map(str::to_string)
             .unwrap_or_else(|| row.artifact_file(format!("{suite}_v1.vessel")));
@@ -548,6 +564,20 @@ fn load_lane(
             server,
             artifact_digest: digest,
             facts: Some(facts),
+        });
+    }
+    // The artifact-less A0 posture (owner 2026-10-02 full-coverage
+    // serving): the row pins no digest, so the lane boots the seat engine
+    // alone — HybridLane::ReflexOnly, byte-identical to A0. The epoch tag
+    // digest is `lane_tag_digest`'s suite-name BLAKE3 — the same value the
+    // slot's birth tag carries, so the install is the idempotent no-op.
+    if row.digest.is_none() {
+        let server = AnySuiteServer::boot_a0_from_seat(suite, seat, &ctx.manifest)?;
+        return Ok(LoadedLane {
+            server,
+            artifact_digest: lane_tag_digest(row, suite),
+            #[cfg(feature = "vessel")]
+            facts: None,
         });
     }
     let name = artifact
@@ -1015,6 +1045,7 @@ fn healthz(state: &SrvState) -> String {
             entry.insert("source".into(), serde_json::json!(match meta.source {
                 riir_instinct::server::WeightSource::RawWinner => "raw_winner",
                 riir_instinct::server::WeightSource::Vessel => "vessel",
+                riir_instinct::server::WeightSource::ReflexOnly => "reflex_only",
             }));
             entry.insert("labels".into(), serde_json::json!(meta.labels));
             entry.insert("artifact_labels".into(), serde_json::json!(meta.artifact_labels));
@@ -1465,6 +1496,23 @@ fn swap_edge(stream: &mut TcpStream, srv: &Arc<SrvState>, body: &[u8], cors: Opt
         return;
     };
     let suite = slot.suite;
+    // An artifact-less A0 row has nothing to hot-swap (owner 2026-10-02
+    // full-coverage serving): the lane IS the modelless tier, and a
+    // posture change is a manifest edit — posture-as-data, never a
+    // runtime artifact push onto a row that pins no digest.
+    if srv.ctx.manifest.row(suite).is_some_and(|r| r.digest.is_none()) {
+        json_error(
+            stream,
+            "400 Bad Request",
+            "bad_field",
+            &format!(
+                "suite {suite:?}: the row carries no artifact digest (artifact-less A0) — \
+                 nothing to swap; change the posture in the arsenal manifest",
+            ),
+            cors,
+        );
+        return;
+    }
     if req.artifact.is_empty()
         || req.artifact.contains('/')
         || req.artifact.contains('\\')

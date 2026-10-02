@@ -61,8 +61,16 @@ pub struct ArsenalManifest {
 pub struct VesselRow {
     /// The served suite (the reflex harness seat name).
     pub suite: String,
-    /// `"blake3:<64 hex>"` of the artifact file this row loads.
-    pub digest: String,
+    /// `"blake3:<64 hex>"` of the artifact file this row loads. OPTIONAL
+    /// and only on an `A0` row: an artifact-less A0 row (digest key
+    /// omitted) boots the seat engine alone — `HybridLane::ReflexOnly`,
+    /// the G0a first-class arm — the full-coverage serving posture
+    /// (owner 2026-10-02: the binary serves every board suite; where no
+    /// defensible specialist exists the modelless tier IS the served
+    /// arm, per the best-measured serving law). Any arm other than A0
+    /// with no digest refuses at validation — posture-as-data, never a
+    /// defaulted artifact.
+    pub digest: Option<String>,
     /// `"public_release" | "hosted_only"` — the hosted lane refuses
     /// `public_release` rows loud (the moat law).
     pub class: String,
@@ -265,6 +273,20 @@ impl ArsenalManifest {
             format!("{}_winner_v1.bin", row.suite)
         });
         let path = dir.join(&name);
+        if row.digest.is_none() {
+            // The artifact-less A0 posture: nothing on disk to check — and
+            // an artifact FILE present under an artifact-less row is drift
+            // (the row says the modelless tier serves; a winner file beside
+            // it says something used to). Loud, never a silent ignore.
+            if path.exists() {
+                return Err(format!(
+                    "suite {:?}: the row carries no digest (artifact-less A0) but artifact \
+                     {name} exists on disk — delete it or pin its digest and seat an arm",
+                    row.suite
+                ));
+            }
+            return Ok(());
+        }
         if !path.exists() {
             return Ok(());
         }
@@ -284,8 +306,9 @@ impl ArsenalManifest {
         let actual = blake3::hash(&bytes).to_hex();
         let pinned = row
             .digest
-            .strip_prefix(DIGEST_TAG)
-            .expect("digest format validated");
+            .as_deref()
+            .and_then(|d| d.strip_prefix(DIGEST_TAG))
+            .expect("digest presence + format validated");
         if actual.as_str() != pinned {
             return Err(format!(
                 "suite {:?}: digest: artifact {name} is {DIGEST_TAG}{actual} but the manifest \
@@ -309,7 +332,18 @@ impl VesselRow {
         if self.suite.trim().is_empty() {
             return Err("suite: empty".into());
         }
-        validate_digest_format(&self.digest)?;
+        match &self.digest {
+            Some(d) => validate_digest_format(d)?,
+            None => {
+                if self.posture.to_arm()? != Arm::A0 {
+                    return Err(format!(
+                        "digest: absent on an {} row — only an A0 row may boot artifact-less \
+                         (ReflexOnly, the G0a arm); every other arm loads an artifact",
+                        self.posture.to_arm()?.name()
+                    ));
+                }
+            }
+        }
         match self.class.as_str() {
             "hosted_only" => {}
             "public_release" => {
@@ -372,7 +406,7 @@ impl VesselRow {
     /// that consume it still handle it honestly.
     #[must_use]
     pub fn digest_bytes(&self) -> Option<[u8; 32]> {
-        let hex = self.digest.strip_prefix(DIGEST_TAG)?;
+        let hex = self.digest.as_deref()?.strip_prefix(DIGEST_TAG)?;
         if hex.len() != 64 {
             return None;
         }
@@ -591,7 +625,7 @@ mod tests {
     }
 
     #[test]
-    fn embedded_default_parses_with_the_nine_suites() {
+    fn embedded_default_parses_with_the_fifteen_suites() {
         let m = ArsenalManifest::embedded_default().expect("embedded manifest parses");
         let suites: Vec<&str> = m.suites().collect();
         assert_eq!(
@@ -605,10 +639,65 @@ mod tests {
                 "xnli_en",
                 "prompt_injections",
                 "typed_decisions",
-                "code_fixtures"
+                "code_fixtures",
+                // The six harness families — the artifact-less A0 posture
+                // (owner 2026-10-02 full-coverage serving: the binary
+                // serves every board suite; the modelless tier IS the
+                // served arm there, per the best-measured law).
+                "harness_visibility",
+                "harness_permissions",
+                "harness_tool_fit",
+                "harness_routing",
+                "harness_sensitivity",
+                "harness_cache_reuse"
             ]
         );
-        assert_eq!(m.rows().len(), 9);
+        assert_eq!(m.rows().len(), 15);
+    }
+
+    #[test]
+    fn family_rows_are_artifact_less_a0() {
+        // The full-coverage serving posture: the six family rows pin no
+        // digest (the modelless tier serves), are A0, hosted_only, eager.
+        let m = ArsenalManifest::embedded_default().expect("embedded manifest parses");
+        for suite in [
+            "harness_visibility",
+            "harness_permissions",
+            "harness_tool_fit",
+            "harness_routing",
+            "harness_sensitivity",
+            "harness_cache_reuse",
+        ] {
+            let row = m
+                .row(suite)
+                .unwrap_or_else(|| panic!("{suite} missing from the embedded manifest"));
+            assert!(row.digest.is_none(), "{suite}: must carry no digest");
+            assert_eq!(
+                row.posture.to_arm().expect("posture arm"),
+                Arm::A0,
+                "{suite}: must be A0"
+            );
+            assert_eq!(row.class, "hosted_only");
+            assert_eq!(row.budget.load, "eager");
+        }
+        // And the INVARIANT direction: a non-A0 row with no digest is a
+        // validation refusal (posture-as-data, never a defaulted
+        // artifact).
+        let winners = std::path::Path::new("/nonexistent-winners");
+        let bad = ArsenalManifest::parse(
+            "[[vessel]]\
+             suite = \"xnli_en\"\
+             class = \"hosted_only\"\
+             posture = { arm = \"A1\" }\
+             pin_keys = []\
+             budget = { load = \"eager\", max_payload_mb = 16 }\
+             ",
+        )
+        .and_then(|m| m.validate(&ValidateCtx::raw(winners)));
+        assert!(
+            bad.is_err(),
+            "a non-A0 row without a digest must refuse validation"
+        );
     }
 
     #[test]
