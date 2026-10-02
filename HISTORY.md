@@ -438,7 +438,38 @@ both mirrors by reflex-site's `scripts/render_tetris_flows.py` (viewBox
   arm in `instinct_specialist::suite_row`. Re-opens ride a CLASS upgrade
   (encoder features or a distill lane that beats the named lane's class),
   never another bag sweep.
-# HISTORY — riir-instinct
+# HISTORY.md — riir-instinct
+
+## 2026-10-02 — the m3 serve plane repaired: the typed t20k pool + the code_fixtures winner recovered byte-exact
+
+Two local-serve failures left by the Bench-049 session ("both lanes fail loud") are
+fixed — no product code changed, this was all data-plane:
+
+- **typed_decisions**: `datasets_t20k/typed_decisions` was the stale 800-row envelope;
+the slice guard's 960-row floor (reflex Issue 058) refused it at seat boot. Synced the
+four unfetched train pages (008-011) from `riir-train/.raw/datasets_typed_full` (==
+reflex canonical, byte-verified) — the pool is now the full 1200-row pull the manifest's
+full-pool posture expects. Live: lane ready at H2, winner blake3 `7f7a39e1…` verified.
+- **code_fixtures**: `code_fixtures_nbsvm_v2.bin` had vanished from
+`riir-train/data/instinct_specialists`. A fresh tie-break re-mint (`--holdout 56
+--bar-gap 0.0 --abs-floor 0.45 --tie-break`) reproduced the holdout metrics EXACTLY
+(0.5536, LB95 −0.0241 — the number reproduction is real) but minted DIFFERENT bytes
+(`8f24a576…`, kept as `.remint-8f24a576.bak`): the quantized artifact drifts with the
+katgpt-core path-dep tree ("determinism" here is within-binary, never cross-build —
+the T8 "determinism witness" claim was number-level, not byte-level). The ORIGINAL T8
+bytes were recovered from the 4090's copy (`scp`, blake3 == the arsenal pin
+`264714b9e7518e33…` — verified before placing). Live: lane ready at A1, digest verified
+at boot. The 4090's `code_fixtures_armA_v1.bin` was NOT pulled (serve never reads it).
+- **deploy.yaml**: the 9th winner row (code_fixtures) added — the image previously
+shipped 8 winners against a 9-row manifest; the code_fixtures seat needs NO dataset row
+(frozen fixture compiled into reflex).
+
+Verified with the prebuilt serve binary (arsenal state 9 rows, digest `cf851e27…`):
+all three booted lanes ready; a full H2 decision answered on massive_intent_en; the
+multi-question contract refused honestly on single-question bodies (the S2 law). The
+serve_gates parity replay re-run rides the reflex tree (a sibling session held
+`runner.rs`/`engine.rs` WIP mid-landing at the time — the gates red on THEIR compile,
+not ours; re-run when green).
 
 
 ## 2026-09-29 — issue-file hygiene: 010 removed (every measurable task landed; the residual is an owner decision, moved to 013)

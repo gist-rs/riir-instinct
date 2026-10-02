@@ -36,9 +36,10 @@ artifacts:
 outputs:
   # The binary (the triple appears in `from` — the plan's tripwire rule).
   - { path: serve, from: "{target_dir}/x86_64-unknown-linux-gnu/release/serve" }
-  # The eight sealed winner artifacts (riir-train Issue 576 winners + the
+  # The nine sealed winner artifacts (riir-train Issue 576 winners + the
   # Issue 578 prompt_injections winner, Plan 003's noul bridge + the Issue
-  # 581 typed_decisions re-mint, Bench 015's certified posture). The
+  # 581 typed_decisions re-mint, Bench 015's certified posture + the
+  # Issue-008 T8 code_fixtures tie-break mint, Bench 028). The
   # BLAKE3 seal is verified at lane boot. Exact rows, never the parent
   # dir — the dir also carries the armA variants, which do not ship.
   - { path: winners/ag_news_winner_v1.bin, from: ../riir-train/data/instinct_specialists/ag_news_winner_v1.bin }
@@ -49,12 +50,17 @@ outputs:
   - { path: winners/xnli_en_winner_v1.bin, from: ../riir-train/data/instinct_specialists/xnli_en_winner_v1.bin }
   - { path: winners/prompt_injections_winner_v1.bin, from: ../riir-train/data/instinct_specialists/prompt_injections_winner_v1.bin }   # Issue 578 (Bench 611, noul bridge) — serves A1, Bench 013
   - { path: winners/typed_decisions_winner_v1.bin, from: ../riir-train/data/instinct_specialists/typed_decisions_winner_v1.bin }   # Issue 581 (Bench 614 full-pool re-mint) — serves A1, Bench 015; the multi-question contract (Issue 011)
+  - { path: winners/code_fixtures_nbsvm_v2.bin, from: ../riir-train/data/instinct_specialists/code_fixtures_nbsvm_v2.bin }   # Issue-008 T8 tie-break mint (Bench 028, per-head NBSVM v2 + Presence bags) — serves A1; blake3 264714b9… (the 2026-10-02 m3 recovery pulled the T8 bytes back from the 4090 copy after the local file vanished)
   # The eight dataset suites the seat boots from. SEVEN of them are the
   # t20k bytes the published lanes carry (the Bench 002 alignment law);
   # typed_decisions ships the FULL-POOL dir instead — the 581 retrain's
   # measured posture (the arena's A0' read; the cal front is byte-
   # identical, the corpus carries the four unfetched pages). Soft dir
   # rows: per-file hashes recorded + verified, order-stable walk.
+  # code_fixtures needs NO dataset row — its seat is the BLAKE3-pinned
+  # frozen fixture compiled into reflex (code_fixtures_frozen.json); only
+  # its winner rides the image. The six harness families are synthetic
+  # in-process seats — no dataset rows either.
   - { path: datasets/ag_news, from: ../riir-reflex/.raw/datasets_t20k/ag_news, soft: true }
   - { path: datasets/emotion, from: ../riir-reflex/.raw/datasets_t20k/emotion, soft: true }
   - { path: datasets/sst5, from: ../riir-reflex/.raw/datasets_t20k/sst5, soft: true }
