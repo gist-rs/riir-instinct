@@ -1,3 +1,18 @@
+## 2026-10-02 — Bench 0051: the families wide-eval re-baseline — the serve-parity gate re-pinned on the template-disjoint populations
+
+reflex `e78c0e6` (Plan 009 REVISED-2) widened the five families' evals to 96–100-case
+template-disjoint populations, invalidating Bench 049's n=12–16 serve-parity record
+BY CONSTRUCTION. This record re-measures the A0 seat posture on the wide evals
+(0.4896 / 0.4896 / 0.4896 / 0.4479 / 0.3400 / 0.9167 — all a0_stands, the NB
+count-table lift over the raw engine is real on the fresher vocabulary), re-pins
+`served_family_decisions_are_the_frozen_a0_picks`, and documents the A0 pin split:
+leg 1 (arena == reflex run()) HELD on all six; leg 2 (the PUBLISHED site rows) is
+stale by the eval swap — `--skip-pin-a0` with the reason in the record README (the
+Bench-016 precedent); the board refreshes at the next full republish. The quarantined
+reflex-site `/families/` section consumes this record for the Rethink (hybrid) cells;
+the encoder lane stays `not run` (the riir-train heads owner call is unmade). Record:
+[Bench 0051](.benchmarks/0051_families_wide_eval/README.md).
+
 ## 2026-10-01 — Bench 041: the typed_decisions Rethink cell SEATED — the v2 arena replay reproduces 0.7550 EXACT (016 T9 complete)
 
 The seat half of 016 T9 landed (instinct `73cd6d6` + the reflex-site
