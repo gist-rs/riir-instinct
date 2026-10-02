@@ -283,3 +283,7 @@ land.
       `examples/common/tetris_puct.rs` adapter out of examples/ via the
       boundary-guard skill — do NOT write a fourth Tetris engine (three
       already exist: reflex-site JS, katgpt-rs examples, riir-reflex).
+
+---
+
+**LEVER PRE-REGISTRATION (2026-10-02, from riir-ai/.research/393 + riir-train Plan 434 — no compute, no seed read):** the NCA-critic lever (iterative local-rule critic over the raw 10×20 grid — a different model class than the rounds-1–4 stateless MLP, per arXiv:2609.36126) is pre-registered CONDITIONAL on two gates that must BOTH pass before eval-seed read #6 is spent: (a) the widened-wire precondition (T5 raw-afterstate sidecar — Bench 006 WIRE-MUST-WIDEN) — without it the raw-grid input cannot reach serve at all; (b) the serve-budget derivation (Plan 434 T1.1, HARD STOP per the round-6 ruling — no offline rescope): a priori the dense 3×3 × K-step × ~40-afterstate arithmetic prices ABOVE round 4's 3.76 ms even at C=8, so the expected verdict is NO-GO recorded arithmetic. Trainer home: riir-train `--arch nca` arm; adapter via the tetris_puct promotion path (no fourth engine).
