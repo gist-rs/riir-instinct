@@ -1,6 +1,6 @@
 # Issue 018 — Rethink encoder lane: lean + GOAT plan (lazy inheritance, shared worker, one-checkpoint typed, quantization)
 
-**Status:** OPEN — filed 2026-10-01 (owner ask after the /#sizes Rethink row landed); Claude verdict CONVERGED AGREE at round 3 (2× REVISE, all reasons folded). **Lanes B + A LANDED 2026-10-02 (Bench 0050, the 4090 box) — the daylight session executed; `serve-encoder-shared` ships opt-in (promotion rides the serving soak), lazy ENC rows legal with `eager` still the embedded default.** Addendum 2026-10-01: two-case calibration branch wired (Δ-retention breach routes through D1's existing verdict, pre-registered refit allowed first; absolute-floor tripwire lands in Lane C's pre-declared loss options for the head C retrains, narrow filing for any other head) — katgpt-rs Research 562 addendum; nothing fired, execution order unchanged.
+**Status:** OPEN — filed 2026-10-01 (owner ask after the /#sizes Rethink row landed); Claude verdict CONVERGED AGREE at round 3 (2× REVISE, all reasons folded). **Lanes B + A LANDED 2026-10-02 (Bench 0050, the 4090 box) — the daylight session executed; lazy ENC rows legal with `eager` still the embedded default. Update 10 (2026-10-02, owner-approved menu items A+B): the shared worker is PROMOTED to the serve-encoder default (the serving soak completed GREEN — the 0054 confirmation addendum; the runtime demote switch is the recorded hedge), option (iii) re-priced and DECLINED at today's shapes, and the Q4 retention probe (Lane D4) pre-registered + running (Bench 0055).** Addendum 2026-10-01: two-case calibration branch wired (Δ-retention breach routes through D1's existing verdict, pre-registered refit allowed first; absolute-floor tripwire lands in Lane C's pre-declared loss options for the head C retrains, narrow filing for any other head) — katgpt-rs Research 562 addendum; nothing fired, execution order unchanged.
 
 ## Context — the numbers that triggered this
 
@@ -64,8 +64,9 @@ semantics change below is written against that unit.
       fields; a drift fails the lane, the worker keeps serving.**
 - [x] Ship behind a GOAT feature flag; promote to default only after
       parity + RAM + mixed-load latency all pass (the promotion gates
-      below). **→ `serve-encoder-shared` (opt-in); promotion rides the
-      soak.**
+      below). **→ PROMOTED 2026-10-02 (Update 10): `serve-encoder`
+      implies `serve-encoder-shared`; the soak completed GREEN (the 0054
+      addendum) and the runtime demote switch is the recorded hedge.**
 - [x] RAM gate: measured N × 848 MB → 1 × 848 MB for the 3-suite host.
       **→ MEASURED (Bench 0050): 3 lanes / 1 checkpoint / CPU / F16 —
       per-lane 4938 MB private vs shared 1690 MB = 2.92×.**
@@ -665,3 +666,62 @@ written; the write-time re-read caught it (the AGENTS.md `ls` + re-read law), ze
 mentions moved, the highwater counter restored then advanced to 0054. The dual-allocation
 gate's lesson reproduced exactly: `.highwater` read at session START is a different timeline
 by write time in a shared worktree.
+
+**Update 10 (2026-10-02, the owner-approvals session — menu items A + B executed):**
+the owner approved exactly A (promote `serve-encoder-shared` after a green soak) and B
+(option (iii) re-price + the Q4/PQ2 retention probe); C–K stand as recorded (C and D
+explicitly not approved).
+
+**A — THE PROMOTION LANDED.** The soak ran at HEAD pre-promotion (the 0054 cell,
+`--clients 8 --rounds 40`): **GREEN** — p50 1.438× · p99 **0.368×** · RSS **3.12×** ·
+decision parity OK (PROVENANCE `power=AC load=4.94 powermode=2(high)`, the same disclosed
+class as the canonical run). The 0054 RESULTS.md now carries the ADDENDUM with both runs
+side by side (the instrument regenerates the file per run; the canonical numbers live at
+`b6d40de` and in Update 9). Every promotion gate measured green: parity (0050 cross-build
+fingerprints + through-HTTP receipt digests, twice), RAM (2.92× private at 0050 · 2.49–
+3.12× whole-process across three heavy-shape runs), mixed-load latency (p50 bounded
+1.38–1.62× across five runs — the recorded cost; p99 favorable 0.366–0.368× across FOUR
+heavy-shape runs — the product claim: the tail is what users feel under load), fairness
+(LaneGate), soak (canonical + this confirmation).
+
+The promotion itself: **`serve-encoder = ["arena-laya", "serve-encoder-shared"]`** (cargo
+unifies the two-feature cycle — `cargo metadata` green; both spellings remain valid
+closures of the same posture). The **runtime demote switch
+`RIIR_INSTINCT_ENCODER_SHARED=0`** (the exact literal, `encoder_serve.rs`) bit-restores
+the per-lane keys — byte-identical serving decisions (the 0050/0054 parity law), so the
+recorded share-weights-only FALLBACK stays dormant (the tail needs nothing) and the RSS
+cost line reads: shared is 2.5–3.1× CHEAPER, the p50 1.44–1.55× is the accepted price.
+`encoder_topology_label()` is the one label home ("shared-worker"/"per-lane"); the parity
+gate's label now reads the effective topology (feature AND env). Post-promotion gates:
+13 weight-free registry tests green at the promoted posture · clippy `-D` clean at the
+promoted, per-lane and default postures · the A/B instrument's per-lane arm sets the
+demote switch (a no-op pre-promotion, the construction post-promotion).
+
+**B — the re-price RECORDED, the probe LAUNCHED.**
+
+- **Option (iii) — the MSL MPS-replacement dense GEMM — RE-PRICED and DECLINED at
+today's shapes** (the owner-approved call; the numbers stand): Phase 2 measured
+fused/mps 1.22–2.07× on the dense cells (geo 1.42 @ m106 → 1.96 @ m1700) but
+**whole-forward 1.002× at the single-question serving shape** — a full MPS-class kernel
+rewrite buys ≈0.2% whole-forward in every lane the product serves today. T13's history
+is the risk record: we MEASURED LOSING the dense-GEMM race to MPS at F16 (−26…−44% p50);
+option (iii) is that same race with a harder kernel (fused dequant staging). The earning
+condition the plan named — long-prefill q8 serving at big m on a memory-rich host —
+exists in NO product lane today. **RE-ARM TRIGGER:** any real serving posture running q8
+at long-prefill (m ≥ ~1024 dense) on a memory-rich host re-opens (iii) with its own
+bench; until then `LAYA_Q8_DEVICE_F32=1` is the documented escape at exactly those
+postures (Plan 616's own wording — mirrored there).
+- **PQ2 — recorded as a DEPENDENCY, not a defer:** no PQ2 grid exists (the Q4 seam's
+"next format row" is unlanded), and a retention probe cannot precede its format — the
+issue already ordered it that way ("PQ2 rides the same seam as the next format row").
+Its probe is D4-shaped the day the grid lands.
+- **The Q4 retention probe (Lane D4) is PRE-REGISTERED and running** (Bench 0055):
+riir-infer gained `WeightPosture::FakeQuantQ4` (`41f7e67` — the agent arm over
+`fake_quant_q4_map`, the grid the Q4 converter already proved; values byte-identical to
+the Q4_0 artifact's decode, so the probe's verdict IS the artifact tier's retention) and
+the arena gained `--fake-quant-q4` (mutually exclusive with `--fake-quant`). Margins =
+D1's VERBATIM, declared flat before any read (the serving bar is a product constant —
+a looser Q4 bar would make the two format verdicts incomparable). The declared prior:
+Q4's grid is ~16× coarser; the likeliest failure candidates are the fine-grained heads
+(banking77, massive) — written before the read. The verdict gates ONLY the Q4 tier's
+serving eligibility; it never re-opens the Q8 adoption.

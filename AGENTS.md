@@ -162,7 +162,16 @@ the suite's serialized-state form parsed back into the envelope Value so
 by the gate's first red run at 198/600). Routing: `Arm::Enc` in
 `server.rs` (bag server refuses ENC by construction; vessel boots refuse
 ENC until T4's mint); grammar in `arsenal.rs` (ENC rows: explicit `file`,
-eager-only — a lazy ENC row is an L9 violation). **The DEFAULT manifest is
+eager-only — a lazy ENC row is an L9 violation). **Issue 018 Update 10
+(2026-10-02, owner-approved): `serve-encoder` IMPLIES `serve-encoder-shared`
+— ONE encode worker per checkpoint is the ENC default** (RAM 2.5–3.1×, p99
+0.37× under contention, byte-identical decisions; Benches 0050/0054 + the
+0054 addendum). The runtime demote switch **`RIIR_INSTINCT_ENCODER_SHARED=0`**
+(the exact literal) bit-restores per-lane keys; `encoder_topology_label()`
+is the one topology-label home. The arena's fake-quant probes:
+`--fake-quant` (Q8, Lane D1) / `--fake-quant-q4` (Q4, Lane D4 — Bench 0055
+pre-registered; the verdict gates `LAYA_WEIGHTS_VARIANT=q4` serving).
+**The DEFAULT manifest is
 UNTOUCHED** (the byte pin holds; sst5 keeps serving A1) — ENC rows are a
 GPU-host deployment surface; a build without the feature refuses an ENC
 row loud naming `--features serve-encoder` (014 still governs every CPU-

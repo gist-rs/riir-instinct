@@ -67,11 +67,22 @@ arena-laya-metal = ["arena-laya", "riir-reflex/laya-riir-metal"]
 # (Proposal 048 L9: a lazy first-route load would be L3 doing a load).
 # A GPU-HOST posture: the default CF-shaped build compiles it to nothing
 # (issue 014's serve refusal stands for every CPU-only deploy shape).
-serve-encoder = ["arena-laya"]
+# PROMOTED 2026-10-02 (issue 018 Update 10, the serving-soak promotion):
+# `serve-encoder` now IMPLIES the shared worker — one encode worker per
+# checkpoint (RAM 2.9-3.1×, p99 0.37× under contention, byte-identical
+# decisions, Benches 0050/0054 + the 0054 addendum). The demote switch
+# `RIIR_INSTINCT_ENCODER_SHARED=0` (encoder_serve.rs) bit-restores per-lane
+# at runtime; `serve-encoder-shared` below stays a valid spelling of the
+# same closure.
+serve-encoder = ["arena-laya", "serve-encoder-shared"]
 serve-encoder-metal = ["serve-encoder", "riir-reflex/laya-riir-metal"]
 serve-encoder-cuda = ["serve-encoder", "riir-reflex/laya-riir-cuda"]
 # Issue 018 Lane B: ONE encode worker per CHECKPOINT, shared by every ENC
 # lane on it (the unit of residency moves from the lane to the worker —
+# the promotion gates: parity + RAM + mixed-load latency + fairness + the
+# soak — ALL MEASURED GREEN, Benches 0050/0054 + addendum; promoted
+# 2026-10-02). The spelling remains valid standalone (it implies
+# serve-encoder; with the promotion above the two closures unify).
 # N × 848 MB → 1 × 848 MB). Opt-in until the GOAT gates pass (interleaved
 # parity + RAM + mixed-load latency + fairness); the default keeps the
 # per-lane worker (byte-identical serving, same code path).
