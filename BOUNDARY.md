@@ -1,90 +1,118 @@
 # riir-instinct — boundary contract
 
-Visibility: private
+Visibility: private TODAY; **OPENS as the public teaching product at
+Phase C** (riir-ai Proposal 052 — the owner's visibility flip is a
+personal act; `publish = false` until the fence is GREEN on the
+fresh-root export, which it is on this tree: `scripts/fence_gate.sh
+--post-split`).
 
 > The single source of truth for what may live in and depend on this repo.
 > Audited by the `boundary-guard` skill and
 > `../riir-ai/scripts/ci_boundary_contract.sh` (workspace dep graph +
 > contract honesty). Cross-repo rules LINK to their one canonical home —
-> never copied. Born 2026-09-26 per `../riir-ai/.proposals/047_riir_instinct_hybrid_decision_engine.md`.
+> never copied. Born 2026-09-26 per `../riir-ai/.proposals/047_riir_instinct_hybrid_decision_engine.md`;
+> rewritten 2026-10-03 at the Proposal-052 split carve (riir-instinct Plan 008).
 
 ## Owns
 
-**The model-based and hybrid decision lanes** ("Reflex · instinct") — the
-private, trained sibling of the public modelless engine `../riir-reflex`,
-shaped like `../riir-refine` (private product engine over public katgpt-rs):
+**The open trained-specialists decision lane** ("Reflex · instinct") — the
+teaching/product sibling of the public modelless engine `../riir-reflex`:
 
-- specialist serving: load a sealed specialist artifact (bytes, never a path
-  dep) and run its forward through `../riir-infer` loaders
+- specialist serving: load a sealed specialist artifact (bytes, never a
+  path dep) and run its forward over the PUBLIC `../riir-reflex` embed
 - the hybrid composition: the modelless lane (riir-reflex `nb_scope` count
   tables) prunes options to top-k / answers confident questions; the
   specialist decides the rest (escalation policy + calibrated confidence)
-- the HOSTED-ONLY vessel READER (the class `../riir-reflexer` deliberately
-  refuses): verify → decrypt → apply, whole-snapshot, monotonic
-- the instinct arena rows (harness lane beside modelless / laya) and the
-  hosted-lane deploy manifest (`deploy.yaml`, via `../riir-deployer`)
-- the **arsenal selection protocol** (Proposal 001 T1/T2): the
-  `arsenal.toml` manifest — the ONE suite → artifact digest → class →
-  serving posture → pins → budget surface for the hosted serving lane,
-  digest-validated at boot (drift fails loud); the hard-coded posture
-  match table and suite const it replaced are deleted, and the embedded
-  default is pinned byte-for-byte by `tests/serve_gates.rs` (law A6)
+- the **arsenal selection protocol** (the manifest grammar + laws A5–A7):
+  suite → artifact digest → class → serving posture → pins → budget,
+  digest-validated at boot (drift fails loud); the embedded default is the
+  TEACHING manifest (`data/arsenal.toml`, artifact-less A0 rows), pinned
+  byte-for-byte by `tests/serve_gates.rs` (law A6) — and the PRODUCTION
+  verdict is carried inline in the same test file, byte-pinned separately
+- the **PUBLIC-RELEASE vessel boot**: reflexer's public decode/open over
+  the operator pin table + the monotonic gate (the teaching arc's mint →
+  manifest → serve path); the HOSTED-ONLY class refuses here
+  structurally (fail-closed — the reader capability is not compiled)
+- the **lane-backend extension point** (`server::LaneBackend` +
+  `install_ext_boots` + the `AnySuiteServer::Ext` seat): the contract a
+  downstream lane class implements to seat itself; the open build ships
+  none — an ENC row refuses loud naming the seam
+- the Tetris lane (public-by-design demo heads; the trained-critic record
+  is measured-negative teaching gold)
+- the measurement-honesty instruments (`staleness.rs`, `stats.rs`) and
+  the arena/bench/serve gate suite
 
-## Does not own
+## Does not own — the moat (lives in `moat/`, the Rethink SEED)
 
 | Concern | Correct home |
 |---|---|
-| Training, distillation, the self-evolve loop, vessel MINTING + lineage store | `../riir-train` (Issue 576; Research 457 moat map) |
+| **The encoder arm** (the sealed NLEH head + live laya encode, serving + arena faces) | `moat/src/encoder_serve.rs` + `moat/src/encoder_arm.rs` → the private **riir-rethink** lane (depends on this crate; plugs in via `install_ext_boots`) |
+| **The HOSTED-ONLY vessel reader** (blake3-XOF, class gate, mint helper) | `moat/src/vessel.rs` → riir-rethink (this repo keeps the PUBLIC-RELEASE reader only) |
+| **The economy plane** (decstat capture + receipt verify + floor runner) | `moat/src/decstat*.rs`, `moat/examples/` → riir-rethink (riir-dapps keeps settlement semantics) |
+| The moat records/docs/artifacts (encoder/quant/distill benches 029–048·050–056 subset, deploy.yaml, the production arsenal.toml, .plans/002·006·007, .proposals/001, .issues/016, .deploy/) | `moat/` (see `moat/README.md`) — the private repo's whole history IS riir-rethink |
+| Training, distillation, the self-evolve loop, vessel MINTING + lineage store | `../riir-train` (Issue 576; Research 457 moat map); the trainer-module half of the carve is **deferred** (Plan 008 B4 — until riir-train Issue 607 lands + both boxes rebase) |
 | Model forward kernels, loaders, tokenizers | `../riir-infer` (public; ships loaders, not weights) |
 | The modelless engine + arena harness | `../riir-reflex` (public) |
-| The vessel FORMAT crate (public read/verify for PUBLIC-RELEASE) | `../riir-reflexer` (`reflexer-vessel`) |
+| The vessel FORMAT crate (both classes' wire format) | `../riir-reflexer` (`reflexer-vessel`; capability features split the readers) |
 | Game runtime / NPC cognition / the L0–L5 layer stack | `../riir-ai` (Proposal 047 §L0–L5) |
-| Deploy orchestration | `../riir-deployer` |
-| Settlement, decstat contribution rows, pricing | `../riir-dapps` (+ `../riir-kat` wire) |
+| Deploy orchestration (the open repo has no deploy.yaml) | `../riir-deployer`; Rethink's deploy shape is `moat/deploy.yaml` |
+| Settlement, decstat contribution rows, pricing | `../riir-dapps` (+ `../riir-kat` wire — a Rethink-only dep now) |
 
 ## May depend on
 
 | Crate | Location | Condition |
 |---|---|---|
 | katgpt-core | `../katgpt-rs/crates/katgpt-core` | `default-features = false`, features `best_belief` + `sigmoid_calibration`. Consumed: `exact_sigmoid` (the score readout, never softmax — `src/specialist.rs`), `best_belief_score` (the ε-quantile Beta LCB — the pre-registration instrument's selector, `src/stats.rs`), `SigmoidGateCalibrator` (the G1 Platt face, the arena) — measured at P3 T1/T2 (2026-09-26/27) |
-| riir-reflex | `../riir-reflex` | lib dep, features `modelless,nb_scope`; consumed: `embed::hashed_tokens_into` (the ONE tokenizer law — the specialist's training-side `events_into` is the same bytes) + the `nb_scope` tables for the hybrid composition + `harness::{suites, metrics, runner::seat}` (the seat — byte-identical questions + the deployed posture, Issue 003 T3) — measured at P3 T1/T3. **Never a dep on the harness's lane runners** (the arena calls `run()` only for the A0 drift pin) |
-| `reflexer-vessel` | `../riir-reflexer/crates/reflexer-vessel` | default features; the vessel FORMAT crate — `peek`/`PinTable`/`commitment_of` only (the reader assembles authenticity from the format crate's own primitives; its `decode` refuses HOSTED-ONLY by its own law, which is exactly why the hosted reader lives here) — measured at P4 T1–T5 (2026-09-27, `tests/vessel_gates.rs`, 7 arms). (Backtick form: the parser's convention for a non-`riir`/`katgpt`-family name.) |
-| riir-kat | `../riir-kat` | `default-features = false`, feature `kat_transport` (implies `client`); the decstat wire client (Plan 002 / Issue 004 T1–T2, lane `dec`): `kat_protocol_decstat` composer + `push_decstat` transport. Opt-in `decstat` cargo feature — default builds never resolve it. Consumed as a CLIENT: no ledger/settlement semantics here (riir-dapps owns those) — measured 2026-09-27 (`tests/decstat_gates.rs`); its `client` tier implies `account_key` → riir-auth → riir-neuron-db, which is why the root manifest carries the katgpt-rs `[patch]` table (the C7 double-resolve law — a git-reached katgpt dep compiles twice without it at this build root) |
-| katgpt-dec / katgpt-device-verify / katgpt-hla / katgpt-micro-belief / katgpt-personality / katgpt-sense / katgpt-types / katgpt-attn-match | `../katgpt-rs/crates/*` | `[patch]`-section only (the riir-auth 5856d61 convention, landed at Plan 002 T1) — unified-pin routing of the neuron-db git deps onto this working tree (the boundary gate's C7 law); NOT direct imports: no instinct module reaches for them beyond what the riir-kat → riir-auth → riir-neuron-db surface compiles |
-| katgpt-tetris | `../katgpt-rs/crates/katgpt-tetris` | the katgpt-rs substrate module the leaf law admits (the same crate public `../riir-reflexer` consumes): board sim + seeded 7-bag + garbage starts + the frozen Bench-892 champion genome — the SHARED ENGINE of the Tetris lane (Issue 009 T5/T6/T8; never a fourth engine). NOT a game runtime — the "no game crates" row targets riir-ai's game stack. Opt-in `tetris` cargo feature — default builds never resolve it. Consumed: `sim`, `lookahead::{Bag, apply, garbage_board}`, `rulebook::{Genome, Leaf, View, decide}` — measured 2026-09-27 (Bench 007/008/009, `src/tetris_lane.rs` + `src/tetris_critic.rs`) |
-| katgpt-core `karc_forecaster` | `../katgpt-rs/crates/katgpt-core` | added to the `tetris` feature's katgpt-core feature set (Issue 009 T8's modelless arm, 2026-09-27): the Plan-308 KARC fit substrate — `ChebyshevBasis` (the sealed basis) + `ridge_solve_direct_f64` (the karc re-export). Default-on upstream; here opt-in with the lane. NOT the delay-embedding forecaster — the critic arm is explicitly no-delay-ring (`src/tetris_critic.rs`) — measured Bench 009 |
-| fastrand | crates.io | version-matched `"2"` (the katgpt-core/katgpt-tetris pin — one copy compiles); the teacher-search RNG (`tetris_lane`), seeded per (seed, budget). Opt-in behind the same `tetris` feature — measured 2026-09-27 |
+| riir-reflex | `../riir-reflex` | lib dep, features `modelless,nb_scope,nb_ridge,option_cond`; consumed: `embed::hashed_tokens_into` (the ONE tokenizer law) + the `nb_scope` tables for the hybrid composition + `harness::{suites, metrics, runner::seat}` (the seat — byte-identical questions) — measured at P3 T1/T3. **Never a dep on the harness's lane runners.** The opt-in `laya-face`/`laya-face-metal` features forward `laya-riir`/`laya-riir-metal` for the arena's G2 paired face (the rename of the retired `arena-laya*` spellings) |
+| `reflexer-vessel` | `../riir-reflexer/crates/reflexer-vessel` | optional (the `vessel` feature); **public read only** — `decode`/`open`/`peek`/`PinTable`/`ApplyState`/`check_monotonic`; the HOSTED-ONLY class refuses by the format crate's own law, which is exactly why the hosted reader lives in the moat — the public boot measured at the B2 move (2026-10-03) |
+| katgpt-tetris | `../katgpt-rs/crates/katgpt-tetris` | the Tetris lane's shared engine (Issue 009 T5/T6): sim + lookahead + champion genome, opt-in `tetris` feature — never a fourth engine; NOT a game runtime. Consumed: `sim`, `lookahead`, `rulebook` — measured 2026-09-27 |
+| katgpt-core `karc_forecaster` | `../katgpt-rs/crates/katgpt-core` | in the `tetris` feature set (Issue 009 T8's modelless arm): the Plan-308 KARC fit substrate. Opt-in with the lane — measured Bench 009 |
+| fastrand | crates.io | version-matched `"2"` (one copy compiles); the teacher-search RNG. Opt-in behind `tetris` |
+| ed25519-dalek | crates.io | **dev-dependencies only** (2026-10-03, the carve): test-side vessel MINTING (`arsenal_ops`'s identity tests); the lib surface carries zero ed25519 |
+| toml | crates.io, `default-features = false`, feature `parse` | the arsenal manifest parser: schema types + boot validation in `src/arsenal.rs`; parse-only; non-optional |
+
+**Removed at the carve (2026-10-03), now moat-only deps: `riir-kat`,
+`papaya`, `ed25519-dalek` (lib), the hosted `reflexer-vessel` reader use.**
+The `[patch."https://github.com/katopz/katgpt-rs"]` table left with them
+(it existed for the riir-kat → riir-auth → riir-neuron-db git-reached
+tree; no git-URL katgpt dep remains in this graph).
 
 Next planned rows (land WITH their first consumer, each measured):
-`riir-infer` (model forward loaders, HOSTED-ONLY lane). **Never riir-ai**
-(this repo sits beside riir-ai, not downstream of it). No game crates, no
-Python, no candle.
-
-## Landed rows
-
-| Crate | Location | Condition |
-|---|---|---|
-| ed25519-dalek | crates.io, default features (the format crate pins the same line) | the signature/seal primitive behind reflexer-vessel's own ed25519-STRICT verification + the gate fixtures' minter; no other crypto dep (confidentiality is BLAKE3-XOF keystream, already in-tree) — measured at P4 (2026-09-27) |
-| papaya | crates.io | the decstat sink's lock-free counters (version-matched to the riir-auth pin already in this graph); opt-in behind the same `decstat` feature — measured 2026-09-27 |
-| toml | crates.io, `default-features = false`, feature `parse` | the arsenal manifest parser (Proposal 001 T1): schema types + boot validation in `src/arsenal.rs`; parse-only (the manifest is read, never written, by this crate); non-optional (the serving lane always resolves its selection surface) — measured 2026-09-27 |
-| katgpt-tetris | `../katgpt-rs/crates/katgpt-tetris` | the Tetris lane's shared engine (Issue 009 T5/T6, 2026-09-27): sim + lookahead + champion genome, opt-in `tetris` feature — see the May-depend-on row; the boundary contract row and the manifest landed together |
+none today. **Never riir-ai** (this repo sits beside riir-ai, not
+downstream of it). No game crates, no Python, no candle.
 
 ## Standing invariants
 
-- **Source secrecy**: private; distribution is prebuilt binaries / hosted
-  lanes only. Never `cargo publish`.
-- **Weights never enter any repo** (`.gitignore` refuses `*.vessel`, `*.bin`,
-  `*.safetensors`, `*.gguf`). HOSTED-ONLY artifacts never reach
-  uncontrolled hardware; encrypted at rest.
+- **The fence** (Research-003 amendment #3 shape): `scripts/fence_gate.sh
+  --post-split` GREEN is the open tree's precondition — no moat files, no
+  moat code references, allowlist deliberately empty. `--history` GREEN
+  (single root, zero moat paths) is the owner's pre-flip read on the
+  Phase-C export. `publish = false` until then.
+- **The moat is downstream**: Rethink depends on THIS crate and plugs lanes
+  in via `install_ext_boots` — never a fork of `server.rs`/`serve.rs`/
+  `arena.rs` (the 6.3k-line entanglement verdict).
+- **Weights never enter any repo** (`.gitignore` refuses `*.vessel`,
+  `*.bin`, `*.safetensors`, `*.gguf`; `/data/demo_specialists/` joins them
+  at the carve — Phase C mints demo winners into it).
 - **No-cheat protocol** (riir-reflex Issue 038): train rows only for any
   corpus/weights; select on held-out train; arena test split read once.
 - **No training code here** — riir-train trains, this repo consumes bytes.
+- **Demo ≠ production**: the embedded manifest serves the modelless tier
+  from a fresh clone; the production verdict is Rethink's. Teaching
+  numbers never join the board.
 
 ## Inherited boundaries (links)
 
 - Dep direction: `../riir-ai/BOUNDARY.md`
 - Public/private split: `../riir-ai/.research/003_Commercial_Open_Source_Strategy_Verdict.md`
+  (+ the 2026-10-03 amendment #3: Instinct opens, Rethink stays private)
+- The moat seed's own contract: `moat/BOUNDARY.md` (the Rethink-side rows,
+  carried at the wave)
 
 ## Drift ledger (target vs actual)
 
-**None.**
+**None.** (The carve landed with the registration one-commit-family law
+honored in-repo: BOUNDARY.md rewrite + moat/BOUNDARY.md + the manifest
+finalize are ONE push; the workspace-wide repo_set/pin-file registration
+is wave-gated — a registered-but-absent repo is an UNSEEN red in every
+population check, so the contract stays honest by registering at birth.)

@@ -29,7 +29,6 @@ use std::path::PathBuf;
 use std::process::{Child, Command, Stdio};
 
 use riir_instinct::arsenal::{ArsenalManifest, ValidateCtx};
-#[cfg(not(feature = "serve-encoder"))]
 use riir_instinct::server::AnySuiteServer;
 use riir_instinct::server::Arm;
 use riir_reflex::harness::suites::QKind;
@@ -42,8 +41,14 @@ fn datasets_dir() -> PathBuf {
     repo_root().join("../riir-reflex/.raw/datasets_t20k")
 }
 
+/// The winners dir: `INSTINCT_WINNERS_DIR` over the DEMO default (the
+/// teaching posture — a fresh clone has no winners; every data-gated gate
+/// skips loud). A dev box points the env at its winners dir; the demo
+/// winners are minted at the Phase-C open (Proposal 052).
 fn winners_dir() -> PathBuf {
-    repo_root().join("../riir-train/data/instinct_specialists")
+    std::env::var("INSTINCT_WINNERS_DIR")
+        .map(PathBuf::from)
+        .unwrap_or_else(|_| repo_root().join("data/demo_specialists"))
 }
 
 fn predictions_path() -> PathBuf {
@@ -57,19 +62,196 @@ fn massive_predictions_path() -> PathBuf {
     repo_root().join(".benchmarks/0029_massive_synth_seat/predictions.json")
 }
 
-fn embedded_manifest() -> ArsenalManifest {
-    ArsenalManifest::embedded_default().expect("the embedded arsenal manifest parses")
+/// The PRODUCTION serving verdict — the manifest that was this repo's
+/// embedded default until the Proposal-052 carve moved it into the moat
+/// (the private Rethink lane's host posture). Carried here BYTE-VERBATIM
+/// (the serving-law data and its pin survive the split; the file's own
+/// header comments predate the split — the data rows are the law). The
+/// open build's embedded default is the TEACHING manifest
+/// (`data/arsenal.toml`: artifact-less A0 rows).
+const PRODUCTION_MANIFEST_TOML: &str = r#####"# arsenal.toml — the ONE selection surface for the hosted serving lane
+# (Proposal 001 T1/T2, law A5): suite → artifact digest → class → serving
+# posture → pins → budget. Digest-validated at boot; drift fails loud and
+# names the offending row + field. The embedded copy of THIS file is the
+# DEFAULT host posture — the owner's best-measured-arm serving verdict
+# (2026-09-27, over the Bench-005 frozen read) in raw-winner mode —
+# pinned byte-for-byte by `tests/serve_gates.rs`
+# (law A6): a TOML edit reds exactly like a code edit does. A deployment
+# overrides it with `INSTINCT_ARSENAL=<path>` or `--arsenal <path>` (one
+# manifest per HOST/deployment — a vessel-mode host ships its own rows
+# with the vessels' digests; the embedded digests below are the raw
+# winner files').
+#
+# ── row fields ─────────────────────────────────────────────────────────
+# suite          the served suite (the reflex harness seat name; unique)
+# digest         "blake3:<64 hex>" of the artifact file this row loads —
+#                `<suite>_winner_v1.bin` in raw mode, the minted vessel
+#                file in vessel mode; boot refuses drift, loud
+# class          "hosted_only" — the hosted lane's only class (weights
+#                never leave controlled hardware; a "public_release" row
+#                is refused loud here — the moat law)
+# posture        the serving arm WITH its params (never a bare string):
+#                A0 | A1 | { arm="H1", top_k } | { arm="H2", beta, n_min,
+#                tau_n }. An unknown arm refuses at boot, NEVER defaulted
+#                (law A6); params must match the arm exactly.
+# pin_keys       reflexer-vessel PinTable key ids this row accepts (u32).
+#                Vessel mode requires ≥1 per row, every id must resolve
+#                against the operator pins, and the vessel's mint key-id
+#                must be one of them. Raw mode validates structure only.
+# budget.load    "eager" (boot loads the lane — the posture below) |
+#                "lazy" (NOT loaded at boot — the first decision triggers
+#                the load; POST /arsenal/release evicts it back to
+#                unloaded. Enforced by the serve registry, Proposal 001 T5)
+# budget.max_payload_mb   artifact size ceiling, MiB (the hosted cap is 16)
+# file           OPTIONAL artifact filename override (bare filename, no
+#                path separators). Default = the established convention:
+#                `<suite>_winner_v1.bin` raw / `<suite>_v1.vessel` vessel.
+#                No NEW convention is created by this manifest.
+#
+# The eight rows are the specialist suites — reflex's other dataset
+# suites have no specialist and no seat posture, so they get no row.
+# (typed_decisions' Issue 578 artifact was UNSEATABLE — Bench 014's
+# refusal — retrained over the full 1200-row pool in riir-train Issue 581
+# / Bench 614 and seated+certified in Bench 015; its serving row is the
+# multi-question contract's, Issue 011.)
+#
+# ── the serving law (owner verdict 2026-09-27) ──────────────────────
+# The SERVING selector is the BEST MEASURED ARM per suite over the frozen
+# test read (Bench 005, `.benchmarks/005_hybrid_every_suite_measured/`;
+# banking77 re-read at Bench 012 over the Issue 579 v2 winner),
+# with A0 as a candidate like any other — "pick the best decision" is
+# the product law (owner: "i dont care what arm you attach but it should
+# pick the best decision for me and get good score"). Under this law the
+# served arm is never the WORST arm by construction; where A0 is the
+# argmax (emotion, xnli) the reflex half IS the best Instinct
+# has today, and the losing specialists are the open improvement backlog
+# (Issue 008 T4/T5), not a refusal to serve.
+#
+# The T2 strict-superiority gate (paired LB95 > 0) REMAINS as the
+# ADVERTISING law — the reflex-site ✓/✗ row and the certification
+# vocabulary — not as the serving selector. ag_news H2 (+1.5 pt mean,
+# LB95 -0.0100 at n=400), sst5 A1 (+2.5 pt mean, LB95 -0.0129) and
+# banking77 H2 (+2.8 pt mean, LB95 -0.0013 at n=500, the Issue 579 nbsvm
+# v2 winner over presence bags — Bench 012) serve under best-measured
+# while still uncertified: expected value positive, downside bounded, and
+# the certification path is more questions, not a posture rollback.
+# emotion / xnli serve A0 because A0 IS the argmax there — the losing
+# specialists are the open improvement backlog (Issue 008 T4/T5), not a
+# refusal to serve.
+
+[[vessel]]
+suite   = "ag_news"
+digest  = "blake3:ec327ac30250205b2b26c6b00976f9fb50bdf44a9bcbb1d87e35c6ca06f5cf33"
+class   = "hosted_only"
+posture = { arm = "H2", beta = 0.25, n_min = 2.0, tau_n = 2.0 }      # best measured 0.8975 vs A0 0.8825 (+1.5 pt; T2 LB95 -0.0100 — uncertified, serves under best-measured; certify at T4/T5)
+pin_keys = []
+budget  = { load = "eager", max_payload_mb = 16 }
+
+[[vessel]]
+suite   = "emotion"
+digest  = "blake3:95c9d7f3314ec774d6549f1ff5db95e79146c4201d354b969e37f0d99ffe46eb"
+class   = "hosted_only"
+posture = { arm = "A0" }                                          # best measured IS A0 0.8850 (A1 0.8550 / H1 0.8775 lose — specialist backlog)
+pin_keys = []
+budget  = { load = "eager", max_payload_mb = 16 }
+
+[[vessel]]
+suite   = "sst5"
+digest  = "blake3:430558d6210737a267249500e0c3df4a0534d344752a1b4dae9a0e6952d2c001"
+class   = "hosted_only"
+posture = { arm = "A1" }                                          # best measured 0.4217 vs A0 0.3967 (+2.5 pt; T2 LB95 -0.0129 — uncertified, serves under best-measured)
+pin_keys = []
+budget  = { load = "eager", max_payload_mb = 16 }
+
+[[vessel]]
+suite   = "massive_intent_en"
+digest  = "blake3:7bc3ee385f81abc0f2a91e47f6dca08db37f9fb6cee6d48121b80e3f11378556"
+class   = "hosted_only"
+posture = { arm = "H2", beta = 1.0, n_min = 2.0, tau_n = 4.0 }    # best measured 0.8400 vs A0 0.8133 (Bench 0029, the SYNTH SEAT — Plan 426 T5/T6: corpus 11314 gold + 2048 vetoed synth, blake3 8eed806a…, posture gold-fit) — T2 LB95 -0.0039 UNCERTIFIED vs the synth A0 (the banking77 precedent: serves under best-measured); gold-seat rows were 0.8267/0.7800 (Bench 019+020)
+pin_keys = []
+budget  = { load = "eager", max_payload_mb = 16 }
+
+[[vessel]]
+suite   = "banking77"
+digest  = "blake3:693b0d6c580d035645e2af9338847d7783102be4ca24ff89ec0fd92a25743e37"
+class   = "hosted_only"
+file    = "banking77_nbsvm_v2.bin"   # the Issue 579 nbsvm v2 winner (presence-bag convention, winner_bridge) — the v1 winner_v1 file stays on disk for reproduction
+posture = { arm = "H2", beta = 2.0, n_min = 8.0, tau_n = 8.0 }    # best measured 0.8540 vs A0 0.8260 (+2.8 pt; T2 LB95 -0.0013 — uncertified, serves under best-measured; Bench 012)
+pin_keys = []
+budget  = { load = "eager", max_payload_mb = 16 }
+
+[[vessel]]
+suite   = "xnli_en"
+digest  = "blake3:76bbedfb14031771ea6296f5d5914e08f19281d0c8cf6c6eb3754ac394b76827"
+class   = "hosted_only"
+posture = { arm = "A0" }
+pin_keys = []
+budget  = { load = "eager", max_payload_mb = 16 }
+
+[[vessel]]
+suite   = "prompt_injections"
+digest  = "blake3:ee0b4eb4336299b21347a2816ed93fb50ee6b6642d2c86bb05915caf037cddd3"   # the Issue 578 T2 artifact (Bench 611's mint digest, winner name per Plan 003 T4)
+class   = "hosted_only"
+posture = { arm = "A1" }                                          # best measured AND T2-certified (Bench 013: 0.8534 vs A0 0.7672, +8.6 pt, paired LB95 +0.0082 > 0 at n=116; G1 disclosed FAIL — Platt hurts the 2-class sigmoid, raw ECE 0.0824 beats the floor)
+pin_keys = []
+budget  = { load = "eager", max_payload_mb = 16 }
+
+[[vessel]]
+suite   = "typed_decisions"
+digest  = "blake3:7f7a39e1935f8665beaf61106a84a65a0066a73fe3eee4ad7638fda0f776f2f0"   # riir-train Issue 581 / Bench 614's re-mint over the FULL 1200-row train pool
+class   = "hosted_only"
+posture = { arm = "H2", beta = 0.5, n_min = 2.0, tau_n = 2.0 }    # best measured 0.6475 vs A0' 0.5725 (+7.5 pt, T2 LB95 +0.0580 PASS) AND vs the certified A1 0.6300 (+1.75 pt, paired LB95 +0.0062 PASS) AND vs H1 (+1.4 pt, LB95 +0.0034) — Bench 020's full-pool read; G1 PASS (platt 0.0095 vs floor 0.1701). The margin source is the option-conditioned (qid, option) tables (reflex issue 038 T7b + `oc()`, riir-instinct Issue 005's precondition — typed's options are state-field values the domain tables never speak)
+pin_keys = []
+budget  = { load = "eager", max_payload_mb = 16 }
+
+[[vessel]]
+suite   = "code_fixtures"
+digest  = "blake3:264714b9e7518e33b7540b7ba7c60691651f8ec40f6eb0ec01c5af5b24ebec37"   # the Issue-008 T8 tie-break mint (riir-train instinct_v2_gate, the wave-1 per-head NBSVM shape)
+class   = "hosted_only"
+file    = "code_fixtures_nbsvm_v2.bin"   # presence-bag convention + the MultiQuestion contract, both pinned by winner_bridge (the 579 law)
+posture = { arm = "A1" }                                          # best measured AND T2-certified (Bench 028: 0.5625 vs A0 0.3750, +18.75 pt, paired LB95 +0.0021 > 0 at n=32 — thin, disclosed; G1 PASS platt 0.1519 vs floor 0.3430). Still trails the paw 0.6250 vs-best bar (−6.25 pt) — the tie with Reflex is broken, the suite stays unsold under the amended law
+pin_keys = []
+budget  = { load = "eager", max_payload_mb = 16 }
+
+# ── the six harness families — FULL-COVERAGE SERVING (owner call 2026-10-02) ──
+# "run Rethink.exe or api -> get the result": the binary serves EVERY
+# board suite. These six rows carry NO digest — the artifact-less A0
+# posture (ReflexOnly, the G0a first-class arm): the modelless tier IS
+# the served arm, which is exactly the best-measured serving law's
+# verdict here. Issue 008 T8 dropped the families from the SPECIALIST
+# lane (n=12–16 template-shared evals — a trained win would be
+# unfalsifiable memorization) — and the OWNER RETIRED the six harness
+# families outright 2026-10-02 (reflex `31b11d2`: the suites are deleted
+# from the reflex harness, at-chance on the modelless lane at the honest
+# wide-eval populations), so the six artifact-less A0 rows left this
+# manifest with them. The specialist lane re-opens only with a larger
+# template-disjoint eval (the recorded condition).
+"#####;
+
+/// The parsed production manifest (the serving-law pin's subject).
+fn production_manifest() -> ArsenalManifest {
+    ArsenalManifest::parse(PRODUCTION_MANIFEST_TOML).expect("the production manifest parses")
 }
 
-// ── face 1: the manifest byte pin (law A6) ─────────────────────────────
+/// The production manifest written to a temp file — the spawned serve
+/// binary's `INSTINCT_ARSENAL` (the bin's embedded default is the
+/// TEACHING manifest; these gates replay the PRODUCTION verdict).
+fn production_manifest_file() -> String {
+    let path = std::env::temp_dir().join(format!("instinct_arsenal_prod_{}.toml", std::process::id()));
+    std::fs::write(&path, PRODUCTION_MANIFEST_TOML).expect("write production manifest");
+    path.to_string_lossy().into_owned()
+}
 
-/// BLAKE3 over the embedded `arsenal.toml` bytes. Any edit to the
-/// manifest — a posture tweak, a digest bump, a reordered row — changes
-/// the digest and MUST re-pin here in the same change (with the GOAT
-/// re-run + frozen-predictions parity update law A6 demands). This is
-/// the TOML analogue of the compile-time posture table it replaced.
+// ── face 1a: the TEACHING manifest byte pin (law A6, the embedded default) ──
+
+/// BLAKE3 over the embedded `data/arsenal.toml` bytes (the TEACHING
+/// default: artifact-less A0 rows). Any edit — a posture tweak, a digest
+/// bump, a reordered row — changes the digest and MUST re-pin here in the
+/// same change (with the GOAT re-run + frozen-predictions parity update
+/// law A6 demands). This is the TOML analogue of the compile-time posture
+/// table it replaced.
 const PINNED_MANIFEST_DIGEST: &str =
-    "blake3:4c4356c6d31f856e1cf2665cd55ba5e7e079f07a3da0924c5eef2296eebf56f7";
+    "blake3:1eb91da47976fc5ddecd92f70dd50d0d8af5ee0192e9472c262f5cc5be1dbd57";
 
 #[test]
 fn arsenal_manifest_bytes_are_pinned_byte_for_byte() {
@@ -81,11 +263,31 @@ fn arsenal_manifest_bytes_are_pinned_byte_for_byte() {
     );
 }
 
+// ── face 1b: the PRODUCTION verdict byte pin (law A6, carried inline) ──
+
+/// The serving-law data survived the Proposal-052 split byte-identically:
+/// this is the SAME digest the manifest pinned when it was the embedded
+/// default (verified 2026-10-03 — `b3sum` over the carve's moat copy and
+/// this inline const agree). A future Rethink-side manifest edit reds
+/// HERE (the pin travels with the law, not with the repo).
+const PINNED_PRODUCTION_MANIFEST_DIGEST: &str =
+    "blake3:4c4356c6d31f856e1cf2665cd55ba5e7e079f07a3da0924c5eef2296eebf56f7";
+
+#[test]
+fn production_manifest_bytes_are_pinned_byte_for_byte() {
+    let actual = format!("blake3:{}", ArsenalManifest::digest_of(PRODUCTION_MANIFEST_TOML));
+    assert_eq!(
+        actual, PINNED_PRODUCTION_MANIFEST_DIGEST,
+        "the inline production manifest drifted — re-pin \
+         PINNED_PRODUCTION_MANIFEST_DIGEST and carry the GOAT re-run law A6 demands"
+    );
+}
+
 // ── face 2: the posture pin (the Bench-004 verdict, now as DATA) ─────
 
 #[test]
 fn manifest_posture_rows_are_the_serving_law_verdict() {
-    let m = embedded_manifest();
+    let m = production_manifest();
     // The owner's serving law (2026-09-27, "pick the best decision for
     // me"): the SERVED arm is the best measured arm per suite over the
     // frozen test read, A0 included as a candidate. ag_news serves
@@ -195,7 +397,7 @@ fn manifest_posture_rows_are_the_serving_law_verdict() {
 /// run — a skip is a deferral, never a green.
 #[test]
 fn arsenal_manifest_validates_against_the_deployment_dirs() {
-    let m = embedded_manifest();
+    let m = production_manifest();
     let winners = winners_dir();
     let ctx = ValidateCtx::raw(&winners);
     m.validate(&ctx)
@@ -225,7 +427,7 @@ fn boot_suite_synth(
 ) -> Result<riir_instinct::server::AnySuiteServer, String> {
     let datasets = datasets_dir();
     let winners = winners_dir();
-    let manifest = embedded_manifest();
+    let manifest = production_manifest();
     const SYNTH_EXTRA_CAP: usize = 128;
     let synth = synth.map(|p| p.to_path_buf());
     std::thread::Builder::new()
@@ -295,11 +497,11 @@ fn frozen_picks(suite: &str, arm_name: &str) -> Option<(Vec<usize>, Vec<bool>)> 
     frozen_picks_from(&predictions_path(), suite, arm_name)
 }
 
-/// The serving posture's arm for one suite, resolved from the embedded
+/// The serving posture's arm for one suite, resolved from the PRODUCTION
 /// manifest and rendered to its record name (Arm::name is the exact
 /// spelling the arena wrote — "H2(β=0.25,nmin=2,τ=2)" and friends).
 fn serving_arm_name(suite: &str) -> String {
-    let m = embedded_manifest();
+    let m = production_manifest();
     let row = m
         .row(suite)
         .unwrap_or_else(|| panic!("{suite}: missing from the arsenal manifest"));
@@ -659,7 +861,7 @@ fn typed_decisions_serves_the_frozen_h2_picks() {
                 "typed_decisions",
                 &datasets,
                 &winners_dir_for_tests(),
-                &embedded_manifest(),
+                &production_manifest(),
             )
         })
         .expect("spawn boot thread")
@@ -761,7 +963,7 @@ fn code_fixtures_serves_the_frozen_a1_picks() {
                 "code_fixtures",
                 &datasets,
                 &winners_dir_for_tests(),
-                &embedded_manifest(),
+                &production_manifest(),
             )
         })
         .expect("spawn boot thread")
@@ -901,12 +1103,11 @@ fn enc_posture_grammar_and_validator_rules() {
     m2.validate(&ctx).expect("a well-formed ENC row validates");
 }
 
-/// The default-build refusal: without the `serve-encoder` feature, an ENC
-/// row boots to a LOUD feature refusal — never a silent fallback to the
-/// bag lane (issue 014's serve refusal governing every CPU deploy shape).
-/// With the feature compiled in this test's subject does not exist (the
-/// lane boots for real — the parity gate covers it).
-#[cfg(not(feature = "serve-encoder"))]
+/// The no-backend refusal: the open build carries no lane backend, so an
+/// ENC row boots to a LOUD refusal naming the install seam — never a
+/// silent fallback to the bag lane (issue 014's serve refusal, carried
+/// through the Proposal-052 split: the class lives in the private
+/// Rethink lane, which installs itself via `install_ext_boots`).
 #[test]
 fn enc_row_boots_to_a_loud_feature_refusal_without_the_lane() {
     if !data_present() {
@@ -930,12 +1131,12 @@ fn enc_row_boots_to_a_loud_feature_refusal_without_the_lane() {
     let err = match out {
         Err(e) => e,
         Ok(_) => {
-            panic!("the ENC row must refuse on a build without serve-encoder — it booted instead")
+            panic!("the ENC row must refuse on the backend-less open build — it booted instead")
         }
     };
     assert!(
-        err.contains("--features serve-encoder"),
-        "the refusal must name the feature: {err}"
+        err.contains("install_ext_boots"),
+        "the refusal must name the backend install seam: {err}"
     );
 }
 
@@ -961,6 +1162,9 @@ fn spawn_server() -> ServerProc {
     let mut cmd = Command::new(&exe);
     cmd.arg("--bind").arg(format!("127.0.0.1:{port}"));
     cmd.arg("--suites").arg("ag_news");
+    // The PRODUCTION manifest (the gates replay the production verdict;
+    // the bin's embedded default is the teaching manifest).
+    cmd.env("INSTINCT_ARSENAL", production_manifest_file());
     // The CORS arm needs an allow-list.
     cmd.env("RIIR_INSTINCT_ALLOWED_ORIGIN", "https://reflex.gist.rs");
     let child = cmd
@@ -1266,10 +1470,10 @@ fn wait_suite_state(port: u16, suite: &str, want: &str, secs: u64) -> Result<(),
     Err(last)
 }
 
-/// The ag_news row of the embedded manifest, flipped to the lazy posture
-/// (the first `budget.load` in the file is ag_news's row).
+/// The ag_news row of the PRODUCTION manifest, flipped to the lazy
+/// posture (the first `budget.load` in the file is ag_news's row).
 fn lazy_ag_news_manifest() -> String {
-    riir_instinct::arsenal::EMBEDDED_MANIFEST.replacen(
+    PRODUCTION_MANIFEST_TOML.replacen(
         "budget  = { load = \"eager\", max_payload_mb = 16 }",
         "budget  = { load = \"lazy\", max_payload_mb = 16 }",
         1,
@@ -1279,8 +1483,17 @@ fn lazy_ag_news_manifest() -> String {
 #[test]
 fn arsenal_release_refuses_the_eager_posture() {
     // Data-independent: the refusal is manifest-level, before any lane
-    // state matters.
-    let srv = spawn_server_cfg(&["--suites", "ag_news"], &[]);
+    // state matters. The PRODUCTION manifest — the artifact-less A0 row of
+    // the teaching default refuses at VALIDATION whenever a winner sits at
+    // the conventional path (the posture-as-data law), so a winners-dir
+    // box needs a row that seats one.
+    let srv = spawn_server_cfg(
+        &["--suites", "ag_news"],
+        &[(
+            "INSTINCT_ARSENAL",
+            production_manifest_file().as_str(),
+        )],
+    );
     assert!(wait_bind(srv.port), "the server never bound");
     let (status, body) = http_to(
         srv.port,
@@ -1390,7 +1603,10 @@ fn arsenal_swap_monotonic_gate_over_http() {
         eprintln!("SKIP loud: datasets/winner artifacts absent");
         return;
     }
-    let srv = spawn_server_cfg(&["--suites", "ag_news"], &[]);
+    let srv = spawn_server_cfg(&["--suites", "ag_news"], &[(
+        "INSTINCT_ARSENAL",
+        production_manifest_file().as_str(),
+    )]);
     assert!(wait_bind(srv.port), "the server never bound");
     wait_suite_state(srv.port, "ag_news", "ready", 420)
         .unwrap_or_else(|b| panic!("the ag_news lane never reached ready; last healthz: {b}"));

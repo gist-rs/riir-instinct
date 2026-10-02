@@ -19,7 +19,7 @@ const PIN_CANDIDATE_FLIPS: usize = 1;
 fn winners_dir() -> PathBuf {
     std::env::var("INSTINCT_WINNERS_DIR")
         .map(PathBuf::from)
-        .unwrap_or_else(|_| PathBuf::from("../riir-train/data/instinct_specialists"))
+        .unwrap_or_else(|_| PathBuf::from("data/demo_specialists"))
 }
 
 fn side<'a>(

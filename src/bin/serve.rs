@@ -85,20 +85,13 @@ fn lane_tag_digest(row: &riir_instinct::arsenal::VesselRow, suite: &str) -> [u8;
 fn main() {
     let mut datasets_dir = std::env::var("INSTINCT_DATASETS_DIR")
         .unwrap_or_else(|_| "../riir-reflex/.raw/datasets_t20k".into());
-    let mut winners_dir = std::env::var("INSTINCT_WINNERS_DIR")
-        .unwrap_or_else(|_| "../riir-train/data/instinct_specialists".into());
+    let mut winners_dir =
+        std::env::var("INSTINCT_WINNERS_DIR").unwrap_or_else(|_| "data/demo_specialists".into());
     let mut bind = std::env::var("INSTINCT_BIND").unwrap_or_else(|_| "0.0.0.0:8080".into());
     // Plan 426 T6's serve posture: unset = the gold corpus everywhere
     // (byte-identical boots); set = suites with a present
     // `<dir>/<suite>_synth.jsonl` seat it.
     let synth_corpus_dir = std::env::var("INSTINCT_SYNTH_CORPUS_DIR").ok();
-    let vessel_dir = std::env::var("INSTINCT_VESSEL_DIR").ok();
-    let vessel_key_hex = std::env::var("INSTINCT_VESSEL_KEY_HEX").ok();
-    #[cfg(feature = "vessel")]
-    let vessel_pins_hex = std::env::var("INSTINCT_VESSEL_PINS_HEX").ok();
-    #[cfg(feature = "vessel")]
-    let state_dir =
-        std::env::var("INSTINCT_STATE_DIR").unwrap_or_else(|_| ".instinct_state".into());
     // The arsenal manifest: `INSTINCT_ARSENAL` or `--arsenal <path>`;
     // absent both, the embedded default (Proposal 001, law A5 — one
     // manifest per HOST/deployment).
@@ -145,76 +138,14 @@ fn main() {
         i += 1;
     }
 
-    // Vessel mode: INSTINCT_VESSEL_DIR set → the specialists load from
-    // HOSTED-ONLY vessels. Fail-closed configuration: the key and at
-    // least one operator pin are REQUIRED the moment the dir is set — a
-    // half-configured vessel boot must refuse, never fall back to raw
-    // winners (that would be the moat leak the class discipline exists
-    // to prevent, wearing a fallback's clothes). Runs BEFORE the bind:
-    // a misconfigured host never opens a port.
-    #[cfg(feature = "vessel")]
-    let vessel = match (&vessel_dir, &vessel_key_hex) {
-        (Some(dir), Some(key_hex)) => {
-            let key_bytes = decode_hex32(key_hex)
-                .unwrap_or_else(|| die("INSTINCT_VESSEL_KEY_HEX must be 64 hex chars (32 bytes)"));
-            let pins_hex = vessel_pins_hex.as_deref().unwrap_or("");
-            if pins_hex.trim().is_empty() {
-                die("INSTINCT_VESSEL_PINS_HEX is required in vessel mode (id:pubkey hex, comma-\n                    separated) — no compiled-in pins exist, the operator pins the mint key");
-            }
-            let mut keys: Vec<(u32, [u8; 32])> = Vec::new();
-            for pin in pins_hex.split(',') {
-                let pin = pin.trim();
-                if pin.is_empty() {
-                    continue;
-                }
-                let Some((id, hex)) = pin.split_once(':') else {
-                    die(&format!("INSTINCT_VESSEL_PINS_HEX entry {pin:?} is not id:hex"));
-                };
-                let id: u32 = id.trim().parse().unwrap_or_else(|_| {
-                    die(&format!("INSTINCT_VESSEL_PINS_HEX key-id {id:?} is not a number"))
-                });
-                let bytes = decode_hex32(hex.trim()).unwrap_or_else(|| {
-                    die(&format!("INSTINCT_VESSEL_PINS_HEX entry {id} is not 64 hex chars"))
-                });
-                keys.push((id, bytes));
-            }
-            eprintln!(
-                "[riir-instinct] vessel mode: dir {dir} · {} pin(s) · state dir {state_dir}",
-                keys.len()
-            );
-            Some(VesselConfig {
-                dir: dir.into(),
-                key: key_bytes,
-                pins: reflexer_vessel::pins_from_bytes(&keys),
-                state_dir: state_dir.into(),
-            })
-        }
-        (Some(_), None) => die(
-            "INSTINCT_VESSEL_DIR is set without INSTINCT_VESSEL_KEY_HEX — vessel mode is a\n             whole configuration (dir + key + pins), never a partial one",
-        ),
-        (None, Some(_)) => die(
-            "INSTINCT_VESSEL_KEY_HEX is set without INSTINCT_VESSEL_DIR — vessel mode is a\n             whole configuration (dir + key + pins), never a partial one",
-        ),
-        (None, None) => None,
-    };
-    #[cfg(not(feature = "vessel"))]
-    if vessel_dir.is_some() || vessel_key_hex.is_some() {
-        die(
-            "vessel env vars are set but this binary was built WITHOUT the `vessel` feature —\n             rebuild with --features vessel (the reader is opt-in by design)",
-        );
-    }
-    #[cfg(not(feature = "vessel"))]
-    struct VesselConfig;
-    #[cfg(not(feature = "vessel"))]
-    let vessel: Option<VesselConfig> = None;
-    #[cfg(not(feature = "vessel"))]
-    let _ = &vessel;
-
     // The arsenal manifest (Proposal 001, law A5 — the ONE selection
     // surface): parse, then validate BEFORE lanes resolve AND before the
     // bind — a manifest that refuses never opens a port. Drift (artifact
     // bytes ≠ the pinned digest), an unknown posture arm, a class the
-    // reader cannot honor: all loud here, naming the row + field.
+    // reader cannot honor: all loud here, naming the row + field. The
+    // manifest is the TEACHING default (data/arsenal.toml — artifact-less
+    // A0 rows); the production manifest lives in the Rethink lane and
+    // loads here via INSTINCT_ARSENAL / --arsenal on a Rethink host.
     let (manifest, arsenal_digest, arsenal_desc): (ArsenalManifest, String, String) =
         match &arsenal_path {
             Some(p) => {
@@ -233,16 +164,6 @@ fn main() {
             ),
         };
     let manifest = std::sync::Arc::new(manifest);
-    #[cfg(feature = "vessel")]
-    let vctx = match vessel.as_ref() {
-        Some(cfg) => riir_instinct::arsenal::ValidateCtx::vessel(
-            std::path::Path::new(&winners_dir),
-            &cfg.dir,
-            &cfg.pins,
-        ),
-        None => riir_instinct::arsenal::ValidateCtx::raw(std::path::Path::new(&winners_dir)),
-    };
-    #[cfg(not(feature = "vessel"))]
     let vctx = riir_instinct::arsenal::ValidateCtx::raw(std::path::Path::new(&winners_dir));
     manifest.validate(&vctx).unwrap_or_else(|e| {
         die(&format!(
@@ -283,105 +204,6 @@ fn main() {
         die("no suites to serve");
     }
 
-    // The lazy-ENC boot preflight (issue 018 Lane A): a lazy encoder row
-    // must refuse its config errors HERE, at boot — never on the first
-    // request. Three halves, all loud: the weights (pinned files present
-    // + digest-matching, the ACTIVE variant sidecar), the memory budget
-    // (counted per SHARED worker — distinct checkpoints × artifact bytes,
-    // never per lane), and per-row the template-vs-head class count
-    // WITHOUT a forward pass (the seat is rebuilt at the row's first
-    // load — disclosed, boot-time cost only). Compiled with the lane —
-    // the default build has no ENC lane to preflight.
-    #[cfg(feature = "serve-encoder")]
-    {
-        let enc_lazy_suites: Vec<&'static str> = suites
-            .iter()
-            .copied()
-            .filter(|s| {
-                let row = manifest.row(s).unwrap_or_else(|| {
-                    die(&format!("suite {s}: vanished from the validated manifest"))
-                });
-                row.to_arm() == Ok(riir_instinct::server::Arm::Enc) && row.budget.load == "lazy"
-            })
-            .collect();
-        if !enc_lazy_suites.is_empty() {
-            let facts = riir_instinct::encoder_serve::preflight_enc_weights()
-                .unwrap_or_else(|e| die(&format!("ENC lazy preflight: {e}")));
-            eprintln!(
-                "[riir-instinct] ENC preflight: weights ok — {} MiB at {} (variant {}, digest {})",
-                facts.bytes >> 20,
-                facts.weights_path.display(),
-                facts.variant.unwrap_or("f16"),
-                facts.digest16
-            );
-            match std::env::var("INSTINCT_ENCODER_MEM_BUDGET_MB") {
-                Ok(raw) => {
-                    let budget_mb: u64 = raw.trim().parse().unwrap_or_else(|_| {
-                        die(&format!(
-                            "INSTINCT_ENCODER_MEM_BUDGET_MB={raw:?} is not a number"
-                        ))
-                    });
-                    // Per SHARED worker: the distinct-checkpoint charge.
-                    // ONE checkpoint serves today (`ENC_CHECKPOINT_LABEL`),
-                    // so the sum is that artifact once — three english
-                    // lanes must never charge it three times.
-                    let total = facts.bytes;
-                    if total > budget_mb << 20 {
-                        die(&format!(
-                            "ENC memory budget: {} distinct checkpoint worker(s) charge {} MiB, \
-                             over INSTINCT_ENCODER_MEM_BUDGET_MB={budget_mb} — shrink the seated \
-                             ENC rows or raise the budget (device capacity is the operator's \
-                             declared ceiling; this box does not expose a portable GPU-memory \
-                             query)",
-                            1,
-                            total >> 20
-                        ));
-                    }
-                    eprintln!(
-                        "[riir-instinct] ENC preflight: memory budget ok — {} MiB charged (1 \
-                         distinct checkpoint worker) of {budget_mb} MiB",
-                        total >> 20
-                    );
-                }
-                Err(_) => {
-                    eprintln!(
-                        "[riir-instinct] ENC preflight: no INSTINCT_ENCODER_MEM_BUDGET_MB — \
-                         residency is disclosed ({} MiB/worker), not gated",
-                        facts.bytes >> 20
-                    );
-                }
-            }
-            for s in &enc_lazy_suites {
-                let row = manifest.row(s).expect("row from the validated manifest");
-                #[cfg(feature = "vessel")]
-                if vessel.is_some() {
-                    eprintln!(
-                        "[riir-instinct] ENC preflight: {s} — vessel mode: the template half \
-                         rides the first load (the head ships inside the signed vessel; \
-                         authenticity + template checks run there) — disclosed, not skipped"
-                    );
-                    continue;
-                }
-                let head_name = row.artifact_file(format!("{s}_encoder_head_v1.bin"));
-                let head_path = std::path::Path::new(&winners_dir).join(&head_name);
-                let bytes = std::fs::read(&head_path)
-                    .unwrap_or_else(|e| die(&format!("ENC preflight: read head {head_name}: {e}")));
-                let seat = riir_reflex::harness::runner::seat::prepare_seat(
-                    s,
-                    std::path::Path::new(&datasets_dir),
-                )
-                .unwrap_or_else(|e| die(&format!("ENC preflight: prepare {s} seat: {e}")));
-                let n_classes =
-                    riir_instinct::encoder_serve::preflight_enc_template(s, &bytes, &seat)
-                        .unwrap_or_else(|e| die(&format!("ENC preflight: {s}: {e}")));
-                eprintln!(
-                    "[riir-instinct] ENC preflight: {s} template ok (head {n_classes} classes) \
-                     — the seat rebuilds at the row's first load (lazy)"
-                );
-            }
-        }
-    }
-
     let listener = match TcpListener::bind(&bind) {
         Ok(l) => l,
         Err(e) => die(&format!("bind {bind}: {e}")),
@@ -401,74 +223,17 @@ fn main() {
         );
     }
 
-    // The decstat capture lane (Plan 002 / Issue 004 T1): consent-gated
-    // decision-outcome stats — Unset never pushes (the `--stats`
-    // semantics). Consent on is a WHOLE configuration: the signing key
-    // is required and a missing one refuses at boot (the vessel-mode
-    // pattern — a half-configured contributor is worse than none).
-    #[cfg(feature = "decstat")]
-    {
-        let consent = riir_instinct::decstat::consent_enabled(
-            std::env::var("RIIR_INSTINCT_STATS").ok().as_deref(),
-        );
-        if consent {
-            let key_path = std::env::var("INSTINCT_ACCOUNT_KEY").unwrap_or_else(|_| {
-                die(
-                    "RIIR_INSTINCT_STATS=on requires INSTINCT_ACCOUNT_KEY=<64-hex seed file> — \
-                     the row is signed with the account key; refusing is the honest posture",
-                )
-            });
-            let key =
-                riir_instinct::decstat::load_signing_key(&key_path).unwrap_or_else(|e| die(&e));
-            let url = std::env::var("INSTINCT_KAT_SERVICE_URL")
-                .unwrap_or_else(|_| riir_instinct::decstat::DEFAULT_SERVICE_URL.into());
-            let machine = std::env::var("INSTINCT_MACHINE_LABEL").unwrap_or_default();
-            let toolchain = format!("rustc {RUSTC_RELEASE}");
-            let sink = Arc::new(riir_instinct::decstat::DecStatSink::new());
-            riir_instinct::decstat::install(Some(Arc::clone(&sink)));
-            match riir_instinct::decstat::spawn_flusher(
-                sink,
-                key,
-                riir_instinct::decstat::FlushConfig {
-                    service_url: url.clone(),
-                    machine,
-                    toolchain,
-                },
-            ) {
-                Ok(_) => eprintln!(
-                    "[riir-instinct] decstat: on — flushing decision stats to {url} every {}s/{} decisions",
-                    riir_instinct::decstat::FLUSH_EVERY_SECS,
-                    riir_instinct::decstat::FLUSH_THRESHOLD
-                ),
-                Err(e) => die(&format!("spawn decstat flusher: {e}")),
-            }
-        } else {
-            riir_instinct::decstat::install(None);
-            eprintln!(
-                "[riir-instinct] decstat: off — decision stats are NOT contributed (set RIIR_INSTINCT_STATS=on + INSTINCT_ACCOUNT_KEY=<seed file> to opt in)"
-            );
-        }
-    }
-    #[cfg(not(feature = "decstat"))]
-    eprintln!(
-        "[riir-instinct] decstat: not compiled (build with --features decstat to enable the contribution lane)"
-    );
-
     // The registry (Proposal 001 T5/T6): one slot per requested suite.
     // Eager rows start Loading and boot their loader now; lazy rows stay
     // Unloaded — the FIRST decision triggers the load and the 503 window
     // covers it. Every slot carries its applied epoch tag from birth:
     // boot initializes epoch 0 from the manifest (the row's pinned
     // artifact digest — Proposal 001 T6).
-    #[cfg(feature = "vessel")]
-    let vessel: Arc<Option<VesselConfig>> = Arc::new(vessel);
     let ctx = Arc::new(BootCtx {
         datasets_dir,
         winners_dir,
         synth_corpus_dir,
         manifest: Arc::clone(&manifest),
-        #[cfg(feature = "vessel")]
-        vessel,
     });
     let mut slots: Vec<Arc<LaneSlot<AnySuiteServer>>> = Vec::with_capacity(suites.len());
     let mut eager: Vec<usize> = Vec::new();
@@ -538,8 +303,6 @@ struct BootCtx {
     /// byte-identical boots.
     synth_corpus_dir: Option<String>,
     manifest: Arc<ArsenalManifest>,
-    #[cfg(feature = "vessel")]
-    vessel: Arc<Option<VesselConfig>>,
 }
 
 /// The serve registry: one slot per requested suite + the boot context
@@ -585,21 +348,20 @@ fn read_bounded(path: &Path, cap: usize) -> Result<Vec<u8>, String> {
     Ok(buf)
 }
 
-/// What a successful load hands the installer: the serving server, the
-/// artifact bytes' BLAKE3 (the epoch tag's digest half — the same
-/// quantity the manifest row pins), and (vessel mode) the vessel facts
-/// the host persists after a full install.
+/// What a successful load hands the installer: the serving server and
+/// the artifact bytes' BLAKE3 (the epoch tag's digest half — the same
+/// quantity the manifest row pins).
 struct LoadedLane {
     server: AnySuiteServer,
     artifact_digest: [u8; 32],
-    #[cfg(feature = "vessel")]
-    facts: Option<riir_instinct::server::VesselFacts>,
 }
 
 /// Load one suite's lane: the seat (datasets) + the artifact (the row's
 /// file, or the swap's explicit artifact), read ONCE and built from those
-/// bytes. Vessel mode when configured (fail-closed — no raw-winner
-/// fallback inside vessel mode), else the raw sealed winners.
+/// bytes — the raw sealed winners (or the artifact-less A0 posture).
+/// (The PUBLIC-RELEASE vessel lane rides the same boot_* calls via a
+/// manifest that names vessel rows; the hosted Rethink lane lives
+/// downstream.)
 fn load_lane(
     ctx: &BootCtx,
     suite: &'static str,
@@ -642,36 +404,6 @@ fn load_lane(
             riir_reflex::harness::runner::seat::prepare_seat(suite, Path::new(&ctx.datasets_dir))?
         }
     };
-    #[cfg(feature = "vessel")]
-    if let Some(cfg) = ctx.vessel.as_ref() {
-        if row.digest.is_none() {
-            return Err(format!(
-                "suite {suite}: the row carries no artifact digest — the vessel lane loads \
-                 artifacts only (an artifact-less A0 row is a raw-posture row)"
-            ));
-        }
-        let name = artifact
-            .map(str::to_string)
-            .unwrap_or_else(|| row.artifact_file(format!("{suite}_v1.vessel")));
-        let path = cfg.dir.join(&name);
-        let bytes = read_bounded(&path, reflexer_vessel::PREFIX_LEN.saturating_add(cap))?;
-        let digest = *blake3::hash(&bytes).as_bytes();
-        let applied = read_applied(&cfg.state_dir, suite);
-        let (server, facts) = AnySuiteServer::boot_vessel_bytes(
-            suite,
-            seat,
-            &bytes,
-            &ctx.manifest,
-            &cfg.pins,
-            &cfg.key,
-            &applied,
-        )?;
-        return Ok(LoadedLane {
-            server,
-            artifact_digest: digest,
-            facts: Some(facts),
-        });
-    }
     // The artifact-less A0 posture (owner 2026-10-02 full-coverage
     // serving): the row pins no digest, so the lane boots the seat engine
     // alone — HybridLane::ReflexOnly, byte-identical to A0. The epoch tag
@@ -682,26 +414,15 @@ fn load_lane(
         return Ok(LoadedLane {
             server,
             artifact_digest: lane_tag_digest(row, suite),
-            #[cfg(feature = "vessel")]
-            facts: None,
         });
     }
     let name = artifact
         .map(str::to_string)
         .unwrap_or_else(|| row.artifact_file(format!("{suite}_winner_v1.bin")));
     // The raw-mode convention coupling (Issue 579): a bridged suite loads
-    // EXACTLY its bridged file, loud refusal otherwise. RAW-mode BAG rows
-    // only — the ENC lane's head is NOT a suite winner (the bag-convention
-    // coupling guards nothing here; the lane's own template guards own its
-    // artifact), so the skip mirrors server.rs's ENC route. Without it, a
-    // banking77 ENC row (head ≠ the bridged banking77_nbsvm_v2.bin) could
-    // never boot through the serve binary — the parity gates bypass
-    // load_lane, which is why the class survived 016 AND the Lane B/A
-    // landing (found by the duplicate session's Lane A trigger-path read,
-    // 2026-10-02).
-    if row.to_arm() != Ok(riir_instinct::server::Arm::Enc) {
-        riir_instinct::specialist::check_winner_file(suite, &name)?;
-    }
+    // EXACTLY its bridged file, loud refusal otherwise (bag rows only —
+    // the bridge's own law).
+    riir_instinct::specialist::check_winner_file(suite, &name)?;
     let path = Path::new(&ctx.winners_dir).join(&name);
     let bytes = read_bounded(&path, cap)?;
     let digest = *blake3::hash(&bytes).as_bytes();
@@ -709,8 +430,6 @@ fn load_lane(
     Ok(LoadedLane {
         server,
         artifact_digest: digest,
-        #[cfg(feature = "vessel")]
-        facts: None,
     })
 }
 
@@ -840,14 +559,6 @@ fn run_loader(state: &Arc<SrvState>, idx: usize) {
                 meta.source,
                 tag.epoch,
             );
-            // Persist AFTER the suite is fully up — a boot failure must
-            // not advance the vessel lineage gate.
-            #[cfg(feature = "vessel")]
-            if let (Some(cfg), Some(facts)) = (state.ctx.vessel.as_ref(), lane.facts.as_ref()) {
-                if let Err(e) = write_applied(&cfg.state_dir, suite, facts) {
-                    eprintln!("[riir-instinct] lane {suite}: persist applied state: {e}");
-                }
-            }
         }
         Err(e) => {
             let msg = format!("swap gate refused install: {e}");
@@ -855,78 +566,6 @@ fn run_loader(state: &Arc<SrvState>, idx: usize) {
             slot.fail(msg);
         }
     }
-}
-
-/// The vessel-boot configuration (vessel feature only) — dir + key +
-/// pins, always together.
-#[cfg(feature = "vessel")]
-struct VesselConfig {
-    dir: std::path::PathBuf,
-    key: [u8; 32],
-    pins: reflexer_vessel::PinTable,
-    state_dir: std::path::PathBuf,
-}
-
-/// Decode 64 hex chars into 32 bytes (None on any malformed input).
-#[cfg(feature = "vessel")]
-fn decode_hex32(s: &str) -> Option<[u8; 32]> {
-    let s = s.trim();
-    if s.len() != 64 {
-        return None;
-    }
-    let mut out = [0u8; 32];
-    for (i, b) in out.iter_mut().enumerate() {
-        *b = u8::from_str_radix(&s[i * 2..i * 2 + 2], 16).ok()?;
-    }
-    Some(out)
-}
-
-/// The persisted monotonic-apply state for one suite: `<state_dir>/
-/// applied_<suite>.json` — `{"artifact_version": u64, "commitment": hex}`.
-/// Absent/corrupt = genesis (0) — a corrupt state file must NOT read as
-/// a high version (that would refuse every legitimate successor).
-#[cfg(feature = "vessel")]
-fn read_applied(state_dir: &std::path::Path, suite: &str) -> riir_instinct::vessel::AppliedState {
-    let p = state_dir.join(format!("applied_{suite}.json"));
-    #[derive(serde::Deserialize)]
-    struct AppliedFile {
-        artifact_version: u64,
-    }
-    std::fs::read_to_string(&p)
-        .ok()
-        .and_then(|s| serde_json::from_str::<AppliedFile>(&s).ok())
-        .map(|f| riir_instinct::vessel::AppliedState {
-            artifact_version: f.artifact_version,
-        })
-        .unwrap_or(riir_instinct::vessel::AppliedState::GENESIS)
-}
-
-/// Persist the applied state AFTER a fully successful boot.
-#[cfg(feature = "vessel")]
-fn write_applied(
-    state_dir: &std::path::Path,
-    suite: &str,
-    facts: &riir_instinct::server::VesselFacts,
-) -> Result<(), String> {
-    std::fs::create_dir_all(state_dir).map_err(|e| format!("state dir: {e}"))?;
-    let doc = serde_json::json!({
-        "artifact_version": facts.artifact_version,
-        "commitment": facts.commitment_hex,
-        "parent_commitment": hex32(&facts.parent_commitment),
-    });
-    let p = state_dir.join(format!("applied_{suite}.json"));
-    std::fs::write(&p, serde_json::to_string_pretty(&doc).unwrap_or_default())
-        .map_err(|e| format!("write {}: {e}", p.display()))
-}
-
-#[cfg(feature = "vessel")]
-fn hex32(b: &[u8; 32]) -> String {
-    let mut s = String::with_capacity(64);
-    for byte in b {
-        use std::fmt::Write as _;
-        let _ = write!(s, "{byte:02x}");
-    }
-    s
 }
 
 fn allowed_origins() -> Vec<String> {
@@ -1453,11 +1092,6 @@ fn decide_edge(stream: &mut TcpStream, srv: &Arc<SrvState>, body: &[u8], cors: O
                 &serde_json::to_string(&doc).unwrap_or_else(|_| "{\"error\":\"serialize\"}".into()),
                 cors,
             );
-            // The capture is AFTER the response is written — the decide
-            // path's latency never sees it, and a capture panic (none
-            // expected; the sink is infallible) could not eat a reply.
-            #[cfg(feature = "decstat")]
-            riir_instinct::decstat::record(d.suite, &d.arm, d.abstained);
         }
         Ok(MultiDecision::Many(decisions)) => {
             let wire = wire_questions.as_deref().unwrap_or_default();
@@ -1502,10 +1136,6 @@ fn decide_edge(stream: &mut TcpStream, srv: &Arc<SrvState>, body: &[u8], cors: O
                 &serde_json::to_string(&doc).unwrap_or_else(|_| "{\"error\":\"serialize\"}".into()),
                 cors,
             );
-            #[cfg(feature = "decstat")]
-            for d in &decisions {
-                riir_instinct::decstat::record(d.suite, &d.arm, d.abstained);
-            }
         }
         Err(e) => {
             // The bridge refusal + empty state + duplicate options — the
@@ -1727,20 +1357,9 @@ fn swap_edge(stream: &mut TcpStream, srv: &Arc<SrvState>, body: &[u8], cors: Opt
     // The raw-mode convention coupling (Issue 579): a bridged suite only
     // ever swaps in its bridged winner — any other artifact would serve
     // the suite's bag convention over weights not trained under it.
-    // Vessel files carry their own naming convention and skip this (the
-    // vessel lane is cfg'd; a banking77 vessel must be re-minted from the
-    // v2 artifact by its producer).
-    #[cfg(not(feature = "vessel"))]
     if let Err(e) = riir_instinct::specialist::check_winner_file(suite, &req.artifact) {
         json_error(stream, "400 Bad Request", "bad_field", &e, cors);
         return;
-    }
-    #[cfg(feature = "vessel")]
-    if srv.ctx.vessel.is_none() {
-        if let Err(e) = riir_instinct::specialist::check_winner_file(suite, &req.artifact) {
-            json_error(stream, "400 Bad Request", "bad_field", &e, cors);
-            return;
-        }
     }
     let Some(row) = srv.ctx.manifest.row(suite) else {
         json_error(
@@ -1753,12 +1372,6 @@ fn swap_edge(stream: &mut TcpStream, srv: &Arc<SrvState>, body: &[u8], cors: Opt
         return;
     };
     let cap = (row.budget.max_payload_mb << 20) as usize;
-    #[cfg(feature = "vessel")]
-    let cap = if srv.ctx.vessel.is_some() {
-        reflexer_vessel::PREFIX_LEN.saturating_add(cap)
-    } else {
-        cap
-    };
     // Single read: these exact bytes are hashed for the digest half of
     // the tag AND handed to the loader.
     let artifact_path = artifact_path_for(srv, &req.artifact);
@@ -1843,12 +1456,6 @@ fn swap_edge(stream: &mut TcpStream, srv: &Arc<SrvState>, body: &[u8], cors: Opt
     }
     match slot.install_ready(lane.server, tag, centroid, req.force) {
         Ok(outcome) => {
-            #[cfg(feature = "vessel")]
-            if let (Some(cfg), Some(facts)) = (srv.ctx.vessel.as_ref(), lane.facts.as_ref()) {
-                if let Err(e) = write_applied(&cfg.state_dir, suite, facts) {
-                    eprintln!("[riir-instinct] arsenal: {suite}: persist applied state: {e}");
-                }
-            }
             use riir_instinct::arsenal_ops::InstallOutcome;
             let status = match outcome {
                 InstallOutcome::Advanced => "advanced",
@@ -1872,13 +1479,8 @@ fn swap_edge(stream: &mut TcpStream, srv: &Arc<SrvState>, body: &[u8], cors: Opt
     }
 }
 
-/// The swap artifact's path: the vessels dir in vessel mode, the winners
-/// dir in raw mode — the row's own directory either way.
+/// The swap artifact's path: the winners dir (the row's own directory).
 fn artifact_path_for(srv: &SrvState, artifact: &str) -> std::path::PathBuf {
-    #[cfg(feature = "vessel")]
-    if let Some(cfg) = srv.ctx.vessel.as_ref() {
-        return cfg.dir.join(artifact);
-    }
     std::path::Path::new(&srv.ctx.winners_dir).join(artifact)
 }
 

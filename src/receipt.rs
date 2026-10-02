@@ -12,10 +12,10 @@
 //! `OUT_DIR/build_stamp.rs` — the same file the serve bin includes, so
 //! the lib and the bin fingerprint byte-identically by construction.
 //!
-//! Pure, ungated: the only consumers today are the serve binary (the
-//! `/decide` receipt) and the decstat-gated verify lane — the items
-//! unused at default features carry a targeted `allow(dead_code)`
-//! naming that fact, never a blanket module allow.
+//! Pure, ungated: the only consumer is the serve binary (the `/decide`
+//! receipt) — the manifest-fingerprint and wire-decoder helpers the moat
+//! plane's submitter/verifier shared moved with the Rethink lane (git
+//! history at the carve commit carries them verbatim).
 
 include!(concat!(env!("OUT_DIR"), "/build_stamp.rs"));
 
@@ -23,7 +23,6 @@ use std::sync::OnceLock;
 
 /// The build fingerprint — BLAKE3 over the toolchain + feature-set
 /// stamp (the receipt's build half; Proposal 014 §4). 16 hex chars.
-#[cfg_attr(not(feature = "decstat"), allow(dead_code))] // bin-side consumer at default features
 #[must_use]
 pub fn fingerprint() -> String {
     static FP: OnceLock<String> = OnceLock::new();
@@ -49,7 +48,6 @@ pub fn fingerprint() -> String {
 /// (64 hex chars). The NUL separators are load-bearing: they keep
 /// `(state="ab", options=["c"])` distinct from `(state="a",
 /// options=["bc"])`.
-#[cfg_attr(not(feature = "decstat"), allow(dead_code))] // bin-side consumer at default features
 #[must_use]
 pub fn input_blake3(state: &str, options: &[String]) -> String {
     let mut h = blake3::Hasher::new();
@@ -65,7 +63,6 @@ pub fn input_blake3(state: &str, options: &[String]) -> String {
 /// BLAKE3 over the canonical decision (sans receipt) — the receipt's
 /// decision half (64 hex chars). The canonical JSON object's field set
 /// is the wire contract: adding a field changes every decision hash.
-#[cfg_attr(not(feature = "decstat"), allow(dead_code))] // bin-side consumer at default features
 #[must_use]
 pub fn decision_blake3(d: &crate::server::ServedDecision) -> String {
     let canonical = serde_json::json!({
@@ -82,60 +79,6 @@ pub fn decision_blake3(d: &crate::server::ServedDecision) -> String {
     blake3::hash(serde_json::to_string(&canonical).unwrap_or_default().as_bytes())
         .to_hex()
         .to_string()
-}
-
-/// The effective manifest fingerprint — 8 raw bytes (16 hex on the
-/// wire). ONE helper so submitter and verifier spell it identically
-/// (Plan 043 C1): `Some(text)` digests the LOADED manifest file's
-/// exact text (the `INSTINCT_ARSENAL` / `--arsenal` override), `None`
-/// digests the embedded default — the digest the serve bin prints at
-/// boot (`ArsenalManifest::embedded_manifest_digest`).
-#[cfg_attr(not(feature = "decstat"), allow(dead_code))] // decstat-gated consumer at default features
-#[must_use]
-pub fn manifest_fingerprint(loaded: Option<&str>) -> [u8; 8] {
-    fp8_from_hex(&manifest_fingerprint_hex(loaded)).expect("digest hex is well-formed")
-}
-
-/// The same fingerprint as hex — the form the wire carries
-/// (`manifest_fp_hex`, 16 chars).
-#[cfg_attr(not(feature = "decstat"), allow(dead_code))] // decstat-gated consumer at default features
-#[must_use]
-pub fn manifest_fingerprint_hex(loaded: Option<&str>) -> String {
-    let full = match loaded {
-        Some(text) => crate::arsenal::ArsenalManifest::digest_of(text),
-        None => crate::arsenal::ArsenalManifest::embedded_manifest_digest(),
-    };
-    full[..16].to_string()
-}
-
-/// Decode 16 hex chars into the 8 raw bytes (a `build_fp` /
-/// `manifest_fp` on the wire). `None` on any malformed input.
-#[cfg_attr(not(feature = "decstat"), allow(dead_code))] // decstat-gated consumer at default features
-#[must_use]
-pub fn fp8_from_hex(s: &str) -> Option<[u8; 8]> {
-    if s.len() != 16 || !s.bytes().all(|b| b.is_ascii_hexdigit()) {
-        return None;
-    }
-    let mut out = [0u8; 8];
-    for (i, byte) in out.iter_mut().enumerate() {
-        *byte = u8::from_str_radix(&s[i * 2..i * 2 + 2], 16).ok()?;
-    }
-    Some(out)
-}
-
-/// Decode 64 hex chars into 32 raw bytes (an input/decision hash on
-/// the wire). `None` on any malformed input.
-#[cfg_attr(not(feature = "decstat"), allow(dead_code))] // decstat-gated consumer at default features
-#[must_use]
-pub fn hash32_from_hex(s: &str) -> Option<[u8; 32]> {
-    if s.len() != 64 || !s.bytes().all(|b| b.is_ascii_hexdigit()) {
-        return None;
-    }
-    let mut out = [0u8; 32];
-    for (i, byte) in out.iter_mut().enumerate() {
-        *byte = u8::from_str_radix(&s[i * 2..i * 2 + 2], 16).ok()?;
-    }
-    Some(out)
 }
 
 #[cfg(test)]
@@ -216,26 +159,5 @@ mod tests {
         let mut slower = d.clone();
         slower.us = 99_999;
         assert_eq!(decision_blake3(&d), decision_blake3(&slower));
-    }
-
-    /// The manifest fingerprint: `Some(text)` = the first 8 bytes of
-    /// blake3(text); `None` = the embedded default's prefix (the digest
-    /// the serve boot line prints); hex round-trips through
-    /// [`fp8_from_hex`].
-    #[test]
-    fn manifest_fingerprint_tracks_the_loaded_or_embedded_digest() {
-        let loaded = manifest_fingerprint_hex(Some("some manifest text"));
-        let direct = blake3::hash(b"some manifest text").to_hex();
-        assert_eq!(loaded, direct[..16]);
-        let embedded = manifest_fingerprint_hex(None);
-        assert_eq!(
-            embedded,
-            crate::arsenal::ArsenalManifest::embedded_manifest_digest()[..16],
-        );
-        assert_ne!(loaded, embedded);
-        let bytes = manifest_fingerprint(Some("some manifest text"));
-        assert_eq!(fp8_from_hex(&loaded), Some(bytes));
-        assert_eq!(fp8_from_hex("short"), None);
-        assert_eq!(fp8_from_hex("zzzzzzzzzzzzzzzz"), None);
     }
 }

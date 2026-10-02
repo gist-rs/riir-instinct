@@ -33,9 +33,13 @@ use serde::Deserialize;
 use crate::server::Arm;
 
 /// The default manifest — the embedded copy of the repo-root
-/// `arsenal.toml` (the frozen Bench-002 verdicts, raw-winner mode).
+/// `data/arsenal.toml` — the TEACHING default (Proposal 052): every row
+/// boots artifact-less (A0, the modelless tier) so a fresh clone serves
+/// every suite with zero data. The production manifest — the
+/// best-measured-arm serving verdict over trained winners — lives in the
+/// private Rethink lane; its shape is the same grammar, filled in.
 pub const EMBEDDED_MANIFEST: &str =
-    include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/arsenal.toml"));
+    include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/data/arsenal.toml"));
 
 /// The hosted payload cap, MiB — must equal reflexer-vessel's
 /// `MAX_HOSTED_PAYLOAD >> 20` (asserted by a unit test under the `vessel`
@@ -71,8 +75,11 @@ pub struct VesselRow {
     /// with no digest refuses at validation — posture-as-data, never a
     /// defaulted artifact.
     pub digest: Option<String>,
-    /// `"public_release" | "hosted_only"` — the hosted lane refuses
-    /// `public_release` rows loud (the moat law).
+    /// `"public_release" | "hosted_only"` — the class is DATA (what the
+    /// artifact is); the reader is a build capability. This open build
+    /// boots public_release rows; a hosted_only row refuses AT BOOT
+    /// naming the Rethink lane backend (the moat law, inverted at the
+    /// split — the open build never decrypts).
     pub class: String,
     /// The serving arm WITH its params.
     pub posture: PostureSpec,
@@ -344,14 +351,14 @@ impl VesselRow {
             }
         }
         match self.class.as_str() {
-            "hosted_only" => {}
-            "public_release" => {
-                return Err(
-                    "class: public_release refused — the hosted lane loads HOSTED-ONLY \
-                     artifacts only (the moat law; an extractable artifact here is a leak)"
-                        .into(),
-                )
-            }
+            // Both classes parse — the CLASS is data (the manifest names
+            // what the artifact is); the READER is a build capability
+            // (Proposal 052's split). This open build boots only the
+            // PUBLIC-RELEASE class (reflexer's public decode); a
+            // hosted_only row parses, validates, and refuses AT BOOT
+            // (server::boot_vessel*'s structural refusal) naming the
+            // Rethink lane backend — never a silent fallback.
+            "hosted_only" | "public_release" => {}
             other => {
                 return Err(format!(
                     "class: unknown class {other:?} (expected \"public_release\" or \
@@ -471,10 +478,10 @@ impl PostureSpec {
                 })
             }
             // The encoder think-depth arm (instinct issue 016 T2). The
-            // grammar is data; the EXECUTION is feature-gated — a build
-            // without `serve-encoder` refuses the row loud at the lane
-            // boot, naming the feature (the 014 serve refusal governs
-            // every CPU-only deploy shape).
+            // grammar is data; the EXECUTION is a lane backend — a build
+            // with no backend installed refuses the row loud at the lane
+            // boot, naming the install seam (the open build never serves
+            // the class; the private Rethink lane does).
             "ENC" => {
                 self.forbid_params(&["top_k", "beta", "n_min", "tau_n"])?;
                 Ok(Arm::Enc)
@@ -738,16 +745,19 @@ mod tests {
     }
 
     #[test]
-    fn class_vocabulary_and_moat_law() {
+    fn class_vocabulary_and_the_split_class_law() {
+        // Both classes PARSE and VALIDATE (the class is data; the reader
+        // is a build capability — Proposal 052): a public_release A0 row
+        // validates clean in raw mode, an unknown class refuses, and a
+        // hosted_only row is refused AT BOOT (not at parse) by the
+        // vessel boots' structural walk.
         let m = manifest_with(
             &one_row("{ arm = \"A0\" }")
                 .replace("class = \"hosted_only\"", "class = \"public_release\""),
         )
         .expect("parse");
-        let err = m
-            .validate(&ValidateCtx::raw(Path::new("/nonexistent")))
-            .unwrap_err();
-        assert!(err.contains("public_release refused"), "{err}");
+        m.validate(&ValidateCtx::raw(Path::new("/nonexistent")))
+            .expect("a public_release A0 row validates in raw mode");
         let m = manifest_with(
             &one_row("{ arm = \"A0\" }").replace("class = \"hosted_only\"", "class = \"sealed\""),
         )

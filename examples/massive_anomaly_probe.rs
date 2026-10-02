@@ -14,7 +14,7 @@
 //!
 //! ```text
 //! cargo run --release --example massive_anomaly_probe -- \
-//!     [../riir-train/data/instinct_specialists]
+//!     [data/demo_specialists]
 //! ```
 
 use std::collections::BTreeMap;
@@ -124,7 +124,7 @@ fn main() {
     let winners = args
         .first()
         .map(PathBuf::from)
-        .unwrap_or_else(|| PathBuf::from("../riir-train/data/instinct_specialists"));
+        .unwrap_or_else(|| PathBuf::from("data/demo_specialists"));
     let winner_path = winners.join("massive_intent_en_winner_v1.bin");
     let m = load_artifact(&winner_path).unwrap_or_else(|e| {
         eprintln!("load {}: {e}", winner_path.display());

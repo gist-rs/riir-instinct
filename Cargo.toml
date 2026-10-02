@@ -24,18 +24,10 @@ toml = { version = "0.8", default-features = false, features = ["parse"] }
 # arsenal hoarding gate (Proposal 001 T5) — consumed, never forked.
 katgpt-core = { path = "../katgpt-rs/crates/katgpt-core", default-features = false, features = ["best_belief", "sigmoid_calibration", "set_admission"] }
 riir-reflex = { path = "../riir-reflex", default-features = false, features = ["modelless", "nb_scope", "nb_ridge", "option_cond"] }
+# The PUBLIC-RELEASE vessel reader (the teaching posture; Proposal 052):
+# reflexer's public decode/open — the HOSTED-ONLY class refuses here
+# fail-closed and reads in the private Rethink lane backend.
 reflexer-vessel = { path = "../riir-reflexer/crates/reflexer-vessel", optional = true }
-ed25519-dalek = { version = "2", optional = true }
-# The decstat wire client + HTTP transport (Plan 002 / Issue 004 T2's
-# landed half): the protocol composer is feature-free in riir-kat; the
-# client/transport tiers ride `kat_transport` (implies `client`). Path
-# sibling — the account_key tier it implies pulls riir-auth →
-# riir-neuron-db, all path deps that already resolve in this layout.
-riir-kat = { path = "../riir-kat", optional = true, default-features = false, features = ["kat_transport"] }
-# The lock-free capture counters (the house rule for the shared map;
-# version-matched to the riir-auth pin already in this graph so one copy
-# compiles).
-papaya = { version = "0.2", optional = true }
 # The Tetris lane (Issue 009 T5/T6): the katgpt-rs substrate module — the
 # board sim + seeded 7-bag + garbage starts + the frozen Bench-892 champion
 # genome (the same crate public reflexer consumes under the same leaf law;
@@ -49,49 +41,28 @@ papaya = { version = "0.2", optional = true }
 katgpt-tetris = { path = "../katgpt-rs/crates/katgpt-tetris", optional = true }
 fastrand = { version = "2", optional = true }
 
+[dev-dependencies]
+# Test-side vessel MINTING only (arsenal_ops's vessel_identity_tests +
+# teaching-bench fixtures): the public reader needs no signing stack; the
+# lib surface carries zero ed25519.
+ed25519-dalek = "2"
+
 [features]
 default = []
-# The HOSTED-ONLY vessel reader (Plan 001 P4 / Issue 001): the format
-# crate + its ed25519 signature stack. The arena/specialist lanes never
+# The PUBLIC-RELEASE vessel reader (the teaching posture; Proposal 052):
+# reflexer's public decode/open over the operator pin table. The
+# HOSTED-ONLY class refuses here fail-closed (that class reads in the
+# private Rethink lane backend); the arena/specialist lanes never
 # resolve it.
-vessel = ["dep:reflexer-vessel", "dep:ed25519-dalek"]
-# The arena's laya paired face (G2): forwards reflex's laya-riir — the
-# metal/tokenizers tree compiles only under this feature.
-arena-laya = ["riir-reflex/laya-riir"]
-# The Metal posture of the same lane (instinct issue 014 C1: the sst5
-# encoder-arm frozen read runs on M3 Metal — `LAYA_DEVICE=metal` resolves
-# through reflex's forwarding to the riir-infer-laya metal backend).
-arena-laya-metal = ["arena-laya", "riir-reflex/laya-riir-metal"]
-# The serve-side encoder lane (instinct issue 016 T2): posture ENC — the
-# sealed NLEH head over the live laya-english encode, RESIDENT FROM BOOT
-# (Proposal 048 L9: a lazy first-route load would be L3 doing a load).
-# A GPU-HOST posture: the default CF-shaped build compiles it to nothing
-# (issue 014's serve refusal stands for every CPU-only deploy shape).
-# PROMOTED 2026-10-02 (issue 018 Update 10, the serving-soak promotion):
-# `serve-encoder` now IMPLIES the shared worker — one encode worker per
-# checkpoint (RAM 2.9-3.1×, p99 0.37× under contention, byte-identical
-# decisions, Benches 0050/0054 + the 0054 addendum). The demote switch
-# `RIIR_INSTINCT_ENCODER_SHARED=0` (encoder_serve.rs) bit-restores per-lane
-# at runtime; `serve-encoder-shared` below stays a valid spelling of the
-# same closure.
-serve-encoder = ["arena-laya", "serve-encoder-shared"]
-serve-encoder-metal = ["serve-encoder", "riir-reflex/laya-riir-metal"]
-serve-encoder-cuda = ["serve-encoder", "riir-reflex/laya-riir-cuda"]
-# Issue 018 Lane B: ONE encode worker per CHECKPOINT, shared by every ENC
-# lane on it (the unit of residency moves from the lane to the worker —
-# the promotion gates: parity + RAM + mixed-load latency + fairness + the
-# soak — ALL MEASURED GREEN, Benches 0050/0054 + addendum; promoted
-# 2026-10-02). The spelling remains valid standalone (it implies
-# serve-encoder; with the promotion above the two closures unify).
-# N × 848 MB → 1 × 848 MB). Opt-in until the GOAT gates pass (interleaved
-# parity + RAM + mixed-load latency + fairness); the default keeps the
-# per-lane worker (byte-identical serving, same code path).
-serve-encoder-shared = ["serve-encoder"]
-# The decstat flywheel capture (Plan 002 / Issue 004 T1): consent-gated
-# decision-outcome stats over the riir-kat wire (lane "dec"). Opt-in —
-# default builds never resolve the wire/transport tree and the /decide
-# path is byte-identical (the record call compiles out).
-decstat = ["dep:riir-kat", "dep:papaya", "dep:ed25519-dalek"]
+vessel = ["dep:reflexer-vessel"]
+# The arena's laya paired face (G2, the external-comparison instrument
+# against public reflex's laya lane): forwards reflex's laya-riir — the
+# metal/tokenizers tree compiles only under this feature. (Named
+# `laya-face` post-split — the old spelling retired with the encoder
+# face the carve moved to the moat.)
+laya-face = ["riir-reflex/laya-riir"]
+# The Metal posture of the same lane (instinct issue 014 C1).
+laya-face-metal = ["laya-face", "riir-reflex/laya-riir-metal"]
 # The arsenal budget legs' GOAT bench (Proposal 001 T8): gates nothing in
 # the lib — it selects `benches/arsenal_budget_goat` so the default
 # `cargo test`/`cargo bench` never pays its corpus-boot cost.
@@ -106,62 +77,11 @@ tetris_goat = ["tetris"]
 
 [workspace]
 
-# The katgpt-rs patch unification: the decstat feature's tree (riir-kat
-# → riir-auth → riir-neuron-db) reaches the katgpt crates by GIT URL,
-# and a dependency manifest's [patch] is WORKSPACE-SCOPED — it does not
-# travel through path deps to a build root that never declared it. The
-# boundary gate's C7 check caught the result (the lock resolving
-# katgpt-core twice: the git rev + this repo's path dep — non-unifying
-# types). Same list as riir-auth's root manifest; katgpt-attn-match is
-# pre-covered so enabling neuron-db's optional shard_compactor cannot
-# resurrect the churn.
-[patch."https://github.com/katopz/katgpt-rs"]
-katgpt-core = { path = "../katgpt-rs/crates/katgpt-core" }
-katgpt-dec = { path = "../katgpt-rs/crates/katgpt-dec" }
-katgpt-device-verify = { path = "../katgpt-rs/crates/katgpt-device-verify" }
-katgpt-hla = { path = "../katgpt-rs/crates/katgpt-hla" }
-katgpt-micro-belief = { path = "../katgpt-rs/crates/katgpt-micro-belief" }
-katgpt-personality = { path = "../katgpt-rs/crates/katgpt-personality" }
-katgpt-sense = { path = "../katgpt-rs/crates/katgpt-sense" }
-katgpt-types = { path = "../katgpt-rs/crates/katgpt-types" }
-# katgpt-attn-match: deliberately pre-covered (the riir-auth/riir-kat
-# convention) — unused in today's graph; cargo prints an informational
-# `patch ... was not used` note per build.
-katgpt-attn-match = { path = "../katgpt-rs/crates/katgpt-attn-match" }
-
-# The vessel gate taxonomy — whole-file gated, so the required-features
-# row is what keeps a plain `cargo test` from running a green zero
-# (the repo-birth gate discipline).
-[[test]]
-name = "vessel_gates"
-required-features = ["vessel"]
-
-[[test]]
-name = "decstat_gates"
-required-features = ["decstat"]
-
 # The Issue 580 T5 parity gate (train-side scores == serve-side scores).
 # Env-driven: skips loud without TET_CRITIC_MODEL + the parity fixture.
 [[test]]
 name = "tetris_critic_parity"
 required-features = ["tetris"]
-
-# The serve-side encoder lane's parity gate (instinct issue 016 T2):
-# replays the frozen Bench-029 read through the SERVE surface. Env-driven
-# (INSTINCT_ENCODER_PARITY=1): skips loud without the head artifact /
-# datasets / the laya weights — a skip is a deferral, never a green.
-[[test]]
-name = "serve_encoder_parity"
-required-features = ["serve-encoder"]
-
-# The Lane B shared-worker parity gate (instinct issue 018): interleaved
-# replay through the shared worker vs isolated per-lane runs — bit-identical
-# features/picks (state leaking between suites is the defect class).
-# Env-driven (INSTINCT_ENCODER_SHARED_PARITY=1) + material-gated, same
-# discipline as the parity gate above.
-[[test]]
-name = "encoder_shared_parity"
-required-features = ["serve-encoder"]
 
 # The arsenal GOAT bench (Proposal 001 T8) — whole-target gated; the
 # required-features row keeps a plain `cargo bench` from building it.
@@ -200,12 +120,3 @@ required-features = ["tetris"]
 [[example]]
 name = "tetris_round5_scale_probe"
 required-features = ["tetris"]
-
-# The decstat receipt FLOOR runner (Plan 043 Phase C2) — the submitter +
-# verifier roles in one process over the SAME booted seat; the measured
-# same-release reproduction rate is the arming gate (D5). Whole-target
-# gated: without this row a plain --all-targets build fails E0432 (the
-# riir-kat wire tree is decstat-gated).
-[[example]]
-name = "decstat_floor"
-required-features = ["decstat"]

@@ -31,7 +31,7 @@
 //!
 //! Data: `INSTINCT_DATASETS_DIR` (default
 //! `../riir-reflex/.raw/datasets_t20k`) + `INSTINCT_WINNERS_DIR` (default
-//! `../riir-train/data/instinct_specialists`). Absent data REFUSES (exit
+//! `data/demo_specialists`). Absent data REFUSES (exit
 //! 1) naming the env — never a green zero.
 
 use std::hint::black_box;
@@ -80,7 +80,7 @@ fn main() {
     let datasets =
         std::path::PathBuf::from(env_or_default("INSTINCT_DATASETS_DIR", "../riir-reflex/.raw/datasets_t20k"));
     let winners =
-        std::path::PathBuf::from(env_or_default("INSTINCT_WINNERS_DIR", "../riir-train/data/instinct_specialists"));
+        std::path::PathBuf::from(env_or_default("INSTINCT_WINNERS_DIR", "data/demo_specialists"));
     if !datasets.is_dir() {
         fail(&format!(
             "datasets dir {} missing — set INSTINCT_DATASETS_DIR (the GOAT gate refuses an \

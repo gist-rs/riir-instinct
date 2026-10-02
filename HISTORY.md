@@ -1,3 +1,70 @@
+## 2026-10-03 — the Instinct/Rethink SPLIT CARVE landed: B1 seam + B2 move family + B3 in-repo registration; fence --post-split GREEN (riir-ai Proposal 052 / riir-instinct Plan 008)
+
+The owner's split directive executed to the fence: **Instinct opens** (the
+public teaching lane, the fresh-root export at Phase C — owner-gated) and
+**Rethink is the private moat** — this repo's whole history IS Rethink
+(GitHub rename or identical-hash mirror at the wave), and the moat's
+working-tree home is `moat/` (the Rethink seed). Three commits:
+
+- **B1 `22ae291` — the SEAM** (verdict round-2 shape: seam FIRST, parity
+  gate before any delete): `server::LaneBackend` (decide/decide_multi/
+  meta/centroid) + `ExtBoots` + `install_ext_boots` + the
+  `AnySuiteServer::Ext` seat — the plug-in path Rethink uses; the four ENC
+  boot routes consult the installed backend (self-installs where the
+  feature compiled — behaviour identical); `enc_vessel_boot` moved
+  verbatim to `encoder_serve::enc_boot_vessel`. THE GATE, green +
+  byte-identical: `serve_encoder_parity` 2/2 (frozen Bench-029 replay +
+  T4 vessel round-trip), `encoder_shared_parity` fingerprints IDENTICAL
+  across shared/per-lane postures (sst5 `2e89e9cb12f6e9ec`, xnli
+  `b481fbdb7d039921`), serve_gates 17/17, vessel 9/9, decstat 8/8,
+  g4 1/1, clippy `-D` ×3. Deviation recorded: `arena.rs` grew no trait —
+  clean-cut deletion + hunk archive (a probe trait with zero impls is
+  dead API).
+- **B2 — the MOVE family** (at the Issue-018 boundary; the issue closed
+  `f262da8`): five src modules + four test files + the decstat floor
+  example moved verbatim to `moat/` (git mv); `deploy.yaml`,
+  `arsenal.toml` (the PRODUCTION manifest), `encoder_load_ab.py`,
+  `.deploy/`, the moat records (029–030, 031–048, 0050², 0054–0056) and
+  docs (.plans/002·006·007, .proposals/001, .issues/016) with them —
+  deviation: 0051–0053 STAY (the hybrid quotable ladder + synth seat are
+  the OPEN product's published evidence; content over the ledger's
+  range). Features: `serve-encoder*`/`decstat` deleted, `arena-laya` →
+  `laya-face` RENAMED (the G2 face measures public reflex's laya lane —
+  teaching-relevant); deps `riir-kat`/`papaya` removed, `ed25519-dalek`
+  → dev-only (test vessel minting), the katgpt-rs `[patch]` table
+  removed with the git-URL tree. The bag vessel boot REWRITTEN on
+  reflexer's public decode (`ApplyState` + `check_monotonic`; the
+  HOSTED-ONLY class refuses structurally); the class validator now
+  accepts both classes (class is DATA, the reader is a capability —
+  hosted refuses AT BOOT). The embedded manifest is the TEACHING default
+  (`data/arsenal.toml`, nine artifact-less A0 rows, digest
+  `1eb91da4…` pinned) and the PRODUCTION verdict rides INLINE in
+  `tests/serve_gates.rs` — byte-pinned at `4c4356c6…`, the SAME digest
+  the old embedded default carried, verified against the moat copy
+  (the serving law survived the split byte-identically). Winners-path
+  literals → `data/demo_specialists` (env-overridable; the full gate
+  suite ran live with `INSTINCT_WINNERS_DIR` at the production dir).
+  Bin hunks archived to `moat/bin_hunks/` with origin maps. Gates: lib
+  56/56 (+2 under vessel), serve_gates 18/18 (the new production
+  byte-pin), staleness 6/6, calibrator 2/2, tetris parity 1/1, g4 1/1,
+  clippy `-D` clean ×4 postures (default/vessel/laya-face-metal/tetris).
+- **B3 in-repo — the registration family**: `BOUNDARY.md` rewritten
+  (post-split owns + the fence invariants), `moat/BOUNDARY.md` filed
+  (the Rethink contract, carried verbatim at the wave), `moat/README.md`
+  + `moat/Cargo.toml` template (excluded, never built), the export
+  manifest FINAL (every copy row verified present). The workspace-wide
+  registration (repo_set.txt + pins + boundary rows) is WAVE-GATED and
+  recorded in plan 008 — a registered-but-absent repo is an UNSEEN red
+  in every population check, so registration lands at Rethink's birth.
+
+The fence: `--history` regex widened (`03[0-9]`, `4[0-9]`, `^moat/` —
+the padded-name gaps + the seed), the receipt.rs amnesty row pruned WITH
+the annotations it pardoned (the file is deliberately empty now),
+`--post-split` **GREEN**, `--history` RED on this private repo (by
+design — GREEN only on the export). Remaining: B4 (riir-train trainers,
+deferred until 607 + rebase) and Phase C (the fresh-root export + the
+visibility flip — the owner's personal acts).
+
 ## 2026-10-02 — the six harness families RETIRED (owner call, reflex `31b11d2` + instinct this commit)
 
 The owner removed the six home-made harness families (`harness_visibility` ·

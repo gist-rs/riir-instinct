@@ -9,6 +9,10 @@ CLAUDE.md
 *.safetensors
 *.gguf
 
+# The demo winners dir (Phase C mints them; the manifest data/arsenal.toml
+# IS committed — only the minted artifacts are runtime data).
+/data/demo_specialists/
+
 # riir-deploy build/stage trees (generated; the manifest is the source of truth)
 /.deploy/
 /dist/

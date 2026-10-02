@@ -1,0 +1,100 @@
+# arsenal.toml — the ONE selection surface for the serving lane
+# (Proposal 001 T1/T2, law A5): suite → artifact digest → class → serving
+# posture → pins → budget. Digest-validated at boot; drift fails loud and
+# names the offending row + field.
+#
+# ── THIS IS THE TEACHING DEFAULT (riir-ai Proposal 052) ────────────────
+# Every row boots ARTIFACT-LESS: no digest, posture A0 — the modelless
+# tier alone (the G0a ReflexOnly arm). A fresh clone serves every suite
+# from the seat engines with ZERO data; the full serving arc is yours to
+# build: train a specialist over public data → holdout + winner law →
+# seal → mint a PUBLIC-RELEASE vessel → pin its digest + posture here →
+# boot under the monotonic gate. (The production manifest — the
+# best-measured-arm serving verdict over trained winners — lives in the
+# private Rethink lane; its shape is exactly the rows below, filled in.)
+#
+# The manifest overrides: `INSTINCT_ARSENAL=<path>` or `--arsenal <path>`
+# (one manifest per HOST/deployment — a vessel-mode host ships its own
+# rows with the vessels' digests).
+#
+# ── row fields ─────────────────────────────────────────────────────────
+# suite          the served suite (the reflex harness seat name; unique)
+# digest         "blake3:<64 hex>" of the artifact file this row loads —
+#                ABSENT on the artifact-less A0 rows below. Boot refuses
+#                drift, loud.
+# class          "public_release" (this build boots it) | "hosted_only"
+#                (parses + validates; refuses AT BOOT — that class reads
+#                in the private Rethink lane backend, never here).
+# posture        the serving arm WITH its params (never a bare string):
+#                A0 | A1 | { arm="H1", top_k } | { arm="H2", beta, n_min,
+#                tau_n }. An unknown arm refuses at boot, NEVER defaulted
+#                (law A6); params must match the arm exactly.
+# budget.load    "eager" (boot loads the lane) | "lazy" (first decision
+#                loads it; the 503 `loading` window covers the wait).
+# budget.*       the hoarding + admission caps (see the README).
+#
+# The A0 drift pin (`tests/serve_gates.rs`) holds the serve path to
+# reflex's own run() — the student verifies determinism themselves.
+
+[[vessel]]
+suite   = "ag_news"
+class   = "public_release"
+posture = { arm = "A0" }
+pin_keys = []
+budget  = { load = "eager", max_payload_mb = 16 }
+
+[[vessel]]
+suite   = "emotion"
+class   = "public_release"
+posture = { arm = "A0" }
+pin_keys = []
+budget  = { load = "eager", max_payload_mb = 16 }
+
+[[vessel]]
+suite   = "sst5"
+class   = "public_release"
+posture = { arm = "A0" }
+pin_keys = []
+budget  = { load = "eager", max_payload_mb = 16 }
+
+[[vessel]]
+suite   = "massive_intent_en"
+class   = "public_release"
+posture = { arm = "A0" }
+pin_keys = []
+budget  = { load = "eager", max_payload_mb = 16 }
+
+[[vessel]]
+suite   = "banking77"
+class   = "public_release"
+posture = { arm = "A0" }
+pin_keys = []
+budget  = { load = "eager", max_payload_mb = 16 }
+
+[[vessel]]
+suite   = "xnli_en"
+class   = "public_release"
+posture = { arm = "A0" }
+pin_keys = []
+budget  = { load = "eager", max_payload_mb = 16 }
+
+[[vessel]]
+suite   = "prompt_injections"
+class   = "public_release"
+posture = { arm = "A0" }
+pin_keys = []
+budget  = { load = "eager", max_payload_mb = 16 }
+
+[[vessel]]
+suite   = "typed_decisions"
+class   = "public_release"
+posture = { arm = "A0" }
+pin_keys = []
+budget  = { load = "eager", max_payload_mb = 16 }
+
+[[vessel]]
+suite   = "code_fixtures"
+class   = "public_release"
+posture = { arm = "A0" }
+pin_keys = []
+budget  = { load = "eager", max_payload_mb = 16 }

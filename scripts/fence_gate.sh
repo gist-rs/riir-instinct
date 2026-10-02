@@ -91,8 +91,10 @@ SCAN_GLOBS="*.rs"
 # The moat RECORD/DOC/TEST paths for --history (regex, ERE). The source files
 # above are matched exactly; these are the paths whose very PRESENCE in any
 # commit leaks the moat (recipes, design records, the encoder A/B instrument,
-# the moat gates).
-HISTORY_MOAT_RE='^(\.benchmarks/0(29|3[1-9]|4[0-8]|5[0-6])|\.issues/01[4-8]|\.plans/00[267]|\.proposals/001|\.deploy/|scripts/encoder_load_ab\.py|tests/(vessel_gates|decstat_gates|serve_encoder_parity|encoder_shared_parity)\.rs)'
+# the moat gates). `^moat/` is the Rethink SEED itself (Proposal 052's move
+# family relocated the moat there) — the export never copies it, so any
+# moat/ path in an export's history is a manifest violation.
+HISTORY_MOAT_RE='^(\.benchmarks/0(29|3[0-9]|4[0-9]|5[0-6])|\.issues/01[4-8]|\.plans/00[267]|\.proposals/001|\.deploy/|scripts/encoder_load_ab\.py|moat/|tests/(vessel_gates|decstat_gates|serve_encoder_parity|encoder_shared_parity)\.rs)'
 
 die() { printf '⛔ %s\n' "$1" >&2; exit 1; }
 

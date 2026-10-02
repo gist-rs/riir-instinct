@@ -1,30 +1,38 @@
-# AGENTS.md — riir-instinct (private)
+# AGENTS.md — riir-instinct (the open lane; the moat moved to `moat/`)
 
 The global `~/.agents/` rules apply; this file documents repo-local context.
 
-## Naming law — this repo becomes `riir-rethink` (riir-ai Proposal 051)
+## ⚠ THE SPLIT (riir-ai Proposal 052, 2026-10-03) — read before anything else
 
-**Decided 2026-09-30 (owner call); the mechanical rename is Phase 1, not yet
-landed** — until it is, the on-disk directory, git remote, and workspace
-registration still read `riir-instinct`. The law, in force now:
+**The 2026-09-30 naming law below is SUPERSEDED** (dated amendment in 051;
+the split replaces the rename): **Instinct stays a product and OPENS** as
+the public teaching lane (the fresh-root export at Phase C — owner-gated);
+**Rethink is the PRIVATE moat** — the encoder arm, the HOSTED-ONLY vessel
+reader, the economy plane, the production manifest/deploy, and their
+records live in **`moat/`** (the Rethink seed; `moat/README.md` +
+`moat/BOUNDARY.md` are its contract). The carve is LANDED: the fence
+(`scripts/fence_gate.sh --post-split`) is GREEN, the seam
+(`server::install_ext_boots` + `LaneBackend` + the `Ext` seat) is the plug-in
+path Rethink uses, and `moat/bin_hunks/` archives what left the bins.
+Feature-name changes: `arena-laya` → **`laya-face`** (renamed, stays — the
+G2 paired face vs public reflex's laya lane); `serve-encoder*` and
+`decstat` are GONE from this tree (Rethink-only). Winners default to
+`data/demo_specialists` (env `INSTINCT_WINNERS_DIR` overrides); the
+embedded manifest is the teaching default (`data/arsenal.toml`, artifact-less
+A0 rows) and the production verdict rides inline byte-pinned in
+`tests/serve_gates.rs`. The sections below predate the split where they
+describe encoder/decstat/vessel work — those surfaces live in `moat/` now;
+the fresh public rewrite of this file lands at C1.
 
-- **The product is `riir-rethink`** — the all-tier adaptive decision-serving
-  family (L1–L5 rungs inside ONE product; tiers are rungs, never per-tier
-  lanes — the reserved `riir-director` is retired, L5 curation is a job).
-- **"Instinct" retires from product/brand naming** and returns to meaning
-  exactly one thing: the game-side L1 tier word (riir-ai Proposal 048's map,
-  `Instinct (basic)` / `Instinct (vessel)`). Site lanes rebrand `Instinct
-  (hybrid)` → **`Rethink (hybrid)`**, `Instinct (encoder)` → **`Rethink
-  (encoder)`** (aliases keep history landing).
-- **Three registries, one table** — game tier / repo / product lane. The
-  disambiguation table's third axis (incl. the `rethinks`/`think_every`/
-  `since_rethink` row) lives in ONE home:
-  `../riir-game-sdk/.docs/10_multiplayer_topology/tick_tier_model.md` §(a).
-  The hero-strategy `rethinks` counter (`riir-games-mmorpg/src/hero_strategy_moe.rs`)
-  is game-side cadence vocabulary — the aligned collision this product name
-  adopts, never a reference to this repo. Greps must not cross the streams.
-- **Recorded fallback:** `riir-cogito` (zero grep hits, same meaning) if the
-  collision tax ever compounds (051 caveat 1).
+## Naming law — SUPERSEDED by the split (kept for the record until C1)
+
+**Decided 2026-09-30 (owner call); SUPERSEDED 2026-10-03 by Proposal 052's
+split** — Instinct no longer retires as a brand; the repo does not rename.
+The registry note stands: the disambiguation table's third axis lives in
+`../riir-game-sdk/.docs/10_multiplayer_topology/tick_tier_model.md` §(a);
+the hero-strategy `rethinks` counter is game-side vocabulary — greps must
+not cross the streams. Site lanes: `hybrid → Instinct` (the open product),
+`encoder → Rethink` (the private moat) — as displayed today.
 
 ## Boundary contract — read `BOUNDARY.md` first
 

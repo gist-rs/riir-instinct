@@ -5,11 +5,8 @@
 # today but must be pruned at the move family; a NEW moat reference is never
 # allowlisted silently.
 #
-# receipt.rs stays in the open tree (Proposal 052 stay ledger): its decstat
-# links are `#[cfg_attr(not(feature = "decstat"), allow(dead_code))]`
-# ANNOTATIONS only — the emission/verify client itself moves to riir-rethink.
-# The annotation form (the bare feature name in an attribute) is not a moat
-# import, but it is allowlisted explicitly so the fence states its one amnesty
-# rather than passing on an accident. Any REAL import (crate::decstat,
-# decstat_verify::, the hosted reader) still reds.
-src/receipt.rs:feature = "decstat"
+# DELIBERATELY EMPTY at the Proposal-052 move family (2026-10-03): the one
+# row this file ever carried (receipt.rs's decstat cfg_attr annotations) was
+# pruned WITH the annotations in the same commit — the decstat feature left
+# the tree, so the amnesty had nothing left to pardon. A NEW moat reference
+# in the open tree is a finding, never a row here.

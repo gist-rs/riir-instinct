@@ -1,0 +1,5689 @@
+{
+  "generated_by": "riir-deploy 0.1.0",
+  "git_stamp": "5a405a1-dirty",
+  "git_date": "2026-09-27 07:02",
+  "hash_algo": "blake3",
+  "entries": [
+    {
+      "path": "serve",
+      "hash": "6edb126c3f383480c3cd300d1774bd4ba9f475ab03097b8bfc47ffd5aebf2d78",
+      "bytes": 1642440
+    },
+    {
+      "path": "winners/ag_news_winner_v1.bin",
+      "hash": "ec327ac30250205b2b26c6b00976f9fb50bdf44a9bcbb1d87e35c6ca06f5cf33",
+      "bytes": 524381
+    },
+    {
+      "path": "winners/emotion_winner_v1.bin",
+      "hash": "95c9d7f3314ec774d6549f1ff5db95e79146c4201d354b969e37f0d99ffe46eb",
+      "bytes": 786545
+    },
+    {
+      "path": "winners/sst5_winner_v1.bin",
+      "hash": "430558d6210737a267249500e0c3df4a0534d344752a1b4dae9a0e6952d2c001",
+      "bytes": 655460
+    },
+    {
+      "path": "winners/massive_intent_en_winner_v1.bin",
+      "hash": "7bc3ee385f81abc0f2a91e47f6dca08db37f9fb6cee6d48121b80e3f11378556",
+      "bytes": 7865749
+    },
+    {
+      "path": "winners/banking77_winner_v1.bin",
+      "hash": "611cf0d22e9d45a3f082994994c783e357b96514255825ad8ae95a9328612d94",
+      "bytes": 10094864
+    },
+    {
+      "path": "winners/xnli_en_winner_v1.bin",
+      "hash": "76bbedfb14031771ea6296f5d5914e08f19281d0c8cf6c6eb3754ac394b76827",
+      "bytes": 393299
+    },
+    {
+      "path": "datasets/ag_news/test-000.json",
+      "hash": "a4405952695337b9f671fde0dae5fa936d7debdf699abcc9fb87223bf4b2bd66",
+      "bytes": 33430,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/test-001.json",
+      "hash": "25b0bae5519795fa420dfa05d00e5e3813e97bcc275c4229276772e4e9388e0e",
+      "bytes": 31628,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/test-002.json",
+      "hash": "b72d06c7a948b3de8633908251097e1328f284c7d8cb6027f82f49829d42eef4",
+      "bytes": 31232,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/test-003.json",
+      "hash": "c1c757bffe809dabbe5d3b66e7446fbdc52b06173e6aee3bef2013c5bea61612",
+      "bytes": 30458,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-000.json",
+      "hash": "291f553454afaf7c9ab42a9e7b205bdddce9fb5bbb222222615702b6d536b085",
+      "bytes": 29970,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-001.json",
+      "hash": "23bd2b3845b27ba3c329f5896a6fbd20ade5bb824f8949252bd3b42035df2bce",
+      "bytes": 39349,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-002.json",
+      "hash": "732dbd4a86f7159cbb916e0e04b2f55f48f335a6edb256e483667c922091ac79",
+      "bytes": 34144,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-003.json",
+      "hash": "edfb33bb8c73d5a65c459191025d421a5ad290e85b5aa504c597c4055fc5684d",
+      "bytes": 25971,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-004.json",
+      "hash": "85f147c0b74b684f7b8735bcec3a23a0cbd899ac24bd89fab326daa78bde81b8",
+      "bytes": 33914,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-005.json",
+      "hash": "2a4d49df4fe85d530b12fb93e96222af74f53c0524f1035d9da8647e37d9aef6",
+      "bytes": 31734,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-006.json",
+      "hash": "ba5a596d25ae867b4a4712c152ee84bf315a601272a4f6e6af2ec2325afd79e0",
+      "bytes": 31495,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-007.json",
+      "hash": "15811b5a3a12bd99f92360ba57c02052dad377d665bb11e1c4e8e3c829680cca",
+      "bytes": 30654,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-008.json",
+      "hash": "8556428c460267d66b090570d1e6b8de6af001407ab3a88eee988b4e027ff588",
+      "bytes": 31041,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-009.json",
+      "hash": "add5b8168a818beaf9eac7536f7734eeb2e15ad4c7b759b023afb15d2fdf982d",
+      "bytes": 30437,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-010.json",
+      "hash": "779a07c673552337a1cdf88491def9a06750f4f2583bc8b6214cfe8b6470b092",
+      "bytes": 33104,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-011.json",
+      "hash": "98638a435701c6351ea2c1ab8fcc26bd035752f275afbc0ba5cab16c5b848149",
+      "bytes": 33446,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-012.json",
+      "hash": "200b36ba10eb9594d2ded7d905fbb1c120aa4e8e1e6072986c637a288298ef79",
+      "bytes": 30082,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-013.json",
+      "hash": "ed912aac529ba78a637e8832bb3d321ce1ad3d39d30a86b572004296d0014342",
+      "bytes": 30021,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-014.json",
+      "hash": "880ba240de6079e4a72865f313018dca774f9999e288ebb71bb77b7af080ac56",
+      "bytes": 32565,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-015.json",
+      "hash": "4bd41b4dab6596b3bf19051cd8b4cc2c7708b8d0c21973f669b4b4c9aa355a3c",
+      "bytes": 32125,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-016.json",
+      "hash": "ab84c2eb6703deb280b18ee9d8ed299d216b23c48c99ceabe9379efb68d3100c",
+      "bytes": 30874,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-017.json",
+      "hash": "c41d88cd43fe1a0b22ea47262a4d158627744602f2bd71c19cd91e3cc9b67715",
+      "bytes": 30880,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-018.json",
+      "hash": "88d24c1705962c43db2e5055ecfdb0bf67f280cd1c784e48db2596419835c0da",
+      "bytes": 32044,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-019.json",
+      "hash": "601be8cd36572d557458bfb50173563c00bda003584e3e5cd10d15aa1e443ed2",
+      "bytes": 32921,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-020.json",
+      "hash": "fa824d5e89e22ae06cfccb61e3de934429a3ad6f7969abbc7e42b70ab02a377a",
+      "bytes": 31192,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-021.json",
+      "hash": "18f235f252362fe976ca890f5b478d2d0a5228af85a81ad4d66e09765ca58ed2",
+      "bytes": 31052,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-022.json",
+      "hash": "208bc87926e3546b6e3bd874fd3442b5853bee36c52d599f474bc34d54deea71",
+      "bytes": 30356,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-023.json",
+      "hash": "03acc78cd8549ad65c7d6c3cb2b702a32419e6324897e9e03cdaef949569eb65",
+      "bytes": 31184,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-024.json",
+      "hash": "a9a25f9bd58283cadfccd0ca5910ea8a7d6500350b7c36ddf338835bc10f1278",
+      "bytes": 30347,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-025.json",
+      "hash": "e11eccb00239aa92a0f999d221589dc9830f7cb2af6d819cf4fc4b12b9470c28",
+      "bytes": 29956,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-026.json",
+      "hash": "a5fd0ab044c63b33558e9a31ad9edac74bc7db94e2b6f253ede5222ec7019372",
+      "bytes": 31867,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-027.json",
+      "hash": "b95b05f8614d1282d25c0b699aefb03280877a302454e1033b1f5edfa475ed86",
+      "bytes": 31266,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-028.json",
+      "hash": "9db5d7e0462a12c0a9101a74475567db0cfa6f78e1ec5499191f7bdc9900fadd",
+      "bytes": 31837,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-029.json",
+      "hash": "d5f58f7b9e8d7e05ef2bde0009abf83185f495f82f5de3e237aeedbaf1113dd3",
+      "bytes": 31477,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-030.json",
+      "hash": "b52debe042db3007f7c0c21e617df1d8a5f41d2471deac2e4bb961a63e3a8508",
+      "bytes": 30853,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-031.json",
+      "hash": "72db6eec2800ec5aeb68f9d73baf8f9ee707205010cc1630bf5f8edbfaefb23a",
+      "bytes": 32268,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-032.json",
+      "hash": "5bc83fe1157ea51c1aab964b603c19680deb7b542229ca8f29039d2fae12ea8f",
+      "bytes": 32027,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-033.json",
+      "hash": "90851ca027863917e5cb0fa08ea1ddac878c007ab43cb3fc8c11914b8a08fa37",
+      "bytes": 31983,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-034.json",
+      "hash": "32289b6a35d8f787a4d7d8fd7879bd7a25a443335e76c756ecf2d1f79ff10997",
+      "bytes": 30497,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-035.json",
+      "hash": "1fc807d2dd87ecfb732f284a43384e8d38fbd923c0c73ac1417236c3382f55fa",
+      "bytes": 31640,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-036.json",
+      "hash": "3e35931a31ffa40c43a60a35012f9ca3901b938622746d1b3c746bb7e4fbc050",
+      "bytes": 32479,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-037.json",
+      "hash": "4d9a4875f01fe736760581bba2aecc762af7c89d19d88302b573865eb7efb7dc",
+      "bytes": 31576,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-038.json",
+      "hash": "bc87ca74e7d74d45ea40c45bbefc346bf54768c3b291583d2bbec8a47a87ea3a",
+      "bytes": 32074,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-039.json",
+      "hash": "af28affbe8d0255bf0c7a289f3ff0f7cb8e02a511a957c5cf49f68fe2232a2f4",
+      "bytes": 31843,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-040.json",
+      "hash": "ad2ebee3ef387e42f6f352bab520364e4de6c7500e995efab0566bb81fccea05",
+      "bytes": 31188,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-041.json",
+      "hash": "fbb81599f5251bda5544e2a96c8e8f0f53e4e548fe01a4eb29c18ef8d1f2ff50",
+      "bytes": 31746,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-042.json",
+      "hash": "2bd3604500da3e665ae6b06aa73a3f83fb550561e344da03642e229e5a25e281",
+      "bytes": 30610,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-043.json",
+      "hash": "da26c11382b405d493b42b9187b2777d1b1e5e7eeda7a752b541a4cf76567d78",
+      "bytes": 32604,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-044.json",
+      "hash": "9aeeafdf2cbc3daeb001967b94f4ce9660be9085bff4a5ef2de687c22cfccdbd",
+      "bytes": 31380,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-045.json",
+      "hash": "79f7d26a04c2b491b5fdc950993df0901a3fd21a9437bd439ce44f9507369f7b",
+      "bytes": 30866,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-046.json",
+      "hash": "7b753897e56a9d0b7d1693951c741e6babc642b90fcf14be883c0c9dd82ab08f",
+      "bytes": 30691,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-047.json",
+      "hash": "ec726115188e0e8176534363d27f1e5900c4943e722f2ee66de33436e8945176",
+      "bytes": 30004,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-048.json",
+      "hash": "7c44a5af1d4fa3cdd29bfc159f4cf9d0e888a1a20ac476de97808bec8a1ff003",
+      "bytes": 32056,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-049.json",
+      "hash": "ec9c170730739043933db0aa2ec3881d8c27d79a96452ab6b5acdf7a69652675",
+      "bytes": 30942,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-050.json",
+      "hash": "7950b76770cc237a3f050b7d954042a698214a8466e3bdb0dca3ededd3e5ced5",
+      "bytes": 32484,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-051.json",
+      "hash": "40f7574e638bc75fe1ad33b21aace47ab668011508eda01a5e61cb29bebd51bf",
+      "bytes": 31213,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-052.json",
+      "hash": "ab284588225a278ee4b4c0834066fbeed4b12a7f04015c18bd39c112d868a275",
+      "bytes": 31901,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-053.json",
+      "hash": "bbed438156d919314d959e43f56f9e41fb4a48c537d9247d04db7d861fed3a3f",
+      "bytes": 33011,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-054.json",
+      "hash": "5df823be84e46e11d6c269506258c579985c1df4f85f03e2c5f12b17aae0c4ba",
+      "bytes": 31514,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-055.json",
+      "hash": "e065f281b1abf9b6345124f4d741653dd7d9986f843678f18c609b0fc9764f27",
+      "bytes": 32139,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-056.json",
+      "hash": "bc5535978bd9466409e2f92668ea36aa982a84049f83cde874063323c575535b",
+      "bytes": 29280,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-057.json",
+      "hash": "b601512c80b9a9ba56066c205d933d0062a42dbd6c0f62dc71213ec4837fabcc",
+      "bytes": 31149,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-058.json",
+      "hash": "4706cf0fab1619a60e71b2286b0ddf5d18fe1eaec68386177129cc5d17190893",
+      "bytes": 30391,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-059.json",
+      "hash": "b3db2dfab99a9711837fddbc5e06ff351e97b294cc3a494400d5b3b3807783b0",
+      "bytes": 31170,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-060.json",
+      "hash": "ba37cc5c7e32f4bae089b8df33e9054c138b7e341bd7a5f83cd7a9c997c4106b",
+      "bytes": 29326,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-061.json",
+      "hash": "23052a0c0ede05c1d33e2f27735920c7f42e6e3fea7dd19be518071e48092597",
+      "bytes": 29605,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-062.json",
+      "hash": "10eab458dc3f591f58ddfc841fe7ca78f405816c6e25b644f7d32ed21418a657",
+      "bytes": 30584,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-063.json",
+      "hash": "f4171a0bba5f0bd54ab4308a49c34891146b1119d562d9c4d57852e201ced5d1",
+      "bytes": 30028,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-064.json",
+      "hash": "87112ea3f8d52437d1a94d7be56aa033ea436b581cfa2132e97909cae7f767e2",
+      "bytes": 32069,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-065.json",
+      "hash": "7a8419cac89fd9e5e18363fc238c4c46625300607f65426d55c53664b9519c0d",
+      "bytes": 30596,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-066.json",
+      "hash": "278b1d4fd5b3abf19e3606c3b6b4ba9594bb1326f932f6f1d20892a4d1097d1f",
+      "bytes": 30344,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-067.json",
+      "hash": "9fd40c6de83f1453c8ec3cdc8ca485b66027c1b57b9ac7fa2616aaf1ee795f42",
+      "bytes": 29882,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-068.json",
+      "hash": "4092f41208b83f716f6e5e77aa798fe4d469ee4b5a1740831a17dd26e0340f3c",
+      "bytes": 30727,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-069.json",
+      "hash": "ba89dd6e66d6bc795aef63fa6e2cc915466630cb6eb685caf6a2da5be8869585",
+      "bytes": 29854,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-070.json",
+      "hash": "42fa7d8abd7fc4d1f7df74c52c265a607eeae8c9a721d51984f52a853cb92ff2",
+      "bytes": 28983,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-071.json",
+      "hash": "408b6cfba9bf08ec917deed9d08eb921203fceb847967ea5be1bec3f15784be3",
+      "bytes": 30144,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-072.json",
+      "hash": "c7d8e1d71a40fd708c96da0a1254d2ab2b2caf3887561f4d753b62d276831c15",
+      "bytes": 29939,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-073.json",
+      "hash": "3fe401423208a056dc549f79e4261d8a8d7a383fa278d90e2a40a993245cc05c",
+      "bytes": 31634,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-074.json",
+      "hash": "5f9d2670c280cb4e3ea88fff80bd4651d01f6e3f92dbcf49fcde8168370c6740",
+      "bytes": 30943,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-075.json",
+      "hash": "8ddedf8d6ecab903db78d4084be6695a0fc5d54c3d4e600a004500a91071729b",
+      "bytes": 31893,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-076.json",
+      "hash": "a950aaa64234d6adba1bd50bd77a334894d26a2ae71f472deac90d5658042906",
+      "bytes": 30121,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-077.json",
+      "hash": "dec7665c553f2f5c2bbbae8c031ecfc434c228ae138a1204b3edf71e8364f2bd",
+      "bytes": 29634,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-078.json",
+      "hash": "de987bbb94251aea029d9aaf4c2aaa4cde23570ef070f88243873ea31bb5cb5b",
+      "bytes": 31346,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-079.json",
+      "hash": "dee835330833ba168b0ca16dafcbcc7f1b83579e2c2ca8430ebd47a9200ffbce",
+      "bytes": 31120,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-080.json",
+      "hash": "9f3fd1cc2ac056736b77c811edf384967d89458ccaa88f24ef83b507bc9cf615",
+      "bytes": 29624,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-081.json",
+      "hash": "13132a90c3ccad058d232bd7098660d72aae1ab53002052ec4d171a1764fdca0",
+      "bytes": 30027,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-082.json",
+      "hash": "a793f941999b156f17489fdc92dfa4faddba4916164ab76931a5e361e53e40b0",
+      "bytes": 30191,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-083.json",
+      "hash": "4401b626546044e3f0a31ec6225739bd922cd0665a51aaa6bd99c12fcf55c3b6",
+      "bytes": 29567,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-084.json",
+      "hash": "70d1643a80657a25b7e8f153bec9dbd02669770dc16afecdac49960b4cc21a15",
+      "bytes": 31246,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-085.json",
+      "hash": "7a097041e5a932bb3bf93decc58958ca86534d2189f5c4c5d349a310eae93558",
+      "bytes": 28907,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-086.json",
+      "hash": "25ab61351fadbdb583991580b2dbeca7a6bd9039654af78a757a79de1ce97350",
+      "bytes": 30271,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-087.json",
+      "hash": "fa7e5a48fa7d5a54cd7d54527e9059db61589ac061252eaac9a4f8c0699d0807",
+      "bytes": 32211,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-088.json",
+      "hash": "17a6ed87155355b8f2fe13abcfaafb429346f186e0d7c9887d7843b24f660da4",
+      "bytes": 30028,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-089.json",
+      "hash": "b36d228cb87a48dde56c053b7a8c3d7e24b781237c0d4903bfff8cf07baeebe3",
+      "bytes": 31047,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-090.json",
+      "hash": "1ed6ca048850924bcac2441e5a9b4ec2d2b0977013d9cd4abe439006d8750231",
+      "bytes": 31330,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-091.json",
+      "hash": "74448528f31a57d4c77e522f14cadcc608126b95b4d0763a5e4c4354fbb07132",
+      "bytes": 30209,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-092.json",
+      "hash": "08efb0acc4efe762fda59c2fdf61d065ef775a13bc8ebbe36265c7ce7d3a56d5",
+      "bytes": 31244,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-093.json",
+      "hash": "f532c7a3fb9cdef3939d0e1194f023b028aa22e258440a4054a934c6283d1bda",
+      "bytes": 31731,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-094.json",
+      "hash": "491e69cedb32e68716473edf34b118144130bbd92c4f4a37cdb63f783e7fb0dd",
+      "bytes": 31199,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-095.json",
+      "hash": "44a01407c00da7cce20e9dacca82684461c1f45c209f9bbd2bce2e37dbe9945f",
+      "bytes": 32008,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-096.json",
+      "hash": "ea086ed4c89b4b802417fa2e99ceeb73cffbec22826a2d4696d5adea58beb84f",
+      "bytes": 29743,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-097.json",
+      "hash": "8ab1e1aa7217a7c3a4a6c2abbce60a4b21ad2afb68c5e3c9310ca0d125b68bef",
+      "bytes": 30466,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-098.json",
+      "hash": "5957418532e77b97975e8d15957997cfd3ef48d5b36d6f1d04ccead2a8c60a41",
+      "bytes": 31499,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-099.json",
+      "hash": "5e96193529793bb70dd12f242153730a61eaadb28afee6168ec699a26eb63cd5",
+      "bytes": 30112,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-100.json",
+      "hash": "183f0de10aea48cc16ce2d4b049ac5d38c596a4beaca0654ed4070a0fb19360e",
+      "bytes": 31451,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-101.json",
+      "hash": "a922cbc40f45e2fa73024654355bdf32f5b354a08ccd3c38c3f0802ee789ffda",
+      "bytes": 30805,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-102.json",
+      "hash": "7cfd393b31e722796bd6f447756ebd0a2ccca61d4329d71a16958ee35bf38f4b",
+      "bytes": 30339,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-103.json",
+      "hash": "a00974172b7b624f8ee9635ba21dcf675f27f314a531062177c14ae5a5212638",
+      "bytes": 30859,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-104.json",
+      "hash": "2933559339e2b5e57182041dc88cc524ecf87dd5bff929a47522fe7c6b560d34",
+      "bytes": 32055,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-105.json",
+      "hash": "4f230a19448f14cf33bc02fd94149182cac7b108f2e88a73ec5963d356dccbd5",
+      "bytes": 33410,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-106.json",
+      "hash": "2cd3980e1b140fbe4ef2dfb7ff131a9d6efc62e28178b1a0c2cfcea0a91df907",
+      "bytes": 33379,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-107.json",
+      "hash": "db6082babe4c027cf96d2b3af00f3855303e5625a7b1fd6ffe7ac699f82d3fc1",
+      "bytes": 31443,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-108.json",
+      "hash": "74ca049f522dba1ac04f7543b5f31cb9be1cded367b2871cb21a8b41d0353ef7",
+      "bytes": 30457,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-109.json",
+      "hash": "63a76bdaa00fa8449f83cfb2247ba4828282d633fbffb6ceaaa128056d54a89d",
+      "bytes": 30762,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-110.json",
+      "hash": "bb9459a35f9944d266cce6f502a82e15141a025bbf125da8f0f5140bf21e355b",
+      "bytes": 30898,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-111.json",
+      "hash": "0b444381d89dcfd54b6a6e4f95231b1aeefd6b231a355fd8b2ec0018c6686714",
+      "bytes": 31289,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-112.json",
+      "hash": "63ddb5fcb4bf34007f5d9b50d2bdffd343c397c76089766f9b052d80dacbe6d8",
+      "bytes": 31479,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-113.json",
+      "hash": "b964425c495f1a2ff8857a79d11aaddc3a838d060fb21be3e4fcad88444449fc",
+      "bytes": 30252,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-114.json",
+      "hash": "b5836e8ec33cd868b464fffc120ee4f2116af8255b477d9bd5d7e26ff2999c8e",
+      "bytes": 30350,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-115.json",
+      "hash": "c65ee981579d0945be65ceac5cb13ef509c0cb3e40ae34c7a3c04dfcf19d5b2b",
+      "bytes": 30427,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-116.json",
+      "hash": "022016b0c127c5230123ee9b79bd1bfecbffec09bdfc63f1e72b6237efeaf65d",
+      "bytes": 30987,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-117.json",
+      "hash": "63190bb5d47cd91b1545137d60a20488a64f620f23a595fc196ff3f8d352eae9",
+      "bytes": 30827,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-118.json",
+      "hash": "22cece66a3773021277a6270e1962513d7c845d91740688f4745bef2572d9590",
+      "bytes": 31492,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-119.json",
+      "hash": "e794c52a19cdefeb22e95daa02b145a6896b1c770a33f71ce16dc5f540451984",
+      "bytes": 32230,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-120.json",
+      "hash": "03eb6446f135344178cb493b31bfdd6ccd515e84d0564f4d9b47c6f3e16be3e0",
+      "bytes": 31010,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-121.json",
+      "hash": "3ed73d076a56bd273f18fcf1b174617c867e2982cea98220a3ce7dd42df160e2",
+      "bytes": 29994,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-122.json",
+      "hash": "d831c62c8539dbd7fa0eddddfa5d4c25a00790d00f726a10b755c7bb4921c03e",
+      "bytes": 30189,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-123.json",
+      "hash": "8bcb14cb42012d6112547c409d6cd215351e1a2dc94c12a28b40a6457dc6d751",
+      "bytes": 31550,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-124.json",
+      "hash": "d8cd8a1ead217be7b8d5241b98367853d08a0a19913bad39b89abef18208910a",
+      "bytes": 29632,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-125.json",
+      "hash": "b7a38036cc4bd81d8d80587f6dda34820ba5b2c73f88dec56a75ba90a1dcc365",
+      "bytes": 32415,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-126.json",
+      "hash": "885a309ab65d367dd3b52b3f44b151eddf5a74d9d6cf36c953c2a83b2fc862a7",
+      "bytes": 30266,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-127.json",
+      "hash": "c16fb4ede2e33257cc8bbbd7cbcedf2a0ac666e3cc495755a54b7e91fb539a57",
+      "bytes": 28412,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-128.json",
+      "hash": "835005752fd765964d5c7dff29dc6656951037e50b70909021a74a4fdf1a5960",
+      "bytes": 31240,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-129.json",
+      "hash": "64ef8a98948695f26a68e59938d3a274c77d551d11d6dc2dd1ecdad935b9f6fc",
+      "bytes": 29852,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-130.json",
+      "hash": "0cf712f44ee4a621390fd926e276f9da1d2ba4a637b49fd8148318a908977ea1",
+      "bytes": 30807,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-131.json",
+      "hash": "3e3b5c72572ec74121458f77067b0b0961031b05ccf5f43dbc39d2b8681a2c6e",
+      "bytes": 30345,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-132.json",
+      "hash": "637199a63cfbb1a978246a26630c9a4e0ea8efc64fd2902b052d29371f52bb1c",
+      "bytes": 31529,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-133.json",
+      "hash": "aa2c5341cd5442b47fdfe13537600c69a7d2af3a116c528b557bb12612f4bff4",
+      "bytes": 29998,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-134.json",
+      "hash": "e098ccc011137b463e81b45ff9efce25b96efc585344cd628838f48e1e1baeff",
+      "bytes": 31925,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-135.json",
+      "hash": "6baf6baa21a7a5b9e68407f054477c4f6f189732f4e4eee02daf7411618f4e14",
+      "bytes": 30613,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-136.json",
+      "hash": "3f1c8bebc7be9d62cd02bafa703f8319d758e169d631185fe53ecd84aec29a00",
+      "bytes": 31015,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-137.json",
+      "hash": "31b449469fae3cf81e14884aa43f5e722170d7630d2294daf050fb371cd50ac8",
+      "bytes": 30391,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-138.json",
+      "hash": "4c5803e327da4b1d76fd476f45a9c9e3dd006d1a5ae9bca3aa59c08db10e69a3",
+      "bytes": 30357,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-139.json",
+      "hash": "9732d58379f11d2306786d9ea05a79eefcd375cbef462c15d568ecfefb0bde51",
+      "bytes": 31962,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-140.json",
+      "hash": "d20516f6de97c739a6ed6cb0a89a51f23f65c5ead9d1a8883cde31a8419c478f",
+      "bytes": 30932,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-141.json",
+      "hash": "94ca4b7732bd3b96001a81778a4aca3410ee55e3be19d04c427762c3c6e728e9",
+      "bytes": 30453,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-142.json",
+      "hash": "401536b8758484b6b1847ffd1467a69163edb59765a081a30f4246fb5ac1308a",
+      "bytes": 29519,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-143.json",
+      "hash": "c19414cf62f8bfcab3cf0d284d3b176ffeb40092855ee97aee720f7cc42ffbec",
+      "bytes": 29535,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-144.json",
+      "hash": "9d3955770756b1a73adadb6436829b5c55f98f1bf3bc6f91195019ab99f0e78a",
+      "bytes": 30527,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-145.json",
+      "hash": "6938b7ec0f5726dfb877fac01b74c4b4d044bfcb8a5697f3f4b7d277e387ff54",
+      "bytes": 30189,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-146.json",
+      "hash": "1fcb31cb5ead5c9e2d9ab437c8281aaa494f910b0178570b700d6f9742897a61",
+      "bytes": 31999,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-147.json",
+      "hash": "2b8b8a0a363c1a140c1cdc772daa92be772df56b16be5f2e19e960d023b87ee0",
+      "bytes": 32646,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-148.json",
+      "hash": "93aea70ed7edeb2c8b4d5e87910e3f417a073083613b91b679046e5f1f1b8b0c",
+      "bytes": 30249,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-149.json",
+      "hash": "7c03fe6908de429ad669b62363fdd8ed75d7272af4a624a63e783270ceb98d9a",
+      "bytes": 31120,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-150.json",
+      "hash": "bfbd18f2b25617bed6d98d7658d93cdf5ca65d349d78d3e6850046806246393d",
+      "bytes": 30673,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-151.json",
+      "hash": "6c24502faf07693e01dd110eda1a76f61d5081aa38ae391a8b32387fbdc9d716",
+      "bytes": 30931,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-152.json",
+      "hash": "0f54f0fb9af04ddcb6089f3b1c08a3d83f167588daa4cddc4e5d71f34da0ff8f",
+      "bytes": 29610,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-153.json",
+      "hash": "c9b8db5b87b83a4bb475e4f6df99cbdc2b6b9027de8b18c630d80e2234efffba",
+      "bytes": 30174,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-154.json",
+      "hash": "02e248c7146068d4c9639dee78b8ad09e9cfa22c1ffb0907f29f961b859480a1",
+      "bytes": 29994,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-155.json",
+      "hash": "d6c4ebebe767ce87f3966c7afd4fc0e2ce08c8fa54d50e2901e801f496480103",
+      "bytes": 30782,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-156.json",
+      "hash": "58fbcbe3058fb905d239437d5e0104dca1c41de1d3aef2d20390ce3148cd9852",
+      "bytes": 31077,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-157.json",
+      "hash": "15febd60e6f7cafad082a86362c49d75110f5dba32a22f2840d75162b696e0a3",
+      "bytes": 30659,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-158.json",
+      "hash": "e5475de031d98f6bb73614d927ebe3b09ba541c6f0f472a7edcb85bcb459cad5",
+      "bytes": 30364,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-159.json",
+      "hash": "cb6178ed602c60ee31ab2787e16c9c7eb32fd18b9a778857bce8cea8d6fd2a9e",
+      "bytes": 30880,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-160.json",
+      "hash": "341adbef66507eeb098b3a852cc72eb62d4a374ab64b8819479e923196ca713b",
+      "bytes": 31521,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-161.json",
+      "hash": "cde498e5198168a87c4436521be3bdeb194b2ed0a72c60a70c7872c77ed36554",
+      "bytes": 29163,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-162.json",
+      "hash": "b2c574c1f0561cec2421a1da906fbf7deabd95bc029e503c86273f68213d86f8",
+      "bytes": 33522,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-163.json",
+      "hash": "40d5c8e1797a6d647362623ce3348f9b67040c66819e655c09606ced431d6a7a",
+      "bytes": 31010,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-164.json",
+      "hash": "87a826268a80533db465ece87653d54e480d84c2aea7535f2ce22be16e28def3",
+      "bytes": 31672,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-165.json",
+      "hash": "1e29703c8159a50e8994fef3fd108ce1eb7c8edfa36eb6ff1d7d0a05a5863f15",
+      "bytes": 29699,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-166.json",
+      "hash": "a6e763c12df05459859b4c665b3274bae0f6add330b5e7590c5a64547adb2eef",
+      "bytes": 31294,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-167.json",
+      "hash": "f84f60b13e784bda300c02477710c06bf4ecd91804df21246d9d5bb6c3687ee0",
+      "bytes": 30774,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-168.json",
+      "hash": "d841136dd920c4a15a54430e54665fa17349728b7d47f2a78204c4f73c94c548",
+      "bytes": 30417,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-169.json",
+      "hash": "74f7d0231da262379cc97175023999eac2064e55fddc32ed381688237684f766",
+      "bytes": 31620,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-170.json",
+      "hash": "9021c4bee1626c54ec9c463879e68e8e6a07a2c057aa3cf1778002afbc43a4f1",
+      "bytes": 29671,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-171.json",
+      "hash": "f0b99a6d24491621b38c51b9bfa23bc7b41a3f99216f0fcecbcfef24d6b4d003",
+      "bytes": 30581,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-172.json",
+      "hash": "e6f669ad7fd08c3b699dfd396d671d52e8a28bb9e5e836dc9ef8ff3fa2e3d993",
+      "bytes": 30909,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-173.json",
+      "hash": "937af15b053276c2c0aa1e1f71e4530e09f824c059f1eb10746add45dd1ab1a2",
+      "bytes": 30434,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-174.json",
+      "hash": "b1575c1bc6d2248ff124c3f0a7e765dc15c8b74496951edde2c9583c85a24b97",
+      "bytes": 31022,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-175.json",
+      "hash": "86b932a515cd82fae20d229e3f04a21285fd204b1ce9c033a47f22868329534a",
+      "bytes": 29707,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-176.json",
+      "hash": "8527371ac45892d43309100862eb0162521efafd06d1b8d20b614d0d25c89543",
+      "bytes": 30831,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-177.json",
+      "hash": "00ab8ed9d6cfc881b75c27bda208dc3b6da243c9272405b39d9ad1c74ad22a4b",
+      "bytes": 31643,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-178.json",
+      "hash": "b3495bc20c06fcf000d01b527eaea079272069c74434f982c1c8513260732511",
+      "bytes": 31620,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-179.json",
+      "hash": "82db113de690599bf78f29294371ab2876f7236dde9bbc0c1a2624b2b8fef2e5",
+      "bytes": 30984,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-180.json",
+      "hash": "4c1ffa2b93723b99c4d1d3b2d5ef903434a893b0c4112c47e39cf054cc2891c3",
+      "bytes": 30913,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-181.json",
+      "hash": "563744df13a4b0fa72abe4020bb94aeac3c5fa188066f056c17b285bfbec042e",
+      "bytes": 29465,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-182.json",
+      "hash": "8404883ebff1936e2690a695db26f0f3abfa6d4f612ce63b23652dc7c1186982",
+      "bytes": 31433,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-183.json",
+      "hash": "48f7232409e1b4d227c598df9965fd61a54547a650325a306680e4c10cf733d9",
+      "bytes": 31801,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-184.json",
+      "hash": "18dd41a48960bf75e461ba30f2454a1787c51ae40479397390ea2d15c999e0d0",
+      "bytes": 30983,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-185.json",
+      "hash": "f3b81b781a5974a9c9555b28482e2d761e36c8b42bf2af4fedbe74afa7b584f9",
+      "bytes": 32180,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-186.json",
+      "hash": "91ec12058ff42a5b8454455bd0914d80734bf8a9804a6169f7d9950f5f2234c3",
+      "bytes": 31103,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-187.json",
+      "hash": "3956da3aa0c425946198f7bade65740c67e2b0de82ee149dafbcb7e50cb47664",
+      "bytes": 30895,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-188.json",
+      "hash": "963aa5f97d4250c535661a745343de48d29fd05c6882381245218cdc15fbd433",
+      "bytes": 32108,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-189.json",
+      "hash": "a4cf74865aea38740c9404da80cb7abbb783b2620ba7f82f053df3d1e6df4a98",
+      "bytes": 30745,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-190.json",
+      "hash": "0f513e5537c20250824dc63a5efb8b88685de54486c35f21b04c893b9bcfb4f5",
+      "bytes": 31947,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-191.json",
+      "hash": "8050f0f19f9fe4bf6578b37376e5e6d0bc48cfc57fbe421931cf61606c87e4b3",
+      "bytes": 30915,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-192.json",
+      "hash": "a6bb51e439eab0d5a54e663f3f07bf3b2717609c49b41015895f2f7bb059defe",
+      "bytes": 29851,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-193.json",
+      "hash": "1a57b15fb5e4b966771d51af6bc7326ad7b551595e3199c872a47cfc122ff288",
+      "bytes": 29626,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-194.json",
+      "hash": "daa2dc7bd9c2c46db75ea21772202984ab9a9b7c6d575004789db6ba04e2dc3c",
+      "bytes": 29680,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-195.json",
+      "hash": "638494ecbceb26fc8f2c5c13e49979ef2d5ebba438b3f01d34972897fc4919f1",
+      "bytes": 29880,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-196.json",
+      "hash": "7586bd26ba04fe94b97442a595b7ffce120a0e8d7b1eb3bbdd6b7d7a5ea0ec94",
+      "bytes": 30005,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-197.json",
+      "hash": "56a2c3269f39eabdb927efd7792ad92d778da987c0bf4d1fab91491e41e480a3",
+      "bytes": 30646,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-198.json",
+      "hash": "5054c6642d08c020e678b2c648b349070c333be483295a31287174b9a43d6b30",
+      "bytes": 30787,
+      "soft": true
+    },
+    {
+      "path": "datasets/ag_news/train-199.json",
+      "hash": "7d333305b249b9c89b920a46e1d1f1a1f3adce2e6323d6cd77ef62f5887d4109",
+      "bytes": 31770,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/test-000.json",
+      "hash": "6f6cc068a193fd2a9cfe022698c0c0336e9ff3954c6ff97493131f13b8f54255",
+      "bytes": 15892,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/test-001.json",
+      "hash": "b59b7ce2df5094c25652728a435259a2be366632ef3bf0fb81e4f0c162b3cb12",
+      "bytes": 16510,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/test-002.json",
+      "hash": "4fcfedbb92fc268f0ef9473abefb4f33104016c13d116a0e5e438f21c2fe42f7",
+      "bytes": 15728,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/test-003.json",
+      "hash": "7d7db8cd2255aa406ebea842fa75cf5dcdd44c5f1f68d1ba9c7ca29db4f53614",
+      "bytes": 15504,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-000.json",
+      "hash": "51ae2a4ba9bf428ec9b3f31cc89b9e173e51e7b07d48027647736b4c19bd52d1",
+      "bytes": 16622,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-001.json",
+      "hash": "c7c4d2f67e158c7c2d7e1b9722298c665c4d140273deb5630945836581579412",
+      "bytes": 17649,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-002.json",
+      "hash": "62c48cacdfba0b36d2b1ba88297dd68fd1343a1e462c1bd858af6c3d55e3618a",
+      "bytes": 17792,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-003.json",
+      "hash": "66e18eed058013d78545ce190f7931b29654fa76489d4676e0ddb20a09ee10ea",
+      "bytes": 15479,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-004.json",
+      "hash": "e2f628725a89e01c3b8359d0c258efb0bfe7a28cbb4ab15910715f72094414e1",
+      "bytes": 17353,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-005.json",
+      "hash": "da56c108dfae33be3c95d5dd6c4be9cff74b6a60e65c08a85f1f9779cde1b348",
+      "bytes": 16524,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-006.json",
+      "hash": "ff335329637c986a5329da5c92c4203c6ae6f70cbc29fe9f85d2cf8b4100b34c",
+      "bytes": 16316,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-007.json",
+      "hash": "0b932893509882160193d0b2c2858e9c8a0ce5837ce662c23c734b725ad1c607",
+      "bytes": 17580,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-008.json",
+      "hash": "4add7a3ab486e06cdede2875fd1907fa1f2566c2d435d7d70df316ac543c57bb",
+      "bytes": 16692,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-009.json",
+      "hash": "b5ca91d6e1e04f53872e0177124452b045138782eb0576f8481c0330c6372fc0",
+      "bytes": 15520,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-010.json",
+      "hash": "b389c12f1c11f23850dbfa657cf6f820c820c82785f4596e226c7ad544ff0cfa",
+      "bytes": 17325,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-011.json",
+      "hash": "eb692ce9dd91f59cfbf4d644287f9bd219d277a68e6e216ad4fb707fa473286c",
+      "bytes": 16975,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-012.json",
+      "hash": "234075dd3b673b311c98c96dc828f6aa5a52f80e004ce59fe7bb389a8f2c51e5",
+      "bytes": 16818,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-013.json",
+      "hash": "01a22b418327839d962d99349ab645f4ef7c588865666421b4ebe4c95aa11913",
+      "bytes": 16860,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-014.json",
+      "hash": "a08f45f41db3fec36d30bfcb257068d6067967e75277a4ce1d3231af44a1b8c0",
+      "bytes": 16835,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-015.json",
+      "hash": "410f00b724a3d1e9847e12ccecf714222bacffa96dd3c5900c04e2871bb10e2b",
+      "bytes": 16509,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-016.json",
+      "hash": "afc9f657f12b6c0a514d82f965b7b4335c37cc65489b78a7b3fe8a2574991bc2",
+      "bytes": 16511,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-017.json",
+      "hash": "ea80ac1ea27394720a75425254b15fc561c6ac0bdd435065fbdf489a311ad06d",
+      "bytes": 17311,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-018.json",
+      "hash": "d29746b36911e3e5531aee291fdcf5a5e8b8f713d96870c8cef44e63217cb805",
+      "bytes": 16215,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-019.json",
+      "hash": "c6552958fc3cad8cdfd1efeb173aab41aa22af6637d8aff21df2600748e3f6bb",
+      "bytes": 16122,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-020.json",
+      "hash": "ac50ee0b41ce4bd06ad642d614309e6bfb884404aac4f88dbb925f033d6a6b95",
+      "bytes": 16183,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-021.json",
+      "hash": "7443d3e760f31337409c2a14378b9d176e78eadfcbcb87e69f9902f89b37d287",
+      "bytes": 15642,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-022.json",
+      "hash": "af102f345aa072b7759586e77948a1ed7b9b75c1537a11bbdb1b51ac0cad4105",
+      "bytes": 17209,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-023.json",
+      "hash": "db9b915b26e355ba649c27c4d349cb2bddb4b9ab2afb33b218fd15c1bcb414af",
+      "bytes": 15221,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-024.json",
+      "hash": "4d2af20f93e76cfdf2548565d605a94b59e3384b0c5be1184f45f43a675355b7",
+      "bytes": 17058,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-025.json",
+      "hash": "5383d5977d08edad0747c8ec57a676dab3edc598d5b70da0fcadaa55280b8fb7",
+      "bytes": 16280,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-026.json",
+      "hash": "fa9f0b673c334d6c041a8eb52151f14b2a2930b1e7f8b7190e646e7930312c1c",
+      "bytes": 17401,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-027.json",
+      "hash": "59d95781182b148e1b61aa33eb08ec809a668f9efa8080ff17c6b99b433f3130",
+      "bytes": 16663,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-028.json",
+      "hash": "1dc1d6f885dcf17421bef20f05aeb2ccb01d38995c9fd60ff63524579d34d2eb",
+      "bytes": 17004,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-029.json",
+      "hash": "33284e49894456e40b1d2c31e9c3c8195fe690a8edcfd45416f2d28d8f626ac4",
+      "bytes": 16406,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-030.json",
+      "hash": "f30181eb7c4cbae5106f6d8b148890e3ebfbb19e0e966324ea350c565def505c",
+      "bytes": 17155,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-031.json",
+      "hash": "139512ad93c17cc0aefc3bf61dec30930e3f6e07c829acc68b08eae72351bf3b",
+      "bytes": 16415,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-032.json",
+      "hash": "8c305410e568638899a6e1e540603fb0689f5b908195e4d2246c14b69e37bef0",
+      "bytes": 16442,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-033.json",
+      "hash": "9cad8a65839d92534828610a90a8244368220dc368a50f59910e9397c1b4392b",
+      "bytes": 17309,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-034.json",
+      "hash": "f877661f4f0e5f217235e0e4a5eddf4db10a227851298e3a0337a1f803a9c8ea",
+      "bytes": 15826,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-035.json",
+      "hash": "314f81f7645be83f2415597240c9554264c147c5ee2c4ffd67457e781f190425",
+      "bytes": 17106,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-036.json",
+      "hash": "2d13323863bcbc45c4aede7980f70619dc8564b757f7e59757bdf0c3e2129abb",
+      "bytes": 16685,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-037.json",
+      "hash": "91e013ffd37e954974e3b7b67df7c97854d71dff9405c12d70fc23c56d699fd8",
+      "bytes": 17108,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-038.json",
+      "hash": "2fdd65380487dba0e63b472b031154d40cc6825721be3426f5c9a49e26d4ab22",
+      "bytes": 16416,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-039.json",
+      "hash": "616c74e245ca74dc8be0bb6fa7ed467d4e1bf799b73f4578394a65357f00eee6",
+      "bytes": 17496,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-040.json",
+      "hash": "56662e3f325518e578ef3c3d760bc3166ca874ce2d125f4e361bc1e17da973ac",
+      "bytes": 16838,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-041.json",
+      "hash": "81c24907b9f6c3d3a00c6c5aa97a4995bbb2b355a5e83dfec0786d36c4c88eeb",
+      "bytes": 16080,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-042.json",
+      "hash": "17dd3800ebd2776dc90d7b9b3b770780510d9d88eb022efac9a1bb18d930581a",
+      "bytes": 16704,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-043.json",
+      "hash": "f495382c086d71d488744c2df1fd8db542b0a7c970bfceecae95240daf4c59ab",
+      "bytes": 15374,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-044.json",
+      "hash": "5ffb6f449c23f96836075c4a99d5489488b5731ff29a245fcf6eac9faa18bbff",
+      "bytes": 17424,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-045.json",
+      "hash": "85c9fe6fac399e3d088670512dc48ec959ea846c021582d024fa4168db420827",
+      "bytes": 16586,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-046.json",
+      "hash": "9f33f382205fd180c3b08a3f47e382d938cd8c77c3ed61b2587574e167a84d11",
+      "bytes": 16005,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-047.json",
+      "hash": "4f527de0a796d70171e94f70cd01288e9ed5eacf30bfa328ecb2b4a19b43103c",
+      "bytes": 16230,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-048.json",
+      "hash": "180c004cb09b340600ed384ebc8922dde8caca40820a15aaf2e41706791dcfc0",
+      "bytes": 15904,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-049.json",
+      "hash": "bb886fdde620f5d56999382b203004952c469239b5648b5d08da676b316bdfe7",
+      "bytes": 16618,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-050.json",
+      "hash": "3730984e2bb32a164b4a10b80d4752c5e53d70d1f019736e403fb2cd889076bc",
+      "bytes": 16999,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-051.json",
+      "hash": "722888e0e8fbe74c8991ab7a76b22c0ba323d6f4113cc625f874407741229f89",
+      "bytes": 16963,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-052.json",
+      "hash": "1a620762df9eb40c3241e231958758bf322a17eab84a6f67710bbaef2f8aa449",
+      "bytes": 15645,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-053.json",
+      "hash": "78d2988a11a27e553b3f5fb64899af7fe7ad545e5c38875cc8c5e0cc8ed7a6cb",
+      "bytes": 17288,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-054.json",
+      "hash": "87d71d5bad94138a1ab85a478116fa2a361a40b6cddceee9dde32e0085e240f1",
+      "bytes": 16398,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-055.json",
+      "hash": "cdb8425556c5ca8259e118b62b67dd0aee881bb971e04df61912d9ecc4e5fb8d",
+      "bytes": 17163,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-056.json",
+      "hash": "dc3afa0d1fcb2e399642c43811f4243d80fa1e39349c9024b28c5d0be5f949d9",
+      "bytes": 16602,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-057.json",
+      "hash": "e05ac1f5c551cf2f5b2669c16bad1393b9e94eec1dc8b331e9b1dec21eb99ace",
+      "bytes": 15863,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-058.json",
+      "hash": "2f2a5d90583507d047750a100885eabf5254924e85dbcc88c871b6d08e6b94a6",
+      "bytes": 17258,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-059.json",
+      "hash": "7ab2887a93a938c144ba3580e675818be96f2d661d589dc5216a06a2e7256200",
+      "bytes": 16976,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-060.json",
+      "hash": "b941a4e9ab35d9f6e588725d9982d1c51788699b47b309abefd7a667f6a53297",
+      "bytes": 16406,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-061.json",
+      "hash": "9ff83c375ba4556816d4552782671fa4807bd8f00cdff309b097c73936ea4620",
+      "bytes": 16652,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-062.json",
+      "hash": "61e70ef85b0430a47db4d309c3685cfcaa5d4220c269cf4e94cba25b497b107e",
+      "bytes": 16289,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-063.json",
+      "hash": "f343ea01a168f85bb27582d9f5ecc428c02010474719b80e19ae01d8a9d318fd",
+      "bytes": 16417,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-064.json",
+      "hash": "ee04dccb7dc33251392fa18d43da5a362e23b1697f52ab964803c8d4241ca0d2",
+      "bytes": 16590,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-065.json",
+      "hash": "b341156d0ab5da05ad91f0916b7df1080565b1658d93926b1fabdabd1117cc1f",
+      "bytes": 16870,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-066.json",
+      "hash": "e42b6fff244c660816f923f09a4a27c73874e02abebb3a7f652f6c74f8157ab5",
+      "bytes": 17551,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-067.json",
+      "hash": "b8eb9d71021ec77b0fc9d36e37362276570fea4aa2f96c64d42e8f87a3f2fc7d",
+      "bytes": 15320,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-068.json",
+      "hash": "279a99b34adbc2d11681115deb52f7192097b3ac9412f792c761b077a839ba74",
+      "bytes": 15559,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-069.json",
+      "hash": "47ef0571d155eae86e225b916f5ee47f95bf840c682781be40ebeee5e10c7b02",
+      "bytes": 16995,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-070.json",
+      "hash": "084916c6890ff4088a3be621e581c13ad8657e12dcbf67c43506d6373f91294f",
+      "bytes": 16286,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-071.json",
+      "hash": "e665362de113d293325d51b2db7289f3722d8a0ac10ede33a79d9a855789213b",
+      "bytes": 15691,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-072.json",
+      "hash": "1879ccaf4942daa229406203f29dccf96100ed96b5c2158e3281dcb843827c48",
+      "bytes": 16607,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-073.json",
+      "hash": "f81b8dc007ee6f405cef3d82b2f0f3f8f7dff040bfddbbb7366e56482d6a7c36",
+      "bytes": 16782,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-074.json",
+      "hash": "be4b583b13477873efa9d3044cacc85cf8eeddbad3382b2e5c7f88759ea952b7",
+      "bytes": 17863,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-075.json",
+      "hash": "e8601a53f982edd999d62a929300085d0c5da333b7c4841a3c74cb574ebbdff6",
+      "bytes": 16345,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-076.json",
+      "hash": "56fe30f094c8cc362c4bd9f7dd3ffa5a62951651d1448c5e8c336383d160bae1",
+      "bytes": 17173,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-077.json",
+      "hash": "326c384a077fae19767d7283497760a6bbbe030c29f9d1fc8d679b835bd76073",
+      "bytes": 16052,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-078.json",
+      "hash": "2402208a6978e1f013dc5829171455750cf161df40439bf50a65168de4037a6f",
+      "bytes": 16463,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-079.json",
+      "hash": "54b3a8b7919e41eb1cff3d715890d3ae1c1433c781d8fd1d2cdc7e9d4138ef3e",
+      "bytes": 16504,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-080.json",
+      "hash": "e297deefa183a515d12f0987ace0bb0307d926e8f9adcdc243ce1ca3c9140b63",
+      "bytes": 16944,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-081.json",
+      "hash": "49c0aa548d4868d67311bcac2443b36e4518123ab300144e2b24e99e4924f83b",
+      "bytes": 16513,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-082.json",
+      "hash": "dd8df05eaf0d082ff9c0a89b90f847986952e1a0b55499cdcbbf7fc338742527",
+      "bytes": 16159,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-083.json",
+      "hash": "ebbcfd30b301c83a11a3ad97c3d2c039ddec53c873e261c28449a3a74ad50b23",
+      "bytes": 17077,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-084.json",
+      "hash": "680e9e49b549dc6b4d0ab1db10e25a8d237d93f8b05b52fc25a9576e096badb6",
+      "bytes": 16546,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-085.json",
+      "hash": "71665f1e41dd25d22345b2a0d3f7db3ba12823873c7b97110254cc58c58aa76f",
+      "bytes": 16560,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-086.json",
+      "hash": "9ce81a747e761a597ecc70acb5aced83c6a2f1361be7b4f580f94c237d3ac7ad",
+      "bytes": 16317,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-087.json",
+      "hash": "874522865232f54db34a6f6daf49c061d8f058ba1e7a7c443914e179e2389df4",
+      "bytes": 17242,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-088.json",
+      "hash": "bcbacceb42628efbcb987f99cfb6002a11a21496180ef52f195b5790a3b553e9",
+      "bytes": 16551,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-089.json",
+      "hash": "e2a92071541b7ead8cd1c68d66876609cbdaa869604e6aa330e55e1948abaad7",
+      "bytes": 15851,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-090.json",
+      "hash": "d03b76aa4baf5cf441da9ea5a405e61bae964295a3d7595edce3e6a315909913",
+      "bytes": 16276,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-091.json",
+      "hash": "debaaeef03adaa4e48c6131571dbf313288dca8db7ca6df355527470671fbd46",
+      "bytes": 17065,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-092.json",
+      "hash": "980aaf619f96b258b04cacb4ba9fe95369d01e932f5a42e9c551cbc1e6d68cc1",
+      "bytes": 16417,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-093.json",
+      "hash": "11733317a4ffc813d33871d7bece12a9a55095763fa441c2af7b29f36f17cc50",
+      "bytes": 16618,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-094.json",
+      "hash": "87b0e7b8501132f44a08f3d37df0884295fcfba2e0a47e7e3903bb5414bc4131",
+      "bytes": 16625,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-095.json",
+      "hash": "13c78d008fec1654542229cfa005848b638da1d5804071470dec121f2a25c31e",
+      "bytes": 16548,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-096.json",
+      "hash": "e3e09541872e8fd5c0d965313fb25ac5f01c6fe4ed80d442927b5637ca730c4f",
+      "bytes": 16706,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-097.json",
+      "hash": "e0753d89ed7973d5f8d1cb1cba76f06be7ba09577666d0f2195bc79fc2929c77",
+      "bytes": 16954,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-098.json",
+      "hash": "2a1da91ed17e84b3c30904ef8c31b6b20e0263d4f3cc74c541c95e1d1bb23289",
+      "bytes": 16866,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-099.json",
+      "hash": "48c45a71a5e6864b6d4dc4dba5e82a2a7d90fecb71e2a06cc8d010be7b8b22be",
+      "bytes": 16766,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-100.json",
+      "hash": "df50678d3b496d562f4bd7181886326eb90dc2b307ce4e50c62d5c2aa11582a5",
+      "bytes": 16275,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-101.json",
+      "hash": "64a3894588c815252c6752c09b6f6b3a3303ae9164c7abc3ac0ad1d3ebb189a1",
+      "bytes": 16141,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-102.json",
+      "hash": "1c291e40b259bda53fda4fe926f3daee3a22fc82c6d911f80fe9a8bdac55787c",
+      "bytes": 15796,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-103.json",
+      "hash": "9ee315d6f11bb3d1341e9702ff8dc1ef23a6562378795e0feb81bf90470e35e9",
+      "bytes": 17861,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-104.json",
+      "hash": "84e6cf17dfd5623096dd3ee86ec45721201e76960b71da38db7a0a5007b500e5",
+      "bytes": 16777,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-105.json",
+      "hash": "bfd6cb264bf17d59b582bc70cdd09e33a310c6f2e4a32f5587b22d9f72e2038c",
+      "bytes": 15974,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-106.json",
+      "hash": "c4e0e212bad26ff3a35dd034d7605386517fddd85b714d9c50e4ed3c30334091",
+      "bytes": 16059,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-107.json",
+      "hash": "8ee987716dfb6c2179ac881ceb4acaf39ff39511f9474ae0a18a9cda5f5fbadb",
+      "bytes": 16413,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-108.json",
+      "hash": "62b6f57ac8d3b1c1aa3b0556d962cca69491244a2046869a861f110350f55da0",
+      "bytes": 16277,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-109.json",
+      "hash": "5fc1a06ebceb2ab83a5423226c19b9ecae9fe0f2b5cdf47bad1428782c40448e",
+      "bytes": 15970,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-110.json",
+      "hash": "3eb4407af04df1e9a96cbe9b3472eca4a637d37180e2831f390c20f09b771ec2",
+      "bytes": 16789,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-111.json",
+      "hash": "e12a28b57af648a76d39c4a3949991a5256ff926a3324cb0e5bed3af5c1ae970",
+      "bytes": 16402,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-112.json",
+      "hash": "ee26be65744508a5b4711bceb2c4a7202d595b6cedff6151c39ef9671049a383",
+      "bytes": 17559,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-113.json",
+      "hash": "9bf18286daf08c565c230cb41bad6a00e67dcb2996655f927df6b880548aabaa",
+      "bytes": 17200,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-114.json",
+      "hash": "bbf7839ee69debe31cd318b279098f7425316d668b13a6646d2d763db41930a0",
+      "bytes": 16148,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-115.json",
+      "hash": "ae3f2ca58047e4353c5a38719dfde5706374bb41c7e32e9d5988fbf682633c86",
+      "bytes": 17441,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-116.json",
+      "hash": "d66aa0bc57420600b63727eafeb28cd77e4379d0242ace2625bdb26a44d17a9c",
+      "bytes": 16434,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-117.json",
+      "hash": "ac1059331700f6c62f4896c215a8cd0d8a30e9eb748bd8d0f4a2d0b737268c00",
+      "bytes": 16419,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-118.json",
+      "hash": "95a9db8dc591c2aca3ff0e47e343a607d28c1dcaa30b3dab8e31f3ed153f1bad",
+      "bytes": 16808,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-119.json",
+      "hash": "4066a9883d08f75acc76d81287e3230d2762eb1a12e42318e39e853c69af2ee1",
+      "bytes": 16950,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-120.json",
+      "hash": "152778af0151a907e14f66cb7980cb6cc1d826bd7eff5e7a38a3b646a19b1027",
+      "bytes": 16540,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-121.json",
+      "hash": "4c678047e4e92cf1fc25ae4482cb0a8775e3a5b6fee72d8cd706de14a9662199",
+      "bytes": 16242,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-122.json",
+      "hash": "782eec78cb493ae28adb7efc4209575363cdd4bb971d1efe03c00752694b5ba9",
+      "bytes": 15705,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-123.json",
+      "hash": "1aa1289576ab3984652007caddfaddcb9851afa999c66984ea57d1da819f92a6",
+      "bytes": 16317,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-124.json",
+      "hash": "0b63673864620e431a794b1775911adb9f4e733169ebb01062ad790905afff5b",
+      "bytes": 15566,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-125.json",
+      "hash": "807628ca06a41624e9a0834d1d6ddbf37a85b6925f7e08904221e8e6d47c4441",
+      "bytes": 17386,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-126.json",
+      "hash": "c35a158b4174714a25691fd41491cd0461360cdd3ef3fd897c3fc03b18437e24",
+      "bytes": 16306,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-127.json",
+      "hash": "50130a72814a2abf08bbf912e7de2c2c0c52229fb8e8f6fbd1b680d9b140bc89",
+      "bytes": 17048,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-128.json",
+      "hash": "d971169c6c81f2c12ae5a527fa808667c99e74427e9a243f0cd0840dd14f8e4f",
+      "bytes": 16864,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-129.json",
+      "hash": "d897afc77222bcaff4719da914d846207138dce7f50aec4997904183b31249e1",
+      "bytes": 16341,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-130.json",
+      "hash": "02c825a40b2a6d08f4af36a4d476e53ab477b030b8b960bd3433e24d9e6ebfa1",
+      "bytes": 16991,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-131.json",
+      "hash": "45708817929ab24e4bdad0ac6df3ac49e27c50f82073e2c64e374ff042d7fa0b",
+      "bytes": 16822,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-132.json",
+      "hash": "94225a4c94f1ecb83f0e5f43c645df8cc74c4fbb68861ba7c520d5e142f2d00a",
+      "bytes": 16761,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-133.json",
+      "hash": "b8f199746e9564d682b7ed2ea08d36beff1a90773f84a17670f1ea1a6831c254",
+      "bytes": 16219,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-134.json",
+      "hash": "3a8bf511f170b91ff1756983ade7e8b8b08e3538a899373ef69bf25b5bb2e8ad",
+      "bytes": 17195,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-135.json",
+      "hash": "e3860577f366ff2e88b95cc2367c332b5a7c8d4b66ae190d7da1d09a6c114a4a",
+      "bytes": 15372,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-136.json",
+      "hash": "30b834854f2871438d4072fe1b4ef585b48370dc6258fd279716493743d251c7",
+      "bytes": 17235,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-137.json",
+      "hash": "7b48fc37ad16622d73ca4eb5ee3616c30bd300e2decc358330550c0312654e14",
+      "bytes": 16843,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-138.json",
+      "hash": "21188c907bd65615d0e9339d9ca499e9dd46ab680d1d7485134c28705d386aea",
+      "bytes": 16154,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-139.json",
+      "hash": "6ac8d1572b9d33a320551603a9a24a6e6e7a4122487553df117e540f8c8b2b7e",
+      "bytes": 16717,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-140.json",
+      "hash": "aeb36326a333bbfbba85b9defcf956870aca20c381ce60ae5a3fffb951c4893e",
+      "bytes": 16501,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-141.json",
+      "hash": "3a3870d38d6cf5ed8733e2017e72a0735e4e3cdfcb09acd0195167bd894f8f14",
+      "bytes": 16566,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-142.json",
+      "hash": "9a5149b136acb1101f025dadb528d1d4314acb52c18758e0194bbc11309f5c62",
+      "bytes": 16830,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-143.json",
+      "hash": "2e6932cfe30e0ac15f5f974f92294434106b51dceaf3ba482ca215cc93876455",
+      "bytes": 16156,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-144.json",
+      "hash": "19e5ce306c393c206a19d4998e7f116b5c6faaa5ed23512c549d758f3bb8dc18",
+      "bytes": 16005,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-145.json",
+      "hash": "1bf1a3a2e35c2c34e5908cd7af0f2a3e4a31cc6051d51733c226af65bdc30aeb",
+      "bytes": 15728,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-146.json",
+      "hash": "140fb0a8d38f061393584173fd3379c3e7453df507f70bb10367ad92b8df0546",
+      "bytes": 15649,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-147.json",
+      "hash": "aaafa32d9590fc7638661a248e2a7ae9d6469601e946a1cc1104fb89c3373dbc",
+      "bytes": 16720,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-148.json",
+      "hash": "059fe0ee1e705ab876c52a8d67cdb40fdbd4d30da1b9320d838c1ef3500f7b32",
+      "bytes": 16802,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-149.json",
+      "hash": "5fd3bfa3b4e58b05c2781010bf1639ed2a3a1890e62b9712a0652d3804a747fc",
+      "bytes": 15762,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-150.json",
+      "hash": "81f776ff4bcb200cf07cb6f4e28431cdedb63d33e059008b850d85bcad2f3554",
+      "bytes": 16761,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-151.json",
+      "hash": "8fd7eca1cb02f8cc4c40a92775401939859952c1a9fe528350553623e74712a9",
+      "bytes": 17288,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-152.json",
+      "hash": "505c16cd135ebc23e34eba7660865fed7c7f30c99ff8aff4106ffb2db1f2d656",
+      "bytes": 16890,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-153.json",
+      "hash": "430e35d524db5d582470a0791eea15ce6f87ef16e1363e9e41d4a349b378f8a1",
+      "bytes": 17086,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-154.json",
+      "hash": "f8ddc7c4e15c3dfa3598ac920b55789e33fb6248c453bcb55e06004221bb3a36",
+      "bytes": 16542,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-155.json",
+      "hash": "1f7ba335f616c67024127935b5536c1c443367c5fd8d0a6593b70e5ef762ff90",
+      "bytes": 16268,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-156.json",
+      "hash": "ad6c548fbb018c47f5c8fe63f2f8c98235708f50a63f50e828733d64fcb7a906",
+      "bytes": 16333,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-157.json",
+      "hash": "0608c055d9ee065b9a016d9d615400690b52c4781fc4ef950bb36c702e3739b3",
+      "bytes": 17445,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-158.json",
+      "hash": "c4309b25c08315379e2faea77e7fb3babd7c4458ade4d94cd9fbcd6e7f8e616b",
+      "bytes": 17585,
+      "soft": true
+    },
+    {
+      "path": "datasets/emotion/train-159.json",
+      "hash": "3d15812f00ab77c14dc120af7c070815055c41e0f9bbf5becb4f27584f66d5ce",
+      "bytes": 16342,
+      "soft": true
+    },
+    {
+      "path": "datasets/sst5/test-000.json",
+      "hash": "383a15537adcb9fc4ab20af79586dafcd0a77440491bd5444892bde8142d97ca",
+      "bytes": 19932,
+      "soft": true
+    },
+    {
+      "path": "datasets/sst5/test-001.json",
+      "hash": "a693c15aa15809c23655579d3e73510cf31d3f4e2bc2af3185abda81fe1d66dc",
+      "bytes": 19603,
+      "soft": true
+    },
+    {
+      "path": "datasets/sst5/test-002.json",
+      "hash": "e42e772d6e41169eb7e4a689e02803d27f6efcdbfea04ac627cf2e4b2852295d",
+      "bytes": 18796,
+      "soft": true
+    },
+    {
+      "path": "datasets/sst5/test-003.json",
+      "hash": "cdf9a6f9e7d34d66065edadb0753876dfd339627b80cb1d59efccd3260e43d3b",
+      "bytes": 19555,
+      "soft": true
+    },
+    {
+      "path": "datasets/sst5/test-004.json",
+      "hash": "589c7b800aba9ecdbd4cf42b0824115485821de3fa16b9badeda834b08247529",
+      "bytes": 19832,
+      "soft": true
+    },
+    {
+      "path": "datasets/sst5/test-005.json",
+      "hash": "82854163344d25430c08ddb079a9651e5a8cd9bef8b2a0c4363d3ae425f4a73b",
+      "bytes": 19630,
+      "soft": true
+    },
+    {
+      "path": "datasets/sst5/train-000.json",
+      "hash": "043499ec50ae731dd1db3a67ed8ca722f1368183ac6aa289a75f193575fe00c0",
+      "bytes": 19145,
+      "soft": true
+    },
+    {
+      "path": "datasets/sst5/train-001.json",
+      "hash": "1d4dbc027fb3cf8e7b6f1f8a0dcb767fd6a0db1f88bf2c1a065a9b530b8cdb68",
+      "bytes": 18119,
+      "soft": true
+    },
+    {
+      "path": "datasets/sst5/train-002.json",
+      "hash": "35472af60b2410d9b5b0ee6b608f1ce8161bfb7035a7d88dcded1f53d276392c",
+      "bytes": 19959,
+      "soft": true
+    },
+    {
+      "path": "datasets/sst5/train-003.json",
+      "hash": "e31f2789a43a0db196fbf4b39931ae68764d973e52d9995c7e7f083d576a57d5",
+      "bytes": 19606,
+      "soft": true
+    },
+    {
+      "path": "datasets/sst5/train-004.json",
+      "hash": "3ddfae9eef1b167f9a25b8dde6638fc6b0575c8eb00ba0055fdc0237f70a36ea",
+      "bytes": 19921,
+      "soft": true
+    },
+    {
+      "path": "datasets/sst5/train-005.json",
+      "hash": "3ce69ec866179bd9c872362c85cfd07f32a600fcd614f3fac35cbdbac65e9f33",
+      "bytes": 18907,
+      "soft": true
+    },
+    {
+      "path": "datasets/sst5/train-006.json",
+      "hash": "4ad72201cec5f7ed85e9c8c0b15a579b56ff06fc2c4955842b500503458f76c0",
+      "bytes": 19507,
+      "soft": true
+    },
+    {
+      "path": "datasets/sst5/train-007.json",
+      "hash": "fca44b67d7c212b9a7cae5bd601d933f21830296b7ab04701140605c01a1cbf6",
+      "bytes": 19394,
+      "soft": true
+    },
+    {
+      "path": "datasets/sst5/train-008.json",
+      "hash": "14efc0a10c4b40b06a497ef50b21f2ca734e414c639558116a26466ffd272373",
+      "bytes": 20359,
+      "soft": true
+    },
+    {
+      "path": "datasets/sst5/train-009.json",
+      "hash": "b0063be87d8fe84a2adebfbe9aac3ecd81f237fd4cb42956bb84d6dea145e095",
+      "bytes": 19531,
+      "soft": true
+    },
+    {
+      "path": "datasets/sst5/train-010.json",
+      "hash": "8afdb0567ec0d42fd9a062fce9f296b26a77608e6783c8155566341d3836ead3",
+      "bytes": 19435,
+      "soft": true
+    },
+    {
+      "path": "datasets/sst5/train-011.json",
+      "hash": "06bd1a03df738990fe81806947456cdcb1bcddc81640b9345eab9b2707b8f57d",
+      "bytes": 21061,
+      "soft": true
+    },
+    {
+      "path": "datasets/sst5/train-012.json",
+      "hash": "0d3f6a7b57d852ae1eecceba7a705be6408f5fcc743c6686480340a0b4ec7711",
+      "bytes": 20722,
+      "soft": true
+    },
+    {
+      "path": "datasets/sst5/train-013.json",
+      "hash": "f1cc77864f60ade42bd2eafbfdb195f7e33a60d1b43ac2114275a845787ce8d3",
+      "bytes": 19071,
+      "soft": true
+    },
+    {
+      "path": "datasets/sst5/train-014.json",
+      "hash": "06c5c73170dc83298af6ef52ce09f073ddf08e503a835fbda6dc8cd64e79b3be",
+      "bytes": 20377,
+      "soft": true
+    },
+    {
+      "path": "datasets/sst5/train-015.json",
+      "hash": "cb54b3cae338ba1b3ac1d69fd4513de6c7c06f89e76f8c8eaacfaf87391862fc",
+      "bytes": 20589,
+      "soft": true
+    },
+    {
+      "path": "datasets/sst5/train-016.json",
+      "hash": "2510b78e454b1d5cd6fc015b7322e3182dd7ec2b838db39029e90212ee98317d",
+      "bytes": 20386,
+      "soft": true
+    },
+    {
+      "path": "datasets/sst5/train-017.json",
+      "hash": "42aed65007e702355b58d65e519fa1919ec37966c7eed0da566506b1e047a867",
+      "bytes": 20577,
+      "soft": true
+    },
+    {
+      "path": "datasets/sst5/train-018.json",
+      "hash": "f97821b44bf89b65e43eb002893e0c22fefe62b4ca8108bfc20fbb7b8ddbac23",
+      "bytes": 19335,
+      "soft": true
+    },
+    {
+      "path": "datasets/sst5/train-019.json",
+      "hash": "88465890c5007d259a6b174de949c2e53db422d0ce942963da136f2cc87e9a28",
+      "bytes": 19736,
+      "soft": true
+    },
+    {
+      "path": "datasets/sst5/train-020.json",
+      "hash": "34fd64d74c292eb991ea3ae14c46aa6837371394205fac69fa382430a3444b35",
+      "bytes": 19553,
+      "soft": true
+    },
+    {
+      "path": "datasets/sst5/train-021.json",
+      "hash": "e0404e3d82322f4372d7ba7a34de440b1c0e7e4bccd392957fe347f9f05af03d",
+      "bytes": 19740,
+      "soft": true
+    },
+    {
+      "path": "datasets/sst5/train-022.json",
+      "hash": "fe6712d1cbefc20ff87c3f2468768896f522609870acb88a97172e852b7bb022",
+      "bytes": 19351,
+      "soft": true
+    },
+    {
+      "path": "datasets/sst5/train-023.json",
+      "hash": "345b24fba45b3e541142ed8b227d4088b859f093e182353176ee2a110f03ca67",
+      "bytes": 20314,
+      "soft": true
+    },
+    {
+      "path": "datasets/sst5/train-024.json",
+      "hash": "88fb666b0c20c0c61efe1da4264828e5aa44b943c59f6e9b1e2fb5338cc969f7",
+      "bytes": 18955,
+      "soft": true
+    },
+    {
+      "path": "datasets/sst5/train-025.json",
+      "hash": "15e65bf4bc0ab4ea2eea9c8e48ab9b5fee97a5bbfc1ed05506c83a875794a032",
+      "bytes": 19900,
+      "soft": true
+    },
+    {
+      "path": "datasets/sst5/train-026.json",
+      "hash": "18860a564cca1ee2f26b8f09a5f80841ed01f32b6b47bcd614901baf6a3c53a1",
+      "bytes": 19851,
+      "soft": true
+    },
+    {
+      "path": "datasets/sst5/train-027.json",
+      "hash": "32d6518da40f1aac527f291c3c05208a498ef2156caaefa78fad0c37e4c32617",
+      "bytes": 19327,
+      "soft": true
+    },
+    {
+      "path": "datasets/sst5/train-028.json",
+      "hash": "e7d18ae6bb351b153ae6493e9320427f70225d1ee36b7a345fdc5b08465710f1",
+      "bytes": 20059,
+      "soft": true
+    },
+    {
+      "path": "datasets/sst5/train-029.json",
+      "hash": "6e5de932498fe8d2b8ec9b41e44a0ee976f7ecdd2c2e25ca07933406bd86b7b7",
+      "bytes": 20593,
+      "soft": true
+    },
+    {
+      "path": "datasets/sst5/train-030.json",
+      "hash": "d1e74c9e29e587f8d417be7e64e42ab78ca9d66e99000ddd86447531091da572",
+      "bytes": 19763,
+      "soft": true
+    },
+    {
+      "path": "datasets/sst5/train-031.json",
+      "hash": "838f544a365613f5e58d8c5fca3b967d85c60e228be4d71360856f0a975e0e9a",
+      "bytes": 20105,
+      "soft": true
+    },
+    {
+      "path": "datasets/sst5/train-032.json",
+      "hash": "cc68292ae2e35184b9cff6eed70969b3a3d6657b810d0884d312ea9f985fcd5b",
+      "bytes": 19901,
+      "soft": true
+    },
+    {
+      "path": "datasets/sst5/train-033.json",
+      "hash": "5be853eb3c2b21d9a39d5304bde928f1a47f65cdebb5bef7a40c73478432662a",
+      "bytes": 19610,
+      "soft": true
+    },
+    {
+      "path": "datasets/sst5/train-034.json",
+      "hash": "8651e8d314dee86e479973bde314a727416dbae9ac8cb6f533f6134129911ef3",
+      "bytes": 19131,
+      "soft": true
+    },
+    {
+      "path": "datasets/sst5/train-035.json",
+      "hash": "3dad8f3393b60780a1f050e5edf1b6312194df60a5b67702c9e0bc0628443187",
+      "bytes": 19518,
+      "soft": true
+    },
+    {
+      "path": "datasets/sst5/train-036.json",
+      "hash": "f6279c962838b838733f4b57fad688d3d964a4febd0b9b6e60142f185b622a98",
+      "bytes": 20086,
+      "soft": true
+    },
+    {
+      "path": "datasets/sst5/train-037.json",
+      "hash": "deb6fc5a752c230bd1870eba71626fa58604ce66ed7fcbb217291248e9b740d9",
+      "bytes": 19826,
+      "soft": true
+    },
+    {
+      "path": "datasets/sst5/train-038.json",
+      "hash": "0116e8d80bed7a6cef421236e407be9d59d00300073267f71dc5541170a5fa30",
+      "bytes": 19012,
+      "soft": true
+    },
+    {
+      "path": "datasets/sst5/train-039.json",
+      "hash": "a5052c6addbb2c7ce36527e6dfb00c11004fabb0aad7d77df8d80d8a8eac627b",
+      "bytes": 20132,
+      "soft": true
+    },
+    {
+      "path": "datasets/sst5/train-040.json",
+      "hash": "e1c7ec503ade86187c9fe6e8781696a5bf68e0b82518af170c4601a22cc5c1d3",
+      "bytes": 19919,
+      "soft": true
+    },
+    {
+      "path": "datasets/sst5/train-041.json",
+      "hash": "ba0f52d274555aed359862981b7c445b85c38057d4481b332c01d9aaad51dd86",
+      "bytes": 20014,
+      "soft": true
+    },
+    {
+      "path": "datasets/sst5/train-042.json",
+      "hash": "f5a035d7466035a3500e6131cebf6c0c52222fa2ede94263ca0ba00c5208458b",
+      "bytes": 19318,
+      "soft": true
+    },
+    {
+      "path": "datasets/sst5/train-043.json",
+      "hash": "ccb3151addac4f5ab977283f0bcccbbc515ef3b2e4b89dfcb448e996845f00cc",
+      "bytes": 19533,
+      "soft": true
+    },
+    {
+      "path": "datasets/sst5/train-044.json",
+      "hash": "457da83b8162acc2b8ec22792f0e10fdfef39c4996aa950a3443e7082e9821e4",
+      "bytes": 20071,
+      "soft": true
+    },
+    {
+      "path": "datasets/sst5/train-045.json",
+      "hash": "42cdee020e6f0dc794c10c0519d30335692fff509c1899469612e870903360e0",
+      "bytes": 19819,
+      "soft": true
+    },
+    {
+      "path": "datasets/sst5/train-046.json",
+      "hash": "8612a23c01f5840c15584d8e72716813e69b1ec9a8568a0e0e117ae8f76b0caf",
+      "bytes": 20165,
+      "soft": true
+    },
+    {
+      "path": "datasets/sst5/train-047.json",
+      "hash": "b15588ca10fdec5640bcf6bce48ad4a79032c3b5b2c26b8e1065145f6ec9adf0",
+      "bytes": 18949,
+      "soft": true
+    },
+    {
+      "path": "datasets/sst5/train-048.json",
+      "hash": "bc797b7ce346ee6f62c239209bf2470253e1a8db97f09f1cf4eff2db5972ce00",
+      "bytes": 19703,
+      "soft": true
+    },
+    {
+      "path": "datasets/sst5/train-049.json",
+      "hash": "9d3086076f7062bb424b52a53a94c0638d6c43e4c91ff0eed8415ff4116717ac",
+      "bytes": 19305,
+      "soft": true
+    },
+    {
+      "path": "datasets/sst5/train-050.json",
+      "hash": "0c578ca88a6373ff3d203782c16930dc1ae27d1f79c1e67b8c13df3648c9c6c9",
+      "bytes": 18928,
+      "soft": true
+    },
+    {
+      "path": "datasets/sst5/train-051.json",
+      "hash": "82df4ec52e55965ade341bc5ff9afe11dacb88fc60b60f4e2e011810c6d804e8",
+      "bytes": 19897,
+      "soft": true
+    },
+    {
+      "path": "datasets/sst5/train-052.json",
+      "hash": "f04cbeb30a6f3cd229dd853786d8539a4f4514975fe47c15365140e44546ea79",
+      "bytes": 19056,
+      "soft": true
+    },
+    {
+      "path": "datasets/sst5/train-053.json",
+      "hash": "87269476efb4c8d9c7d986a09448f39b09930793730396cec7fb3d453bec8acf",
+      "bytes": 19209,
+      "soft": true
+    },
+    {
+      "path": "datasets/sst5/train-054.json",
+      "hash": "90d2bd15676f4a70b2f15e12521a7b8b5d5234a602d1ebfd284288d5813cbe9e",
+      "bytes": 18396,
+      "soft": true
+    },
+    {
+      "path": "datasets/sst5/train-055.json",
+      "hash": "fd845eb7879562e3c2a3b7010a1adea34a74251e858b498d4fe0d1b0520967f5",
+      "bytes": 20056,
+      "soft": true
+    },
+    {
+      "path": "datasets/sst5/train-056.json",
+      "hash": "35112bfc5c02c6347b7d9af0134eab575891d96e6643723d3ee70c7104f3918b",
+      "bytes": 20400,
+      "soft": true
+    },
+    {
+      "path": "datasets/sst5/train-057.json",
+      "hash": "e5efbee868a149ae704f2eb5b4b2e89ee3dfa980795c340ffb218bcf561e734f",
+      "bytes": 20015,
+      "soft": true
+    },
+    {
+      "path": "datasets/sst5/train-058.json",
+      "hash": "916907f65154f1e5b7df831c40db62dbdf609daf2b58bf55ea0e1fcf1c57dfcf",
+      "bytes": 19631,
+      "soft": true
+    },
+    {
+      "path": "datasets/sst5/train-059.json",
+      "hash": "ebe8c2be9c233d372b52a2a99351aaba28402ac302977857aed9d5809d3dd120",
+      "bytes": 19860,
+      "soft": true
+    },
+    {
+      "path": "datasets/sst5/train-060.json",
+      "hash": "200b239d71c6c42418ddefe144b1e8364eabb0662705f2f3b6f99301730950ff",
+      "bytes": 18723,
+      "soft": true
+    },
+    {
+      "path": "datasets/sst5/train-061.json",
+      "hash": "89a4559823f0e42ce444359da783c7063047dfcb2a2aa92ba8d88bd97ec75692",
+      "bytes": 19910,
+      "soft": true
+    },
+    {
+      "path": "datasets/sst5/train-062.json",
+      "hash": "ba8b2f1e1c580b8f62842d5c32e182ebb5a06191acc87422d8e38d1bd2e51ba0",
+      "bytes": 19279,
+      "soft": true
+    },
+    {
+      "path": "datasets/sst5/train-063.json",
+      "hash": "b3138c16021ba4e6724112158cc13788c25ba423c41ba6f8a08c20c604a4007d",
+      "bytes": 20741,
+      "soft": true
+    },
+    {
+      "path": "datasets/sst5/train-064.json",
+      "hash": "d867877b34f3c4196db5f3c6d4a5bd9fface785479da7904f492bd9792b16077",
+      "bytes": 18922,
+      "soft": true
+    },
+    {
+      "path": "datasets/sst5/train-065.json",
+      "hash": "79f9cba3ea2a37ee52dc9ea3ba63a103248ab80de2083c52fe3a0c4cd9f3713f",
+      "bytes": 19237,
+      "soft": true
+    },
+    {
+      "path": "datasets/sst5/train-066.json",
+      "hash": "ba5f97600e7c82b4dfbd56afa6ef75c3e54bd673794988eaac44af3b9237150a",
+      "bytes": 19620,
+      "soft": true
+    },
+    {
+      "path": "datasets/sst5/train-067.json",
+      "hash": "3d22c7c4594b4d7ea4e6426f173d0d7be9a063e667891e21dc4d8a808a56c70e",
+      "bytes": 19784,
+      "soft": true
+    },
+    {
+      "path": "datasets/sst5/train-068.json",
+      "hash": "2410a84c18d4942884c49957ffa30db79e3debf7f79024ee400c337c0a36ee9d",
+      "bytes": 19596,
+      "soft": true
+    },
+    {
+      "path": "datasets/sst5/train-069.json",
+      "hash": "75a5e6223b698b2626d8a07956c5ab27c5647555033f835ac13f16d56ee424a2",
+      "bytes": 19518,
+      "soft": true
+    },
+    {
+      "path": "datasets/sst5/train-070.json",
+      "hash": "8d30329c7d9d394ab48621b823a67bc84761752c3e450b4d1c6fc7c7b14aa692",
+      "bytes": 19671,
+      "soft": true
+    },
+    {
+      "path": "datasets/sst5/train-071.json",
+      "hash": "10b625609856162fd06fa471bb01a3df036038592b1d2f20ffa78e467e624795",
+      "bytes": 19605,
+      "soft": true
+    },
+    {
+      "path": "datasets/sst5/train-072.json",
+      "hash": "b9837edf74e47e5305838279f55d5f49abbf0f3b24e6dffd7aef885a6de7e0be",
+      "bytes": 20015,
+      "soft": true
+    },
+    {
+      "path": "datasets/sst5/train-073.json",
+      "hash": "840b176c93a897173a11dcbff7a04ee0ee8b4ad627f34687021e4a76d9e47068",
+      "bytes": 19120,
+      "soft": true
+    },
+    {
+      "path": "datasets/sst5/train-074.json",
+      "hash": "4c8dd714bd024ef07212ce39befbc6eb8506cff55f91ba349228876161bda588",
+      "bytes": 19975,
+      "soft": true
+    },
+    {
+      "path": "datasets/sst5/train-075.json",
+      "hash": "0b2c98bf252695bbac3f1b2475077eefd7286f51f522e89a3bb2d9920822d2b7",
+      "bytes": 19286,
+      "soft": true
+    },
+    {
+      "path": "datasets/sst5/train-076.json",
+      "hash": "3548ebf8e45d220d4fec65c4c3d26d96e56c6f0f33a32714bb8c336371ec3f89",
+      "bytes": 19944,
+      "soft": true
+    },
+    {
+      "path": "datasets/sst5/train-077.json",
+      "hash": "482cdc474472de78ef9c8d41b1fd2e253d9ff1b277ab14f138f25aa4ff796b61",
+      "bytes": 19684,
+      "soft": true
+    },
+    {
+      "path": "datasets/sst5/train-078.json",
+      "hash": "e649a579b305d800559343b96cca6cc1f94be79b5a5c21e7727c487363509d8a",
+      "bytes": 20375,
+      "soft": true
+    },
+    {
+      "path": "datasets/sst5/train-079.json",
+      "hash": "04287da54c2510b0d8beb260130ef4c11c9685313f063d034c23888d7d7bbcb1",
+      "bytes": 19763,
+      "soft": true
+    },
+    {
+      "path": "datasets/sst5/train-080.json",
+      "hash": "351a0c23e0ef8c3f0f41cddbc5d74530410d63fa105ba1d9ca7ae630d5ce1f3a",
+      "bytes": 19369,
+      "soft": true
+    },
+    {
+      "path": "datasets/sst5/train-081.json",
+      "hash": "d53c1c0d52f3977909a9d1bda97f9095f49e742719c84d0e6304784d999fe10e",
+      "bytes": 20320,
+      "soft": true
+    },
+    {
+      "path": "datasets/sst5/train-082.json",
+      "hash": "9fbc26770d0c6ef259307e9908b6c5c98e8ee20ad84002e0f6bb06c16257b937",
+      "bytes": 19283,
+      "soft": true
+    },
+    {
+      "path": "datasets/sst5/train-083.json",
+      "hash": "85721a29256f3b8c15a97742ab7c2cc3144799255583f34b0dffb0f3cc2ea969",
+      "bytes": 19866,
+      "soft": true
+    },
+    {
+      "path": "datasets/sst5/train-084.json",
+      "hash": "713568d0829271bd6120eea6b189b26b108aa0f276e35734eb032618312106be",
+      "bytes": 19460,
+      "soft": true
+    },
+    {
+      "path": "datasets/sst5/train-085.json",
+      "hash": "feb1504a1e2fd4547da919d85b33cd296979ab7d1fbab6999c587636415cbd52",
+      "bytes": 8556,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/splits.json",
+      "hash": "4c3cddb21dafe3d7bdd05c5ec675864b5fe2c4aea8d22eb8dd9ef37bf8edbd97",
+      "bytes": 11354,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/test-000.json",
+      "hash": "76c8e4f0af89aeb071bb22ee7da8ec1d444c6530bb6d4c6b7732df73366ca5ee",
+      "bytes": 16068,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/test-001.json",
+      "hash": "7c0281146ae7394d994b92e1c94abb38f61b8cb14c18fdb999f9fc171d1afb93",
+      "bytes": 16558,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/test-002.json",
+      "hash": "7a52444e1d3539fe763213388f7c995a2e8d6deb88817290874e2310c534bb02",
+      "bytes": 16977,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/test-003.json",
+      "hash": "4805922a98e94caf1bf8ebd299489e4207462404d870a7132cb359b0a55abf9c",
+      "bytes": 16613,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/test-004.json",
+      "hash": "6f3f89905266064bfb295e54ad4f71005684a0beff2497cc890753ebb39bf501",
+      "bytes": 16739,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/test-005.json",
+      "hash": "578de929432c5cc380eebf9991aec099be377b8e9548bab84036a9e8d14e5447",
+      "bytes": 16780,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/test-006.json",
+      "hash": "552def1fa022b0b6f0bdf0150fe43db1ae76373d78fe319ff67e366f6dc8f8e6",
+      "bytes": 16731,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/test-007.json",
+      "hash": "aade6dd04c376744372cb720f01c72345abcf96f1ca713e1ee71ebbf5e10e7d9",
+      "bytes": 17045,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/test-008.json",
+      "hash": "5deeedccac396e1a2e2c0847f8948b98d5edeff8cf90d9c4ff1d955785b557d1",
+      "bytes": 16735,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/test-009.json",
+      "hash": "81db334c3505be4fdd3c2e7d997a763b313c86d4145979bb45befb6a3b009a3a",
+      "bytes": 16559,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/test-010.json",
+      "hash": "c94db9551023ef19ea1edca51ffb473d3098218fcfb72161e83514a8f6409395",
+      "bytes": 16930,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/test-011.json",
+      "hash": "a865905523005465a487b016659c298203d2ebdab1d36a0f5bd590f18715d9b0",
+      "bytes": 16698,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/test-012.json",
+      "hash": "f84740c0a4df129b38668b05e7103bd9884cb921afa4dff20860dc1657dcd145",
+      "bytes": 18124,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/test-013.json",
+      "hash": "f5b22c02f8f4176a7f3393337bf56a8018f14ee8335c46aafaae943d13d2b04f",
+      "bytes": 18223,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/test-014.json",
+      "hash": "cf219ed8f57c91e199f842dc0fd0913eb8e18a82b4fc3b5abb4ea5a1b9382d25",
+      "bytes": 18087,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/test-015.json",
+      "hash": "fe033c0b85ae7403db1826eaa92d6a9023d08991d2ca709d4df97f56033dfcdf",
+      "bytes": 17678,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/test-016.json",
+      "hash": "9bf9fb2af9d3bfce2e0425bf07837b617de703648931c7495e0edaa3677b0b9f",
+      "bytes": 16724,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/test-017.json",
+      "hash": "2ec465d3335149141c267d674f84dc4139cf063bcd3538b663afd8946f007d45",
+      "bytes": 17266,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/test-018.json",
+      "hash": "6d30fbb2558453642686fad92c9f91ef6d95ed5429df79b0154151dddc308305",
+      "bytes": 16657,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/test-019.json",
+      "hash": "20021f4f67924f87e1b081b5d8ecb91eb891e40f2f7d37cd9ea57f590ea56ff6",
+      "bytes": 16712,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/test-020.json",
+      "hash": "0c615e02379dfe6dda1618c80ce9656c71a718e599cd1857087db4680f89c06c",
+      "bytes": 19142,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/test-021.json",
+      "hash": "1db4ec404c05a6c28fe211d2f36bae6b8e60546a52e14d58cdfac46b873b6482",
+      "bytes": 18271,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/test-022.json",
+      "hash": "84743484690e11861b448329fc329cf709bd12f617c79b5a63d1c44796fe2ca8",
+      "bytes": 17730,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/test-023.json",
+      "hash": "8b159acd1a71acb2ff27fe451b3cf74b046def618e2d7c658e0dda6e81bee1f3",
+      "bytes": 17104,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/test-024.json",
+      "hash": "69bc207aa5e618c5e3147a9694d31e18d3025130da219ffcb90afe3bf930fc5a",
+      "bytes": 16636,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/test-025.json",
+      "hash": "35a580a9b8175d13ac57260783e91fda696a9c34373300b34f6cf89b91172780",
+      "bytes": 17211,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/test-026.json",
+      "hash": "0c2cba784d128e1cde6cd9199088f4f3781e3db96486b0aa237077d4ea38d78a",
+      "bytes": 17398,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/test-027.json",
+      "hash": "f19ef2a92b121ecf360c82f7f467c78e94b8347137fb94e325428b5769006f11",
+      "bytes": 17544,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/test-028.json",
+      "hash": "d52331604a7cb96339efd2e54a48bb3b9a88f0d8226fbb9d16dc9770dffb9dee",
+      "bytes": 17914,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/test-029.json",
+      "hash": "7213d6ce98cbf7f8fdf44f5b5d1158fc3e0ba11797639e5452e71838d06aa035",
+      "bytes": 12915,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/train-000.json",
+      "hash": "b39777110119403c8674348eab6cc44965d72a91b3d7197c25402ee2a2d0cbac",
+      "bytes": 16087,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/train-001.json",
+      "hash": "0bf91248eb5e37d87aff8786feb7854fa975c3bedfda399b834b41421997e3bb",
+      "bytes": 16150,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/train-002.json",
+      "hash": "1f366dc2d8decfca45e2f908adbc9a34fe17c0d89370985833459575a034b8af",
+      "bytes": 16564,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/train-003.json",
+      "hash": "e5110b06be6b62f1652b8a0b82ed7cd3c6a623284615907437b715844b09e57e",
+      "bytes": 16337,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/train-004.json",
+      "hash": "ef5ee674746425e749e7c2fa8ba74f29dcff273e859574fcb665127e21fdc043",
+      "bytes": 16908,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/train-005.json",
+      "hash": "d2cc597d0b993344abb2475d95308951197686b1e4854b50408b2005196d3423",
+      "bytes": 16597,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/train-006.json",
+      "hash": "7791e3434f0a93d2441877ed1d5cba28b92db78fa8ed48f40c457bd25a5c58ee",
+      "bytes": 16739,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/train-007.json",
+      "hash": "4400aa2cfa6860d1152d389a05a058163c67b08eddee65d80cf25df7b28b1acc",
+      "bytes": 16819,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/train-008.json",
+      "hash": "ab5fb70b153e9bb1d2801438b7f333a5d17a9a11b876a997a1f4b37798c449c7",
+      "bytes": 16979,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/train-009.json",
+      "hash": "fe0a5819ec1e64d2bb6139791f0d6bcc60dc4e5fd8dd5adbbe3802ef40b141fd",
+      "bytes": 16464,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/train-010.json",
+      "hash": "c0d2ced57363cdc967c1737d63a2e85891b172ef6fb65d0622dc9cd9b391d9d5",
+      "bytes": 16979,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/train-011.json",
+      "hash": "09495cc1ef6e264241b68bd1cd09b20448a0042cdf3faf2cb74d0134a51191ae",
+      "bytes": 17764,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/train-012.json",
+      "hash": "886871206be2118b9bd449cce84f8e3941e4b1144329f7c584327f69439085d1",
+      "bytes": 16653,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/train-013.json",
+      "hash": "de0835f36c216ce89dd1c272ab8d97e9afad8f5f538bf0d0874ff12de550e57b",
+      "bytes": 16700,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/train-014.json",
+      "hash": "25bd0e9b6fe990d6d009436e015c24f62823c50d7cf8c40ec6850733aacd814f",
+      "bytes": 16782,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/train-015.json",
+      "hash": "fdd10145c265fcb29f9e87f272bdd244215c2d9399af9de2af7d9190fd74b66e",
+      "bytes": 16892,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/train-016.json",
+      "hash": "c2c7c731338f1d593f0ddab353f63ad6008abc3182d2a543bf69fcb1553142e6",
+      "bytes": 16777,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/train-017.json",
+      "hash": "32aca44402ec3e0b7d5e417cf87759777276de586b65a8ddca0494300b1d7388",
+      "bytes": 17146,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/train-018.json",
+      "hash": "e487346b69562f9335cc64f5d5bb36534681ec935da758947740251059d84188",
+      "bytes": 16729,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/train-019.json",
+      "hash": "848c68e16b4b94f118736549454687f0afb71b7ef341c23bc63fb5cc62a1faf6",
+      "bytes": 16876,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/train-020.json",
+      "hash": "2efb6e2eda958cad283b8a33b3f27a63d495c9c420ed3ee400a01baa62726991",
+      "bytes": 17013,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/train-021.json",
+      "hash": "7154376df6255bce5f74b92959b522ae62e654529c5d7730838a29797753cef0",
+      "bytes": 17282,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/train-022.json",
+      "hash": "7d6ee0d8e13fd26bf7f97efdad53c84ba13392d19dd10ee94d379150d5d66f03",
+      "bytes": 17071,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/train-023.json",
+      "hash": "938584460c9d917900745ffb69efcea89fa84e05928f2c2ccc0b3311b285bba8",
+      "bytes": 16733,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/train-024.json",
+      "hash": "bbf72e9dbdfaa8c90735d2ff3d67a58f91d817d389adc1b7c840f13da908e922",
+      "bytes": 16787,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/train-025.json",
+      "hash": "558d1d98d402cb85d76f821f4abdd7082001a95c6d74abc04df2ad60cd90ea15",
+      "bytes": 16968,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/train-026.json",
+      "hash": "d663c73acd29c5f64e5c75e1894bb1887f481a21b6f670fca1b84a40492c957c",
+      "bytes": 16818,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/train-027.json",
+      "hash": "b13a4e9339fd121c8f036ab86e07694a5fc1bf77238e71670097ad7dfb85f78b",
+      "bytes": 16528,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/train-028.json",
+      "hash": "4baa2b54e8559536e3c1408922f7e4ab51717583b462e0c06647e2548ff4b4ba",
+      "bytes": 17169,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/train-029.json",
+      "hash": "7c9f898ff563cde49ae5f69060fb37275e01211978773286e6506b20fd9b688f",
+      "bytes": 16853,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/train-030.json",
+      "hash": "67d5f40960e949a33c923cfd4da2b70307e82e7cdd148a9512c78fa4a035597b",
+      "bytes": 16812,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/train-031.json",
+      "hash": "c3a66880133ea088ba21b2fc3705787e8b33ad9823f0fb4fffd99fa3d6da80b7",
+      "bytes": 17093,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/train-032.json",
+      "hash": "8cbc11f2d37d47998cc83ed395b708f5134011fd99d4d8ed22dc291791d14f24",
+      "bytes": 16563,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/train-033.json",
+      "hash": "35a118fff0da1dfe6db6a9ca693548aa318441be161530328e499a269d4627f7",
+      "bytes": 16435,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/train-034.json",
+      "hash": "9c138c654d2d5653235198c72d604812f27bcd50481260f87a130c2b8b4f05f0",
+      "bytes": 16520,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/train-035.json",
+      "hash": "5fe0f823347b0703b461c8b27c547c10932672d7d56488606d338e5b967b5ed9",
+      "bytes": 16878,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/train-036.json",
+      "hash": "c475d80858db27d6d47d0e0a2a9697700e524dab72fc10f6d5146242e844fb68",
+      "bytes": 16760,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/train-037.json",
+      "hash": "f6bbb55e11e0284918111148b1abf63cb5cc3a2b6247eb48948ca6c376c8e093",
+      "bytes": 16692,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/train-038.json",
+      "hash": "9a78accd871a43fa891122d198ee6941378145ae965063c85275d953e622c1bd",
+      "bytes": 16667,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/train-039.json",
+      "hash": "4c7f6f3b000e359b97b540e77ad4f4e91c04cd2998f3ec5d9d536d698731bbbb",
+      "bytes": 16768,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/train-040.json",
+      "hash": "29a6870d1e9dc8e4aa4f92b441bee24621ec2f3b3446621caeffefc3811ddfbb",
+      "bytes": 16922,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/train-041.json",
+      "hash": "1326b6feeaf9738945903b643e5d27826ab30cea3740458daa5da9cd17b8e442",
+      "bytes": 16840,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/train-042.json",
+      "hash": "b62e6b78ef67927b8d448822448715e3df699911fc15e5b6eb6636575fb0e736",
+      "bytes": 17145,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/train-043.json",
+      "hash": "f377289f562a84b7aa2ad75f1c9e87a2c7d1e477cde762f25aaededb725a3ba7",
+      "bytes": 16707,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/train-044.json",
+      "hash": "a1ea70632d3817b11abef749c4a483f5619a082dcdfed3665c451a659242d7c8",
+      "bytes": 16162,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/train-045.json",
+      "hash": "dab2e8e7958514c124155c28f80d9e392b626edfc01c930232451e3b3cd2f49a",
+      "bytes": 17758,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/train-046.json",
+      "hash": "63072a55427f54786905c968e11f3c154a0c1f0e297b7a7412c5b67d4c9f70f5",
+      "bytes": 17557,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/train-047.json",
+      "hash": "780a407ea054c363038b94672c70aab3cb2617d390279e1fb2f67f8a42a7d8f6",
+      "bytes": 18184,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/train-048.json",
+      "hash": "563b5f1d5e939c5d5c9fdef007b7a489f268cd47ea16c6ce42989600262cf7e1",
+      "bytes": 17965,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/train-049.json",
+      "hash": "0e05f86d920bd2c21339ad46788fd640478f84c7b24c3699057981758646f21c",
+      "bytes": 18441,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/train-050.json",
+      "hash": "528ac040b7f5e4f1bb8c2b4e66ff377224d5d7f391412ca5717d6b4a4461315e",
+      "bytes": 17860,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/train-051.json",
+      "hash": "9d5290b3531bda96596014bc646911ed1ffcc2d1b3437a4a4356d44bfffc7c8f",
+      "bytes": 17814,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/train-052.json",
+      "hash": "37173ad5de47fdd018c66cf7f036474dddb243f8afbe5befec2ccdd774310970",
+      "bytes": 17988,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/train-053.json",
+      "hash": "1e02816d45f41db19b9c7a6195be8fba2966a6ac0c6fb09990953e7e25913e9f",
+      "bytes": 18074,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/train-054.json",
+      "hash": "b4896baec1187471c32c5f6f5802fcf627c230691c63daf8b9659a11fe7eeef4",
+      "bytes": 18067,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/train-055.json",
+      "hash": "245f21146118e04ecc0c41186d487e1f8264e110a1c738134d56ac143a360e39",
+      "bytes": 18295,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/train-056.json",
+      "hash": "c7b90513b66afb065924ecd72860e4b211d7fe6175c7fcd1185ed177092892f2",
+      "bytes": 18384,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/train-057.json",
+      "hash": "87e2b79d6b1cbcb674a1609e870d43b745084188ad0e39017f2b50519da65977",
+      "bytes": 18319,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/train-058.json",
+      "hash": "f269c8b7540f24248751abc02498b48ae79c88b5cf30496891c7fcb16cf165c1",
+      "bytes": 18245,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/train-059.json",
+      "hash": "b9e74202965b78702b7693d1cc40ce66d859f493ed9d954d973513f7391bd0c5",
+      "bytes": 17780,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/train-060.json",
+      "hash": "d6ceb420f3cc0e8dc82a9894042d1efea7608b652f8e74353d1d06502584a0d8",
+      "bytes": 17568,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/train-061.json",
+      "hash": "b18f879fc2f8dea982ab6bc6efab27830b86d5e739e6d4edd1fd0f2758468407",
+      "bytes": 18013,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/train-062.json",
+      "hash": "fb3c3124ec7fc2b1e6ffcb210085b9a7fb21048a6f765f26d97ffd8a835b8b0c",
+      "bytes": 16963,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/train-063.json",
+      "hash": "8debfd59e141c68cdfa71d7012dd9820df1f97f285f070d9749fb1555d3172cc",
+      "bytes": 16542,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/train-064.json",
+      "hash": "29cf7a8f9051bc61df9868de0052b82e42ebefdb9eeb5918b76fd502b68c2d51",
+      "bytes": 16327,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/train-065.json",
+      "hash": "63c1174f05b9341bda313930b8e4253b650d5db7aae979702c6f12f7a8f86f10",
+      "bytes": 17100,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/train-066.json",
+      "hash": "31e3dbc6e7b277ef545727b717012f56f019e5aa053ff31d42225e2e802146ab",
+      "bytes": 17219,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/train-067.json",
+      "hash": "b29e726e87e8025cc125fa295d62e720499725b0b026c6ad34ac30ca966b727e",
+      "bytes": 17465,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/train-068.json",
+      "hash": "b21e179644bfe30a7bbf46d546a344330f8833fcb64b7158d986cf705e1b2422",
+      "bytes": 17619,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/train-069.json",
+      "hash": "38cc973793c387ee680d5bb81d90e457008a388898b7977b07d3a31f57d6de79",
+      "bytes": 15776,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/train-070.json",
+      "hash": "471109597c796a8ef6316898ca88c5bad9d44305951991f2b336a6b8d6a04fed",
+      "bytes": 16470,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/train-071.json",
+      "hash": "9b0977213c3d3f99ec70d7dd470e6fe3868f65f5101ede2ce1ef35123db0952d",
+      "bytes": 17173,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/train-072.json",
+      "hash": "a775e45c48cc793b992deb96333c52a056446cfcc18ab1e98299fa34dbb9e7c8",
+      "bytes": 16777,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/train-073.json",
+      "hash": "eb0fea0cd242d2637462991696d65a26b6c2336715c39eef4c3d31656081d11b",
+      "bytes": 17140,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/train-074.json",
+      "hash": "1454b53299fdee009951b371ced717827263a12d46198972ecdea2aa253f206f",
+      "bytes": 16712,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/train-075.json",
+      "hash": "4471d408ac7ffaf8ed7f58832368e71ff2417fa19828d9f37ff22cccb40e825d",
+      "bytes": 16705,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/train-076.json",
+      "hash": "790d23579622331c21b473282477e2de98e6af3ea49a42b1a23b85ab5054bd6e",
+      "bytes": 17251,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/train-077.json",
+      "hash": "893d10767e75bff2b3c91f3d24e7f811137790af11287aa4f4120adf413d1931",
+      "bytes": 18105,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/train-078.json",
+      "hash": "ebecffc0d302c3994d7d964b76a52d061c764626e797831cf5c013ac7d7a5bdf",
+      "bytes": 19628,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/train-079.json",
+      "hash": "e94ff072f8b8210ac59117f2ee7bdf2809af16c78eba1ba58ae2ba5088a5590b",
+      "bytes": 19539,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/train-080.json",
+      "hash": "4d053cb317ebb60d137b4e3bfb692daa1e9f5237b6fc3cdee30bde4470033cc5",
+      "bytes": 19489,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/train-081.json",
+      "hash": "354cc6b09ff183f9ea34700eff9fac90f9ee899b3ca5a5a0cb7aa7685a13ad71",
+      "bytes": 18991,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/train-082.json",
+      "hash": "8f0ba97804497721002b82535215e9319c2c269e5c8ec1f7ea187ac1c910f26b",
+      "bytes": 18319,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/train-083.json",
+      "hash": "0a805781c58faac3da435a83c30235a958fd898b69c0f75d63893fce83fb22f3",
+      "bytes": 18130,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/train-084.json",
+      "hash": "ece20057dc96ad1aa674fb82fc264ce44cd544acd20bffddf00a56c0fc78145f",
+      "bytes": 18359,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/train-085.json",
+      "hash": "88959e28d86bdd96c6ab183c90b91a300357e51f17b11c808c9b730aaa977a08",
+      "bytes": 18811,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/train-086.json",
+      "hash": "9ae1638d1603a6c31f25a74b8910cf029d6552163df231937bb98c1a9342e763",
+      "bytes": 17783,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/train-087.json",
+      "hash": "ec1902e130dfb156b41e0ed79b557a5a618225e6f7d8b3fb2a38a977997dc224",
+      "bytes": 17721,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/train-088.json",
+      "hash": "8af1c0a37effdad7fe7a37faae7b5b7f119e206f0a2db6a69ac2c0209ff3f0f8",
+      "bytes": 17339,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/train-089.json",
+      "hash": "72efc6a8b8bdbed48a879ea6bcdeeab266c81efd78b7ac0c2aa18469c90021d6",
+      "bytes": 17324,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/train-090.json",
+      "hash": "bceb383df8aad7ceafe94ccadbfc988d65616c25ab65adea4ed602da350f245a",
+      "bytes": 17645,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/train-091.json",
+      "hash": "1085038c0962b28388e36dd290dfdd75c6006831424b02b5612945c2619c9c2d",
+      "bytes": 17098,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/train-092.json",
+      "hash": "0a4fbb06539dae194e80144df2e787cdacba519891ae2c258da3eac18d37d675",
+      "bytes": 16823,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/train-093.json",
+      "hash": "4dc3db987af3ffd1341fb36d2189c2a6bb440affad430ad9d23d4242c5827b55",
+      "bytes": 16936,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/train-094.json",
+      "hash": "9f81d0d3c3a5b5bcdff7a585e100bb659eb1363cb758efb607be0129f7fadeeb",
+      "bytes": 16423,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/train-095.json",
+      "hash": "42430853e8f141f8df552b3e9ea68aec091d7537c86b478ac4f3c4500b2612c6",
+      "bytes": 16684,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/train-096.json",
+      "hash": "447bd2fc45d90ab108f735495ac36ee56f04a43e4d96b517d2b8ce961e1c6f96",
+      "bytes": 16804,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/train-097.json",
+      "hash": "712705d5c270a1198cbd277c7facb7f5b66e55291416de3de1999a964d8bc43a",
+      "bytes": 17327,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/train-098.json",
+      "hash": "4bb57e76da07fefde8f31eab44795c0f8c3dba3978f005478c07da6a957a9bba",
+      "bytes": 16639,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/train-099.json",
+      "hash": "0ca4bd9b843310664203e2e956a98d84f5a8592f50accfb6b0472cd7bcd081eb",
+      "bytes": 17390,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/train-100.json",
+      "hash": "fe81ff2b6fae96da20e19652b1c0dda9fbc4b94558d0e918fb8cc366bedf28f5",
+      "bytes": 17395,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/train-101.json",
+      "hash": "bfdc7d51e8bdbbad6b48fa914911dd695904a9decacab5feafd8ef1f43b42085",
+      "bytes": 17518,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/train-102.json",
+      "hash": "d2be2d76eaacd45d4bb3febf4ec2a6bdad5148d36a60d46471d3221d1fb60d42",
+      "bytes": 17507,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/train-103.json",
+      "hash": "e403ad9daf9e7771791f834b2c6a93bf9043313939309acb4e26e6fafc1e8ee7",
+      "bytes": 18382,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/train-104.json",
+      "hash": "2dc8da9c62fbf0573fabdc39ea62b792ef59cab9acf1165cad8ad3650e7c01a7",
+      "bytes": 18164,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/train-105.json",
+      "hash": "83e1d9e029cf490b64ea95a212b15deb438f7a68c12affb3cb50fe96b14b88b5",
+      "bytes": 18088,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/train-106.json",
+      "hash": "228a83909f134cc778c0157d6f56eacd9165b7f05ba2d60b35fabe8ce8713eca",
+      "bytes": 17826,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/train-107.json",
+      "hash": "1c63b99eeed31805fd4933acc72b0900d704b390ea8b35de6016c6e1b10c0cdf",
+      "bytes": 18128,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/train-108.json",
+      "hash": "f7134bdb0e3d33e314ef6fb92adbb734e6f2c6a377085bf053bfc772a0d9443d",
+      "bytes": 18152,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/train-109.json",
+      "hash": "5feeb886f566b4646b71dfc123e65ede73a987e39333b9232cb7f51d834628f9",
+      "bytes": 17706,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/train-110.json",
+      "hash": "823e856b5d983033fa23ba8b493ee0425d420e81025aa1286d75baa1b54baace",
+      "bytes": 17862,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/train-111.json",
+      "hash": "a4a5585407c38c124bae419c39fed123e6831cca177dc64d23b82857a8755d31",
+      "bytes": 17802,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/train-112.json",
+      "hash": "1821ff39234cebd01d130eb99ef4d4e4f65055a5a7bcdd68815c7d61948a54de",
+      "bytes": 17564,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/train-113.json",
+      "hash": "9dd86ff4cede4d8215e2dedf0b4cdc9553203a7c8bf20dd008e130948613dbcd",
+      "bytes": 17440,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/train-114.json",
+      "hash": "52aa4f41c1768fe452dbe7dc264c963495966aa0ddace7b34a52b3bf0949bb7e",
+      "bytes": 17563,
+      "soft": true
+    },
+    {
+      "path": "datasets/massive_intent_en/train-115.json",
+      "hash": "acf03a1341e78ca09831b6945c73bac116ba117566a3b6d4cdfd49bfa404b5f3",
+      "bytes": 2719,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/test-000.json",
+      "hash": "d1c37dc3ade2413f7f305691c8748a5464f64797ddf951f668be31ad5ae43057",
+      "bytes": 14341,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/test-001.json",
+      "hash": "3de77c645056e956b9ebed272e5635ddfbd0dd07dc7fe8f554b61a4e6f279814",
+      "bytes": 17067,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/test-002.json",
+      "hash": "86f6d29b1b78bdad5486dd00fd038214f9f086089a79976a9fa4d602d2744192",
+      "bytes": 16613,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/test-003.json",
+      "hash": "b2d5ccabb8dd0b8ec923e583fec57be8aed23a4cf852e2a56b92a50920d41727",
+      "bytes": 14445,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/test-004.json",
+      "hash": "7fb4a2b0f78645877d65de21414a863c45100965f36edebe9157c2ac296a8cea",
+      "bytes": 14610,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/test-005.json",
+      "hash": "feb63bfab1aa8e1aa2ef9be3c2cfde73d754aeef328cea6c9d8ba08566236290",
+      "bytes": 15203,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/test-006.json",
+      "hash": "e69b88355ae4a76cc815306a9d3eae2caa1ab54994f09d0b2a613add56145b84",
+      "bytes": 16699,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/test-007.json",
+      "hash": "7d6099dfd72b883b51fd635b885677c7e46cfa84f73e4dbc5848b8ec4b90065a",
+      "bytes": 15894,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/test-008.json",
+      "hash": "f067ef75b220344e1676e0c12a2072d83947e169c561195814e9764d5951057e",
+      "bytes": 18113,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/test-009.json",
+      "hash": "28117cba8bd7893513c40dd040a1a7cd79f0f7ac0294f2d54d0f3e0f3294e8e6",
+      "bytes": 14446,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/test-010.json",
+      "hash": "3551b8570a163eb669508dc8a13acfc4ceace1ffb3e09d2588f8b2a8ad2c8d46",
+      "bytes": 17944,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/test-011.json",
+      "hash": "622a87f1f797a08b11918732c2a5d7d94aa8227da7dd8857bc17aa82ed039dbd",
+      "bytes": 15614,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/test-012.json",
+      "hash": "94c6ab719b3dbbceb56a619a0eddf1b089d90a5c9761bca3687d20f77dce774b",
+      "bytes": 14015,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/test-013.json",
+      "hash": "13eea5ed4660b39b2d0cf89d71a7e89a6d3c54ad7b5dc6a117af0d0fcacbe0e5",
+      "bytes": 15522,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/test-014.json",
+      "hash": "dc05d72bb48110c95d818388f5c5555168f61654289a1df61320637d2c7fc77f",
+      "bytes": 16266,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/test-015.json",
+      "hash": "ddf5fe1b04277e9c71fd80f6dc236853747ee716dc98a5318db7ad67fbd8b563",
+      "bytes": 16386,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/test-016.json",
+      "hash": "34e0a1f7afd5de26ef448051b4f3cb1782b552117ce5123a305b4179efb43261",
+      "bytes": 16140,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/test-017.json",
+      "hash": "a91fa68c809701dd941c7ab8cc499d1daa5eff242f9c6b052c62b82394f6254d",
+      "bytes": 18029,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/test-018.json",
+      "hash": "2d9c0aefcf982846f7b97a37e035ca44089ab42ece2723b9a4d27038ca7c2574",
+      "bytes": 16060,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/test-019.json",
+      "hash": "ee40ac0d48baa05dabce319d7bdb5fce8e11d511aadb3adb217957a1ee72ea2b",
+      "bytes": 16760,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/test-020.json",
+      "hash": "0907eb78bed28557a3bb533447af22a722accb9f18b93cd3e9aa688cca1b0b50",
+      "bytes": 15949,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/test-021.json",
+      "hash": "00b681b9a6bf9de5862a8cf4f30971ba44f983e74681ef84b20a4200bcbb9b30",
+      "bytes": 15849,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/test-022.json",
+      "hash": "7970fde55ed6f3588d0b5a8b2df31edeebb1728c05282590a6592f81b1ace652",
+      "bytes": 16364,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/test-023.json",
+      "hash": "a2989dabeecc725bf78e1ae790c2f3c485f51de0b00a261e4d0fe386e1e88b9f",
+      "bytes": 15829,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/test-024.json",
+      "hash": "79d31df25d2f4d163cb8f236dabc5f1b222bcf23217c510d915a60538c6cf4a1",
+      "bytes": 14769,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/test-025.json",
+      "hash": "8ca9f30e61d0d15b4e7fd684759f4657d8d34a9c80010a0b2a4b46ad9e1fb819",
+      "bytes": 18008,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/test-026.json",
+      "hash": "66d648f1bb00f810e8ebbbeb576173614cda7cd43a2255282f378b7366baa9a2",
+      "bytes": 16052,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/test-027.json",
+      "hash": "5c251c7892b71c0bb4854683b845781e46913a01259ef0de19a527b027093f38",
+      "bytes": 17317,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/test-028.json",
+      "hash": "a13b9c28394f62526466ac47eea73479829eb8a63786ee947fd2cd71ba5f3803",
+      "bytes": 15725,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/test-029.json",
+      "hash": "6bac4976692bbeb71cbe03d6df5503a62ec2d527bf49305e22192bf76e6191ff",
+      "bytes": 16202,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/test-030.json",
+      "hash": "815a848b3ae8eec656d13ba6f91e17971c40449394de25b72a1c159e08b1f812",
+      "bytes": 11063,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/train-000.json",
+      "hash": "e88c59a6d286416278529a9c115b2a2b1bf36e69bdebf47b1a395e1228d1dc9d",
+      "bytes": 14379,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/train-001.json",
+      "hash": "9f254c6d463de9a1e3a64b4b662a0a765fa254123b8a9a33fb9a89e0bcf09d08",
+      "bytes": 14847,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/train-002.json",
+      "hash": "e714c1ac4412acc955d030f27df147ddc858b444cbfc2b4e27fae1e2857a3e84",
+      "bytes": 14868,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/train-003.json",
+      "hash": "30a4bc1799ecc96203911e3829ea91e87f873dc53d11ffff1b141c3a195fcfcb",
+      "bytes": 13998,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/train-004.json",
+      "hash": "d3ac49b9c5036aeeeaa6860743f1fae1d3e76b0392541af557307f0314326447",
+      "bytes": 18735,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/train-005.json",
+      "hash": "b9b71e337ddb3745142f166cb74825d8a1def952217faec7edc739ad78b21ada",
+      "bytes": 18287,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/train-006.json",
+      "hash": "8475636dcd5a3f01bcbf2dc3fee16c23e6528d1a852d4c3d7d76145ab165142f",
+      "bytes": 17209,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/train-007.json",
+      "hash": "b2bbfa73035b620c73da1cf90dbb2f4af5dc9f5f13abad3be5e6c937d99f5312",
+      "bytes": 18775,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/train-008.json",
+      "hash": "c44f2de6fb97d55f253927e848d3aa9e2b62b5ecd17d3eba7629d76dcea9bc8f",
+      "bytes": 18219,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/train-009.json",
+      "hash": "4aea8c5ba21a04bed2655f8079bd3ab6b89cd49352f865c2a2ae70e61164305a",
+      "bytes": 15502,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/train-010.json",
+      "hash": "c1d28cff5a5cda8b289ae006b42ee938e73d99921a98c835d8d4f75cd8389f03",
+      "bytes": 15045,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/train-011.json",
+      "hash": "bfc1c0c2901074b0c6c95e85ecfcb558f9a6968ccb4f1029c435b79fb2bb2134",
+      "bytes": 14812,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/train-012.json",
+      "hash": "ec360ca8fec3f505d15243fff70eb43b45f361a2521c8290a9aa1f3f95ea9cae",
+      "bytes": 14581,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/train-013.json",
+      "hash": "ef2918daf1b23c968c816ac718c9627cef1c2a755d6d289252e710aa8a480b49",
+      "bytes": 15156,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/train-014.json",
+      "hash": "086416b09391fcf482c726b87c2c0e656289b17b5346324e22d4367d792bafe5",
+      "bytes": 15194,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/train-015.json",
+      "hash": "e96088570d9c423f9526f5626a9370fdb3084d3532c838da7c0aac47b68e4458",
+      "bytes": 14519,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/train-016.json",
+      "hash": "937e54f2c2b164446cbf8086cc815e6562b6a16561328e323518464d82bbf8dd",
+      "bytes": 13921,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/train-017.json",
+      "hash": "f09815dfd65ad92498379de0398bbd4f37681cea76b11644ebf13f4497fb1f5d",
+      "bytes": 14965,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/train-018.json",
+      "hash": "4d5294f174d7a0a57ba3d58c7ac3792b2767a423dd1fbb17e2e3e660caabc579",
+      "bytes": 15956,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/train-019.json",
+      "hash": "b250af1b1725a050aecdff3228c2c2e71db05bdb136c76d3db5eeaaa175329d0",
+      "bytes": 15925,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/train-020.json",
+      "hash": "5f3c6c72951ae0cd12892092619ad07fbdb4aa79333e8cc8f94f3d87c78ef92a",
+      "bytes": 16317,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/train-021.json",
+      "hash": "219b5c4d1a0b5ab58b0e66247e4bca18ace95631036320b1ff3ca1d941c32629",
+      "bytes": 17259,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/train-022.json",
+      "hash": "c7b0380eb3a21f751fccf6cb4b35990b957c080f9823ccf6e8f5ee4db6251199",
+      "bytes": 14882,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/train-023.json",
+      "hash": "4c32a427ce6327512887f7bc6ce2239271fd10f281a24be2f80da2fe41f8d794",
+      "bytes": 17336,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/train-024.json",
+      "hash": "e5f53a2cfcfb4892bed523850ab14f206f4f832ad176e9b3b86287dc6f817ef0",
+      "bytes": 18475,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/train-025.json",
+      "hash": "30afc256ab0072d268c658e241870ba9b599e55517102c3e36964d3906cc1cc9",
+      "bytes": 18083,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/train-026.json",
+      "hash": "8f0218bf2ae57e82a3a7585ad69600f83749996011dccd20ac41cf216fe11a6d",
+      "bytes": 17935,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/train-027.json",
+      "hash": "76a4e1d6e43827614a59002f18f4adc7ab80594fcabbc7fceca5e4c5d538f27b",
+      "bytes": 20663,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/train-028.json",
+      "hash": "da56f041246fed6ee9df7972e3773e3aef87c0dd8db360dcf8fb7e9a9b0b2a8d",
+      "bytes": 19894,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/train-029.json",
+      "hash": "39bd8f1e8f46c192b47a34e0476a597c88c49b9b02d23ffa90b4711618251efe",
+      "bytes": 16476,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/train-030.json",
+      "hash": "e3108b6200d8319b89564325260b00d9cb0b32661497da80a22a171c849518e7",
+      "bytes": 14700,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/train-031.json",
+      "hash": "a7af8c852cde9e1aef0817cd659e22bfb57b9b97150cc4961f9e1cbeb7f9a324",
+      "bytes": 15368,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/train-032.json",
+      "hash": "db948e1a94479e8a0cde6e3e6b75bccf836870dab86215ddd2dc01705c0cc1ba",
+      "bytes": 17064,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/train-033.json",
+      "hash": "7990d0535446b243eb87249c13d27ce49628f17de73c571c98363dbafa4a68d5",
+      "bytes": 20588,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/train-034.json",
+      "hash": "bb1880ff676e923844483f9396e628cd367189376235aff6895e4524cf09c958",
+      "bytes": 20294,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/train-035.json",
+      "hash": "1a7d534c57b90e8c1217ef2112e9dbf776b369af83af70334d5aa9308f50eaee",
+      "bytes": 18400,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/train-036.json",
+      "hash": "717e6582d79eeb0cb7b81c53e30e807e3988edcd5a5ce1b5be5f7319e8f1acee",
+      "bytes": 16665,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/train-037.json",
+      "hash": "f9e54d14be31fd759b41816b927cf64b4118a5d15f309590e96ef1b9388390bc",
+      "bytes": 14925,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/train-038.json",
+      "hash": "c149ffadd9e7bd5f13f3c2397549cc145c35050ba7e32c14c0e1d816d6fa5b6c",
+      "bytes": 15467,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/train-039.json",
+      "hash": "49f90e92d91506419e0f92f3d426e3620bd45029333313d5125b43417e575ef6",
+      "bytes": 16644,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/train-040.json",
+      "hash": "bfbd52b2a4db1b882b250f3f1a2a9d2cf826d4a90526fe164b88474b3b9d9320",
+      "bytes": 13579,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/train-041.json",
+      "hash": "99b8f634f500a4415a7d96cfe91da8bcfff466c35a508a943b7ceed83ad85aa7",
+      "bytes": 14371,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/train-042.json",
+      "hash": "18910ca087f687bfa0af9aeccd253e1f946ae47a9d94221ac80a81e4e87a3691",
+      "bytes": 14845,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/train-043.json",
+      "hash": "ce81d9974f43d306458b0f08770eb62a17424825eefd121de3de567aba18f3a7",
+      "bytes": 15858,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/train-044.json",
+      "hash": "4b21b7cb83eeb6a81a0439dba40d40fd84515d92dfc55733a85cf0c364e521fa",
+      "bytes": 16971,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/train-045.json",
+      "hash": "41b75a9d9cff5a7713ce5285fd3e0c68fef6a88128d29ee648432b4a09290b46",
+      "bytes": 14938,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/train-046.json",
+      "hash": "d37e55e11fe75c99f6e30a9f6e675766c64a68c369cf58b1b9abc023b51af895",
+      "bytes": 18286,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/train-047.json",
+      "hash": "cd4f094287fb8a5116104cfc0ee2c6bd323a2ebd32da7b9082ab852e34c1aadd",
+      "bytes": 19695,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/train-048.json",
+      "hash": "2c12b336cdcc98a043067f453957e0f80db8eb7f543b8100381ea2542c57ac12",
+      "bytes": 14959,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/train-049.json",
+      "hash": "0e38b75f83296db60ad315c7a6e72c58d28f3554f00468c090197335dcc0f33f",
+      "bytes": 17204,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/train-050.json",
+      "hash": "1e60eea3b086c66ad5c042951e7739e02c32c2b32652880aeee9cd929c99736a",
+      "bytes": 17806,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/train-051.json",
+      "hash": "b5ec0eeb10e01936660709a5322efa7a907da0ab343dacf3616e1d46a4b6c583",
+      "bytes": 17802,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/train-052.json",
+      "hash": "628a6afd32404a4e34b14921b6367f5c693fffb26b1e2568f2bdae470af3708e",
+      "bytes": 16836,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/train-053.json",
+      "hash": "074cf0ca04f22aff6774b721dce7b447680f0967ba8525d7eb9bf18e4b1745ca",
+      "bytes": 16389,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/train-054.json",
+      "hash": "1570625b5b673d4a5fe80e66a2dc2951bdaabab9be8b32be391df7062b7d2d21",
+      "bytes": 16656,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/train-055.json",
+      "hash": "faa730e4f99a5d01a4d1beb7b9ad8662b0689d16ea350e4e6bdef440ae7d42c0",
+      "bytes": 17778,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/train-056.json",
+      "hash": "f0c019bdab57730be68677df8a256162bc761eecc220cf2b9d529641a2e8a0ec",
+      "bytes": 17630,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/train-057.json",
+      "hash": "6284d524baf96c4db9deb25ed70af3c7d1dc2b607ee2622f9f3e1a0dfae87fd6",
+      "bytes": 19270,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/train-058.json",
+      "hash": "5501e4887d0958379b3c4905984f565ecf78c9c3d3cba7637423388f080cef84",
+      "bytes": 17225,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/train-059.json",
+      "hash": "aec89fae0aec9c90c8f7bae27c83807f0f90b93ba8f1bee7e649ede39231ce44",
+      "bytes": 17552,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/train-060.json",
+      "hash": "94094eeeb23f94fff1bd7dd704e17e8b21802e524f0e85ac2aedb31be44dddc5",
+      "bytes": 17988,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/train-061.json",
+      "hash": "f1b959808c867435a0780b009d72fe2b73b6d26fd0a46665772848ee1b0425a1",
+      "bytes": 15833,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/train-062.json",
+      "hash": "6be9d59e858fd6ed857ffd9b23d7cc7849846f45c912174d9355b58f8ec3b243",
+      "bytes": 14743,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/train-063.json",
+      "hash": "bd2ce8071df167914218351b40b992be3f075e29999e80b715b240f4f8839cef",
+      "bytes": 18967,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/train-064.json",
+      "hash": "f537bd187579837337ebad53e2ee6c695244e311122d5196700d9a2a698eb7a2",
+      "bytes": 18977,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/train-065.json",
+      "hash": "1943f97f39a1f54baad10264551cae89f4abc3b73ec1f328ce5a849f8d5d51dc",
+      "bytes": 14934,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/train-066.json",
+      "hash": "39fbdc3710fd88ac9794366bd1f909e130b4fec86df1eddd22ad25c54b3f50b1",
+      "bytes": 15901,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/train-067.json",
+      "hash": "a257972f83c38735fdf732afacdb952c481e50bed76349ff9338d427d2049ff1",
+      "bytes": 18186,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/train-068.json",
+      "hash": "87c8b1a9b8b63e88da9f1d2d01387ea451fd0afd4d73e3fbac3ba0aca75e7b19",
+      "bytes": 16997,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/train-069.json",
+      "hash": "fea4613f373472bc7dd6604911eecf7493272c81b0d6d2486e2e4283b4315463",
+      "bytes": 14444,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/train-070.json",
+      "hash": "0cab5660ff43590a25f31adcedb32dd84f6e21da859cfab29ab7932c11394257",
+      "bytes": 17372,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/train-071.json",
+      "hash": "c444248e4ed8511229176b8b92076af4c770bc9d72e93abd8fc202e23099a8d0",
+      "bytes": 18054,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/train-072.json",
+      "hash": "aa0f41de2adfcde10e7ea422e322aee9e9a8f4317af145d4cfd96e15aaa0f97e",
+      "bytes": 19746,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/train-073.json",
+      "hash": "7319202066b9724c185ea411a8d9c517ba6020932d0d75080d204d0316bb0b9b",
+      "bytes": 16537,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/train-074.json",
+      "hash": "9e62b6365cf06194bf7fbc9d3d8c3027dd017139c1988dde20a951ea1699aa61",
+      "bytes": 17157,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/train-075.json",
+      "hash": "ba49d6155da4f424bf06fb3dee4fd5cd3029da876cabc0fcc3e7a82d057ce33f",
+      "bytes": 18344,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/train-076.json",
+      "hash": "239199dd2453150a9a76d546bd776d5041ad75db74b8ef624214672960b8412d",
+      "bytes": 15889,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/train-077.json",
+      "hash": "112b24ab3c58615a54e87b1ed3fd3b6aac7beea3f7d1e5de4b622a4909507466",
+      "bytes": 14112,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/train-078.json",
+      "hash": "a63b0d28c1faf0535949e87f974ae5e2a860a13b0a70b8088916181877650151",
+      "bytes": 14977,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/train-079.json",
+      "hash": "db777e4d5f311c9f24b78fdccaca59b35886a949733349bc5912164c9a5ce9b2",
+      "bytes": 14846,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/train-080.json",
+      "hash": "965a0c8e2ec781ad3f18ca96fd1c5543113d15de63c31a0f5e5f4291fbdc9080",
+      "bytes": 14378,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/train-081.json",
+      "hash": "7455c45b4d87c9b5afba27ff82005afd5f539dcb5df231fe3e84353b67936ab6",
+      "bytes": 14936,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/train-082.json",
+      "hash": "12c8905643d32e32c024f70fc9654158428aef9e34e0301f7a5d9fb262d464bf",
+      "bytes": 20519,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/train-083.json",
+      "hash": "115505fa853d210859f01b2b40bce24724d8f12f4b7c329efad66704b17e9d60",
+      "bytes": 18995,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/train-084.json",
+      "hash": "97065ade2db68e77d3b0604e494c28cb1d05495951902133d2b9b21558233641",
+      "bytes": 16342,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/train-085.json",
+      "hash": "a191ab0ea68c85548e5a52def69180302cc701954700dc15d62e04a7fa8f0b62",
+      "bytes": 16285,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/train-086.json",
+      "hash": "fca50661e0462a83e56aa68c17d14c4936126ebb27e699ee03e49c7e3c3ad6ac",
+      "bytes": 20188,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/train-087.json",
+      "hash": "2e565023d6ee6518a93aa8ec52c9bbb951ca6b35558cffd419b21ddcaeea3851",
+      "bytes": 19595,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/train-088.json",
+      "hash": "bb0d8f21cb81d0ae5a7f413af75b075bd2d673ea4bd38a202139acf81abd9b1e",
+      "bytes": 19574,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/train-089.json",
+      "hash": "a871e6359fc97ca49f02c7013cd7d26746b1c869f8607d8f4c14b4b5ec6a6c1c",
+      "bytes": 16298,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/train-090.json",
+      "hash": "fc789835f01aa6d3b8b93e310850600f6a11e9055159cbe2485c81abdf4e5e37",
+      "bytes": 15462,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/train-091.json",
+      "hash": "af7035bb7b50349c387d1a7afbb69b6b04900258005e45c4a1e295ffc35de95c",
+      "bytes": 15265,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/train-092.json",
+      "hash": "b95d03a31857b9f236cd47f464e8c7bd9d02c804d386c7e1c1a34ca6f8b28432",
+      "bytes": 14544,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/train-093.json",
+      "hash": "f02aa41bff18e477c41f8c48acc96ce5bc5115f3b8c8788f803050f7871524bb",
+      "bytes": 16995,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/train-094.json",
+      "hash": "8e8cdc432dab2d880843bde9daefd553f9cb15602d4792f96bbbb658588521b1",
+      "bytes": 17940,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/train-095.json",
+      "hash": "ee3db516df3f64f6bda4d92f097626bb5c2a01d2d7d6815e98b9ade2aba2fb6a",
+      "bytes": 16032,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/train-096.json",
+      "hash": "a7941fffabc00c3a8d2ed7d2828788591f98f223cc6187c3402a76499f05f145",
+      "bytes": 15476,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/train-097.json",
+      "hash": "ba11250dcbfe694ac76cf15b40fdea762749a9c23d1aa040ff85858623e06b0a",
+      "bytes": 15284,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/train-098.json",
+      "hash": "28520c9427eb42d570d03b650aec853f5929fe75120248881dcd4bc7d093de65",
+      "bytes": 14583,
+      "soft": true
+    },
+    {
+      "path": "datasets/banking77/train-099.json",
+      "hash": "bf3df8b3529356a265ace3b0cc49e715285110bc3668f097bf59dd2f4bde6178",
+      "bytes": 13401,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/test-000.json",
+      "hash": "e584c07f02b3fbc490ff68fa4fb840f1fd3db9394e3daebc8a8ad99d9956d73a",
+      "bytes": 22041,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/test-001.json",
+      "hash": "77c43f62248c1f09d79c5b43e6211d8668839c80af672f22495e25dd6888f102",
+      "bytes": 22025,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/test-002.json",
+      "hash": "a0b539fcc71115fcde307172fbd1b35883f756ddf35594a8bb25859e6e40670e",
+      "bytes": 20090,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-000.json",
+      "hash": "9b5da50b5d355a3b2223bd138b49fdafa9c08b93337dcb02d02a75f9ef07fa3a",
+      "bytes": 26946,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-001.json",
+      "hash": "68da255d8aa895a28b5d27cdcdacdb8448f690bbde51c18152c22f3359d7f373",
+      "bytes": 26906,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-002.json",
+      "hash": "b7eee25d252b7dd5eb00a89e0688075118a443236e2db884ddd69f42bd742ab7",
+      "bytes": 25293,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-003.json",
+      "hash": "2fe452ef5e929772c06f98fde955919bb7e40d362ff1a2716f266d06d63be663",
+      "bytes": 26556,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-004.json",
+      "hash": "9da16241cb481fdfd26c48c47473cd37a5932a1f8ef5f60ecc284250b6631eda",
+      "bytes": 26610,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-005.json",
+      "hash": "2fce299341b42d2811226e935b9f1a7c574dbc0f3074f2e10b9b52f4837cb02e",
+      "bytes": 26726,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-006.json",
+      "hash": "20419eff637007637e9e9b82d872d220913bfbfcd15b1ed28f702e5cf3e23ea6",
+      "bytes": 26227,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-007.json",
+      "hash": "beff341daffdbd40896c61cdc23d7dc8ecd326dd5f96776c8e53977c60c9f1e3",
+      "bytes": 27754,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-008.json",
+      "hash": "5af832f9a21b25310f9f68fdc0e15d9279c2b5b231f0a8acb488471bf1d606f9",
+      "bytes": 24137,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-009.json",
+      "hash": "46795d6466ba8702bba276ad8e7efe6b0cfcfc0e9fb152b9e9dbcb5b51db165c",
+      "bytes": 25833,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-010.json",
+      "hash": "125bbc2e36b6589b847175700b4d7c42d983491f37190eeaa4c6e9f38963ad0a",
+      "bytes": 25971,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-011.json",
+      "hash": "3ee37f21f0d6cc858fbe0c44cc727ecdeb308e93417f94b58ca78234726da6c6",
+      "bytes": 25998,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-012.json",
+      "hash": "386fd1ec7eac3a195f26e6689ef569478d5ed784b3cbc17502ac922b38b5b8a7",
+      "bytes": 27234,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-013.json",
+      "hash": "69d52461b4d7954076f2ffbdf8fadd0682764725a133f8fbabd06be057e05d78",
+      "bytes": 24613,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-014.json",
+      "hash": "a07780e62888f31852ba1a150965fb4073f2b8893bd42801a6b4bc54d162adfb",
+      "bytes": 25752,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-015.json",
+      "hash": "e7477b7256276dc229cd0826dfdea71790f02c3e4f1dbf859fd26f3ceeb993cd",
+      "bytes": 26599,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-016.json",
+      "hash": "c516834a335db738f84ff0a4941b108df4deadaad22b5c8eda506d80ac15b42e",
+      "bytes": 24689,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-017.json",
+      "hash": "f6497e533c3a33ab69a400988237ac311bd0fc485440ae015dca262b5eea6aeb",
+      "bytes": 27401,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-018.json",
+      "hash": "ac775eddf17f15ac08a34377530b668630ea640f7bd1bcf013681d3a04a7ca9c",
+      "bytes": 27572,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-019.json",
+      "hash": "0fb3b9cb2f3113f4b054fbe0eebd5c45bfbe185f980cd003f658ad9d1b1088a6",
+      "bytes": 26721,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-020.json",
+      "hash": "1093ecda3c5e4933d8be5e8ca3458ad2038a4a59d23e30a157d0fb070f458879",
+      "bytes": 27281,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-021.json",
+      "hash": "85c8c347e2c9e8c13b57cf068497a57db069fb5ef1af1d009d586616ef46879e",
+      "bytes": 26245,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-022.json",
+      "hash": "2eea9dbe0dfb566925d5c6e9353c9a39552a3328758d427f56260e362ed687f8",
+      "bytes": 26000,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-023.json",
+      "hash": "928e593b2d63bf3004ac19496595fd6c7f18b43a7fb0aaccb90ba16504663d43",
+      "bytes": 23471,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-024.json",
+      "hash": "ac4bf1f468721a2b92c57ef02d49394e8d9a0f082ada1674f6c05d4e89181b6e",
+      "bytes": 27080,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-025.json",
+      "hash": "b227889636dc2e800c192d0a00a8b2c411d430a6585b630dc89f45855298cafe",
+      "bytes": 26039,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-026.json",
+      "hash": "afc626655e0cf11796410921b86b64b45bbd1ed2a7cf05400c810a1bb3bee85c",
+      "bytes": 27345,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-027.json",
+      "hash": "38bb6e6663104a17d993cabfa044999103a6fdb2426303073991223f30ae1e3a",
+      "bytes": 23436,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-028.json",
+      "hash": "149ddf0b7bf142d8a2338354b4caba300384820bf101a34e96304423b9c51b68",
+      "bytes": 25203,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-029.json",
+      "hash": "c620471303bdbfece99171b047e8bf81161a4945dfe92302ea57d653f55f6cc6",
+      "bytes": 26607,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-030.json",
+      "hash": "4f17debcf1b504fe7fbb1c17131146736bf580224aa7e8925dd30f2d53dd402f",
+      "bytes": 25698,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-031.json",
+      "hash": "fce2caa13734bbab702513fe7639a01d665927e6bd775aee8dd9393fa3d621aa",
+      "bytes": 26584,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-032.json",
+      "hash": "bc6c9f84839b21963cb790f18aaeef73622b223c7865783132bcbf6bf898904b",
+      "bytes": 27767,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-033.json",
+      "hash": "78b1c95982639d3f92509d7fef475152271de290df1dee103903b2c92aaec778",
+      "bytes": 25808,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-034.json",
+      "hash": "17e44813082c62f6f1620b37ca2af359837d15b8575e0f8030f45f079c2a6fb5",
+      "bytes": 26305,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-035.json",
+      "hash": "5a0b0386c9c8690a6d8afc65101e792c7d6cfdd08e1aeb45e4acaba96ca584a3",
+      "bytes": 25910,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-036.json",
+      "hash": "15c9b16bc3323b6b2f66ec02cdaf914ce174b0253dbae7c6b58f903f3b30e9de",
+      "bytes": 24901,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-037.json",
+      "hash": "c8c5921fdd12d07f6b4896a2bfae28b41fe10b1c6fad125e3b35fb38c1c2b1f9",
+      "bytes": 27120,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-038.json",
+      "hash": "d3f468237708ba8a5629b43869c8e32df42b49ba6f080d39da2882e2f556f9b8",
+      "bytes": 26502,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-039.json",
+      "hash": "b733f76daa727016d9506cbf8dc3c715e94e581693679d030b044f1219092f39",
+      "bytes": 24447,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-040.json",
+      "hash": "4d0a4884288f3b43e9c33444a594bfb7e3afe3dcbe26c7c6ac7769fcf5956bc2",
+      "bytes": 26825,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-041.json",
+      "hash": "0bf1d8edbe1028f90c21448d5a14383e82109a94d486a768022656ab021267cd",
+      "bytes": 26090,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-042.json",
+      "hash": "9ca4906d82be4f642547bb18ac6322aedbe1518365fa52951a5fea98f9a916b8",
+      "bytes": 27084,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-043.json",
+      "hash": "8c0fe05562519240b7603507a4decde1e5972967b9279089c97d5ac4ec7ef167",
+      "bytes": 24589,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-044.json",
+      "hash": "5ce244f13342ed63e933fe8b8e5278b51e603cc0135f7eff15fe8c3ead118493",
+      "bytes": 26580,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-045.json",
+      "hash": "50955be9f6e82e7a5a836c8ab56f0566264ca5f616f43ec7dd456164ededb235",
+      "bytes": 25705,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-046.json",
+      "hash": "0381d6ad528b8bdce32a0d4e08d649d181cbfcced7e31ccbeaead1128d1a95d3",
+      "bytes": 26991,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-047.json",
+      "hash": "a2ffbf7cec7f67aee4e5eb87e4a839dc3b405c1b01d5754a0dd852ae3b74c774",
+      "bytes": 25791,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-048.json",
+      "hash": "799b8c30bd3a7f5c7b7adcdb88774d2fa4b890fd8540bcc44e0a5a6bf4eddc9d",
+      "bytes": 26095,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-049.json",
+      "hash": "ade9e2fe5caaf98a3ba2bace29449164075d6934f69d41d0b115c5cc85bcf96f",
+      "bytes": 26407,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-050.json",
+      "hash": "72e2b92b6bdcd0d4a1804420c623f8a35bd6ed5db204b6c47a77ed3900de31a7",
+      "bytes": 26141,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-051.json",
+      "hash": "22d2699f9e08617d55c01dac3d477320b378fa4b851b40e9043b7cab18c4be74",
+      "bytes": 25957,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-052.json",
+      "hash": "0dc4efd136afc801d5e99b2cc8b7b17ae87d0d87697e06302d065d38f57287a7",
+      "bytes": 25867,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-053.json",
+      "hash": "70b7295de290280fad95f7856dd443f0f1f81d044cad22811e49f9a22ced4bbd",
+      "bytes": 26300,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-054.json",
+      "hash": "01391c718affaf2dda51714de3757a5076724a34298374dd62b218ba8bbeaddc",
+      "bytes": 25528,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-055.json",
+      "hash": "d150757a7ee2adfa2eaa2c45da057524a461d7729b6dca995ed86e96db911aba",
+      "bytes": 25855,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-056.json",
+      "hash": "737541d95995fa5289147df591cc44d9b47d3901e8a8c42e8a83206d0df9f3fe",
+      "bytes": 24989,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-057.json",
+      "hash": "b0a7f2c9d3414b8ca4b4fa8bc99c5556017a552780ff9a1ba0703c2e3c9bc303",
+      "bytes": 24772,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-058.json",
+      "hash": "c001a4934a2bc7b9fe016b3927fca0329f0533b456c36fbae72f22bace903090",
+      "bytes": 26627,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-059.json",
+      "hash": "0a8b4620ab18b9adefe1c6ecee70a6769ddd5b2dfeb47191385e5c4371f4287d",
+      "bytes": 26054,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-060.json",
+      "hash": "8cd5ec0a66db55eac4585656ca1f2b5c9964a2c9b05545615c7bf97c7db34f2d",
+      "bytes": 28697,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-061.json",
+      "hash": "52c81e05ba3b57d4c488e39eadeb58771c8228cbe770c25614e2e321b2e2da93",
+      "bytes": 25327,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-062.json",
+      "hash": "93951496cca794cd34cb0a7fc5c27803e7db978a652ccc9931b1136c31a9d533",
+      "bytes": 25699,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-063.json",
+      "hash": "189f347ddaa62bcc216904ce6c6e751cd9d1b635617c1e2c52216d193c89d96b",
+      "bytes": 26200,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-064.json",
+      "hash": "b8f37f69a5235f54496de35ca1306ff088359c6820ebd97516f3450de37d7ee8",
+      "bytes": 25339,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-065.json",
+      "hash": "e10c2b849240e4bfe406d3a0a1a8293375609fa06aafc5b57cbc0ec906f83459",
+      "bytes": 27606,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-066.json",
+      "hash": "e470853646c140d5548844aabdcaf214f3924c898f070c928931d549e7d24648",
+      "bytes": 27733,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-067.json",
+      "hash": "3bf70c23e36cbe1af934082102aef589088ee133845723483b841182a3713848",
+      "bytes": 25381,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-068.json",
+      "hash": "b9314754f6a4f9153b3e9fc1e2678c36915f180afe2dafdb4a8421a6e2df2864",
+      "bytes": 26272,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-069.json",
+      "hash": "0fc3ae01ea7082a0d730590cc75b695def7b3adc0685667ecfafd055095da9d9",
+      "bytes": 25557,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-070.json",
+      "hash": "77314d958f0968a49c4b6b1e0a90bcfbdb75ff13f9371c1e5523d752a9ca1585",
+      "bytes": 25221,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-071.json",
+      "hash": "56d0b76f49e8d9f034e1e14a314939906cfb27e5ef914032ed45b2f12b42bac5",
+      "bytes": 26244,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-072.json",
+      "hash": "9d835c26e7b39d34b66f57e5791842c40b357d9a5518f99591e057e4930c7f5d",
+      "bytes": 25734,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-073.json",
+      "hash": "7405476181f2206526a1962a60e2ae2f966e777da106ed8aac4f6bb951255a56",
+      "bytes": 25576,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-074.json",
+      "hash": "516c162413ada8c51e78c33f19710318841c8c268294c2bb56e7ba58515eec77",
+      "bytes": 26071,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-075.json",
+      "hash": "0cb5cd3d599371f39ab0ff1d9d974006e04cf2603dce6c33b2d900c3028a3209",
+      "bytes": 27848,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-076.json",
+      "hash": "8fdc896d4ff0255f6b73d9b6f3997a357b1ad9fe8847579bbdf579e379dccaef",
+      "bytes": 26328,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-077.json",
+      "hash": "87152ef20270b8772bd99ae73b89c71bba218fb6d04b235f8bd0d5f332a148d9",
+      "bytes": 28108,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-078.json",
+      "hash": "dcee3b6e4a56c57cccf4c469539568a389b08c9ed565f8858fe8a7801d955b05",
+      "bytes": 26180,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-079.json",
+      "hash": "70cb2b171704a067a48263b6167f56af935a2b1d05dd8f9e7d0bef84e2cc77e2",
+      "bytes": 27116,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-080.json",
+      "hash": "ad7f4b2ee97c67d02a4e5478413a4ac0a86b787523afc66d25ba0a3720d90f50",
+      "bytes": 26341,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-081.json",
+      "hash": "4ceb1f936dff324acb548bbc18f7cadfc6363f9f1f37f6658a4788d49d731ac8",
+      "bytes": 28329,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-082.json",
+      "hash": "ea8867a8a3d662bfed3a3815b344ab347fd67d2a928fb21bfba083c7ec74bd69",
+      "bytes": 24761,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-083.json",
+      "hash": "ab8fb7436f4792db3229322e0aa40f16a803154293e7c7602d2fb61b1c1932b1",
+      "bytes": 25763,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-084.json",
+      "hash": "7ce3afce557d0633a7c65013dd1ddfa08745ce1a797e7a32d82f6e3f4ca92c9d",
+      "bytes": 24449,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-085.json",
+      "hash": "456dacd1dd85704a6d25056c105d717aa8c8d56672000f930a9719194e9dad18",
+      "bytes": 26019,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-086.json",
+      "hash": "43d93106c111b2b3574e307d8c3d7c8c53006d897d98858098367f6a2f93ee9c",
+      "bytes": 27524,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-087.json",
+      "hash": "e31dbaab8f5f9384015041e1a18f528a00fb65cabd30a5cc2dac6ac07057b2f3",
+      "bytes": 27907,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-088.json",
+      "hash": "c72c5347fffdf41778a6a2c691aee2ec2883168f3e6c08970d90a473ba776f59",
+      "bytes": 25855,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-089.json",
+      "hash": "cae924b0edc2a029305e504884ecdb0d423e724108e4a2539467d029b53d4004",
+      "bytes": 26835,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-090.json",
+      "hash": "5c6e86279568ef5a0eb3e108612bacc75275b35398ae7cc45e21bf346bed4f16",
+      "bytes": 26376,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-091.json",
+      "hash": "b79be297c66a64545b9fc6f3f2ac7723e362e740f019d85948b103ad8f1157bb",
+      "bytes": 26378,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-092.json",
+      "hash": "d103c8d0d9f4d0d187582005514ed3106a54f75946b029f818e5d1298eadf304",
+      "bytes": 25321,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-093.json",
+      "hash": "33e55cce433235dfd723044573cde6e5fa75d000ffa982f14923bc6d08e2c84d",
+      "bytes": 26679,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-094.json",
+      "hash": "bbd7495eceec76281a07eb8e7c55209c98372c4b936cb299aa3405390ddeaf6d",
+      "bytes": 25472,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-095.json",
+      "hash": "ef7f969042601ebeffd63044ac11d15e4b04b3bceed64aa16df1a4fbd05c105d",
+      "bytes": 26175,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-096.json",
+      "hash": "dc0eee9e3818a09a352d30e60a536e6a696ff6e2c41bb309bab9b1cbf61999f8",
+      "bytes": 25325,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-097.json",
+      "hash": "782acd3d3c72b2b41c154529525cb2864896523b547314627247ff09fc393fde",
+      "bytes": 25888,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-098.json",
+      "hash": "838d9ef7949c6d10491667b3e50d2238ccdbc64f5e1ebbf215090811ffee9b75",
+      "bytes": 26593,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-099.json",
+      "hash": "4d1f6ba4a7cd834cde8d6d30f9d678540fb057a1e2a1722e00bc0689c0aa8ece",
+      "bytes": 26053,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-100.json",
+      "hash": "222a82a4910e5d96aa295d651bf9aa655508249d080cb48300a1873494cb5e4e",
+      "bytes": 27188,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-101.json",
+      "hash": "044d84be937bc1e51f32b267a0b1f0318024aaeee443b6cda5776ffa5b87da8a",
+      "bytes": 28694,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-102.json",
+      "hash": "62b178d04ad6d3ba2eb4a9b50f61ccca705c26f5e4e58bbd36eef18c289e5524",
+      "bytes": 24587,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-103.json",
+      "hash": "2ff177b5cf31aadab4f3cf44ecc4fb8a93fcacdd02e1bb6185dd18c19bffe824",
+      "bytes": 26106,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-104.json",
+      "hash": "9c365584873a0317336798cdc6fef21de0dc8addb84ff5d07116528b4f0fa786",
+      "bytes": 27340,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-105.json",
+      "hash": "26e534b378a295588cc5883792ab4c815867a82a0ae70447b7a7cb6e1b3de308",
+      "bytes": 24623,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-106.json",
+      "hash": "5658c0ce16127b8a11cf3ac599a1966da887209b6432116aace1dc2ef9278932",
+      "bytes": 24728,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-107.json",
+      "hash": "a2cb0b9c5fc81c9092068db14bba9394be5ae7f5b88144393ad3902fad220512",
+      "bytes": 25418,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-108.json",
+      "hash": "b6c11b801ffe45a959aa1e1836bd3d368f187451f34b150ce938a5a2c31d2bb2",
+      "bytes": 26067,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-109.json",
+      "hash": "a0664dcc55160f3741592e222081009ae9e172425297be927575f31400a6a813",
+      "bytes": 26182,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-110.json",
+      "hash": "003276923c8a61b0b8e7fcbcc443a1b7be38e9d342e5137d31d4e97db658c4dc",
+      "bytes": 26196,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-111.json",
+      "hash": "c59a091f806aba6ae933cf780d6011877c08334069e2ed8e8b56efff62c15317",
+      "bytes": 27294,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-112.json",
+      "hash": "620c1f77c1d5f35db76fdf2654b9cd460e77c3e355377d45408a30217b5222ea",
+      "bytes": 25743,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-113.json",
+      "hash": "e48154c785e00344cf4b3352adce64a09c928f55f8607cd601da6abc2532a7d5",
+      "bytes": 26883,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-114.json",
+      "hash": "66b06b6d7c4b19ab15cd880159d7ad508d4d103df845eb5ac76e9968de4cc8e2",
+      "bytes": 24860,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-115.json",
+      "hash": "89194770df78fd3a1b465869df918e073e04f60f01cccd595a653b0198442ffc",
+      "bytes": 27055,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-116.json",
+      "hash": "06f4f1fb2341974e6299964bc98fafd65a897ee0456764edd206d6c877aad392",
+      "bytes": 25479,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-117.json",
+      "hash": "e62eb7942833b4bb03218924befb09a3a1a4fb262b546ca83e5a0a7e0f2e0703",
+      "bytes": 28861,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-118.json",
+      "hash": "34daed4a72078c496635c98dce87c160ec971de0f8144bca89ad878aacdb07ae",
+      "bytes": 26899,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-119.json",
+      "hash": "b2e959d579b9db7b165ddc26f5027a31f2794159e2dcd2569954813b79145e69",
+      "bytes": 25935,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-120.json",
+      "hash": "0bab7bd851e1feabf674201b64bca74bdb9006e492d9cdf76969420169614e31",
+      "bytes": 26451,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-121.json",
+      "hash": "6532c9ac63fd49144646896c451d322c3e448d4fd4a9caee3f17b44f7dd5dc4f",
+      "bytes": 25611,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-122.json",
+      "hash": "0feb74b601e6aeec40d3ac54a1cedac1e9fc96981662829b5823cbdcecf07198",
+      "bytes": 25202,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-123.json",
+      "hash": "9f86c52f64be27f073c8e3837192d64b184caff81313eb41ca39b40d23d1d312",
+      "bytes": 25877,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-124.json",
+      "hash": "527dca0d0a7caa15becd220bbad824096aa00bae14f0f7d24971f09d8ed235c3",
+      "bytes": 26092,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-125.json",
+      "hash": "6c30d379e4b6ec98b78f37dc543e823593b663d2333fa363080542fd64ff75b8",
+      "bytes": 27057,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-126.json",
+      "hash": "6ab8fbae95c86abd98e4a8d8ef4f848ce05f1e96e330e00c90b1417a272cff04",
+      "bytes": 26177,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-127.json",
+      "hash": "7ba5187a121e1659ccbb8f42e4cb4e09f862fa4116f6411c4ce9b6755e96ef52",
+      "bytes": 27249,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-128.json",
+      "hash": "e995f1a43979077a636677890e911771b58a336d7c453b2aad8facf735217c2f",
+      "bytes": 26245,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-129.json",
+      "hash": "af2c18a33b3d9970e1a711b5e124aad0792c4f2ae6b1c97cd92105cf819d5b18",
+      "bytes": 25530,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-130.json",
+      "hash": "67547251cdecbb70681e9292099d8789864360a2fbd7d59bcd70444901cca4b1",
+      "bytes": 25181,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-131.json",
+      "hash": "a57b6c12f34fa55c8be1ef6c81289442340529081c961e02a9c5e81946f8b639",
+      "bytes": 25854,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-132.json",
+      "hash": "4a95689382b1ef7d949ef279ac57b4ffa6790ab9be398d8326352a36411f7b2a",
+      "bytes": 26106,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-133.json",
+      "hash": "29262ef7401c537e9aa9d3e230d1017c3b4344cff6173da14051583d331e3c65",
+      "bytes": 24512,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-134.json",
+      "hash": "9ab4d4421b21249164d507e55ceca1ef356968b911eef0faf0634da7e93a8ae5",
+      "bytes": 26846,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-135.json",
+      "hash": "39f6ac2e7cef95bcdab7d1b9935705e6e1b9823902b186f9a0ace7bc931a38c5",
+      "bytes": 25908,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-136.json",
+      "hash": "b81fdb2372d307c3e075f4005e86b2e1639714a939dd20a1af77fcc78119396e",
+      "bytes": 25334,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-137.json",
+      "hash": "93ccf0faa6218372e96ec8eda03a74ab0191916a18b0e0f3f77a72194ff0fc80",
+      "bytes": 27209,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-138.json",
+      "hash": "4b88570651e4b01564bc486ff34bd5994a46467e548ab8f3d3e30fd76ca65528",
+      "bytes": 27172,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-139.json",
+      "hash": "2eddb94637bd8cdf1967c140e88d26313e500d4e5f2ef69c74b3391fbc8209dc",
+      "bytes": 24558,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-140.json",
+      "hash": "db685470011e85dc52fac5fe75c1721a1f87d818c3bbb9b43e35d313a40b853a",
+      "bytes": 25650,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-141.json",
+      "hash": "a8375747bb76341fdcc5da6885b7cd7640695836dfea70af088c70ee1bf84b90",
+      "bytes": 26215,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-142.json",
+      "hash": "e654ec06421cd7cc351316651fce12a542ca9654d5ec28c2a68282405f5d337d",
+      "bytes": 26029,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-143.json",
+      "hash": "8cda1a4f3c397dad16c1f48819a5bc5d698d922e48bc473948abd1596a27a684",
+      "bytes": 25593,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-144.json",
+      "hash": "a1646a11a86a5a72219306f27bb2936487ffd4dda157060859041e5370468acd",
+      "bytes": 27213,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-145.json",
+      "hash": "b5dae0dc13d0e07df4d61291e7ce3b610a7fbd2da7e5073d96060b24da47212d",
+      "bytes": 27385,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-146.json",
+      "hash": "e569e31d0b8b6434670eae7d7e03908fe7b60390e94248da892d9198a623f0a3",
+      "bytes": 26270,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-147.json",
+      "hash": "5e0a28354b705fc5f1f8afb4a251a41cc0aac0e6793c0b6012513225087d364a",
+      "bytes": 26232,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-148.json",
+      "hash": "705248d50cfeefc7c086cf926c029332e2a88e0732ea936fd581fb22143a898f",
+      "bytes": 26881,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-149.json",
+      "hash": "4e3975872c01edbb0dcbc47b635fba969ace542c2d5e98fd3f5073267b6d14b3",
+      "bytes": 25442,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-150.json",
+      "hash": "590470f11ed9059030e000f859c12c48e171cdcded66024e66b97e3c9723bd32",
+      "bytes": 25571,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-151.json",
+      "hash": "3b46cc5be2e585e9997fbed36afd340707da7b713d702b7877664662fe665b42",
+      "bytes": 25310,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-152.json",
+      "hash": "45967d4dea65937befa84b34d3a752007d690f89a517a22a9406e130c978a4f2",
+      "bytes": 24857,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-153.json",
+      "hash": "17aa0a57d37ac1f206b10e8fba368aa306e0f28f15a4ebfcbb98cedd43a70fa8",
+      "bytes": 26018,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-154.json",
+      "hash": "1d83cfc2658d3feab5fe14df0a2d9e2ce3e8356182407d5d39f5fcc986162375",
+      "bytes": 25925,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-155.json",
+      "hash": "c74c011ca599678cd9a1e48ab08c6b480f2ebd635c83fd302f4cd8bc9b2f1da8",
+      "bytes": 25581,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-156.json",
+      "hash": "865497e26159bc1e8f6f0ed185e974228abc4569c6b009df0d38df9df02984a6",
+      "bytes": 26060,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-157.json",
+      "hash": "7fc31e83ba8626a9f33cd88a5da65164131750cb1236c59e58b76b2e0c013682",
+      "bytes": 25837,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-158.json",
+      "hash": "3a82f96a2aad3dfa80475f05dadc78e46531412339b0f0e51c54e0fc4fc35bdb",
+      "bytes": 27739,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-159.json",
+      "hash": "8ee74859ee343648e02f8c574f806f860ea06a7c92fb019f9eb7d0a2d0ff903e",
+      "bytes": 26787,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-160.json",
+      "hash": "f5ad5812602c9adb4227178ebb2c45ec2cfd7aa87c9ad192e21981b91d48531f",
+      "bytes": 25606,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-161.json",
+      "hash": "af877481563c2a12f336a14cda3542afceab4dc3e957570ca52d303bd585e60c",
+      "bytes": 26775,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-162.json",
+      "hash": "c85e999671c832c154df11fcd0149707e8d11cfbdbfb7b5be21d08373cf91621",
+      "bytes": 26680,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-163.json",
+      "hash": "37d365fed703b5b7b073ff0468f96acec58ab0b7b43d18c7bd97e4d06eed2092",
+      "bytes": 24575,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-164.json",
+      "hash": "c1ab7f496f6db828560a538cf07bff3c9784fbdec52244d88a045f4c6747825f",
+      "bytes": 26138,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-165.json",
+      "hash": "dec6b3d3c746d628e77d472ceec0015b0560905c9a44c2293bf843422ef8a761",
+      "bytes": 26005,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-166.json",
+      "hash": "eec732e3b0c3037c5bd9a126322d7c74f3cbccc99b555ac900db276727ad8787",
+      "bytes": 25137,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-167.json",
+      "hash": "8a4405927fc032d73a14fab4f586e15178ed7e154f01ba8153dee78c0ded0db3",
+      "bytes": 26532,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-168.json",
+      "hash": "6beab692b9b23bd6a2511b666ed5a0d6d63fb48abbb69d7ed369551458478469",
+      "bytes": 25705,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-169.json",
+      "hash": "89edc45fa03a7a90004c3faea91078c88ce7abc4f3686aef6f06e1d59e8648f4",
+      "bytes": 26058,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-170.json",
+      "hash": "43a0c1dd8094eede3f9363b5d56d75944be262344efd3459b2e50c952eafe5ea",
+      "bytes": 25844,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-171.json",
+      "hash": "dadbd5263151d27ebe129c41a490f74ab01097676321627b10662f18a33ae317",
+      "bytes": 26006,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-172.json",
+      "hash": "16f662f47dccc1f8e84f4f05f181e1d7477798cf2c5c7d07477dda171e221eea",
+      "bytes": 25044,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-173.json",
+      "hash": "2308f0f2173824af1c31fbd4c22d9508c14675eb24261bc5917c335e79890011",
+      "bytes": 26325,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-174.json",
+      "hash": "d123def78b73e4ea4cec952d1faa0d757f1e5be14f457d058a2b472c0f835c73",
+      "bytes": 26200,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-175.json",
+      "hash": "da66fc45ce52c976bbf53a62105e893f620617a0c41b92c86390771f6be67895",
+      "bytes": 26239,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-176.json",
+      "hash": "225e8b561741ec2a6e5b65a75b886808c4f4b268b73b4e62e3e23a340f9e182b",
+      "bytes": 25192,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-177.json",
+      "hash": "c2268a4641a0c5253e2ebd65b37309df4706bb8845dc832cc1f5f37b5a8bab14",
+      "bytes": 25382,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-178.json",
+      "hash": "859aa755deda4c9c60bd769980cad4ab3b5a1cdf40688eb8b505747180c59ae9",
+      "bytes": 27134,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-179.json",
+      "hash": "f38b27cab9caa4f320a882277e6db5c86811ec89b3e768d36af88f97506c2f1c",
+      "bytes": 25058,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-180.json",
+      "hash": "3b2fb94d5295a8d4391858c7eaeafbf1afa38ba76f4b78c106a62e62b027efee",
+      "bytes": 23439,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-181.json",
+      "hash": "9d98a21b396f24af8a13360db0af3f22a39a0b656356eab427713063d015b6c1",
+      "bytes": 25087,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-182.json",
+      "hash": "016661dd327c22cc4271f0b755cdddc2cd420c4bbc282441473598a723ea7761",
+      "bytes": 25802,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-183.json",
+      "hash": "1e5bc8a33c81800c641fc822fb30164f735e0bfe2f434484387f0c673a19e167",
+      "bytes": 25308,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-184.json",
+      "hash": "d4623ccf2e00f3c95fe8340b2f2dd7a58683d16fa310d49b5b8ae6404e07ce1e",
+      "bytes": 26364,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-185.json",
+      "hash": "8877b6fc0eb6aac156ddf524b95db4b34efd3dea52b6496f7bbc4e470c045e30",
+      "bytes": 26002,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-186.json",
+      "hash": "dcbfbd258a9d993a8b7633b83e2e475ff09c2eb37884bd5a2317ec576bd988c0",
+      "bytes": 27391,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-187.json",
+      "hash": "9b008ce3a1273257d9ab863213a46c7e1b1056098e83be4b90d27e8df9fbcf5e",
+      "bytes": 25916,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-188.json",
+      "hash": "be57e398769223a3110a233b517fab0f822cdd6b0e569d54b4fa6ad8fe974e51",
+      "bytes": 26414,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-189.json",
+      "hash": "2d4c28e758efbcb7cf99a587df16c1aecca02b14f5c879b7ceaedf00f0996082",
+      "bytes": 26829,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-190.json",
+      "hash": "b8c375a414cbc93235a02e67333fe2947ac38d9276cefdab9d618608bff36a17",
+      "bytes": 26910,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-191.json",
+      "hash": "6ea03cd64eb1b6cc433fda0db0f2bbf0addb91a9f584795ed7e8822c1b00716f",
+      "bytes": 27477,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-192.json",
+      "hash": "5cce5203ac7291b61d755600cfcf097c3dc1221e9c0a020e4a87e8d66fe1cc7c",
+      "bytes": 26092,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-193.json",
+      "hash": "a9f4d69ce1d93afd869e47b475e80c7f782bcc759feb67a51b2687d97c184fb0",
+      "bytes": 25836,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-194.json",
+      "hash": "fb415a7b838692b706f0cce768d1a8b907d7cb6f49885377fa484822e29ebf89",
+      "bytes": 27668,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-195.json",
+      "hash": "79e10320506d4f80d52a8defdf80184abf81859b095847865a2803e0f3cb95da",
+      "bytes": 25335,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-196.json",
+      "hash": "5bb8aaf0e1875d3b4ecd12426713e044cdec75c046bd4dfb18729b28bcd6a2ed",
+      "bytes": 24962,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-197.json",
+      "hash": "ef188bd57397a9e8f83756de9d3206ada255d14ced3ba42ff8d7af25c3ddd145",
+      "bytes": 26414,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-198.json",
+      "hash": "712db5be6be3703a9a34cf0e90892e0153b65c281b71c7ec9e0a7bf151bfb114",
+      "bytes": 25490,
+      "soft": true
+    },
+    {
+      "path": "datasets/xnli_en/train-199.json",
+      "hash": "7e8aa914a778fe2f0bdbaf5aabcf6b782c1fe40f0c8a5d3f30b02e5081bfb92a",
+      "bytes": 27234,
+      "soft": true
+    }
+  ]
+}

@@ -82,9 +82,10 @@ pub enum Arm {
     },
     /// The encoder think-depth arm (instinct issue 016 T2): the sealed
     /// NLEH head over the live laya-english encode — the L3 deep-cognition
-    /// op, spent on the salient few. Serves ONLY through the
-    /// serve-encoder lane (a GPU-host posture; the bag server refuses it
-    /// at boot — the class layers do not mix).
+    /// op, spent on the salient few. Serves ONLY through a lane backend
+    /// (a GPU-host posture; the bag server refuses it at boot — the class
+    /// layers do not mix). The open build carries no backend — the
+    /// encoder class lives in the private Rethink lane.
     Enc,
 }
 
@@ -145,7 +146,9 @@ pub struct SuiteMeta {
 pub enum WeightSource {
     /// The raw `<suite>_winner_v1.bin` artifact (the pre-vessel posture).
     RawWinner,
-    /// A HOSTED-ONLY vessel (the minted path; lineage in the commitment).
+    /// A PUBLIC-RELEASE vessel (the minted path; lineage in the
+    /// commitment — the HOSTED-ONLY class reads in the Rethink lane
+    /// backend, never here).
     Vessel,
     /// No artifact — the artifact-less A0 posture (owner 2026-10-02
     /// full-coverage serving): the lane IS the modelless tier, the G0a
@@ -283,39 +286,26 @@ impl<const N: usize> SuiteServer<N> {
         Self::from_parts(suite, seat, spec, winner_blake3, WeightSource::RawWinner, arm)
     }
 
-    /// Boot one suite from a minted HOSTED-ONLY vessel (the P4 reader:
-    /// verify → class gate → monotonic gate → decrypt → decode). The
-    /// applied state comes from the host's state file (genesis at 0);
-    /// the caller persists the returned [`VesselFacts`] AFTER the suite
-    /// is fully up (never before — a boot failure must not advance the
-    /// gate). The specialist itself is consumed by the join.
+    /// Boot one suite from a minted PUBLIC-RELEASE vessel (the teaching
+    /// posture): reflexer's public `open` — verify → class gate (the
+    /// HOSTED-ONLY class refuses here fail-closed; that class reads in the
+    /// Rethink lane backend) — then the monotonic gate over the caller's
+    /// [`reflexer_vessel::ApplyState`] (genesis at 0), then the specialist
+    /// decode. The caller persists the returned [`VesselFacts`] AFTER the
+    /// suite is fully up (never before — a boot failure must not advance
+    /// the gate). The specialist itself is consumed by the join.
     #[cfg(feature = "vessel")]
     pub fn from_vessel(
         suite: &'static str,
         seat: Seat,
         vessel_path: &Path,
         pins: &reflexer_vessel::PinTable,
-        key: &[u8; 32],
-        applied: &crate::vessel::AppliedState,
+        applied: &reflexer_vessel::ApplyState,
         arm: Arm,
     ) -> Result<(Self, VesselFacts), String> {
-        let loaded = crate::vessel::load_hosted(vessel_path, pins, key, applied)
+        let vv = reflexer_vessel::open(vessel_path, pins)
             .map_err(|e| format!("{}: {e}", vessel_path.display()))?;
-        let facts = VesselFacts {
-            commitment_hex: loaded.commitment_hex.clone(),
-            artifact_version: loaded.artifact_version,
-            parent_commitment: loaded.parent_commitment,
-        };
-        let commitment16 = facts.commitment_hex[..16].to_string();
-        let server = Self::from_parts(
-            suite,
-            seat,
-            loaded.specialist,
-            commitment16,
-            WeightSource::Vessel,
-            arm,
-        )?;
-        Ok((server, facts))
+        Self::from_verified_vessel(suite, seat, &vv, applied, arm)
     }
 
     /// Boot from ALREADY-READ vessel bytes (the swap path's single-read
@@ -327,26 +317,38 @@ impl<const N: usize> SuiteServer<N> {
         seat: Seat,
         vessel_bytes: &[u8],
         pins: &reflexer_vessel::PinTable,
-        key: &[u8; 32],
-        applied: &crate::vessel::AppliedState,
+        applied: &reflexer_vessel::ApplyState,
         arm: Arm,
     ) -> Result<(Self, VesselFacts), String> {
-        let loaded = crate::vessel::load_hosted_bytes(vessel_bytes, pins, key, applied)
+        let vv = reflexer_vessel::decode(vessel_bytes, pins)
             .map_err(|e| format!("vessel payload: {e}"))?;
+        Self::from_verified_vessel(suite, seat, &vv, applied, arm)
+    }
+
+    /// The shared tail of both public vessel boots: the monotonic gate →
+    /// the specialist decode from the payload → [`Self::from_parts`]. The
+    /// payload IS the sealed RISP winner artifact (the same bytes the raw
+    /// path hashes), so the downstream join is the bag path verbatim.
+    #[cfg(feature = "vessel")]
+    fn from_verified_vessel(
+        suite: &'static str,
+        seat: Seat,
+        vv: &reflexer_vessel::VerifiedVessel,
+        applied: &reflexer_vessel::ApplyState,
+        arm: Arm,
+    ) -> Result<(Self, VesselFacts), String> {
+        vv.check_monotonic(applied)
+            .map_err(|e| format!("suite {suite}: {e}"))?;
+        let commitment_hex = vv.commitment_hex();
         let facts = VesselFacts {
-            commitment_hex: loaded.commitment_hex.clone(),
-            artifact_version: loaded.artifact_version,
-            parent_commitment: loaded.parent_commitment,
+            commitment_hex: commitment_hex.clone(),
+            artifact_version: vv.header().artifact_version,
+            parent_commitment: vv.header().parent_commitment,
         };
-        let commitment16 = facts.commitment_hex[..16].to_string();
-        let server = Self::from_parts(
-            suite,
-            seat,
-            loaded.specialist,
-            commitment16,
-            WeightSource::Vessel,
-            arm,
-        )?;
+        let spec = decode_artifact(vv.payload())
+            .map_err(|e| format!("vessel payload: winner artifact: {e}"))?;
+        let commitment16 = commitment_hex[..16].to_string();
+        let server = Self::from_parts(suite, seat, spec, commitment16, WeightSource::Vessel, arm)?;
         Ok((server, facts))
     }
 
@@ -381,13 +383,14 @@ impl<const N: usize> SuiteServer<N> {
         arm: Arm,
     ) -> Result<Self, String> {
         // The encoder class never seats on the bag server (issue 016 T2):
-        // the ENC arm routes to the serve-encoder lane at the loader, and
-        // a SuiteServer constructed with it is a layer mix — refuse here
-        // so every from_* path carries the same wall.
+        // the ENC arm routes to the installed lane backend at the loader,
+        // and a SuiteServer constructed with it is a layer mix — refuse
+        // here so every from_* path carries the same wall.
         if arm == Arm::Enc {
             return Err(format!(
-                "suite {suite}: posture ENC serves through the serve-encoder lane (instinct \
-                 issue 016 T2) — boot a GPU host with --features serve-encoder; the bag \
+                "suite {suite}: posture ENC serves through the lane backend (instinct \
+                 issue 016 T2) — install the Rethink lane via \
+                 riir_instinct::server::install_ext_boots; the bag \
                  server cannot serve the encoder class"
             ));
         }
@@ -1029,12 +1032,12 @@ impl<const N: usize> SuiteServer<N> {
                     }
                     // Unreachable by construction: from_parts refuses ENC
                     // at boot — the encoder class serves through the
-                    // serve-encoder lane (issue 016 T2), never the bag
+                    // lane backend (issue 016 T2), never the bag
                     // server. The arm exists so the manifest grammar can
                     // name the posture; the match must stay exhaustive.
                     Arm::Enc => {
                         return Err(format!(
-                            "suite {}: posture ENC serves through the serve-encoder lane, \
+                            "suite {}: posture ENC serves through the lane backend, \
                              never the bag server",
                             self.suite
                         ));
@@ -1182,59 +1185,21 @@ pub type ExtBootBytes = fn(
     arm: Arm,
 ) -> Result<Box<dyn LaneBackend>, String>;
 
-/// The vessel-boot half of the extension point: the backend lane from a
-/// minted vessel's bytes. The authenticity / class / monotonic walk is
-/// the BACKEND's own (this build's bag vessel boot handles the
-/// PUBLIC-RELEASE class only).
-#[cfg(feature = "vessel")]
-pub type ExtBootVessel = fn(
-    suite: &'static str,
-    seat: Seat,
-    vessel_bytes: &[u8],
-    pins: &reflexer_vessel::PinTable,
-    key: &[u8; 32],
-    applied: &crate::vessel::AppliedState,
-    arm: Arm,
-) -> Result<(Box<dyn LaneBackend>, VesselFacts), String>;
-
 /// The installed lane backend (the extension point's process-global slot).
-#[cfg(feature = "serve-encoder")]
-static EXT_BOOTS: std::sync::OnceLock<Option<ExtBoots>> = std::sync::OnceLock::new();
-#[cfg(not(feature = "serve-encoder"))]
 static EXT_BOOTS: std::sync::OnceLock<Option<ExtBoots>> = std::sync::OnceLock::new();
 
-/// The backend installer's handle: the bytes half always, the vessel half
-/// where the vessel reader compiles. A downstream crate builds one and
+/// The backend installer's handle. A downstream crate builds one and
 /// hands it to [`install_ext_boots`] before any boot.
 pub struct ExtBoots {
     /// The bytes boot (the raw-lane-artifact route).
     pub bytes: ExtBootBytes,
-    /// The vessel boot (present only under the `vessel` feature).
-    #[cfg(feature = "vessel")]
-    pub vessel: ExtBootVessel,
 }
 
-/// The installed backend, if any. Where this build itself carries the
-/// encoder lane (the pre-split posture), the first consult self-installs
-/// it — behaviour-identical to the old direct route. A downstream crate
-/// installs first via [`install_ext_boots`], which wins.
+/// The installed backend, if any. The open build never installs one —
+/// an ENC row refuses loud. A downstream crate (Rethink) installs first
+/// via [`install_ext_boots`].
 fn ext_boots() -> Option<&'static ExtBoots> {
-    #[cfg(feature = "serve-encoder")]
-    {
-        EXT_BOOTS
-            .get_or_init(|| {
-                Some(ExtBoots {
-                    bytes: crate::encoder_serve::enc_boot_bytes,
-                    #[cfg(feature = "vessel")]
-                    vessel: crate::encoder_serve::enc_boot_vessel,
-                })
-            })
-            .as_ref()
-    }
-    #[cfg(not(feature = "serve-encoder"))]
-    {
-        EXT_BOOTS.get().and_then(|o| o.as_ref())
-    }
+    EXT_BOOTS.get().and_then(|o| o.as_ref())
 }
 
 /// Install the lane backend (the extension point's startup seam — the
@@ -1252,9 +1217,8 @@ pub fn install_ext_boots(boots: ExtBoots) -> Result<(), String> {
 /// The arity-erased server (the registry holds one per suite; the
 /// engine arities are const-generic). S2 (Plan 003) seats the noul
 /// suites' 2-label universe — prompt_injections. The Ext variant (the
-/// Proposal-052 carve seam) seats an installed lane backend — today the
-/// encoder lane, feature-gated; post-split the open build leaves the
-/// slot empty and an ENC row refuses loud.
+/// Proposal-052 carve seam) seats an installed lane backend — the open
+/// build leaves the slot empty and an ENC row refuses loud.
 pub enum AnySuiteServer {
     S2(Box<SuiteServer<2>>),
     S3(Box<SuiteServer<3>>),
@@ -1265,8 +1229,8 @@ pub enum AnySuiteServer {
     S59(Box<SuiteServer<59>>),
     S77(Box<SuiteServer<77>>),
     /// The extension-point seat: a downstream lane backend (the encoder
-    /// class today), installed via [`install_ext_boots`]. The dispatch is
-    /// the trait, byte-identically.
+    /// class lives in the private Rethink lane), installed via
+    /// [`install_ext_boots`]. The dispatch is the trait, byte-identically.
     Ext(Box<dyn LaneBackend>),
 }
 
@@ -1362,14 +1326,14 @@ impl AnySuiteServer {
         // The encoder route (issue 016 T2): the head is NOT a bridged
         // winner — it loads by its own `file` before the winner-convention
         // check, and only where a lane backend is installed (the carve
-        // seam: this build self-installs the encoder lane where compiled;
-        // post-split the open build refuses loud instead).
+        // seam: the open build refuses loud, never a silent bag fallback).
         if arm == Arm::Enc {
             let Some(boots) = ext_boots() else {
                 return Err(format!(
-                    "suite {suite}: posture ENC requires --features serve-encoder (instinct \
-                     issue 016 T2 — the encoder lane is a GPU-host posture; the default \
-                     CF-shaped build compiles it to nothing)"
+                    "suite {suite}: posture ENC has no lane backend in this build — the \
+                     encoder class lives in the private Rethink lane; a downstream crate \
+                     installs it via riir_instinct::server::install_ext_boots before any \
+                     boot"
                 ));
             };
             let head_name = row.artifact_file(format!("{suite}_encoder_head_v1.bin"));
@@ -1418,9 +1382,10 @@ impl AnySuiteServer {
         if arm == Arm::Enc {
             let Some(boots) = ext_boots() else {
                 return Err(format!(
-                    "suite {suite}: posture ENC requires --features serve-encoder (instinct \
-                     issue 016 T2 — the encoder lane is a GPU-host posture; the default \
-                     CF-shaped build compiles it to nothing)"
+                    "suite {suite}: posture ENC has no lane backend in this build — the \
+                     encoder class lives in the private Rethink lane; a downstream crate \
+                     installs it via riir_instinct::server::install_ext_boots before any \
+                     boot"
                 ));
             };
             return Ok(AnySuiteServer::Ext((boots.bytes)(
@@ -1447,9 +1412,10 @@ impl AnySuiteServer {
     }
 
     /// The vessel boot: the same dispatch, the specialist from a minted
-    /// HOSTED-ONLY vessel (vessel feature only). The vessel file is the
+    /// PUBLIC-RELEASE vessel (vessel feature only). The vessel file is the
     /// row's artifact (law A5 — no filename convention behind the
-    /// manifest's back).
+    /// manifest's back). The HOSTED-ONLY class refuses here fail-closed —
+    /// that class reads in the Rethink lane backend.
     #[cfg(feature = "vessel")]
     #[allow(clippy::too_many_arguments)]
     pub fn boot_vessel(
@@ -1458,36 +1424,19 @@ impl AnySuiteServer {
         vessels_dir: &Path,
         manifest: &ArsenalManifest,
         pins: &reflexer_vessel::PinTable,
-        key: &[u8; 32],
-        applied: &crate::vessel::AppliedState,
+        applied: &reflexer_vessel::ApplyState,
     ) -> Result<(Self, VesselFacts), String> {
         let arm = Self::posture_of(manifest, suite)?;
-        // The ENC route (issue 016 T4): the head vessel — the same
-        // authenticity / monotonic walk, the raw NLEH payload out, through
-        // the installed lane backend (the carve seam).
+        // The ENC route (issue 016 T4): the head vessel is a HOSTED-ONLY
+        // artifact — the moat class; the open build has neither the reader
+        // nor the lane. Refuse loud naming the backend install seam.
         if arm == Arm::Enc {
-            #[cfg(feature = "serve-encoder")]
-            {
-                let boots = ext_boots().expect("encoder backend self-installed under the feature");
-                let row = manifest
-                    .row(suite)
-                    .ok_or_else(|| format!("suite {suite} is not in the arsenal manifest"))?;
-                let vessel_path =
-                    vessels_dir.join(row.artifact_file(format!("{suite}_v1.vessel")));
-                let bytes = std::fs::read(&vessel_path)
-                    .map_err(|e| format!("read vessel {vessel_path:?}: {e}"))?;
-                let (lane, facts) =
-                    (boots.vessel)(suite, seat, &bytes, pins, key, applied, arm)?;
-                return Ok((AnySuiteServer::Ext(lane), facts));
-            }
-            #[cfg(not(feature = "serve-encoder"))]
-            {
-                let _ = (&seat, vessels_dir, pins, key, applied);
-                return Err(format!(
-                    "suite {suite}: posture ENC rides the vessel lane only on a build with \
-                     --features vessel,serve-encoder (instinct issue 016 T4)"
-                ));
-            }
+            let _ = (&seat, vessels_dir, pins, applied);
+            return Err(format!(
+                "suite {suite}: posture ENC rides the vessel lane only in the private Rethink \
+                 lane backend (the HOSTED-ONLY class reads there); this build boots the \
+                 PUBLIC-RELEASE class for bag lanes only"
+            ));
         }
         let row = manifest
             .row(suite)
@@ -1500,7 +1449,6 @@ impl AnySuiteServer {
                     seat,
                     &vessel_path,
                     pins,
-                    key,
                     applied,
                     arm,
                 )?;
@@ -1521,7 +1469,9 @@ impl AnySuiteServer {
     }
 
     /// The bytes-based vessel dispatch — the swap/lazy loader's vessel
-    /// entry (single-read discipline, as [`Self::boot_bytes`]).
+    /// entry (single-read discipline, as [`Self::boot_bytes`]). The
+    /// HOSTED-ONLY class refuses here fail-closed — that class reads in
+    /// the Rethink lane backend.
     #[cfg(feature = "vessel")]
     #[allow(clippy::too_many_arguments)]
     pub fn boot_vessel_bytes(
@@ -1530,26 +1480,16 @@ impl AnySuiteServer {
         vessel_bytes: &[u8],
         manifest: &ArsenalManifest,
         pins: &reflexer_vessel::PinTable,
-        key: &[u8; 32],
-        applied: &crate::vessel::AppliedState,
+        applied: &reflexer_vessel::ApplyState,
     ) -> Result<(Self, VesselFacts), String> {
         let arm = Self::posture_of(manifest, suite)?;
         if arm == Arm::Enc {
-            #[cfg(feature = "serve-encoder")]
-            {
-                let boots = ext_boots().expect("encoder backend self-installed under the feature");
-                let (lane, facts) =
-                    (boots.vessel)(suite, seat, vessel_bytes, pins, key, applied, arm)?;
-                return Ok((AnySuiteServer::Ext(lane), facts));
-            }
-            #[cfg(not(feature = "serve-encoder"))]
-            {
-                let _ = (&seat, vessel_bytes, pins, key, applied);
-                return Err(format!(
-                    "suite {suite}: posture ENC rides the vessel lane only on a build with \
-                     --features vessel,serve-encoder (instinct issue 016 T4)"
-                ));
-            }
+            let _ = (&seat, vessel_bytes, pins, applied);
+            return Err(format!(
+                "suite {suite}: posture ENC rides the vessel lane only in the private Rethink \
+                 lane backend (the HOSTED-ONLY class reads there); this build boots the \
+                 PUBLIC-RELEASE class for bag lanes only"
+            ));
         }
         macro_rules! vessel_arm {
             ($variant:ident, $n:literal) => {{
@@ -1558,7 +1498,6 @@ impl AnySuiteServer {
                     seat,
                     vessel_bytes,
                     pins,
-                    key,
                     applied,
                     arm,
                 )?;

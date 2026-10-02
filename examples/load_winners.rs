@@ -5,7 +5,7 @@
 //!
 //! ```text
 //! cargo run --release --example load_winners -- \
-//!     ../riir-train/data/instinct_specialists [ag_news,emotion,...]
+//!     data/demo_specialists [ag_news,emotion,...]
 //! ```
 //!
 //! Suite → winner arm per Bench 609: A on emotion/sst5/banking77,
@@ -17,7 +17,7 @@ fn main() {
     let dir = args
         .first()
         .map(std::path::PathBuf::from)
-        .unwrap_or_else(|| std::path::PathBuf::from("../riir-train/data/instinct_specialists"));
+        .unwrap_or_else(|| std::path::PathBuf::from("data/demo_specialists"));
     let suites: Vec<String> = args
         .get(1)
         .map(|s| s.split(',').map(str::to_string).collect())
