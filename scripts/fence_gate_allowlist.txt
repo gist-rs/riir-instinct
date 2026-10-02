@@ -1,0 +1,15 @@
+# fence_gate_allowlist.txt — the ONLY amnesty in scripts/fence_gate.sh.
+# Row shape: `path:pattern` — an EXACT pattern match (the gate's moat-pattern
+# token) allowed in `path` (relative to the audited tree). Every row needs a
+# reason. A stale row (its pattern no longer occurs in its path) reds nothing
+# today but must be pruned at the move family; a NEW moat reference is never
+# allowlisted silently.
+#
+# receipt.rs stays in the open tree (Proposal 052 stay ledger): its decstat
+# links are `#[cfg_attr(not(feature = "decstat"), allow(dead_code))]`
+# ANNOTATIONS only — the emission/verify client itself moves to riir-rethink.
+# The annotation form (the bare feature name in an attribute) is not a moat
+# import, but it is allowlisted explicitly so the fence states its one amnesty
+# rather than passing on an accident. Any REAL import (crate::decstat,
+# decstat_verify::, the hosted reader) still reds.
+src/receipt.rs:feature = "decstat"

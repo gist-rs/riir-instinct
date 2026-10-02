@@ -1,0 +1,45 @@
+# Plan 008 — the Instinct/Rethink split carve (the moat move, the seam, the fresh-root open)
+
+**Status:** OPEN — filed 2026-10-03 on the owner's split directive (riir-ai [Proposal 052](../../riir-ai/.proposals/052_rethink_l1_open_source_teaching_carve.md), verdict-adjudicated same day); supersedes plan 006's rename scoping (HOLD). The public flip (Phase C) is OWNER-GATED.
+
+Owner directive (2026-10-03): *"1. i will open src and teach Instinct public · 2. i moat Rethink private moat, anything need to move to the moat we must do it"* — Instinct (the L1 trained-specialists stack) opens as the public teaching product; Rethink (the encoder arm, HOSTED-ONLY vessels, economy, production artifacts) stays private as a NEW repo; making anything public is the owner's personal flip.
+
+## The architecture (verdict round 1 corrections, all four adopted)
+
+1. **THE FRESH-ROOT LAW.** The public riir-instinct NEVER carries moat-containing history: every pre-split commit of this repo holds `encoder_serve.rs`, `vessel.rs`, `decstat*`, `deploy.yaml`, `arsenal.toml`, `.issues/014–018`, and the encoder/quant recipe benches — readable forever at any hash (force-push does not scrub GitHub). The public repo is born as a **fresh root** whose first commits cite origin hashes; **the whole-history private repo IS riir-rethink** (renamed on GitHub, or mirrored to a new private repo with identical hashes — owner's pick at the wave).
+2. **THE SEAM, not the fork.** `server.rs` (1,577) calls the hosted reader (`load_hosted*` ~L297–334, ~L1387–1460, `load_hosted_head_bytes` ~L1146) and carries `Enc(Box<encoder_serve::EncoderLane>)` (~L1161–1344); `bin/serve.rs` (83 encoder/vessel refs) + `bin/arena.rs` (77) likewise. Public Instinct grows a **lane-backend extension point** (L1 lanes only; public-class vessel boot via reflexer's public `decode` — the path `arsenal_ops` tests already exercise); **Rethink depends on Instinct as a crate** and plugs in the encoder lane + hosted loader. Moat downstream of open code — the riir-refine shape. No 6.3k-line fork, no drift.
+3. **Ledger complete** (052's tables, verified against the trees 2026-10-03): every src file, examples (incl. `decstat_floor.rs` 669), benches, records (029, 031–048, 0050–0056), docs (.plans/002,006,007, .proposals/001, .issues/014–018), artifacts (.deploy/, deploy.yaml, arsenal.toml, winners, synth corpora, seats), deps (`riir-kat`, `ed25519-dalek`, `papaya`, hosted `reflexer-vessel` use) adjudicated. Tetris lane STAYS (demo heads are public-by-design; the critic record is measured-negative teaching gold). Production-path literals (`../riir-train/data/instinct_specialists` in `load_winners`, `staleness_probe`, `massive_anomaly_probe`, `arsenal_budget_goat`, `serve_gates.rs`, `staleness_gates.rs`, `serve.rs`, `arena.rs`, `decstat_gates.rs`, `decstat_floor.rs`) repoint to a demo-dir default at the move.
+4. **Boundary-timed sequencing.** The encoder files are HOT (Issue 018 lanes; six commits in 27 h; riir-train's trainer modules were last touched by 016-T9 `4a9e66cf` — the lane Issue 607 is training on the 4090 now). Nothing deletes until Issue 018 reaches a commit boundary; ALL riir-train moves wait for 607 + rebase.
+
+## Landed now (deleting nothing)
+
+- [x] T0.1 the fence gate: `scripts/fence_gate.sh` — three verdicts (PRE-SPLIT disclosure / RED / GREEN), allowlist-amnesty (`fence_gate_allowlist.txt`, one row: receipt.rs's `feature = "decstat"` cfg_attr annotations), `--self-test` 3/3 (GREEN / planted-import RED / moat-file PRE-SPLIT) + live-amnesty proof (the annotation form passes in receipt.rs ONLY; the same form in lib.rs reds; a real `crate::decstat` import reds). Three of the gate's own defects caught and fixed by its self-test before it ever certified anything: the allowlist query matched itself (a no-op gate), the multi-word pattern was word-split by `for in $var`, and the double-quoted assignment swallowed the pattern's literal quotes.
+- [x] T0.2 the export manifest DRAFT: `scripts/open_export_manifest.txt` ([copy]/[rewrite]/[defer] sections; finalized at B3, enforced at Phase C).
+- [x] T0.3 051 amended (dated supersession markers: naming law, Phase 1, T5.1, closer); 052 amended (the four corrections inline, ledger completed, Phases B/C re-scoped).
+
+## Phase B — the carve (private side stays whole)
+
+- [ ] B1 the SEAM (lands WITH the move family — same hot files, one touch): the lane-backend extension point in `server.rs`/`serve.rs`/`arena.rs`; behaviour-preserving (byte-identical decisions both postures, the `RiirAgent::set_head_defer_override` paired-A/B pattern); public-class vessel boot through reflexer `decode`; `cargo clippy --all-targets -- -D warnings` + the gate suite green at every posture.
+- [ ] B2 the delete/move family (ONLY at an Issue-018 commit boundary): moat modules (`encoder_serve.rs`, `encoder_arm.rs`, `vessel.rs`, `decstat.rs`, `decstat_verify.rs`, `examples/decstat_floor.rs`), features (`vessel`, `serve-encoder*`, `arena-laya*`, `decstat`), tests (`serve_encoder_parity.rs`, `encoder_shared_parity.rs`, `vessel_gates.rs`, `decstat_gates.rs`), moat records + docs + artifacts per the ledger; `src/lib.rs`/`serve.rs` decstat decls pruned (the fence EXPECTS them to red if leftover); the tree green WITHOUT them; `fence_gate.sh` flips PRE-SPLIT → GREEN; demo-dir repointing lands here.
+- [ ] B3 registration + boundary, ONE commit family (the riir-llm 19-red precedent): Rethink's BOUNDARY.md (owns: encoder arm, HOSTED-ONLY reader, economy client, production artifacts; never public), riir-instinct's BOUNDARY.md rewrite, repo_set.txt + the ~20 pin files, ci_boundary_contract rows, both repos' AGENTS.md fresh; finalize the export manifest (B2's actual state).
+- [ ] B4 the riir-train half — **[-] DEFERRED until Issue 607 lands and both boxes rebase**: `instinct_encoder_lane.rs` (439) + `instinct_laya_head.rs` (705) + the moat trainer examples → Rethink; the L1 trainers (`instinct_specialist.rs` 1258, `instinct_nbsvm.rs` 961, `instinct_specialist_typed.rs` 799, `instinct_bank77_cases.rs` 177) + L1 teaching examples (`arm_a`, `arm_a_typed`, `arm_b`, `bank77_cases`) → the public side of the split (exported fresh-root, DEFERRED rows resolved then). The trainers only import each other — the later lift is mechanical.
+
+## Phase C — the open (OWNER-GATED: the owner runs the visibility flip personally)
+
+- [ ] C1 the fresh-root export: a NEW repo built from `open_export_manifest.txt` (never a branch); MIT LICENSE; fresh README (the teaching arc: fetch public data → train → holdout + winner law → seal → mint a PUBLIC-RELEASE vessel → manifest → serve with receipts → bench under G1/G4; demo ≠ production, stated); demo vessels minted from public HF data; fence gate GREEN on the export (the manifest completeness check).
+- [ ] C2 dependency posture for students: git deps or a documented sibling-checkout recipe (the public build resolves `../katgpt-rs`, `../riir-reflex`, `../riir-reflexer` today).
+- [ ] C3 the owner creates/flips the public repo; publish=false until C1's gate is green.
+
+## Sequencing + risks
+
+1. **Hot files (highest):** Issue 018 is landing lanes into the same files B1/B2 touch. Mitigation: the move family waits for a commit boundary; rebase non-interactive before each push; the seam is behaviour-preserving so a rebase collision is a compile fix, not a semantics merge.
+2. **The 4090 (607):** riir-train is read-only to this plan until B4's precondition. The trainers import only each other — verified.
+3. **Partial-move risk:** the fence gate's PRE-SPLIT verdict means the tree never pretends to be open mid-move; GREEN only when the moat is truly out.
+4. **Registration blast radius:** B3 is one commit family, both boxes, gate-green before push.
+
+## References
+
+- [Proposal 052](../../riir-ai/.proposals/052_rethink_l1_open_source_teaching_carve.md) — the split design + the four verdict corrections; [Proposal 051](../../riir-ai/.proposals/051_rethink_all_tier_adaptive_serving_family.md) — amended.
+- Verdict round 1 (Claude, 2026-10-03): fresh-root law, seam-not-fork, ledger completion, boundary-timed sequencing — addressed in 052 and here.
+- [riir-instinct Proposal 001](../.proposals/001_arsenal_cognition_vessel_protocol.md) — A1/A10 two-class law (the artifact scalpel extended to source).
+- Plan 006 (HOLD) — the registration laws this plan inherits (one-family, dual-box, census, fence gate).
