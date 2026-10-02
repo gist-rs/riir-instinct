@@ -1141,16 +1141,53 @@ fn argmax_pos(scores: &[f32]) -> (usize, f32) {
     (best, scores[best])
 }
 
-/// The ENC vessel boot (issue 016 T4): the HOSTED-ONLY head vessel — the
-/// same authenticity / class / monotonic walk the bag vessels carry
-/// ([`crate::vessel::load_hosted_head_bytes`]), the RAW decrypted NLEH
-/// payload handed to the lane's own parse law. The monotonic apply is the
-/// arsenal's existing epoch machinery: the facts (commitment, version,
-/// parent) flow to the slot install exactly as the bag facts do, so a
-/// swap/downgrade is refused by the same gate that refuses the bag
-/// vessels' — no new lineage code.
-#[cfg(all(feature = "vessel", feature = "serve-encoder"))]
-fn enc_vessel_boot(
+/// The lane-backend extension point (Proposal 052, the carve seam): the
+/// contract a DOWNSTREAM lane class implements to seat itself in the
+/// server. The bag lanes (S2–S77) are this crate's own; the [`Arm::Enc`]
+/// class is served by whatever backend is INSTALLED at startup — the open
+/// build carries none, so an ENC row refuses loud (never a silent bag
+/// fallback). Rethink (the private lane repo) implements this trait and
+/// installs its loader via [`install_ext_boots`]; the moat sits DOWNSTREAM
+/// of this open code — the riir-refine shape.
+pub trait LaneBackend: Send {
+    /// One decision under the suite's default question template (the
+    /// bag server's decide signature — the serve edge calls it identically).
+    fn decide(
+        &mut self,
+        state: &str,
+        options: Option<&[String]>,
+    ) -> Result<ServedDecision, String>;
+    /// The multi-question contract (Issue 011): one state, ALL questions
+    /// answered in one call, one [`ServedDecision`] per question in order.
+    fn decide_multi(
+        &mut self,
+        state: &str,
+        questions: &[ServedQuestion<'_>],
+    ) -> Result<Vec<ServedDecision>, String>;
+    /// The boot summary — the same &SuiteMeta read the bag servers serve
+    /// (the healthz disclosure shape).
+    fn meta(&self) -> &SuiteMeta;
+    /// The suite's corpus centroid — the hoarding gate's vector.
+    fn centroid(&self) -> [f32; crate::arsenal_ops::DIM];
+}
+
+/// The bytes-boot half of the extension point: the lane artifact's raw
+/// bytes (the head, for the encoder class) in, a backend lane out. The
+/// route reads the row's artifact file exactly as the manifest names it
+/// (law A5) and hands the bytes here — the backend owns their meaning.
+pub type ExtBootBytes = fn(
+    suite: &'static str,
+    seat: Seat,
+    artifact_bytes: &[u8],
+    arm: Arm,
+) -> Result<Box<dyn LaneBackend>, String>;
+
+/// The vessel-boot half of the extension point: the backend lane from a
+/// minted vessel's bytes. The authenticity / class / monotonic walk is
+/// the BACKEND's own (this build's bag vessel boot handles the
+/// PUBLIC-RELEASE class only).
+#[cfg(feature = "vessel")]
+pub type ExtBootVessel = fn(
     suite: &'static str,
     seat: Seat,
     vessel_bytes: &[u8],
@@ -1158,24 +1195,66 @@ fn enc_vessel_boot(
     key: &[u8; 32],
     applied: &crate::vessel::AppliedState,
     arm: Arm,
-) -> Result<(crate::encoder_serve::EncoderLane, VesselFacts), String> {
-    let loaded = crate::vessel::load_hosted_head_bytes(vessel_bytes, pins, key, applied)
-        .map_err(|e| format!("suite {suite}: head vessel refused: {e}"))?;
-    let lane = crate::encoder_serve::EncoderLane::from_parts(suite, seat, &loaded.head_bytes, arm)?;
-    let facts = VesselFacts {
-        commitment_hex: loaded.commitment_hex,
-        artifact_version: loaded.artifact_version,
-        parent_commitment: loaded.parent_commitment,
-    };
-    Ok((lane, facts))
+) -> Result<(Box<dyn LaneBackend>, VesselFacts), String>;
+
+/// The installed lane backend (the extension point's process-global slot).
+#[cfg(feature = "serve-encoder")]
+static EXT_BOOTS: std::sync::OnceLock<Option<ExtBoots>> = std::sync::OnceLock::new();
+#[cfg(not(feature = "serve-encoder"))]
+static EXT_BOOTS: std::sync::OnceLock<Option<ExtBoots>> = std::sync::OnceLock::new();
+
+/// The backend installer's handle: the bytes half always, the vessel half
+/// where the vessel reader compiles. A downstream crate builds one and
+/// hands it to [`install_ext_boots`] before any boot.
+pub struct ExtBoots {
+    /// The bytes boot (the raw-lane-artifact route).
+    pub bytes: ExtBootBytes,
+    /// The vessel boot (present only under the `vessel` feature).
+    #[cfg(feature = "vessel")]
+    pub vessel: ExtBootVessel,
+}
+
+/// The installed backend, if any. Where this build itself carries the
+/// encoder lane (the pre-split posture), the first consult self-installs
+/// it — behaviour-identical to the old direct route. A downstream crate
+/// installs first via [`install_ext_boots`], which wins.
+fn ext_boots() -> Option<&'static ExtBoots> {
+    #[cfg(feature = "serve-encoder")]
+    {
+        EXT_BOOTS
+            .get_or_init(|| {
+                Some(ExtBoots {
+                    bytes: crate::encoder_serve::enc_boot_bytes,
+                    #[cfg(feature = "vessel")]
+                    vessel: crate::encoder_serve::enc_boot_vessel,
+                })
+            })
+            .as_ref()
+    }
+    #[cfg(not(feature = "serve-encoder"))]
+    {
+        EXT_BOOTS.get().and_then(|o| o.as_ref())
+    }
+}
+
+/// Install the lane backend (the extension point's startup seam — the
+/// downstream lane crate calls this once before any boot). Errors when a
+/// backend is already installed (install-once; the slot is process-global).
+///
+/// Post-split this is Rethink's plug-in path: the open build never calls
+/// it, so an ENC manifest row refuses loud naming this function.
+pub fn install_ext_boots(boots: ExtBoots) -> Result<(), String> {
+    EXT_BOOTS
+        .set(Some(boots))
+        .map_err(|_| "lane backend already installed".to_string())
 }
 
 /// The arity-erased server (the registry holds one per suite; the
 /// engine arities are const-generic). S2 (Plan 003) seats the noul
-/// suites' 2-label universe — prompt_injections. The ENC variant
-/// (instinct issue 016 T2, feature-gated) seats the serve-side encoder
-/// lane — a GPU-host posture the default CF-shaped build compiles to
-/// nothing.
+/// suites' 2-label universe — prompt_injections. The Ext variant (the
+/// Proposal-052 carve seam) seats an installed lane backend — today the
+/// encoder lane, feature-gated; post-split the open build leaves the
+/// slot empty and an ENC row refuses loud.
 pub enum AnySuiteServer {
     S2(Box<SuiteServer<2>>),
     S3(Box<SuiteServer<3>>),
@@ -1185,8 +1264,10 @@ pub enum AnySuiteServer {
     S8(Box<SuiteServer<8>>),
     S59(Box<SuiteServer<59>>),
     S77(Box<SuiteServer<77>>),
-    #[cfg(feature = "serve-encoder")]
-    Enc(Box<crate::encoder_serve::EncoderLane>),
+    /// The extension-point seat: a downstream lane backend (the encoder
+    /// class today), installed via [`install_ext_boots`]. The dispatch is
+    /// the trait, byte-identically.
+    Ext(Box<dyn LaneBackend>),
 }
 
 impl AnySuiteServer {
@@ -1280,26 +1361,22 @@ impl AnySuiteServer {
             .ok_or_else(|| format!("suite {suite} is not in the arsenal manifest"))?;
         // The encoder route (issue 016 T2): the head is NOT a bridged
         // winner — it loads by its own `file` before the winner-convention
-        // check, and only where the lane is compiled in.
+        // check, and only where a lane backend is installed (the carve
+        // seam: this build self-installs the encoder lane where compiled;
+        // post-split the open build refuses loud instead).
         if arm == Arm::Enc {
-            #[cfg(feature = "serve-encoder")]
-            {
-                let head_name = row.artifact_file(format!("{suite}_encoder_head_v1.bin"));
-                let head_path = winners_dir.join(&head_name);
-                let bytes = std::fs::read(&head_path)
-                    .map_err(|e| format!("read head {head_name}: {e}"))?;
-                let lane = crate::encoder_serve::EncoderLane::from_parts(suite, seat, &bytes, arm)?;
-                return Ok(AnySuiteServer::Enc(Box::new(lane)));
-            }
-            #[cfg(not(feature = "serve-encoder"))]
-            {
-                let _ = (&seat, &winners_dir);
+            let Some(boots) = ext_boots() else {
                 return Err(format!(
                     "suite {suite}: posture ENC requires --features serve-encoder (instinct \
                      issue 016 T2 — the encoder lane is a GPU-host posture; the default \
                      CF-shaped build compiles it to nothing)"
                 ));
-            }
+            };
+            let head_name = row.artifact_file(format!("{suite}_encoder_head_v1.bin"));
+            let head_path = winners_dir.join(&head_name);
+            let bytes =
+                std::fs::read(&head_path).map_err(|e| format!("read head {head_name}: {e}"))?;
+            return Ok(AnySuiteServer::Ext((boots.bytes)(suite, seat, &bytes, arm)?));
         }
         let winner_name = row.artifact_file(format!("{suite}_winner_v1.bin"));
         // The raw-mode convention coupling (Issue 579): a bridged suite
@@ -1336,23 +1413,19 @@ impl AnySuiteServer {
         manifest: &ArsenalManifest,
     ) -> Result<Self, String> {
         let arm = Self::posture_of(manifest, suite)?;
-        // The encoder route (issue 016 T2) — the bytes ARE the sealed head.
+        // The encoder route (issue 016 T2) — the bytes ARE the sealed head,
+        // consumed by the installed lane backend (the carve seam).
         if arm == Arm::Enc {
-            #[cfg(feature = "serve-encoder")]
-            {
-                let lane =
-                    crate::encoder_serve::EncoderLane::from_parts(suite, seat, artifact_bytes, arm)?;
-                return Ok(AnySuiteServer::Enc(Box::new(lane)));
-            }
-            #[cfg(not(feature = "serve-encoder"))]
-            {
-                let _ = (&seat, artifact_bytes);
+            let Some(boots) = ext_boots() else {
                 return Err(format!(
                     "suite {suite}: posture ENC requires --features serve-encoder (instinct \
                      issue 016 T2 — the encoder lane is a GPU-host posture; the default \
                      CF-shaped build compiles it to nothing)"
                 ));
-            }
+            };
+            return Ok(AnySuiteServer::Ext((boots.bytes)(
+                suite, seat, artifact_bytes, arm,
+            )?));
         }
         macro_rules! seat_arm {
             ($variant:ident, $n:literal) => {{
@@ -1390,10 +1463,12 @@ impl AnySuiteServer {
     ) -> Result<(Self, VesselFacts), String> {
         let arm = Self::posture_of(manifest, suite)?;
         // The ENC route (issue 016 T4): the head vessel — the same
-        // authenticity / monotonic walk, the raw NLEH payload out.
+        // authenticity / monotonic walk, the raw NLEH payload out, through
+        // the installed lane backend (the carve seam).
         if arm == Arm::Enc {
-            #[cfg(all(feature = "vessel", feature = "serve-encoder"))]
+            #[cfg(feature = "serve-encoder")]
             {
+                let boots = ext_boots().expect("encoder backend self-installed under the feature");
                 let row = manifest
                     .row(suite)
                     .ok_or_else(|| format!("suite {suite} is not in the arsenal manifest"))?;
@@ -1402,10 +1477,10 @@ impl AnySuiteServer {
                 let bytes = std::fs::read(&vessel_path)
                     .map_err(|e| format!("read vessel {vessel_path:?}: {e}"))?;
                 let (lane, facts) =
-                    enc_vessel_boot(suite, seat, &bytes, pins, key, applied, arm)?;
-                return Ok((AnySuiteServer::Enc(Box::new(lane)), facts));
+                    (boots.vessel)(suite, seat, &bytes, pins, key, applied, arm)?;
+                return Ok((AnySuiteServer::Ext(lane), facts));
             }
-            #[cfg(not(all(feature = "vessel", feature = "serve-encoder")))]
+            #[cfg(not(feature = "serve-encoder"))]
             {
                 let _ = (&seat, vessels_dir, pins, key, applied);
                 return Err(format!(
@@ -1460,13 +1535,14 @@ impl AnySuiteServer {
     ) -> Result<(Self, VesselFacts), String> {
         let arm = Self::posture_of(manifest, suite)?;
         if arm == Arm::Enc {
-            #[cfg(all(feature = "vessel", feature = "serve-encoder"))]
+            #[cfg(feature = "serve-encoder")]
             {
+                let boots = ext_boots().expect("encoder backend self-installed under the feature");
                 let (lane, facts) =
-                    enc_vessel_boot(suite, seat, vessel_bytes, pins, key, applied, arm)?;
-                return Ok((AnySuiteServer::Enc(Box::new(lane)), facts));
+                    (boots.vessel)(suite, seat, vessel_bytes, pins, key, applied, arm)?;
+                return Ok((AnySuiteServer::Ext(lane), facts));
             }
-            #[cfg(not(all(feature = "vessel", feature = "serve-encoder")))]
+            #[cfg(not(feature = "serve-encoder"))]
             {
                 let _ = (&seat, vessel_bytes, pins, key, applied);
                 return Err(format!(
@@ -1516,8 +1592,7 @@ impl AnySuiteServer {
             AnySuiteServer::S8(s) => s.decide(state, options),
             AnySuiteServer::S59(s) => s.decide(state, options),
             AnySuiteServer::S77(s) => s.decide(state, options),
-            #[cfg(feature = "serve-encoder")]
-            AnySuiteServer::Enc(s) => s.decide(state, options),
+            AnySuiteServer::Ext(s) => s.decide(state, options),
         }
     }
 
@@ -1538,8 +1613,7 @@ impl AnySuiteServer {
             AnySuiteServer::S8(s) => s.decide_multi(state, questions),
             AnySuiteServer::S59(s) => s.decide_multi(state, questions),
             AnySuiteServer::S77(s) => s.decide_multi(state, questions),
-            #[cfg(feature = "serve-encoder")]
-            AnySuiteServer::Enc(s) => s.decide_multi(state, questions),
+            AnySuiteServer::Ext(s) => s.decide_multi(state, questions),
         }
     }
 
@@ -1553,8 +1627,7 @@ impl AnySuiteServer {
             AnySuiteServer::S8(s) => s.meta(),
             AnySuiteServer::S59(s) => s.meta(),
             AnySuiteServer::S77(s) => s.meta(),
-            #[cfg(feature = "serve-encoder")]
-            AnySuiteServer::Enc(s) => s.meta(),
+            AnySuiteServer::Ext(s) => s.meta(),
         }
     }
 
@@ -1570,8 +1643,7 @@ impl AnySuiteServer {
             AnySuiteServer::S8(s) => s.centroid(),
             AnySuiteServer::S59(s) => s.centroid(),
             AnySuiteServer::S77(s) => s.centroid(),
-            #[cfg(feature = "serve-encoder")]
-            AnySuiteServer::Enc(s) => s.centroid(),
+            AnySuiteServer::Ext(s) => s.centroid(),
         }
     }
 }

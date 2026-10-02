@@ -61,6 +61,88 @@ use crate::encoder_arm::{
 use crate::server::{Arm, ServedDecision, ServedQuestion, SuiteMeta, WeightSource};
 use crate::specialist::winner_bridge;
 
+/// The backend half of the bytes boot (the hook [`crate::server`]
+/// consults for ENC rows): the raw head bytes → the lane. The bytes ARE
+/// the sealed head — the lane's own parse law consumes them.
+pub fn enc_boot_bytes(
+    suite: &'static str,
+    seat: Seat,
+    artifact_bytes: &[u8],
+    arm: Arm,
+) -> Result<Box<dyn crate::server::LaneBackend>, String> {
+    let lane = EncoderLane::from_parts(suite, seat, artifact_bytes, arm)?;
+    Ok(Box::new(lane))
+}
+
+/// The backend half of the vessel boot (issue 016 T4): the HOSTED-ONLY
+/// head vessel — the same authenticity / class / monotonic walk the bag
+/// vessels carry ([`crate::vessel::load_hosted_head_bytes`]), the RAW
+/// decrypted NLEH payload handed to the lane's own parse law. The
+/// monotonic apply is the arsenal's existing epoch machinery: the facts
+/// (commitment, version, parent) flow to the slot install exactly as the
+/// bag facts do, so a swap/downgrade is refused by the same gate that
+/// refuses the bag vessels' — no new lineage code. (Moved verbatim from
+/// server.rs at the Proposal-052 carve seam; this module is the moat's
+/// boot half.)
+#[cfg(feature = "vessel")]
+#[allow(clippy::too_many_arguments)]
+pub fn enc_boot_vessel(
+    suite: &'static str,
+    seat: Seat,
+    vessel_bytes: &[u8],
+    pins: &reflexer_vessel::PinTable,
+    key: &[u8; 32],
+    applied: &crate::vessel::AppliedState,
+    arm: Arm,
+) -> Result<
+    (
+        Box<dyn crate::server::LaneBackend>,
+        crate::server::VesselFacts,
+    ),
+    String,
+> {
+    let loaded = crate::vessel::load_hosted_head_bytes(vessel_bytes, pins, key, applied)
+        .map_err(|e| format!("suite {suite}: head vessel refused: {e}"))?;
+    let lane = EncoderLane::from_parts(suite, seat, &loaded.head_bytes, arm)?;
+    let facts = crate::server::VesselFacts {
+        commitment_hex: loaded.commitment_hex,
+        artifact_version: loaded.artifact_version,
+        parent_commitment: loaded.parent_commitment,
+    };
+    Ok((Box::new(lane), facts))
+}
+
+/// The extension-point contract ([`crate::server::LaneBackend`]) — the
+/// encoder lane's dispatch is the same four methods the bag variants
+/// expose, so the arity-erased server treats the classes uniformly (the
+/// fully-qualified calls are the inherent methods — the trait's names
+/// shadow them inside this impl).
+impl crate::server::LaneBackend for EncoderLane {
+    fn decide(
+        &mut self,
+        state: &str,
+        options: Option<&[String]>,
+    ) -> Result<ServedDecision, String> {
+        EncoderLane::decide(self, state, options)
+    }
+
+    fn decide_multi(
+        &mut self,
+        state: &str,
+        questions: &[ServedQuestion<'_>],
+    ) -> Result<Vec<ServedDecision>, String> {
+        EncoderLane::decide_multi(self, state, questions)
+    }
+
+    fn meta(&self) -> &SuiteMeta {
+        EncoderLane::meta(self)
+    }
+
+    fn centroid(&self) -> [f32; crate::arsenal_ops::DIM] {
+        EncoderLane::centroid(self)
+    }
+}
+
 /// One encode job for the worker thread: the state + the template fields
 /// (all plain data — the worker re-renders the question bytes itself, the
 /// SAME render law, so nothing device-bound ever crosses a thread).

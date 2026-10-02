@@ -281,13 +281,17 @@ fn serve_encoder_lane_replays_the_frozen_bench029_read() {
     );
 }
 
-/// The lane's device label, through the arity-erased server (the ENC
-/// variant is feature-gated; this gate only compiles with the feature).
+/// The boot-arm check, through the arity-erased server. The carve seam
+/// erased the lane behind `Ext(Box<dyn LaneBackend>)` — the device label
+/// lives behind the backend, the arm on the meta; the log below names the
+/// seat honestly instead of the device.
 fn server_meta_device(server: &AnySuiteServer) -> &'static str {
-    match server {
-        AnySuiteServer::Enc(lane) => lane.device(),
-        _ => panic!("the ENC boot must produce the encoder lane"),
-    }
+    assert_eq!(
+        server.meta().arm.name(),
+        "ENC",
+        "the ENC boot must produce the encoder lane"
+    );
+    "(backend)"
 }
 
 // ── T4: the HOSTED-ONLY head vessel (issue 016 T4) ─────────────────────
