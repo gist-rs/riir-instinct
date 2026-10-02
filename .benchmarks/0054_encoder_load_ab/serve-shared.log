@@ -1,0 +1,20 @@
+[riir-instinct] arsenal: 3 row(s) (.benchmarks/0052_encoder_load_ab/arsenal_enc.toml, digest blake3:b64803611d59aa04)
+[riir-instinct] serving on http://127.0.0.1:18091 (hosted hybrid lane v0.1.0, build 75c399d28ac6b90a)
+datasets: /Users/katopz/git/riir-reflex/.raw/datasets_t20k · winners: /Users/katopz/git/riir-train/.raw/t599
+[riir-instinct] CORS: closed (no RIIR_INSTINCT_ALLOWED_ORIGIN)
+[riir-instinct] decstat: not compiled (build with --features decstat to enable the contribution lane)
+[riir-instinct] arsenal: 3 eager lane(s) loading at boot, 0 lazy (first decision loads)
+    ⛔ KNOWN-DIRTY SLICE (pinned) — proceeding under acknowledgement:
+    slice-integrity: test 600 (fnv1a64-67fe9666fa0c3a6f) · cal 200 (fnv1a64-d210e7c6707c3d40) · pool 8344 (fnv1a64-cf933108b9825392) · VIOLATIONS
+    pin reason: frozen t20k pool (manifest ebfb0317…, 8544 rows) carries the mirror's exact duplicates: 1 cross-split + 2 train-internal (published rows were measured on these bytes; dedupe is an owner re-baseline, instinct .issues/013 pickup)
+[riir-instinct] encoder worker: pipeline warm 32 ms (f16 posture)
+[riir-instinct] encoder worker ckpt:english: warm — metal (checkpoint digest 5c701902d7fcc863)
+[riir-instinct] lane sst5 (ENC): attached to encoder worker (device metal, head 893db1acf6208e71, feat_dim 6144) — 5 option(s), attach encode ok
+[riir-instinct] arsenal: sst5 hoard gate ok (vendi 1.000 / floor 0.200, k 1, pr 1.000, saturated at d=8)
+[riir-instinct] lane sst5 ready in 4.0s (arm ENC, 5 labels, cap 0, source RawWinner, epoch 0, install Idempotent)
+[riir-instinct] lane ag_news (ENC): attached to encoder worker (device metal, head e7e17cf3c2e23801, feat_dim 5120) — 4 option(s), attach encode ok
+[riir-instinct] lane xnli_en (ENC): attached to encoder worker (device metal, head a1e2380b7c6451bb, feat_dim 4096) — 3 option(s), attach encode ok
+[riir-instinct] arsenal: ag_news hoard gate ok (vendi 1.395 / floor 0.400, k 2, pr 1.228)
+[riir-instinct] lane ag_news ready in 4.1s (arm ENC, 4 labels, cap 0, source RawWinner, epoch 0, install Idempotent)
+[riir-instinct] arsenal: xnli_en hoard gate ok (vendi 1.355 / floor 0.600, k 3, pr 1.171)
+[riir-instinct] lane xnli_en ready in 4.1s (arm ENC, 3 labels, cap 0, source RawWinner, epoch 0, install Idempotent)

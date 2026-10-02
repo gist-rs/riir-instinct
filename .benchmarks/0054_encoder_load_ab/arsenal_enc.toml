@@ -1,0 +1,26 @@
+[[vessel]]
+suite   = "sst5"
+digest  = "blake3:893db1acf6208e71de907dbb2177baed9bddeb06468f0901957d12b6ea60c8c8"
+class   = "hosted_only"
+file    = "t6_s0.bin"
+posture = { arm = "ENC" }
+pin_keys = []
+budget  = { load = "eager", max_payload_mb = 16 }
+
+[[vessel]]
+suite   = "xnli_en"
+digest  = "blake3:a1e2380b7c6451bb016dc65a8e9970837ec5420be11c0e92a98b00317abbff7c"
+class   = "hosted_only"
+file    = "xnli_en_encoder_v1.bin"
+posture = { arm = "ENC" }
+pin_keys = []
+budget  = { load = "eager", max_payload_mb = 16 }
+
+[[vessel]]
+suite   = "ag_news"
+digest  = "blake3:e7e17cf3c2e2380137245dba0103cc41f6ee3ae53f225f07f247f6c3eca1cd66"
+class   = "hosted_only"
+file    = "ag_news_encoder_v1.bin"
+posture = { arm = "ENC" }
+pin_keys = []
+budget  = { load = "eager", max_payload_mb = 16 }

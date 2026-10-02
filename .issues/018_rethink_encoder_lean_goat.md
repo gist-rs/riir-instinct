@@ -600,3 +600,68 @@ survives from it, disclosed as evidence rather than re-landed:
   surface only — the registry is private by design) so the soak cell
   re-measures without re-deriving; plus the promotion pull of
   `serve-encoder-shared` after the soak.
+
+**Update 9 (2026-10-02, the follow-on M3 session — the Update-8 follow-up DISCHARGED,
+Bench 0054):** the runnable A/B instrument landed on the LANDED implementation and the
+concurrency cell was MEASURED through the public surface. Instrument:
+`scripts/encoder_load_ab.py` (stdlib-only; builds both postures, generates the ENC manifest
+from the heads' `.blake3` sidecars — the boot's drift gate validates for real — boots the
+serve binary, polls /healthz readiness, drives N clients × M decisions round-robining the
+suites over REAL test states from the frozen pool rendered in each suite's serialized-state
+envelope, reads RSS, and emits `.benchmarks/0054_encoder_load_ab/{RESULTS.md,results.json}`
+with the preflight PROVENANCE line embedded). The soak's decision cell is now ONE command:
+`python3 scripts/encoder_load_ab.py --clients 8 --rounds 40`.
+
+**The cell, at the heavy shape (8 clients × 40 rounds = n=320, tail support 4, release,
+Metal/F16, lanes sst5/xnli_en/ag_news on the english checkpoint — exactly 0050's 3-lane /
+1-checkpoint shape):**
+
+| | per-lane | shared | shared ÷ per-lane |
+|---|---|---|---|
+| p50 | 60,173 µs | 93,178 µs | 1.549× |
+| p99 | 361,609 µs | **132,204 µs** | **0.366×** |
+| RSS steady | 10,192 MiB | 4,100 MiB | **2.49×** |
+
+**The reading INVERTS Update 8's thin-cell hedge at the tail.** At real contention the
+per-lane p99 BLOWS OUT (326k/362k across two heavy runs — three concurrent Metal forwards
+per checkpoint contend for the GPU; the tail is spread across 10+ of 40 rounds, server-side,
+not start skew) while the shared worker's queue makes the tail deterministic (126.6k/132.2k,
+p99 ≈ 1.4× its own p50). The share-weights-only fallback is NOT needed for the tail — the
+tail is where Lane B WINS. Update 8's 1.208×-within-envelope reading was under-powered
+(n=72, dev profile, the duplicate's private internals) — its own disclosure said the soak
+owns the cell. The p50 cost of sharing is real and stable: 1.38–1.62× across five runs.
+**RSS: 2.49× at five independent replications** (Update 8's 2.46× + this session's 2.47–
+2.49× across runs, orders, profiles).
+
+**Decision parity across postures: byte-level, 4/4 instrument runs** — the warmup
+decisions' `receipt.decision` digests equal across the two builds over the public surface
+(the witness 0050 proved via test fingerprints, now proven through HTTP). A divergence
+exits 2; the instrument is therefore also a standing posture-parity gate for the soak.
+
+**Instrument lessons paid for en-route** (all in the script, all measured): the ENC lane
+consumes the suite's serialized-state ENVELOPE (pyjson Python separators — sst5 `{"text"}`,
+ag_news `{"article"}`, xnli_en `{"premise","hypothesis"}`; a raw string 422s at the edge);
+each client's FIRST decision is a thread-start+connect-storm throwaway (the heavy cell's
+4.3 s outlier sat ENTIRELY in round 0) — excluded, recorded as `client_warm`; the A/B ratio
+line resolves the postures BY NAME (an order flip must not invert the label).
+
+**Disclosures:** the canonical run carries a box-noise PAIR in the shared arm (two walls
+3,645,289/3,645,531 µs, 242 µs apart — a simultaneous release = a system-wide stall from
+the concurrent sibling sessions; above the reported p99, steady max outside the pair 134k);
+the p99 tail support is 4/320; the light n=72 cells carried tail support 1 — why the heavy
+cell is the canonical one. PROVENANCE embedded in the record
+(`power=AC load=3.05 powermode=2(high)` at launch, sibling agents active).
+
+**REMAINS:** promotion of `serve-encoder-shared` to the serve-encoder default — still
+owner-gated, but the soak's evidence cell is now one command, and the evidence FLIPPED
+favorable at the tail (p50 1.55× bounded cost vs p99 0.37× + RSS 2.49×); option (iii)
+re-price + Q4/PQ2 retention probe stay owner-gated as before; Lane E not triggered.
+
+**Numbering disclosure:** this record was born `0052_encoder_load_ab` off the session-start
+highwater (0051) and RENUMBERED to `0054` the same session — the sibling session sharing
+this worktree allocated 0052 (`0052_hybrid_quotable_ladder`) + 0053
+(`0053_massive_synth_0052`) mid-session and pushed `d66db05` while this record was being
+written; the write-time re-read caught it (the AGENTS.md `ls` + re-read law), zero inbound
+mentions moved, the highwater counter restored then advanced to 0054. The dual-allocation
+gate's lesson reproduced exactly: `.highwater` read at session START is a different timeline
+by write time in a shared worktree.
