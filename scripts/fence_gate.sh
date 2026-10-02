@@ -16,15 +16,32 @@
 #   RED        moat absent but a moat reference remains      -> exit 1, rows listed
 #   GREEN      moat absent, no references, allowlist only    -> exit 0
 #
+# ENFORCE MODE (--post-split): identical scan, but PRE-SPLIT is RED (exit 1).
+# Public CI must use ONLY this mode — the informational exit-0 exists for the
+# private pre-split tree and must never guard a public lane (a returning
+# deploy.yaml would otherwise pass as PRE-SPLIT).
+#
+# HISTORY MODE (--history): the fresh-root law's own arm — scans EVERY commit's
+# file list of a repo (git log --all --name-only, the union with
+# `git rev-list --objects --all` paths) for moat paths (source files + the moat
+# records/docs/tests), and requires exactly ONE root commit. This is what the
+# owner reads before the visibility flip — the working-tree scan above cannot
+# see history. NOTE: on THIS private repo the history audit is expected RED
+# (the moat history is whole here by design) — it goes GREEN only on the
+# Phase-C fresh-root export.
+#
 # The allowlist lives beside this gate (`fence_gate_allowlist.txt`, rows
 # `path:pattern`) — the ONLY amnesty, and --self-test proves both directions.
 #
 # Usage:
-#   scripts/fence_gate.sh [TREE]     # audit TREE (default: repo root)
+#   scripts/fence_gate.sh [TREE]            # audit TREE (default: repo root)
+#   scripts/fence_gate.sh --post-split [TREE]  # ENFORCE: PRE-SPLIT is RED
+#   scripts/fence_gate.sh --history [REPO]  # fresh-root history audit
 #   scripts/fence_gate.sh --self-test
 
 set -u
 
+ENFORCE=0
 GATE_DIR=$(cd "$(dirname "$0")" && pwd)
 ALLOWLIST="$GATE_DIR/fence_gate_allowlist.txt"
 
@@ -71,6 +88,12 @@ instinct_specialists
 # Files the audit scans, relative to the audited tree.
 SCAN_GLOBS="*.rs"
 
+# The moat RECORD/DOC/TEST paths for --history (regex, ERE). The source files
+# above are matched exactly; these are the paths whose very PRESENCE in any
+# commit leaks the moat (recipes, design records, the encoder A/B instrument,
+# the moat gates).
+HISTORY_MOAT_RE='^(\.benchmarks/0(29|3[1-9]|4[0-8]|5[0-6])|\.issues/01[4-8]|\.plans/00[267]|\.proposals/001|\.deploy/|scripts/encoder_load_ab\.py|tests/(vessel_gates|decstat_gates|serve_encoder_parity|encoder_shared_parity)\.rs)'
+
 die() { printf '⛔ %s\n' "$1" >&2; exit 1; }
 
 # Is (file=$_f_rel, pattern=$_pat) allowlisted? Reads the allowlist FILE row by
@@ -100,6 +123,11 @@ audit_tree() {
 		[ -f "$_tree/$_f" ] && { printf 'PRE-SPLIT moat file present: %s\n' "$_f"; _present=1; }
 	done
 	if [ "$_present" -eq 1 ]; then
+		if [ "$ENFORCE" -eq 1 ]; then
+			printf 'VERDICT: RED (enforce) — moat files present in a tree that claims to be post-split:\n'
+			for _f in $MOAT_FILES; do [ -f "$_tree/$_f" ] && printf '  %s\n' "$_f"; done
+			return 1
+		fi
 		printf 'VERDICT: PRE-SPLIT — moat files still in the tree (expected until the Proposal-052 move family lands). The fence is NOT yet enforceable here.\n'
 		return 0
 	fi
@@ -141,6 +169,34 @@ $_toml_hits"
 	return 0
 }
 
+# --history: the fresh-root law's own audit (see header). Every path ANY commit
+# ever carried, plus exactly-one-root. This is the owner's pre-flip read.
+history_audit() {
+	_repo=$1
+	[ -d "$_repo/.git" ] || die "not a git repo: $_repo"
+	_paths=$(git -C "$_repo" log --all --name-only --format= 2>/dev/null | sort -u)
+	[ -n "$_paths" ] || die "no readable history in $_repo"
+	_roots=$(git -C "$_repo" rev-list --max-parents=0 --all 2>/dev/null | wc -l | tr -d ' ')
+	_hits=""
+	for _f in $MOAT_FILES; do
+		printf '%s\n' "$_paths" | grep -qxF -- "$_f" && _hits="$_hits
+  $_f"
+	done
+	_rhits=$(printf '%s\n' "$_paths" | grep -E "$HISTORY_MOAT_RE" || :)
+	[ -n "$_rhits" ] && _hits="$_hits
+$_rhits"
+	if [ "$_roots" -ne 1 ]; then
+		printf 'VERDICT: RED (history) — %s root commits (the fresh root must be ONE):\n%s\n' "$_roots" "$_hits"
+		return 1
+	fi
+	if [ -n "$_hits" ]; then
+		printf 'VERDICT: RED (history) — moat paths present in some commit:\n%s\n' "$_hits"
+		return 1
+	fi
+	printf 'VERDICT: GREEN (history) — single root commit, zero moat paths across ALL commits.\n'
+	return 0
+}
+
 self_test() {
 	_tmp=$(mktemp -d) || die "mktemp failed"
 	trap 'rm -rf "$_tmp"' EXIT
@@ -166,12 +222,43 @@ self_test() {
 		die "self-test arm 3: moat-file presence should be PRE-SPLIT (exit 0), not an error: $_out"
 	printf '%s' "$_out" | grep -q PRE-SPLIT || die "self-test arm 3: verdict not PRE-SPLIT: $_out"
 
-	printf '✅ fence_gate self-test: 3/3 arms fired (GREEN / RED / PRE-SPLIT).\n'
+	# arm 4: the SAME moat file under ENFORCE must RED (public CI's mode —
+	# a returning moat file can never pass as PRE-SPLIT there)
+	_out=$(ENFORCE=1 ALLOWLIST_OVERRIDE="$_tmp/fx-allowlist.txt" audit_tree "$_tmp/fx") && \
+		die "self-test arm 4: enforce mode did NOT red on a moat file: $_out"
+	printf '%s' "$_out" | grep -q RED || die "self-test arm 4: verdict not RED under enforce: $_out"
+
+	# arm 5: --history on a repo whose history carried a moat path must RED ...
+	_h=$(mktemp -d)
+	git -C "$_h" init -q
+	git -C "$_h" -c user.email=t@t -c user.name=t commit -q --allow-empty -m root
+	mkdir -p "$_h/src" && printf 'x\n' > "$_h/src/encoder_arm.rs"
+	git -C "$_h" add -A
+	git -C "$_h" -c user.email=t@t -c user.name=t commit -q -m moat
+	_out=$(history_audit "$_h") && die "self-test arm 5a: moat history did NOT red: $_out"
+	printf '%s' "$_out" | grep -q RED || die "self-test arm 5a: verdict not RED: $_out"
+
+	# ... and on a clean single-root repo must GREEN
+	_h2=$(mktemp -d)
+	git -C "$_h2" init -q
+	git -C "$_h2" -c user.email=t@t -c user.name=t commit -q --allow-empty -m root
+	printf 'pub fn noop() {}\n' > "$_h2/lib.rs"
+	git -C "$_h2" add -A
+	git -C "$_h2" -c user.email=t@t -c user.name=t commit -q -m clean
+	_out=$(history_audit "$_h2") || die "self-test arm 5b: clean history did not read GREEN: $_out"
+	printf '%s' "$_out" | grep -q 'GREEN (history)' || die "self-test arm 5b: verdict not GREEN: $_out"
+	rm -rf "$_h" "$_h2"
+
+	printf '✅ fence_gate self-test: 5/5 arms fired (GREEN / RED / PRE-SPLIT / enforce-RED / history RED+GREEN).\n'
 }
 
 main() {
-	if [ "${1:-}" = "--self-test" ]; then self_test; return $?; fi
-	audit_tree "${1:-$GATE_DIR/..}"
+	case "${1:-}" in
+	--self-test) self_test; return $? ;;
+	--post-split) ENFORCE=1; shift; audit_tree "${1:-$GATE_DIR/..}" ;;
+	--history) shift; history_audit "${1:-$GATE_DIR/..}" ;;
+	*) audit_tree "${1:-$GATE_DIR/..}" ;;
+	esac
 }
 
 main "$@"

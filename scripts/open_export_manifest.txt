@@ -9,6 +9,17 @@
 # (Proposal 052) names what leaves; everything unlisted here and unlisted
 # there is a plan-time adjudication, not an accident.
 #
+# ⛔ ALLOWLIST-ONLY, LOAD-BEARING: the fence gate (scripts/fence_gate.sh) scans
+# CODE surfaces (*.rs + Cargo.toml) ONLY — the moat TESTS (vessel_gates,
+# decstat_gates, serve_encoder_parity, encoder_shared_parity),
+# scripts/encoder_load_ab.py, and every moat RECORD (.benchmarks/029,
+# 031–048, 0050–0056) and DOC (.plans/002,006,007, .proposals/001,
+# .issues/014–018, .deploy/) are kept out of the export by THIS manifest
+# ALONE, never by the fence. Never convert this export to a denylist and
+# assume the fence covers the rest — it does not. The history half is
+# scripts/fence_gate.sh --history (every commit's paths + single root),
+# which the owner reads before the visibility flip.
+#
 # SECTIONS:
 #   [copy]      copy the file verbatim
 #   [rewrite]   the file exists ONLY as a fresh public rewrite (the private
