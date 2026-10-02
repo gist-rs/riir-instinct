@@ -396,20 +396,23 @@ fn served_decisions_are_the_frozen_goat_picks() {
 /// served decisions must match the frozen arena records exactly. Runs
 /// EVERYWHERE: the family seats are synthetic (reflex's in-process
 /// builds — no datasets, no winner bytes), so a bare clone still proves
-/// the served product. The frozen read: Bench 049's re-baseline — the
-/// 2026-09-28 Bench-011 record predated reflex posture work that moved
-/// the families (0.375–0.500 → 0.56–0.92; the Bench-004 re-baseline
-/// class), and Bench 049's A0 identity pin (arena == reflex run()) is
-/// what makes these numbers the SERVED product's.
+/// the served product. The frozen read: Bench 0051 — the WIDE-eval
+/// re-baseline (reflex Plan 009 REVISED-2 swapped the five families'
+/// evals to 96–100-case template-disjoint populations, invalidating
+/// Bench 049's n=12–16 record by construction; the same re-baseline
+/// class as 049 itself), and 0051's A0 identity leg (arena == reflex
+/// run(), held on all six before the stale site leg forced
+/// --skip-pin-a0 — see the 0051 README) is what makes these numbers the
+/// SERVED product's.
 #[test]
 fn served_family_decisions_are_the_frozen_a0_picks() {
     let records: &[(&str, &str)] = &[
-        ("harness_visibility", "049_family_full_coverage"),
-        ("harness_permissions", "049_family_full_coverage"),
-        ("harness_tool_fit", "049_family_full_coverage"),
-        ("harness_routing", "049_family_full_coverage"),
-        ("harness_sensitivity", "049_family_full_coverage"),
-        ("harness_cache_reuse", "049_family_full_coverage"),
+        ("harness_visibility", "0051_families_wide_eval"),
+        ("harness_permissions", "0051_families_wide_eval"),
+        ("harness_tool_fit", "0051_families_wide_eval"),
+        ("harness_routing", "0051_families_wide_eval"),
+        ("harness_sensitivity", "0051_families_wide_eval"),
+        ("harness_cache_reuse", "0051_families_wide_eval"),
     ];
     for (suite, record) in records {
         let path = repo_root().join(format!(".benchmarks/{record}/predictions.json"));
