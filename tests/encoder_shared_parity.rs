@@ -171,11 +171,7 @@ fn shared_worker_interleaved_replay_is_bit_identical_to_isolated() {
         );
         return;
     }
-    let mode = if cfg!(feature = "serve-encoder-shared") {
-        "shared-worker"
-    } else {
-        "per-lane"
-    };
+    let mode = riir_instinct::encoder_serve::encoder_topology_label();
     eprintln!("PARITY posture: build mode = {mode}");
 
     // The ISOLATED fingerprints (each lane answers alone).

@@ -246,12 +246,12 @@ struct EncoderFace {
     correct: Vec<bool>,
     confs: Vec<f64>,
     durs_us: Vec<f64>,
-    /// The WEIGHT posture the encode ran under (issue 018 Lane D1):
-    /// "f16" (the shipped posture — every seated cell) or
-    /// "fake-quant-q8" (the D1 probe read).
+    /// The WEIGHT posture the encode ran under (issue 018 Lane D1/D4):
+    /// "f16" (the shipped posture — every seated cell), "fake-quant-q8"
+    /// (the D1 probe read) or "fake-quant-q4" (the D4 probe read).
     #[cfg(feature = "arena-laya")]
     weight_posture: &'static str,
-    /// The fake-quant report (Some iff the posture is fake-quant-q8),
+    /// The fake-quant report (Some iff the posture is a fake-quant),
     /// serialized verbatim — the disclosure of what was quantized.
     #[cfg(feature = "arena-laya")]
     fake_quant_report: Option<riir_reflex::laya::riir::fake_quant::FakeQuantReport>,
@@ -425,7 +425,18 @@ fn arena_main() {
                 i += 1;
                 encoder.ckpt = args[i].clone();
             }
-            "--fake-quant" => encoder.fake_quant = true,
+            "--fake-quant" => {
+                if encoder.fake_quant.is_some() {
+                    die("--fake-quant and --fake-quant-q4 are mutually exclusive");
+                }
+                encoder.fake_quant = Some(FakeQuantGrid::Q8);
+            }
+            "--fake-quant-q4" => {
+                if encoder.fake_quant.is_some() {
+                    die("--fake-quant and --fake-quant-q4 are mutually exclusive");
+                }
+                encoder.fake_quant = Some(FakeQuantGrid::Q4);
+            }
             other => die(&format!("unknown arg {other}")),
         }
         i += 1;
@@ -448,9 +459,9 @@ fn arena_main() {
             encoder.ckpt
         ));
     }
-    if encoder.fake_quant && encoder.art.is_none() {
-        die("--fake-quant needs --encoder-art — the probe reads an existing head over \
-             the quantized encode; there is nothing to score without one");
+    if encoder.fake_quant.is_some() && encoder.art.is_none() {
+        die("--fake-quant / --fake-quant-q4 need --encoder-art — the probe reads an existing \
+             head over the quantized encode; there is nothing to score without one");
     }
     if !(1..=MAX_TOP_K).contains(&top_k) {
         die("--top-k out of range (1..=32)");
@@ -561,15 +572,25 @@ fn format_box_state(b: &riir_reflex::harness::box_state::BoxState) -> String {
 /// checkpoint it trains against. The artifact does NOT carry its
 /// checkpoint — a v2 head trained on the typed cache is meaningless over
 /// the english encoder, so the pairing is always the caller's call.
+/// The fake-quant probe's grid (`--fake-quant` Q8_0 = the D1 read,
+/// `--fake-quant-q4` Q4_0 = the D4 read) — the same in-memory
+/// quantize-then-dequantize instrument, one format axis apart.
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum FakeQuantGrid {
+    Q8,
+    Q4,
+}
+
 #[derive(Default)]
 struct EncoderOpts {
     art: Option<PathBuf>,
     ckpt: String,
-    /// Issue 018 Lane D1: fake-quant the checkpoint's >=2D weights Q8_0
-    /// at load (quantize-then-dequantize, forward unchanged) — the
-    /// retention probe's read posture. Requires `--encoder-art`; the
-    /// predictions record carries the posture + the quant report.
-    fake_quant: bool,
+    /// Issue 018 Lane D1/D4: fake-quant the checkpoint's >=2D weights at
+    /// load (quantize-then-dequantize, forward unchanged) — the retention
+    /// probe's read posture. `--fake-quant` = Q8_0 (the D1 probe),
+    /// `--fake-quant-q4` = Q4_0 (the D4 probe). Requires `--encoder-art`;
+    /// the predictions record carries the posture + the quant report.
+    fake_quant: Option<FakeQuantGrid>,
 }
 
 fn run_suite(
@@ -1581,10 +1602,10 @@ fn run_suite_n<const N: usize>(
                 &seat.suite.cases,
                 art,
                 ckpt,
-                if encoder.fake_quant {
-                    riir_reflex::laya::riir::WeightPosture::FakeQuantQ8
-                } else {
-                    riir_reflex::laya::riir::WeightPosture::F16
+                match encoder.fake_quant {
+                    Some(FakeQuantGrid::Q8) => riir_reflex::laya::riir::WeightPosture::FakeQuantQ8,
+                    Some(FakeQuantGrid::Q4) => riir_reflex::laya::riir::WeightPosture::FakeQuantQ4,
+                    None => riir_reflex::laya::riir::WeightPosture::F16,
                 },
             )?;
             let a1 = test_arms

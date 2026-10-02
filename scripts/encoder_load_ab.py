@@ -4,8 +4,9 @@ concurrent-load A/B instrument on the LANDED Lane B implementation,
 public surface only (the HTTP serve binary — the worker registry is
 private by design, so the soak cell re-measures without re-deriving).
 
-What it does, per posture (per-lane `serve-encoder`, shared
-`serve-encoder-shared`):
+What it does, per posture (per-lane `serve-encoder` — demoted from the
+promoted default by `RIIR_INSTINCT_ENCODER_SHARED=0` when the build
+implies the shared worker — vs shared `serve-encoder-shared`):
 
   1. cargo-build the serve binary at the posture's feature set.
   2. Generate an ENC manifest (explicit head files + their .blake3
@@ -447,6 +448,13 @@ def main() -> None:
             "INSTINCT_STATE_DIR": str(state_dir),
             "LAYA_DEVICE": args.device,
         })
+        if posture == "per-lane":
+            # The promotion demote switch (issue 018): pre-promotion this is
+            # a no-op (the per-lane build keys by lane regardless); once
+            # `serve-encoder` implies the shared worker, the env is what
+            # bit-restores the per-lane keys for this arm (byte-identical
+            # serving decisions — the 0050/0054 parity law).
+            env["RIIR_INSTINCT_ENCODER_SHARED"] = "0"
         print(f"$ {binary} --bind {args.bind} --suites {','.join(suites)} "
               f"(log {log_path})")
         proc = subprocess.Popen([str(binary), "--bind", args.bind,

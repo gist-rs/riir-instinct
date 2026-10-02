@@ -146,13 +146,46 @@ fn worker_registry() -> &'static std::sync::Mutex<std::collections::HashMap<Stri
     WORKERS.get_or_init(|| std::sync::Mutex::new(std::collections::HashMap::new()))
 }
 
+/// The promoted ENC topology (issue 018, the serving-soak promotion):
+/// under `serve-encoder-shared` the registry keys ONE encode worker per
+/// checkpoint — and the documented demote switch, `RIIR_INSTINCT_ENCODER_SHARED=0`
+/// (the exact literal), bit-restores the per-lane keys. Serving decisions
+/// are byte-identical under both topologies (the 0050 fingerprint law + the
+/// 0054 through-HTTP parity); the switch exists for ops and for the A/B
+/// instrument's per-lane arm post-promotion, not as a perf knob. Read at
+/// lane attach only (a handful of calls per boot) — never on the decide
+/// path.
+#[cfg(feature = "serve-encoder-shared")]
+fn shared_topology_enabled() -> bool {
+    std::env::var("RIIR_INSTINCT_ENCODER_SHARED").ok().as_deref() != Some("0")
+}
+
+/// The effective worker-topology label for gates and records:
+/// "shared-worker" under the shared feature without the demote switch,
+/// else "per-lane".
+#[cfg(feature = "serve-encoder")]
+pub fn encoder_topology_label() -> &'static str {
+    #[cfg(feature = "serve-encoder-shared")]
+    {
+        if shared_topology_enabled() {
+            return "shared-worker";
+        }
+    }
+    "per-lane"
+}
+
 /// The registry key for one lane's worker. Shared mode keys the
-/// CHECKPOINT (every lane on it shares one worker); the default keys the
-/// lane + head digest (a swapped head gets a fresh worker — per-lane
-/// semantics preserved exactly).
+/// CHECKPOINT (every lane on it shares one worker); per-lane keys the
+/// lane (a swapped head gets a fresh worker — per-lane semantics
+/// preserved exactly). The topology is the feature's, demotable at
+/// runtime by [`shared_topology_enabled`]'s switch.
 fn worker_key(suite: &'static str, head_digest16: &str) -> String {
     #[cfg(feature = "serve-encoder-shared")]
     {
+        if !shared_topology_enabled() {
+            let _ = head_digest16;
+            return format!("lane:{suite}");
+        }
         let _ = (suite, head_digest16);
         format!("ckpt:{ENC_CHECKPOINT_LABEL}")
     }

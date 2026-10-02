@@ -477,11 +477,12 @@ pub struct EncoderArmOut {
     /// feat 5120"; v2: "d 1024 · hidden 128 · widths 2/4/5").
     pub shape_desc: String,
     /// The WEIGHT posture the encode ran under (instinct issue 018 Lane
-    /// D1): "f16" (the shipped posture) or "fake-quant-q8". Serialized
-    /// beside every read so a quantized read can never be mistaken for
-    /// the shipped posture.
+    /// D1/D4): "f16" (the shipped posture), "fake-quant-q8" (the D1
+    /// probe) or "fake-quant-q4" (the D4 probe). Serialized beside every
+    /// read so a quantized read can never be mistaken for the shipped
+    /// posture.
     pub weight_posture: &'static str,
-    /// The fake-quant report (`Some` iff the posture is fake-quant-q8):
+    /// The fake-quant report (`Some` iff the posture is a fake-quant):
     /// what was quantized, what was skipped, the measured error — the
     /// record's disclosure, serialized verbatim.
     pub fake_quant_report:
@@ -497,10 +498,11 @@ pub fn eval_encoder_arm(
     eval_encoder_arm_posture(cases, art_path, ckpt, riir_reflex::laya::riir::WeightPosture::F16)
 }
 
-/// The posture-aware form (instinct issue 018 Lane D1): the F16 read
-/// through [`eval_encoder_arm`], the fake-quant probe through
-/// [`riir_reflex::laya::riir::WeightPosture::FakeQuantQ8`] — the forward
-/// code is byte-identical, only the loaded weights differ.
+/// The posture-aware form (instinct issue 018 Lane D1/D4): the F16 read
+/// through [`eval_encoder_arm`], the fake-quant probes through
+/// [`riir_reflex::laya::riir::WeightPosture::FakeQuantQ8`] (D1) or
+/// [`riir_reflex::laya::riir::WeightPosture::FakeQuantQ4`] (D4) — the
+/// forward code is byte-identical, only the loaded weights differ.
 #[cfg(feature = "arena-laya")]
 pub fn eval_encoder_arm_posture(
     cases: &[riir_reflex::harness::suites::SuiteCase],
