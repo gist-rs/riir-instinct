@@ -1,0 +1,138 @@
+{
+  "meta": {
+    "host": "m3",
+    "git_sha": "057d31a",
+    "date_utc": "2026-10-02T01:52:27Z",
+    "profile": "release",
+    "laya_feature": false,
+    "lane_note": "instinct family lane doc (Bench 049, AUTO-BUILT from the record by build_family_lane_doc.py): the six harness families' artifact-less A0 serving posture \u2014 the modelless tier IS the served arm (full-coverage serving, owner 2026-10-02); every number is read from the Bench-049 record."
+  },
+  "suites": [
+    {
+      "name": "harness_visibility",
+      "n_questions": 16,
+      "n_cases": 16,
+      "hybrid": {
+        "lane": "Instinct",
+        "model": "A0 (artifact-less \u2014 the modelless tier serves)",
+        "hard": {
+          "n": 16,
+          "accuracy": 0.5625
+        },
+        "consult_rate": 0.0,
+        "latency_scope": "seat+arm",
+        "latency_rows": "questions",
+        "latency_p50_ms": 0.013,
+        "latency_p99_ms": 0.02,
+        "serves": "A0 \u2014 the served arm (full-coverage serving, instinct 057d31a)",
+        "gate": "the artifact-less A0 row serves (instinct commit 057d31a, owner full-coverage call 2026-10-02): the modelless tier IS the served arm \u2014 no defensible specialist exists on the n=16 template-shared eval (instinct issue 008 T8's specialist-lane scope); Bench 049 re-baselines the read at the current posture (arena == reflex run() byte-exact on all six).",
+        "record": "049_family_full_coverage"
+      }
+    },
+    {
+      "name": "harness_permissions",
+      "n_questions": 12,
+      "n_cases": 12,
+      "hybrid": {
+        "lane": "Instinct",
+        "model": "A0 (artifact-less \u2014 the modelless tier serves)",
+        "hard": {
+          "n": 12,
+          "accuracy": 0.6666666666666666
+        },
+        "consult_rate": 0.0,
+        "latency_scope": "seat+arm",
+        "latency_rows": "questions",
+        "latency_p50_ms": 0.009,
+        "latency_p99_ms": 0.016,
+        "serves": "A0 \u2014 the served arm (full-coverage serving, instinct 057d31a)",
+        "gate": "the artifact-less A0 row serves (instinct commit 057d31a, owner full-coverage call 2026-10-02): the modelless tier IS the served arm \u2014 no defensible specialist exists on the n=12 template-shared eval (instinct issue 008 T8's specialist-lane scope); Bench 049 re-baselines the read at the current posture (arena == reflex run() byte-exact on all six).",
+        "record": "049_family_full_coverage"
+      }
+    },
+    {
+      "name": "harness_tool_fit",
+      "n_questions": 12,
+      "n_cases": 12,
+      "hybrid": {
+        "lane": "Instinct",
+        "model": "A0 (artifact-less \u2014 the modelless tier serves)",
+        "hard": {
+          "n": 12,
+          "accuracy": 0.9166666666666666
+        },
+        "consult_rate": 0.0,
+        "latency_scope": "seat+arm",
+        "latency_rows": "questions",
+        "latency_p50_ms": 0.011,
+        "latency_p99_ms": 0.016,
+        "serves": "A0 \u2014 the served arm (full-coverage serving, instinct 057d31a)",
+        "gate": "the artifact-less A0 row serves (instinct commit 057d31a, owner full-coverage call 2026-10-02): the modelless tier IS the served arm \u2014 no defensible specialist exists on the n=12 template-shared eval (instinct issue 008 T8's specialist-lane scope); Bench 049 re-baselines the read at the current posture (arena == reflex run() byte-exact on all six).",
+        "record": "049_family_full_coverage"
+      }
+    },
+    {
+      "name": "harness_routing",
+      "n_questions": 16,
+      "n_cases": 16,
+      "hybrid": {
+        "lane": "Instinct",
+        "model": "A0 (artifact-less \u2014 the modelless tier serves)",
+        "hard": {
+          "n": 16,
+          "accuracy": 0.75
+        },
+        "consult_rate": 0.0,
+        "latency_scope": "seat+arm",
+        "latency_rows": "questions",
+        "latency_p50_ms": 0.012,
+        "latency_p99_ms": 0.015,
+        "serves": "A0 \u2014 the served arm (full-coverage serving, instinct 057d31a)",
+        "gate": "the artifact-less A0 row serves (instinct commit 057d31a, owner full-coverage call 2026-10-02): the modelless tier IS the served arm \u2014 no defensible specialist exists on the n=16 template-shared eval (instinct issue 008 T8's specialist-lane scope); Bench 049 re-baselines the read at the current posture (arena == reflex run() byte-exact on all six).",
+        "record": "049_family_full_coverage"
+      }
+    },
+    {
+      "name": "harness_sensitivity",
+      "n_questions": 15,
+      "n_cases": 15,
+      "hybrid": {
+        "lane": "Instinct",
+        "model": "A0 (artifact-less \u2014 the modelless tier serves)",
+        "hard": {
+          "n": 15,
+          "accuracy": 0.8
+        },
+        "consult_rate": 0.0,
+        "latency_scope": "seat+arm",
+        "latency_rows": "questions",
+        "latency_p50_ms": 0.012,
+        "latency_p99_ms": 0.016,
+        "serves": "A0 \u2014 the served arm (full-coverage serving, instinct 057d31a)",
+        "gate": "the artifact-less A0 row serves (instinct commit 057d31a, owner full-coverage call 2026-10-02): the modelless tier IS the served arm \u2014 no defensible specialist exists on the n=15 template-shared eval (instinct issue 008 T8's specialist-lane scope); Bench 049 re-baselines the read at the current posture (arena == reflex run() byte-exact on all six).",
+        "record": "049_family_full_coverage"
+      }
+    },
+    {
+      "name": "harness_cache_reuse",
+      "n_questions": 12,
+      "n_cases": 12,
+      "hybrid": {
+        "lane": "Instinct",
+        "model": "A0 (artifact-less \u2014 the modelless tier serves)",
+        "hard": {
+          "n": 12,
+          "accuracy": 0.9166666666666666
+        },
+        "consult_rate": 0.0,
+        "latency_scope": "seat+arm",
+        "latency_rows": "questions",
+        "latency_p50_ms": 0.012,
+        "latency_p99_ms": 0.017,
+        "serves": "A0 \u2014 the served arm (full-coverage serving, instinct 057d31a)",
+        "gate": "the artifact-less A0 row serves (instinct commit 057d31a, owner full-coverage call 2026-10-02): the modelless tier IS the served arm \u2014 no defensible specialist exists on the n=12 template-shared eval (instinct issue 008 T8's specialist-lane scope); Bench 049 re-baselines the read at the current posture (arena == reflex run() byte-exact on all six).",
+        "record": "049_family_full_coverage"
+      }
+    }
+  ]
+}
