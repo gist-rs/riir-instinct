@@ -298,7 +298,9 @@ pub fn run(cfg: ServeConfig) -> Result<(), String> {
 /// identity where no artifact exists). The ONE expression both the slot's
 /// birth tag and the loader's install tag use, so the epoch gate sees the
 /// same digest on both sides (a fork refusal here is a bug, not a gate).
-fn lane_tag_digest(row: &crate::arsenal::VesselRow, suite: &str) -> [u8; 32] {
+/// PUBLIC — the downstream lane loader returns the same A0 tag (one
+/// spelling; a fork here would fork the epoch gate's identity space).
+pub fn lane_tag_digest(row: &crate::arsenal::VesselRow, suite: &str) -> [u8; 32] {
     row.digest_bytes()
         .unwrap_or_else(|| *blake3::hash(suite.as_bytes()).as_bytes())
 }
@@ -412,26 +414,18 @@ fn load_lane(
     (ctx.loader)(&lctx, suite, artifact)
 }
 
-/// The default raw loader (the pre-seam behavior, byte-identical): the
-/// seat (datasets) + the artifact (the row's file, or the swap's
-/// explicit artifact), read ONCE and built from those bytes — the raw
-/// sealed winners (or the artifact-less A0 posture). (The PUBLIC-RELEASE
-/// vessel lane rides the same boot_* calls via a manifest that names
-/// vessel rows; the hosted Rethink lane lives downstream.)
-fn raw_lane_loader(
+/// The seat half of a lane load — the dataset root's prepared seat with
+/// the synth-corpus posture applied (Plan 426 T6: a present
+/// `<synth_dir>/<suite>_synth.jsonl` seats gold-cap-first +
+/// synth-beyond; anything else keeps the gold seat; a PRESENT corpus
+/// that fails verification is fatal — never a quiet gold degradation).
+/// PUBLIC: the downstream lane loader shares the seat construction (one
+/// spelling of the V5 rule).
+pub fn prepare_lane_seat(
     lctx: &LoadCtx<'_>,
-    suite: &'static str,
-    artifact: Option<&str>,
-) -> Result<LoadedLane, String> {
-    let Some(row) = lctx.manifest.row(suite) else {
-        return Err(format!("suite {suite} is not in the arsenal manifest"));
-    };
-    let cap = (row.budget.max_payload_mb << 20) as usize;
-    // The seated synth corpus (Plan 426 T6): env dir + a present artifact
-    // for THIS suite seats it; anything else keeps the gold seat. A present
-    // artifact that FAILS verification is fatal (a corrupt corpus must
-    // never degrade into a quiet gold seat — the vessel reader's law).
-    let seat = match lctx.synth_corpus_dir {
+    suite: &str,
+) -> Result<riir_reflex::harness::runner::seat::Seat, String> {
+    match lctx.synth_corpus_dir {
         Some(dir) => {
             let synth = Path::new(dir).join(format!("{suite}_synth.jsonl"));
             if synth.is_file() {
@@ -448,18 +442,36 @@ fn raw_lane_loader(
                     meta.rows_dropped,
                     &meta.digest_hex[..16.min(meta.digest_hex.len())]
                 );
-                s
+                Ok(s)
             } else {
                 riir_reflex::harness::runner::seat::prepare_seat(
                     suite,
                     Path::new(lctx.datasets_dir),
-                )?
+                )
             }
         }
         None => {
-            riir_reflex::harness::runner::seat::prepare_seat(suite, Path::new(lctx.datasets_dir))?
+            riir_reflex::harness::runner::seat::prepare_seat(suite, Path::new(lctx.datasets_dir))
         }
+    }
+}
+
+/// The default raw loader (the pre-seam behavior, byte-identical): the
+/// seat (datasets) + the artifact (the row's file, or the swap's
+/// explicit artifact), read ONCE and built from those bytes — the raw
+/// sealed winners (or the artifact-less A0 posture). (The PUBLIC-RELEASE
+/// vessel lane rides the same boot_* calls via a manifest that names
+/// vessel rows; the hosted Rethink lane lives downstream.)
+fn raw_lane_loader(
+    lctx: &LoadCtx<'_>,
+    suite: &'static str,
+    artifact: Option<&str>,
+) -> Result<LoadedLane, String> {
+    let Some(row) = lctx.manifest.row(suite) else {
+        return Err(format!("suite {suite} is not in the arsenal manifest"));
     };
+    let cap = (row.budget.max_payload_mb << 20) as usize;
+    let seat = prepare_lane_seat(lctx, suite)?;
     // The artifact-less A0 posture (owner 2026-10-02 full-coverage
     // serving): the row pins no digest, so the lane boots the seat engine
     // alone — HybridLane::ReflexOnly, byte-identical to A0. The epoch tag
