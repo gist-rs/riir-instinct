@@ -233,6 +233,19 @@ struct SuiteRun {
     /// registered non-A0 arm, gates pass) or `a0_stands` (measured, no
     /// promotable hybrid arm — refused by the gate or no specialist).
     verdict: &'static str,
+    /// Case-identity pin (plan 011 C2): the seat's `cases_digest` — the
+    /// SAME law reflex's `SuiteResult.cases_digest` uses, recomputed by the
+    /// consumer-side seat so a crosswalk cell can assert it answers the
+    /// SAME question set as any reflex-side doc before publishing beside
+    /// it. Empty on the synthetic seats would be a lie — every seat here is
+    /// a reflex seat, so the digest always computes.
+    test_digest: String,
+    /// Per-question GOLD label indices in read order (case-major, question
+    /// order within a case — the same walk `picks`/`correct` index). The
+    /// macro-F1 + JDI-skill columns (plan 011 C2) derive from gold + picks;
+    /// frozen WITHOUT gold they were uncomputable downstream, which is why
+    /// the lane doc omitted them.
+    gold: Vec<usize>,
     /// Why the verdict is `a0_stands` (None when a hybrid arm serves):
     /// the refusal numbers, an outright A0 registration, or the missing
     /// specialist. The doc builder publishes it verbatim — a name list
@@ -1494,6 +1507,13 @@ fn run_suite_n<const N: usize>(
             .unwrap_or(seat.suite.cases.len()),
         n_cases: seat.suite.cases.len(),
         case_ids: seat.suite.cases.iter().map(|c| c.id.clone()).collect(),
+        test_digest: seat.cases_digest(),
+        gold: seat
+            .suite
+            .cases
+            .iter()
+            .flat_map(|c| c.gold.iter().map(|g| g.idx))
+            .collect(),
         specialist_present: true,
         verdict: if registered != Cand::A0 { "hybrid_arm" } else { "a0_stands" },
         a0_note: if registered == Cand::A0 {
@@ -1604,6 +1624,13 @@ fn run_suite_a0_only<const N: usize>(
         n_questions: a0.correct.len(),
         n_cases: seat.suite.cases.len(),
         case_ids: seat.suite.cases.iter().map(|c| c.id.clone()).collect(),
+        test_digest: seat.cases_digest(),
+        gold: seat
+            .suite
+            .cases
+            .iter()
+            .flat_map(|c| c.gold.iter().map(|g| g.idx))
+            .collect(),
         specialist_present: false,
         verdict: "a0_stands",
         a0_note: Some(reason.to_string()),
@@ -2203,6 +2230,13 @@ fn write_predictions(out_dir: &Path, runs: &[SuiteRun]) {
             } else {
                 serde_json::Value::Null
             },
+            // Plan 011 C2: the case-identity pin (the reflex cases_digest
+            // law, computed by the consumer-side seat) + the per-question
+            // gold the macro-F1/JDI-skill columns derive from. ONE gold
+            // array per RUN (never per arm — every arm indexes the same
+            // read order).
+            "test_digest": run.test_digest,
+            "gold": run.gold,
             "specialist_present": run.specialist_present,
             "verdict": run.verdict,
             "a0_note": run.a0_note,

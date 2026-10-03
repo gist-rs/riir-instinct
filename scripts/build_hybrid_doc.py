@@ -122,6 +122,57 @@ def pct_nearest_rank(sorted_vals: list[float], pct: float) -> float:
     return sorted_vals[min(idx, n - 1)]
 
 
+def macro_f1_of(golds: list[int], preds: list[int]) -> float:
+    """The reflex harness `hard_metrics` macro-F1 law, verbatim: classes =
+    sorted(set(gold) | set(pred)); F1_c = 2tp / max(1, 2tp+fp+fn); the mean
+    over classes. (Plan 011 C2: the Rethink cells read on the same axes as
+    the lanes — the law is MIRRORED, never re-derived, and the self-test
+    pins it against reflex's own known answers.)"""
+    classes = sorted(set(golds) | set(preds))
+    if not classes:
+        return float("nan")
+    f1_sum = 0.0
+    for c in classes:
+        tp = sum(1 for g, p in zip(golds, preds) if g == c and p == c)
+        fp = sum(1 for g, p in zip(golds, preds) if g != c and p == c)
+        fn = sum(1 for g, p in zip(golds, preds) if g == c and p != c)
+        f1_sum += 2.0 * tp / max(1.0, 2.0 * tp + fp + fn)
+    return f1_sum / len(classes)
+
+
+def chance_majority_of(golds: list[int]) -> float:
+    """The reflex `chance_majority` law: the largest gold-class share."""
+    counts: dict[int, int] = {}
+    for g in golds:
+        counts[g] = counts.get(g, 0) + 1
+    return max(counts.values()) / len(golds)
+
+
+def chance_corrected_skill_of(score: float, chance: float) -> float:
+    """The reflex `chance_corrected_skill` law: (score − chance) /
+    (1 − chance), clamped [0, 1]; 0 when the denominator is ~0 (chance → 1
+    guards to skill 0 — a degenerate one-class read is no skill)."""
+    denom = 1.0 - chance
+    if denom <= 1e-9:
+        return 0.0
+    return min(1.0, max(0.0, (score - chance) / denom))
+
+
+def jdi_axes(hard: dict, gold: list[int] | None,
+             picks: list[int] | None) -> None:
+    """Add the plan-011 C2 axes to a cell's `hard` block IN PLACE when the
+    gold + picks are available: `macro_f1` (the harness law above) and
+    `jdi_chance`/`jdi_skill` (the B3 columns the reflex lanes carry). Fields
+    stay absent when either input is missing — never zero-filled (the
+    docstring's omission law; the site renders "—"."""
+    if not gold or not picks or len(gold) != len(picks):
+        return
+    hard["macro_f1"] = macro_f1_of(gold, picks)
+    chance = chance_majority_of(gold)
+    hard["jdi_chance"] = chance
+    hard["jdi_skill"] = chance_corrected_skill_of(hard["accuracy"], chance)
+
+
 def h2_record_name(beta: float, n_min: float, tau_n: float) -> str:
     """The arena's H2 arm-name spelling ("H2(β=0.25,nmin=2,τ=2)") — the
     :g format trims 2.0 → 2 exactly as Rust's f64 Display does."""
@@ -170,8 +221,10 @@ def gate_note(suite: str, serving: str, run: dict) -> str:
             f"questions, not a posture rollback")
 
 
-def lane_cell(arm: dict) -> dict:
-    """One registered arm → the lane dict (the published cell)."""
+def lane_cell(arm: dict, gold: list[int] | None = None) -> dict:
+    """One registered arm → the lane dict (the published cell). `gold` (the
+    run's per-question gold indices, plan 011 C2) adds the macro-F1/JDI
+    axes when present."""
     correct: list[bool] = arm["correct"]
     confs: list[float] = arm["confs"]
     durs: list[float] = arm["total_durs_us"]
@@ -211,7 +264,7 @@ def lane_cell(arm: dict) -> dict:
     p99_val = srt[min(m - 1, max(0, math.ceil(0.99 * m) - 1))]
     tail_support = sum(1 for d in durs if d >= p99_val)
 
-    return {
+    cell = {
         "lane": LANE_ID,
         "model": arm["name"],
         "hard": {
@@ -231,9 +284,14 @@ def lane_cell(arm: dict) -> dict:
         "latency_p99_ms": p99,
         "latency_tail_support": tail_support,
     }
+    # Plan 011 C2: the JDI axes when the run froze gold (the arena stamps
+    # it since the C2 change; legacy records join it via --gold-from under
+    # the digest pin).
+    jdi_axes(cell["hard"], gold, arm.get("picks"))
+    return cell
 
 
-def encoder_cell(run: dict) -> dict | None:
+def encoder_cell(run: dict, gold: list[int] | None = None) -> dict | None:
     """The issue-014 C1 encoder arm → its lane cell (RECORD-ONLY,
     serve: ✗). Built from the record's `encoder_arm` block — per-row
     freezes where the record carries them (the stats laws apply), the
@@ -277,14 +335,20 @@ def encoder_cell(run: dict) -> dict | None:
         cell["hard"]["acc_at_50_coverage"] = (
             sum(1 for i in order[:k] if correct[i]) / k
         )
+    # Plan 011 C2: the same JDI axes on the encoder cell (gold + the
+    # encoder arm's frozen picks — the plan-011 C2 crosswalk compares
+    # THIS cell against the Clef row on the same axes).
+    jdi_axes(cell["hard"], gold, enc.get("picks"))
     return cell
 
 
 def _arm(name: str, correct: list[bool], confs: list[float],
          durs: list[float], escalated: list[bool],
-         seat: bool | None = None) -> dict:
+         seat: bool | None = None, picks: list[int] | None = None) -> dict:
     arm = {"name": name, "correct": correct, "confs": confs,
            "total_durs_us": durs, "escalated": escalated}
+    if picks is not None:
+        arm["picks"] = picks
     if seat is not None:
         arm["contains_seat_solve"] = seat
     return arm
@@ -444,15 +508,125 @@ def selftest() -> int:
             print(f"FAIL {f}")
         print(f"self-test: {len(fails)} failure(s)")
         return 1
-    print("self-test: PASS (6 fixtures, three-state verdicts + scope law + known-answer metrics)")
+
+    # ── plan 011 C2: the JDI axes + the gold-from pin ──────────────────
+    # Hand-computed: golds [0,0,1,2], preds [0,1,1,2] → correct on q0,q2,q3
+    # (accuracy .75). Classes {0,1,2}: F1_0 = 2·1/(2·1+0+1) = 2/3 (fp=0,
+    # fn=1 — the wrong pick at q1 is class 1's FP); F1_1 = 2·1/(2·1+1+0) =
+    # 2/3; F1_2 = 2·1/(2·1+0+0) = 1 → macro_f1 = (2/3 + 2/3 + 1)/3 = 7/9.
+    # chance = max share of gold = 2/4 = .5; skill = (.75 − .5)/(1 − .5) = .5.
+    g4 = [0, 0, 1, 2]
+    check(abs(macro_f1_of(g4, [0, 1, 1, 2]) - 7.0 / 9.0) < 1e-12,
+          f"macro_f1 known answer: {macro_f1_of(g4, [0, 1, 1, 2])}")
+    check(abs(macro_f1_of([1, 1], [1, 1]) - 1.0) < 1e-12,
+          "macro_f1 perfect single class")
+    check(abs(chance_majority_of(g4) - 0.5) < 1e-12,
+          f"chance_majority: {chance_majority_of(g4)}")
+    check(abs(chance_corrected_skill_of(0.75, 0.5) - 0.5) < 1e-12,
+          "skill known answer")
+    check(chance_corrected_skill_of(1.0, 1.0) == 0.0,
+          "chance → 1 guards skill to 0")
+    check(chance_corrected_skill_of(0.2, 0.5) == 0.0,
+          "below-chance clamps to 0")
+
+    # The native-gold path: a record whose run carries gold + picks gets
+    # the axes on its serving cell; a record without gold keeps them ABSENT
+    # (never zero-filled).
+    gold_run = _run("xnli_en", "A1",
+                    [_arm("A1", escalated=[], seat=False,
+                          correct=[True, False, True, True],
+                          confs=[0.9, 0.8, 0.7, 0.6],
+                          durs=[10.0, 20.0, 30.0, 40.0],
+                          picks=[0, 1, 1, 2])])
+    gold_run["gold"] = g4
+    gold_run["test_digest"] = "fnv1a64-abc"
+    gd = build_doc_from({"frozen_test_predictions": [gold_run]},
+                        git_sha="selftest", date_utc="2026-10-04T00:00:00Z")
+    gs = gd["suites"][0]
+    gh = gs["hybrid"]["hard"]
+    check(gs["test_digest"] == "fnv1a64-abc", "test_digest forwards")
+    check(abs(gh.get("macro_f1", float("nan")) - 7.0 / 9.0) < 1e-12,
+          f"native gold macro_f1: {gh.get('macro_f1')}")
+    check(abs(gh.get("jdi_skill", float("nan")) - 0.5) < 1e-12,
+          f"native gold jdi_skill: {gh.get('jdi_skill')}")
+    no_gold = build_doc_from(
+        {"frozen_test_predictions": [_run("sst5", "A1",
+                                         [_arm("A1", escalated=[], seat=False,
+                                               **KA)])]},
+        git_sha="selftest", date_utc="2026-10-04T00:00:00Z")
+    check("macro_f1" not in no_gold["suites"][0]["hybrid"]["hard"]
+          and "jdi_skill" not in no_gold["suites"][0]["hybrid"]["hard"],
+          "no gold → axes absent, never zero-filled")
+
+    # The --gold-from pin: digest-gated join on legacy records, with the
+    # refusals named in the docstring (count mismatch, digest mismatch,
+    # double gold).
+    legacy = _run("banking77", "A0",
+                  [_arm("A0", escalated=[], seat=True,
+                        correct=[True, False, True, True],
+                        confs=[0.9, 0.8, 0.7, 0.6],
+                        durs=[10.0, 20.0, 30.0, 40.0],
+                        picks=[0, 1, 1, 2])])
+    ok_dump = {"suite": "banking77", "n_questions": 4,
+               "cases_digest": "fnv1a64-dd8", "gold": g4}
+    ld = build_doc_from({"frozen_test_predictions": [dict(legacy)]},
+                        git_sha="selftest", date_utc="2026-10-04T00:00:00Z",
+                        gold_from={"banking77": ok_dump})
+    ls = ld["suites"][0]
+    check(ls["test_digest"] == "fnv1a64-dd8"
+          and "dump" in ls.get("test_digest_source", ""),
+          "legacy record takes the dump's digest, disclosed")
+    check(abs(ls["hybrid"]["hard"].get("macro_f1", float("nan"))
+              - 7.0 / 9.0) < 1e-12,
+          "gold-from join computes the axes")
+    for bad, why in (
+        ({**ok_dump, "n_questions": 5}, "count mismatch"),
+        ({**ok_dump, "cases_digest": "fnv1a64-OTHER"}, "digest mismatch"),
+    ):
+        rec = dict(legacy)
+        rec["test_digest"] = "fnv1a64-dd8"
+        try:
+            build_doc_from({"frozen_test_predictions": [rec]},
+                           git_sha="s", date_utc="d",
+                           gold_from={"banking77": bad})
+            fails.append(f"gold-from {why} must refuse")
+        except ValueError:
+            pass
+    rec = dict(legacy)
+    rec["gold"] = g4
+    try:
+        build_doc_from({"frozen_test_predictions": [rec]},
+                       git_sha="s", date_utc="d",
+                       gold_from={"banking77": ok_dump})
+        fails.append("gold-from on a gold-carrying record must refuse")
+    except ValueError:
+        pass
+
+    if fails:
+        for f in fails:
+            print(f"FAIL {f}")
+        print(f"self-test: {len(fails)} failure(s)")
+        return 1
+    print("self-test: PASS (7 fixtures, three-state verdicts + scope law + "
+          "known-answer metrics + C2 JDI axes + the gold-from pin)")
     return 0
 
 
 def build_doc_from(preds: dict, git_sha: str, date_utc: str,
                    serving: dict[str, str] | None = None,
-                   box_state: dict | None = None) -> dict:
+                   box_state: dict | None = None,
+                   gold_from: dict[str, dict] | None = None) -> dict:
     """`build_doc` over an already-parsed predictions dict (the self-test
     seam; the file path halves share the body).
+
+    `gold_from` (plan 011 C2): suite → a seat_identity dump ({cases_digest,
+    gold, n_questions}). For records frozen BEFORE the arena stamped gold:
+    the dump's gold joins the frozen picks ONLY under the identity gates —
+    n_questions equality, and digest equality against the record's own
+    `test_digest` when it carries one (a record that predates stamping
+    takes the dump's digest as its own, disclosed via
+    `gold_source`/`test_digest_source` — the seat is the identity
+    authority and the dump IS a seat rebuild).
 
     The SERVING law display (owner verdict 2026-09-27): every seated
     suite carries its serving arm's cell — resolved from the arsenal
@@ -468,6 +642,37 @@ def build_doc_from(preds: dict, git_sha: str, date_utc: str,
         n_questions = run.get("n_questions")
         n_cases = run.get("n_cases", n_questions)
         suite = run["suite"]
+        # Plan 011 C2: the gold source — the run's own stamp (new records)
+        # or a digest-gated seat_identity dump (legacy records).
+        gold = run.get("gold")
+        gold_source = None
+        test_digest = run.get("test_digest")
+        test_digest_source = None
+        dump = (gold_from or {}).get(suite)
+        if dump is not None:
+            d_n = dump.get("n_questions")
+            if d_n != n_questions:
+                raise ValueError(
+                    f"{suite}: gold dump carries {d_n} questions, the record "
+                    f"froze {n_questions} — the populations differ; refusing "
+                    f"the join (re-dump the seat over the record's pool)"
+                )
+            d_dig = dump.get("cases_digest")
+            if test_digest and d_dig != test_digest:
+                raise ValueError(
+                    f"{suite}: gold dump digest {d_dig} != the record's "
+                    f"test_digest {test_digest} — refusing the join"
+                )
+            if gold:
+                raise ValueError(
+                    f"{suite}: the record already carries gold; --gold-from "
+                    f"is for legacy records (drop the dump for this suite)"
+                )
+            gold = dump.get("gold")
+            gold_source = "seat_identity dump (digest-gated join, plan 011 C2)"
+            if not test_digest:
+                test_digest = d_dig
+                test_digest_source = "seat_identity dump (the record predates stamping)"
         serving_name = (serving or {}).get(suite, run.get("registered"))
         serving_arm = next((a for a in run["arms"] if a["name"] == serving_name),
                            None)
@@ -480,19 +685,27 @@ def build_doc_from(preds: dict, git_sha: str, date_utc: str,
             "n_questions": n_questions,
             "n_cases": n_cases,
             "verdict": None,
-            "measured_a0": lane_cell(a0_arm) if a0_arm else None,
+            # Plan 011 C2: the case-identity pin rides the suite entry — a
+            # crosswalk asserts THIS against the reflex-side doc's
+            # cases_digest before publishing a cell beside it.
+            "test_digest": test_digest,
+            "measured_a0": lane_cell(a0_arm, gold) if a0_arm else None,
             "reason": run.get("a0_note"),
         }
+        if test_digest_source:
+            entry["test_digest_source"] = test_digest_source
+        if gold_source:
+            entry["gold_source"] = gold_source
         # serves/gate ride ON the cell (the published slot), so they
         # travel through publish_bench's cell-path merge untouched.
-        cell = lane_cell(serving_arm)
+        cell = lane_cell(serving_arm, gold)
         cell["serves"] = serving_name
         cell["gate"] = gate_note(suite, serving_name, run)
         entry["hybrid"] = cell
         # The issue-014 C1 encoder cell (record-only, serve: ✗) rides the
         # suite entry BESIDE the serving hybrid cell — the measured read
         # is published without touching the serving posture.
-        enc = encoder_cell(run)
+        enc = encoder_cell(run, gold)
         if enc is not None:
             entry["encoder"] = enc
         entry["verdict"] = "a0_stands" if serving_name == "A0" else "hybrid_arm"
@@ -526,14 +739,29 @@ def build_doc_from(preds: dict, git_sha: str, date_utc: str,
 
 def build_doc(predictions_path: Path, git_sha: str, date_utc: str,
               serving: dict[str, str] | None = None,
-              box_state: dict | None = None) -> dict:
+              box_state: dict | None = None,
+              gold_from: dict[str, dict] | None = None) -> dict:
     preds = json.loads(predictions_path.read_text(encoding="utf-8"))
-    return build_doc_from(preds, git_sha, date_utc, serving, box_state)
+    return build_doc_from(preds, git_sha, date_utc, serving, box_state,
+                          gold_from)
+
+
+def load_gold_dump(path: Path) -> dict[str, dict]:
+    """One seat_identity dump → {suite: dump}. Refuses a dump without its
+    identity fields (a dump that cannot be pinned is not a gold source)."""
+    d = json.loads(path.read_text(encoding="utf-8"))
+    if not d.get("cases_digest") or not d.get("gold") or not d.get("suite"):
+        raise ValueError(
+            f"{path}: not a seat_identity dump (needs suite/cases_digest/"
+            f"gold — emit one with the seat_identity example)"
+        )
+    return {d["suite"]: d}
 
 
 def build_doc_merged(paths: list[Path], git_sha: str, date_utc: str,
                      serving: dict[str, str] | None = None,
-                     box_state: dict | None = None) -> dict:
+                     box_state: dict | None = None,
+                     gold_from: dict[str, dict] | None = None) -> dict:
     """`build_doc` over a SUITE-LEVEL UNION of several frozen records —
     for the mixed-pool posture: the serving arm may be measured in a
     per-suite record (typed_decisions' full-pool H2, Bench 020) while the
@@ -552,7 +780,8 @@ def build_doc_merged(paths: list[Path], git_sha: str, date_utc: str,
                 order.append(name)
             merged[name] = run
     preds = {"frozen_test_predictions": [merged[n] for n in order]}
-    doc = build_doc_from(preds, git_sha, date_utc, serving, box_state)
+    doc = build_doc_from(preds, git_sha, date_utc, serving, box_state,
+                         gold_from)
     doc["meta"]["lane_note"] += (
         " Record merge: "
         + ", ".join(p.name for p in paths)
@@ -581,7 +810,17 @@ def main() -> int:
                          "frontier refuses to plot the rung")
     ap.add_argument("--arsenal", type=Path, default=None,
                     help="the arsenal manifest (the serving truth; "
-                         "default: arsenal.toml beside this script)")
+                         "default: data/arsenal.toml beside this script, "
+                         "falling back to the repo-root arsenal.toml — the "
+                         "post-split teaching default)")
+    ap.add_argument("--gold-from", type=Path, action="append", default=[],
+                    metavar="DUMP",
+                    help="seat_identity dump(s) for records frozen before "
+                         "gold stamping (plan 011 C2): the dump's gold joins "
+                         "the frozen picks ONLY under the identity gates "
+                         "(n_questions equality + digest equality when the "
+                         "record carries test_digest); emit with the "
+                         "seat_identity example")
     ap.add_argument("--self-test", action="store_true",
                     help="run the Issue-007 known-answer arms and exit")
     args = ap.parse_args()
@@ -599,16 +838,29 @@ def main() -> int:
         ).stdout.strip()
     date_utc = args.date_utc or datetime.now(timezone.utc).strftime(
         "%Y-%m-%dT%H:%M:%SZ")
-    arsenal = args.arsenal or Path(__file__).resolve().parent.parent / "arsenal.toml"
+    arsenal = args.arsenal
+    if arsenal is None:
+        root = Path(__file__).resolve().parent.parent
+        # Post-split (2026-10-03): the embedded manifest lives at
+        # data/arsenal.toml; the repo-root spelling is the pre-split
+        # fallback so old checkouts keep working.
+        arsenal = next((p for p in (root / "data" / "arsenal.toml",
+                                    root / "arsenal.toml") if p.exists()),
+                       root / "data" / "arsenal.toml")
     serving = serving_arms(arsenal)
+    gold_from: dict[str, dict] = {}
+    for dump_path in args.gold_from:
+        gold_from.update(load_gold_dump(dump_path))
     box_state = None
     if args.box_state is not None:
         box_state = json.loads(args.box_state.read_text(encoding="utf-8"))
         if not isinstance(box_state.get("start"), dict) or not isinstance(box_state.get("end"), dict):
             ap.error(f"--box-state {args.box_state} carries no start/end span")
-    doc = (build_doc(args.predictions[0], git_sha, date_utc, serving, box_state)
+    doc = (build_doc(args.predictions[0], git_sha, date_utc, serving, box_state,
+                     gold_from or None)
            if len(args.predictions) == 1
-           else build_doc_merged(args.predictions, git_sha, date_utc, serving, box_state))
+           else build_doc_merged(args.predictions, git_sha, date_utc, serving,
+                                 box_state, gold_from or None))
     args.out.write_text(json.dumps(doc, indent=1) + "\n", encoding="utf-8")
     names = [s["name"] for s in doc["suites"]]
     a0 = [s["name"] for s in doc["suites"] if s["verdict"] == "a0_stands"]
