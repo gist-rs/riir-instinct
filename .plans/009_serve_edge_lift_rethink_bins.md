@@ -1,11 +1,12 @@
 # The serve-edge lift + the Rethink bin reassembly (the next split unit)
 
-**Status:** OPEN — filed 2026-10-03 at the Phase C landing. **T1 LANDED
-2026-10-03** (instinct `7d22fea` — the edge is lib surface;
-`serve_edge::run(ServeConfig)` is the consumption point). T2 next: the
-Rethink bins from `bin_hunks/` — start only at a rethink commit
-boundary. B4 (the trainer half) stays separate — deferred on riir-train
-Issue 607.
+**Status:** T1 LANDED 2026-10-03 (instinct `7d22fea` — the edge is lib
+surface; `serve_edge::run(ServeConfig)` is the consumption point).
+**T2.1 LANDED 2026-10-03** (open seam `a295930`+`d5396fc`; rethink bin
+`f0fd626` — the moat env surface over the shared edge). T2.2–T2.4
+next (the arena harness + the gate re-point audit + the hunk map).
+B4 (the trainer half) stays separate — deferred on riir-train Issue
+607.
 
 ## Why this plan exists
 
@@ -80,20 +81,41 @@ posture) · live boot smoke (healthz full receipt surface + a real
 
 ## T2 — the Rethink bins (rethink side)
 
-- [ ] T2.1 Rethink's `src/bin/serve.rs`: its own env/arg surface
+T2.1 DONE 2026-10-03 — the open seam landed first (`a295930`:
+`ServeConfig.prevalidated_manifest` + `lane_loader` + `LoadedLane.
+on_install` + pub `read_bounded`; `server.rs`:
+`AnySuiteServer::boot_hosted_parts`; `d5396fc`: pub
+`lane_tag_digest` + `prepare_lane_seat` — one spelling of the A0 tag
+and the V5 seat rule), then the rethink bin (`f0fd626`): the moat env
+surface verbatim, vessel mode through the loader seam (HOSTED bag
+vessels via `load_hosted_bytes` + `boot_hosted_parts`; ENC heads via
+`enc_boot_vessel`), monotonic apply via `on_install`,
+`install_ext_boots(enc_boot_bytes)` before any boot. Fail-closed
+verified live (vessel-env-without-feature, dir-without-key, stale
+raw-winner-beside-A0); teaching-dirs posture boots + serves through
+the edge. Clippy -D x4 postures; tests green default/vessel/decstat.
+
+- [x] T2.1 Rethink's `src/bin/serve.rs`: its own env/arg surface
       (re-adding the moat flags from the `serve_*` hunks:
       `serve_enc_preflight`, `serve_decstat_boot`, `serve_vessel_config`,
       `serve_vessel_state_machinery`) → installs the ENC lane backend +
       the HOSTED vessel boot via `riir_instinct::server::install_ext_boots`
       → calls the SHARED edge. The decstat client boots beside the seat
-      (`serve_decstat_capture` hooks the answer path).
+      (`serve_decstat_capture` hooks the answer path). (The decstat
+      capture hook rides the lib's `decstat::install` — the bin's boot
+      wiring; the capture site itself is the ENC lane's decide path,
+      already lib-side.)
 - [ ] T2.2 Rethink's measurement harness from the `arena_encoder_*`
       hunks (6 files) over the public lib pieces (`prepare_seat`, the
       paired-stats helpers); the lane-doc emitter's laws carry verbatim
       (issue 017 T5 — instinct numbering).
 - [ ] T2.3 the moat parity gates (`moat/tests/` → rethink `tests/`)
       re-point at the rethink crate root; the frozen Bench-029/599/600
-      replays must stay EXACT (the cell-identity witnesses).
+      replays must stay EXACT (the cell-identity witnesses). (Audited
+      2026-10-03: serve_encoder_parity + esc_gates + vessel_gates +
+      decstat_gates + encoder_shared_parity ALREADY live in
+      rethink/tests/ and pass at their postures — the seed landed them;
+      T2.3 narrows to a verify pass + any missing arena-side gate.)
 - [ ] T2.4 the hunks' origin maps verified: every hunk either landed,
       or is recorded as intentionally dropped with a reason (the
       export-manifest discipline applied to the bins).
