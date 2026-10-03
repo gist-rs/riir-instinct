@@ -14,7 +14,7 @@ GREEN") and plan 008's Phase C executed the same day:
   through the shared sibling layout, the export had to name it), CI (fence
   `--post-split` + clippy/test), `.gitignore`.
 - **Gates at birth:** clippy `-D` clean; lib 56/56 · serve_gates 18/18 ·
-  calibrator 6/6 · staleness 2/2 · tetris parity 1/1 · g4_alloc 1/1 —
+  staleness 6/6 · calibrator 2/2 · tetris parity 1/1 · g4_alloc 1/1 —
   byte-parity with the B2 gate counts; live boot smoke: `/healthz` 200
   with the build receipt + `/decide` answered (A0 arm, abstain
   first-class, full receipt) from the fresh tree over the public datasets.
