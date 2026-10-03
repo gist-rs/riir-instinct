@@ -16,7 +16,18 @@ env/arg parsing + lane boot + the entire HTTP loop in `main()` —
 crate FIRST, then Rethink consumes it. Forking the bin is refused
 (052's 6.3k-line entanglement verdict).
 
-## The dual-landing law (new reality post-Phase C)
+## The dual-landing law — SUPERSEDED same day (2026-10-03): land ONCE
+
+> The owner retired the two-repo arrangement hours after Phase C ("git
+> history leak is fine… i dont want 2 confusing repo i want single source
+> of truth"). The full history now lives ON the public repo
+> (gist-rs/riir-instinct; `develop` is the working branch, `main` the same
+> tip for the landing page) and this checkout's origin points there.
+> **Open-crate src changes land ONCE** — commit on `develop`, push; no
+> replay step, no second repo. The fence `--post-split` still asserts the
+> delta stays open-shaped, and Rethink's pin-lockstep law (its AGENTS.md
+> law 2) still covers the manifest. The text below is the superseded
+> Phase-C posture, kept as the record of what it was.
 
 Any open-crate src change now lands TWICE, one family: the private
 whole-history tree (develop, gist-rs/riir-instinct-internal) AND the
