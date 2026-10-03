@@ -71,6 +71,13 @@ const SUITES: &[&str] = &[
     "typed_decisions",
     "prompt_injections",
     "code_fixtures",
+    // Plan 010 (reflex plan 010 T4): the S1MB lane's three named-only
+    // protocol suites — the hybrid row of the three-lane bench. Labels:
+    // noul = the fixed ["false","true"], choice/score = the presented
+    // option-key union (842 / 10 measured on the converter halves).
+    "s1mb_choice",
+    "s1mb_noul",
+    "s1mb_score",
 ];
 // (The six harness families left this population 2026-10-02 — owner call:
 // the suites are retired from the reflex harness itself, at-chance on the
@@ -211,6 +218,13 @@ struct SuiteRun {
     n_questions: usize,
     /// Test CASES (a typed_decisions case carries 5 questions).
     n_cases: usize,
+    /// The test cases' ids IN READ ORDER (plan 010: the s1mb split views
+    /// join these to the converter's per-row `group` — domain vs the six
+    /// generalization subsets — without re-deriving the harness's sampling
+    /// order). Populated for every suite; predictions.json serializes it
+    /// only where the split view exists (the s1mb lanes) to keep the
+    /// freeze trim (Bench 001's 14 MB lesson) for the frozen suites.
+    case_ids: Vec<String>,
     /// False = the A0/G0-only posture ran (no winner artifact — Issue 010
     /// T2): no A1/H1/H2 exist, the fusion micro is N/A, and the row's
     /// verdict is `a0_stands`.
@@ -494,6 +508,11 @@ fn run_suite(
         5 => run_suite_n::<5>(name, seat, winners_dir, top_k),
         6 => run_suite_n::<6>(name, seat, winners_dir, top_k),
         8 => run_suite_n::<8>(name, seat, winners_dir, top_k),
+        // Plan 010: s1mb_score (the presented level-index union) and
+        // s1mb_choice (the option-key union — the massive by-name posture
+        // at breadth), mirroring reflex's own dispatch.
+        10 => run_suite_n::<10>(name, seat, winners_dir, top_k),
+        842 => run_suite_n::<842>(name, seat, winners_dir, top_k),
         59 => run_suite_n::<59>(name, seat, winners_dir, top_k),
         77 => run_suite_n::<77>(name, seat, winners_dir, top_k),
         n => Err(format!("no engine arity for {n} labels — extend the dispatch")),
@@ -541,6 +560,14 @@ struct SuiteCtx<const N: usize> {
     /// label permutation by position instead is the instrument defect
     /// that read massive at chance).
     key_map: HashMap<String, (usize, usize)>,
+    /// Plan 010 T4: the s1mb suites bag `state + "\n" + instructions`
+    /// (the task signal lives in the instructions; the trainer mirrors
+    /// this). False for every frozen suite — the state-only path, byte
+    /// unchanged.
+    bag_instructions: bool,
+    /// Scratch for [`SuiteCtx::bag_text_into`] (clear + reuse, no
+    /// per-question allocation after warmup).
+    bag_text: String,
     /// The seat labels are CONTEXT (Plan 003's `SeatJoin::Context` —
     /// typed_decisions' workflow names): the identity-by-count resolve is
     /// disabled (a presented-key count against an unrelated label count
@@ -571,13 +598,14 @@ fn presented_keys(q: &SuiteQuestion) -> Vec<String> {
     if let Some(obj) = q.criteria.as_object() {
         obj.keys().cloned().collect()
     } else if let Some(levels) = q.criteria.as_array() {
-        levels
-            .iter()
-            .map(|v| match v {
-                serde_json::Value::String(s) => s.clone(),
-                other => other.to_string(),
-            })
-            .collect()
+        // Plan 010 (s1mb_score): the score space speaks the LEVEL INDEX
+        // strings — reflex's option_key_union spelling for array criteria
+        // (`i.to_string()` over the presented levels), NOT the criteria
+        // values. The old value-spelling read no seat label ever named
+        // (a value like "1.0" vs the union's "1"), which would unseat or
+        // panic the bridge the first time a specialist artifact existed
+        // for a score suite; s1mb_score is the first one.
+        (0..levels.len()).map(|i| i.to_string()).collect()
     } else {
         Vec::new()
     }
@@ -796,6 +824,31 @@ impl<const N: usize> SuiteCtx<N> {
         Ok((a0, se))
     }
 
+    /// The specialist bag's text for one question: the case state — plus
+    /// the question's instructions for the s1mb suites ONLY (Plan 010 T4:
+    /// the s1mb task signal — the noul statement, the folded false/true
+    /// definitions, the question phrasing — lives in the instructions by
+    /// the converter's design, and the trainer's text law mirrors this
+    /// exactly; a specialist must be scored on the text it trained on).
+    /// The frozen suites take the zero-alloc state-only path unchanged:
+    /// their instructions are empty, and a bag over "state\n" is
+    /// token-identical to "state" (trailing separators emit no events).
+    /// The concat reuses a scratch String (clear + push_str), so the hot
+    /// path stays allocation-free after warmup.
+    fn bag_text_into(&mut self, state: &str, instructions: &str) {
+        if self.bag_instructions {
+            self.bag_text.clear();
+            self.bag_text.push_str(state);
+            self.bag_text.push('\n');
+            self.bag_text.push_str(instructions);
+            let text = std::mem::take(&mut self.bag_text);
+            self.conv.bag_into(text.as_bytes(), &mut self.bag, &mut self.tok);
+            self.bag_text = text;
+        } else {
+            self.conv.bag_into(state.as_bytes(), &mut self.bag, &mut self.tok);
+        }
+    }
+
     /// H1 over a case set from an existing seat eval — the cascade arm
     /// (reflex pass-through + specialist over survivors). Flattened PER
     /// QUESTION (Plan 003: typed_decisions' 5-question cases each yield
@@ -823,7 +876,6 @@ impl<const N: usize> SuiteCtx<N> {
             contains_seat_solve: true,
         };
         for (ci, case) in cases.iter().enumerate() {
-            let state = strs[ci].as_bytes();
             for (qi, (q, qo)) in case.questions.iter().zip(&se.cases[ci]).enumerate() {
                 let gold = case.gold[qi].idx;
                 let a0_ans = A0Answer {
@@ -831,7 +883,7 @@ impl<const N: usize> SuiteCtx<N> {
                     pick: qo.pick,
                     abstained: qo.abstained,
                 };
-                self.conv.bag_into(state, &mut self.bag, &mut self.tok);
+                self.bag_text_into(strs[ci].as_str(), &q.instructions);
                 self.fill_positions(&case.id, q);
                 self.score_positions();
                 let t = std::time::Instant::now();
@@ -936,7 +988,7 @@ impl<const N: usize> SuiteCtx<N> {
                 let gold = case.gold[qi].idx;
                 self.fill_positions(&case.id, q);
                 let t = std::time::Instant::now();
-                self.conv.bag_into(state, &mut self.bag, &mut self.tok);
+                self.bag_text_into(strs[ci].as_str(), &q.instructions);
                 self.score_positions();
                 // A1's pick in PRESENTED-OPTION space — the space gold speaks
                 // (the specialist answers the question asked, among the
@@ -1231,6 +1283,8 @@ fn run_suite_n<const N: usize>(
         pos_keys: Vec::new(),
         oc_in: Vec::new(),
         key_map,
+        bag_instructions: name.starts_with("s1mb_"),
+        bag_text: String::new(),
         context_joined,
         perm,
         pos_label: Vec::new(),
@@ -1439,6 +1493,7 @@ fn run_suite_n<const N: usize>(
             .map(|a| a.correct.len())
             .unwrap_or(seat.suite.cases.len()),
         n_cases: seat.suite.cases.len(),
+        case_ids: seat.suite.cases.iter().map(|c| c.id.clone()).collect(),
         specialist_present: true,
         verdict: if registered != Cand::A0 { "hybrid_arm" } else { "a0_stands" },
         a0_note: if registered == Cand::A0 {
@@ -1548,6 +1603,7 @@ fn run_suite_a0_only<const N: usize>(
         suite: name.to_string(),
         n_questions: a0.correct.len(),
         n_cases: seat.suite.cases.len(),
+        case_ids: seat.suite.cases.iter().map(|c| c.id.clone()).collect(),
         specialist_present: false,
         verdict: "a0_stands",
         a0_note: Some(reason.to_string()),
@@ -2139,6 +2195,14 @@ fn write_predictions(out_dir: &Path, runs: &[SuiteRun]) {
             "suite": run.suite,
             "n_questions": run.n_questions,
             "n_cases": run.n_cases,
+            // The split-view join key (plan 010): serialized for the s1mb
+            // lanes only — the frozen suites' ids would be freeze weight
+            // no record consumes.
+            "case_ids": if run.suite.starts_with("s1mb_") {
+                serde_json::Value::from(run.case_ids.clone())
+            } else {
+                serde_json::Value::Null
+            },
             "specialist_present": run.specialist_present,
             "verdict": run.verdict,
             "a0_note": run.a0_note,
