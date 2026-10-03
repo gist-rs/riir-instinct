@@ -65,6 +65,19 @@ design — GREEN only on the export). Remaining: B4 (riir-train trainers,
 deferred until 607 + rebase) and Phase C (the fresh-root export + the
 visibility flip — the owner's personal acts).
 
+## 2026-10-03 — riir-rethink BORN (plan 008 B3's wave, the owner's in-band green light)
+
+The private Rethink product repo is real: **gist-rs/riir-rethink**, birth
+commit `e263686` (fresh root, 242 files), seeded verbatim from this repo's
+`moat/` at `4ffd08f`. The owner's birth directive settled the plan's open
+pick: the SEED-CARVE model (a standalone downstream repo, the riir-refine
+shape), not the whole-history rename/mirror — the whole git history stays
+HERE; `moat/` is a pointer now. Lift deltas + the birth gate record live
+in the birth commit and plan 008 B3; the seam (`install_ext_boots`) needed
+ZERO open-side widenings. The visibility flip (Phase C) remains the
+owner's personal act. Commits: this repo (the stub + docs), riir-rethink
+`e263686`.
+
 ## 2026-10-02 — the six harness families RETIRED (owner call, reflex `31b11d2` + instinct this commit)
 
 The owner removed the six home-made harness families (`harness_visibility` ·

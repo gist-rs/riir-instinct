@@ -7,13 +7,14 @@ The global `~/.agents/` rules apply; this file documents repo-local context.
 **The 2026-09-30 naming law below is SUPERSEDED** (dated amendment in 051;
 the split replaces the rename): **Instinct stays a product and OPENS** as
 the public teaching lane (the fresh-root export at Phase C — owner-gated);
-**Rethink is the PRIVATE moat** — the encoder arm, the HOSTED-ONLY vessel
-reader, the economy plane, the production manifest/deploy, and their
-records live in **`moat/`** (the Rethink seed; `moat/README.md` +
-`moat/BOUNDARY.md` are its contract). The carve is LANDED: the fence
-(`scripts/fence_gate.sh --post-split`) is GREEN, the seam
-(`server::install_ext_boots` + `LaneBackend` + the `Ext` seat) is the plug-in
-path Rethink uses, and `moat/bin_hunks/` archives what left the bins.
+**Rethink is the PRIVATE moat** — and it is now a REPO: **`../riir-rethink`**
+(gist-rs/riir-rethink, born 2026-10-03 at `e263686`, seeded verbatim from
+the `moat/` directory at `4ffd08f`; fresh root — the whole git history
+stays HERE, `moat/README.md` is the pointer). The carve is LANDED: the
+fence (`scripts/fence_gate.sh --post-split`) is GREEN, the seam
+(`server::install_ext_boots` + `LaneBackend` + the `Ext` seat) is the
+plug-in path Rethink uses, and `../riir-rethink/bin_hunks/` archives what
+left the bins.
 Feature-name changes: `arena-laya` → **`laya-face`** (renamed, stays — the
 G2 paired face vs public reflex's laya lane); `serve-encoder*` and
 `decstat` are GONE from this tree (Rethink-only). Winners default to

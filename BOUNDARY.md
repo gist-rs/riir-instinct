@@ -42,20 +42,20 @@ teaching/product sibling of the public modelless engine `../riir-reflex`:
 - the measurement-honesty instruments (`staleness.rs`, `stats.rs`) and
   the arena/bench/serve gate suite
 
-## Does not own — the moat (lives in `moat/`, the Rethink SEED)
+## Does not own — the moat (born as the private `../riir-rethink` repo, 2026-10-03)
 
 | Concern | Correct home |
 |---|---|
-| **The encoder arm** (the sealed NLEH head + live laya encode, serving + arena faces) | `moat/src/encoder_serve.rs` + `moat/src/encoder_arm.rs` → the private **riir-rethink** lane (depends on this crate; plugs in via `install_ext_boots`) |
-| **The HOSTED-ONLY vessel reader** (blake3-XOF, class gate, mint helper) | `moat/src/vessel.rs` → riir-rethink (this repo keeps the PUBLIC-RELEASE reader only) |
-| **The economy plane** (decstat capture + receipt verify + floor runner) | `moat/src/decstat*.rs`, `moat/examples/` → riir-rethink (riir-dapps keeps settlement semantics) |
-| The moat records/docs/artifacts (encoder/quant/distill benches 029–048·050–056 subset, deploy.yaml, the production arsenal.toml, .plans/002·006·007, .proposals/001, .issues/016, .deploy/) | `moat/` (see `moat/README.md`) — the private repo's whole history IS riir-rethink |
+| **The encoder arm** (the sealed NLEH head + live laya encode, serving + arena faces) | **`../riir-rethink`** (`src/encoder_serve.rs` + `src/encoder_arm.rs`; depends on this crate; plugs in via `install_ext_boots`) |
+| **The HOSTED-ONLY vessel reader** (blake3-XOF, class gate, mint helper) | **`../riir-rethink`** (`src/vessel.rs`; this repo keeps the PUBLIC-RELEASE reader only) |
+| **The economy plane** (decstat capture + receipt verify + floor runner) | **`../riir-rethink`** (`src/decstat*.rs`, `examples/decstat_floor.rs`; riir-dapps keeps settlement semantics) |
+| The moat records/docs/artifacts (encoder/quant/distill benches 029–048·050–056 subset, deploy.yaml, the production arsenal.toml, .plans/002·006·007, .proposals/001, .issues/016) | **`../riir-rethink`** (born 2026-10-03 from the `moat/` seed at `4ffd08f`; this repo keeps `moat/README.md` as the pointer — the whole git history stays HERE) |
 | Training, distillation, the self-evolve loop, vessel MINTING + lineage store | `../riir-train` (Issue 576; Research 457 moat map); the trainer-module half of the carve is **deferred** (Plan 008 B4 — until riir-train Issue 607 lands + both boxes rebase) |
 | Model forward kernels, loaders, tokenizers | `../riir-infer` (public; ships loaders, not weights) |
 | The modelless engine + arena harness | `../riir-reflex` (public) |
 | The vessel FORMAT crate (both classes' wire format) | `../riir-reflexer` (`reflexer-vessel`; capability features split the readers) |
 | Game runtime / NPC cognition / the L0–L5 layer stack | `../riir-ai` (Proposal 047 §L0–L5) |
-| Deploy orchestration (the open repo has no deploy.yaml) | `../riir-deployer`; Rethink's deploy shape is `moat/deploy.yaml` |
+| Deploy orchestration (the open repo has no deploy.yaml) | `../riir-deployer`; Rethink's deploy shape is `../riir-rethink/deploy.yaml` |
 | Settlement, decstat contribution rows, pricing | `../riir-dapps` (+ `../riir-kat` wire — a Rethink-only dep now) |
 
 ## May depend on
