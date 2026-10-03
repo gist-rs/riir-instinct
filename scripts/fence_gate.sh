@@ -94,7 +94,54 @@ SCAN_GLOBS="*.rs"
 # the moat gates). `^moat/` is the Rethink SEED itself (Proposal 052's move
 # family relocated the moat there) — the export never copies it, so any
 # moat/ path in an export's history is a manifest violation.
+# ⚠ 2026-10-03 audit: `0(29|…)` matches the `029` spelling only — the four-digit
+# `0029_…` record is NOT covered here (and never was). The working-tree records
+# arm below carries its own corrected pattern (`0+`), so the gap is closed where
+# it still runs. The history arm itself is RETIRED for THIS repo (the owner's
+# same-day history sanction — moat content in git HISTORY is owner-sanctioned);
+# it stays for any FUTURE fresh-root export.
 HISTORY_MOAT_RE='^(\.benchmarks/0(29|3[0-9]|4[0-9]|5[0-6])|\.issues/01[4-8]|\.plans/00[267]|\.proposals/001|\.deploy/|scripts/encoder_load_ab\.py|moat/|tests/(vessel_gates|decstat_gates|serve_encoder_parity|encoder_shared_parity)\.rs)'
+
+# The moat-CLASSED bench RECORDS in the WORKING TREE (the 052 ledger's
+# ".benchmarks/029, 031–048, 0050–0056" class). `0+` matches both the `029`
+# and `0029` spellings. The working-tree scan (direction R below) runs this on
+# <tree>/.benchmarks — after the owner's history sanction the fence is the only
+# instrument still watching records, and the 2026-10-03 audit measured that the
+# pre-audit GREEN said nothing about them.
+RECORD_MOAT_RE='^\.benchmarks/0+(29|3[0-9]|4[0-9]|5[0-6])(_|$)'
+
+# The DELIBERATE STAYS — the published-evidence records that back the live
+# reflex.gist.rs cells and the public gate suite, allowed BY NAME (a set, never
+# a count — a cardinality-preserving swap must red). Everything else matching
+# RECORD_MOAT_RE is a finding: the next moat record that lands in the public
+# tree must NOT read GREEN.
+# - 0029_massive_synth_seat: the massive serving seat — tests/serve_gates.rs
+#   READS its predictions.json (a public test depends on it).
+# - 036/037/041: the seated encoder cells (xnli/ag_news/typed) whose
+#   hybrid_lane_doc.json is the site's published provenance.
+# - 038/039/040: the emotion confusion read, the T8 screens, the v2-head
+#   record — md/json only (no heads/binaries; weights never enter repos).
+# - 049: the family full-coverage record (the Bench-049 lane doc's input).
+# - 0051–0053: the hybrid quotable ladder + synth seat (plan 008 B2's
+#   recorded deviation — the open product's published evidence).
+RECORDS_ALLOWED="
+0029_massive_synth_seat
+036_xnli_encoder_cell_seating
+037_ag_news_encoder_cell
+038_emotion_confusion_read
+039_encoder_screens_bank_prompt_typed
+040_typed_encoder_v2_head
+041_typed_encoder_cell_seating
+049_family_full_coverage
+0051_families_wide_eval
+0052_hybrid_quotable_ladder
+0053_massive_synth_0052
+"
+
+_records_allowed() {
+	for _a in $RECORDS_ALLOWED; do [ "$_a" = "$1" ] && return 0; done
+	return 1
+}
 
 die() { printf '⛔ %s\n' "$1" >&2; exit 1; }
 
@@ -167,7 +214,33 @@ $_toml_hits"
 		return 1
 	fi
 
-	printf 'VERDICT: GREEN — no moat files, no moat references (allowlist honored).\n'
+	# --- direction R: bench RECORDS (the moat-classes set, stays by name) --
+	# The 2026-10-03 audit measured that GREEN said nothing about .benchmarks:
+	# the history arm that watched records is retired for this repo, so the
+	# working-tree scan owns them now. A moat-classed record outside the
+	# allowed set is a finding in BOTH modes (its presence is a fact about the
+	# tree, not a posture) — RED under enforce, listed in disclosure mode.
+	_record_hits=""
+	if [ -d "$_tree/.benchmarks" ]; then
+		for _d in "$_tree"/.benchmarks/*/; do
+			[ -d "$_d" ] || continue
+			_d_rel=".benchmarks/$(basename "$_d")"
+			printf '%s' "$_d_rel" | grep -qE "$RECORD_MOAT_RE" || continue
+			_records_allowed "$(basename "$_d")" && continue
+			_record_hits="$_record_hits
+  $_d_rel (moat-classed record, not on the deliberate-stays list)"
+		done
+	fi
+	if [ -n "$(printf '%s' "$_record_hits" | tr -d '[:space:]')" ]; then
+		if [ "$ENFORCE" -eq 1 ]; then
+			printf 'VERDICT: RED (enforce) — moat-classed bench record(s) outside the deliberate-stays set:%s\n' "$_record_hits"
+			return 1
+		fi
+		printf 'VERDICT: RED — moat-classed bench record(s) outside the deliberate-stays set:%s\n' "$_record_hits"
+		return 1
+	fi
+
+	printf 'VERDICT: GREEN — no moat files, no moat references, records within the deliberate-stays set.\n'
 	return 0
 }
 
@@ -251,7 +324,26 @@ self_test() {
 	printf '%s' "$_out" | grep -q 'GREEN (history)' || die "self-test arm 5b: verdict not GREEN: $_out"
 	rm -rf "$_h" "$_h2"
 
-	printf '✅ fence_gate self-test: 5/5 arms fired (GREEN / RED / PRE-SPLIT / enforce-RED / history RED+GREEN).\n'
+	# arm 6: a planted moat-classed RECORD outside the stays must RED ...
+	# (the fixture must be post-split-clean here — arm 2's planted import and
+	# arm 3's moat file would fire directions 0/A first)
+	rm -f "$_tmp/fx/src/encoder_arm.rs"
+	printf 'use crate::specialist;\n' > "$_tmp/fx/src/lib.rs"
+	mkdir -p "$_tmp/fx/.benchmarks/0029_massive_synth_seat" "$_tmp/fx/.benchmarks/045_planted_moat_record"
+	_out=$(ALLOWLIST_OVERRIDE="$_tmp/fx-allowlist.txt" audit_tree "$_tmp/fx") && \
+		die "self-test arm 6: planted moat record did NOT red: $_out"
+	printf '%s' "$_out" | grep -q RED || die "self-test arm 6: verdict not RED: $_out"
+	printf '%s' "$_out" | grep -q '045_planted_moat_record' || die "self-test arm 6: red does not name the planted record: $_out"
+	printf '%s' "$_out" | grep -q '0029_massive_synth_seat' && die "self-test arm 6: the ALLOWED stay 0029 was flagged"
+
+	# arm 7: the allowed stays alone must GREEN (the set, not a count — the
+	# v1 allowlist query-matches-itself bug is the precedent for arming this)
+	rm -rf "$_tmp/fx/.benchmarks/045_planted_moat_record"
+	_out=$(ALLOWLIST_OVERRIDE="$_tmp/fx-allowlist.txt" audit_tree "$_tmp/fx") || \
+		die "self-test arm 7: allowed stays did not read GREEN: $_out"
+	printf '%s' "$_out" | grep -q 'VERDICT: GREEN' || die "self-test arm 7: verdict not GREEN: $_out"
+
+	printf '✅ fence_gate self-test: 7/7 arms fired (GREEN / RED / PRE-SPLIT / enforce-RED / history RED+GREEN / record-RED / stays-GREEN).\n'
 }
 
 main() {

@@ -84,6 +84,11 @@ HISTORY.md
 #   ../riir-train private-artifact default) — nothing a student can run and
 #   a private-path reference a teaching repo should not carry. The file
 #   stays here, unexported.
+#   [EXECUTED 2026-10-03, the moat-leak audit: the owner's same-day history
+#   sanction overrode the export's model, and the file rode the force-push
+#   into the PUBLIC tree — defeating this recorded deferral. Remediated:
+#   git rm'd from the public develop (history keeps it, sanctioned); the
+#   deferral's judgment now holds in BOTH media.]
 #
 # Resolved deferrals (the DRAFT's open questions, settled at B2):
 # - src/bin/arena.rs + src/bin/serve.rs: the seam landed (22ae291) and the
@@ -98,5 +103,13 @@ HISTORY.md
 # - .benchmarks/0051–0053: NOT exported (records are history, not source);
 #   they stay in the PRIVATE repo, listed nowhere. The open repo's teaching
 #   records are its own, born at Phase C.
+#   [SUPERSEDED 2026-10-03, the owner's same-day history sanction — the two-repo
+#   retirement made the public repo carry the WHOLE record history, so the
+#   "born at Phase C" model no longer describes any live tree. The records
+#   riding the public tree now: all of 001–053 minus the moat classes, with the
+#   moat-classed STAYS (0029, 036–041, 049, 0051–0053) allowed BY NAME in
+#   fence_gate.sh's direction R (`RECORDS_ALLOWED`) — the published-evidence
+#   provenance for the site cells + a public test dependency (serve_gates reads
+#   0029). Any OTHER moat-classed record REDs the fence.]
 # - .github/: none exists today; the public repo seeds its own CI at C1
 #   (the fence --post-split mode is the only lane it may run).
