@@ -6,11 +6,18 @@ The global `~/.agents/` rules apply; this file documents repo-local context.
 
 **The 2026-09-30 naming law below is SUPERSEDED** (dated amendment in 051;
 the split replaces the rename): **Instinct stays a product and OPENS** as
-the public teaching lane (**OPEN: gist-rs/riir-instinct is LIVE — the
-fresh-root export landed at Phase C 2026-10-03, public, `382b6bd`; this
-repo is now the private whole-history tree at
-gist-rs/riir-instinct-internal** — GitHub redirects cover the old name,
-and the 4090 box's remote was re-pointed before the public repo took it);
+the public teaching lane (**OPEN: gist-rs/riir-instinct is LIVE — and
+SINGLE-SOURCE-OF-TRUTH since 2026-10-03: the owner retired the two-repo
+arrangement the same day it landed ("git history leak is fine… i dont want
+2 confusing repo i want single source of truth, can we stop it now") —
+the FULL history now lives ON the public repo (develop force-pushed there;
+`main` = the same tip for the landing page), this checkout's origin points
+at `gist-rs/riir-instinct.git` again, and the fresh-root export commit
+(`382b6bd`) is superseded by the real history — moat content in git
+HISTORY is owner-sanctioned; the moat law still binds the working TREE and
+the fence (`--post-split`) stays. The stale `gist-rs/riir-instinct-internal`
+repo is DELETED-owner-side; the 4090 box's remote must point at
+`gist-rs/riir-instinct.git`**);
 **Rethink is the PRIVATE moat** — and it is now a REPO: **`../riir-rethink`**
 (gist-rs/riir-rethink, born 2026-10-03 at `e263686`, seeded verbatim from
 the `moat/` directory at `4ffd08f`; fresh root — the whole git history

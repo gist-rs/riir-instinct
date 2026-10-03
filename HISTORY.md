@@ -1,3 +1,13 @@
+## 2026-10-03 — the two-repo arrangement RETIRED (owner directive): single source of truth = gist-rs/riir-instinct (full history, public)
+
+Same day as Phase C. The owner: "git history leak is fine… i dont want 2 confusing repo i want single source of truth, can we stop it now" — the fresh-root/whole-history split (the `-internal` rename) was more confusion than protection, and history leak was already sanctioned at the carve ("move any code to riir-rethink before public; history is fine"). Executed:
+
+- The full-history `develop` force-pushed to the public **gist-rs/riir-instinct** (`main` forced to the same tip for the landing page; the fresh-root export commit `382b6bd` is superseded by the real history — the export stays reproducible from the `.export/` tooling if ever needed).
+- This checkout's `origin` points at `gist-rs/riir-instinct.git` again (the rename's URL change reverted).
+- `gist-rs/riir-instinct-internal` is now stale — DELETED-owner-side (a GitHub UI action; git cannot delete repos).
+- The 4090 box's remote must point at `gist-rs/riir-instinct.git` (one `git remote set-url` there; not done from this session — the box may carry a live sibling lane).
+- UNCHANGED by this: the moat law binds the working TREE (moat content lives in `../riir-rethink`; the fence `--post-split` keeps guarding it), and the carve's other half (rethink born at `e263686`) stands. What ended is only the second repo carrying this history.
+
 ## 2026-10-03 — PHASE C LANDED: the public export is LIVE (gist-rs/riir-instinct, public, `382b6bd`); this repo renamed gist-rs/riir-instinct-internal
 
 The owner green-lit the flip in-band ("flip all NO MORE OWNER GATED ALL
