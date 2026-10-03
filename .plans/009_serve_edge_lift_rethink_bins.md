@@ -1,9 +1,11 @@
 # The serve-edge lift + the Rethink bin reassembly (the next split unit)
 
-**Status:** OPEN — filed 2026-10-03 at the Phase C landing. The next
-recorded lift step (riir-rethink BOUNDARY drift ledger "the serve bin
-reassembles from `bin_hunks/` over the open lib next"). B4 (the trainer
-half) stays separate — deferred on riir-train Issue 607.
+**Status:** OPEN — filed 2026-10-03 at the Phase C landing. **T1 LANDED
+2026-10-03** (instinct `7d22fea` — the edge is lib surface;
+`serve_edge::run(ServeConfig)` is the consumption point). T2 next: the
+Rethink bins from `bin_hunks/` — start only at a rethink commit
+boundary. B4 (the trainer half) stays separate — deferred on riir-train
+Issue 607.
 
 ## Why this plan exists
 
@@ -41,7 +43,17 @@ manifest; this plan extends the discipline to src.
 
 ## T1 — the edge lift (open side, both repos)
 
-- [ ] T1.1 extract the HTTP edge from `src/bin/serve.rs` into a lib
+DONE 2026-10-03 — instinct `7d22fea`, landed ONCE per the single-source
+law. `src/bin/serve.rs` (1,523 lines) → `src/serve_edge.rs` (ServeConfig
++ run) + a ~100-line bin shell. Zero behavior change (die → Err → the
+identical `⛔ serve: …` line); `allowed_origins()` stays the default
+when `ServeConfig.cors_origin` is None. Gates: clippy -D clean · lib
+57/57 · serve_gates 18/18 (the subprocess zero-change proof) ·
+calibrator 2/2 · staleness 6/6 · g4 1/1 · tetris parity 1/1 (feature
+posture) · live boot smoke (healthz full receipt surface + a real
+/decide, byte-identical receipt on repeat) · fence --post-split GREEN.
+
+- [x] T1.1 extract the HTTP edge from `src/bin/serve.rs` into a lib
       module (`src/serve_edge.rs`): the listener loop, routing
       (/decide, /healthz, /, /arsenal/swap, /arsenal/release), the
       response/error helpers, `SrvState`, `artifact_path_for`,
@@ -51,14 +63,20 @@ manifest; this plan extends the discipline to src.
       arg parsing produces today. Zero behavior change (the bin's
       output byte-identical; `serve_gates` + the live smoke are the
       proof).
-- [ ] T1.2 `src/bin/serve.rs` shrinks to: env/arg parsing →
+- [x] T1.2 `src/bin/serve.rs` shrinks to: env/arg parsing →
       `ServeConfig` → `riir_instinct::serve_edge::run(cfg)`. The
       receipts/lane boot stay where they are (lib already).
-- [ ] T1.3 gates: clippy `-D` ×postures, lib 56/56, serve_gates 18/18,
+- [x] T1.3 gates: clippy `-D` ×postures, lib 56/56, serve_gates 18/18,
       calibrator 6/6, staleness 2/2, g4 1/1, tetris parity 1/1 + the
       live boot smoke (healthz + /decide with receipts). On BOTH repos,
-      plus the public CI green.
-- [ ] T1.4 the fence both arms on both repos post-landing.
+      plus the public CI green. (Counts at landing: lib 57 — the
+      sibling's synth_served_case test joined; calibrator 2, staleness
+      6 — the plan's figures were written pre-landing; ONE repo — the
+      two-repo arrangement is retired, the dual-landing law above.)
+- [x] T1.4 the fence both arms on both repos post-landing. (--post-split
+      GREEN on the one repo; --history stays the fresh-root-law arm the
+      owner reads — the whole-history tree is expected RED there by
+      design.)
 
 ## T2 — the Rethink bins (rethink side)
 
