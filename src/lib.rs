@@ -20,6 +20,14 @@ pub mod stats;
 pub mod arsenal;
 pub mod arsenal_ops;
 pub mod server;
+/// The shared hosted-serving HTTP edge (plan 009 T1 — the serve-edge
+/// lift): the listener loop, routing, the lane registry + loading
+/// machinery and every refusal shape, parameterized by
+/// [`serve_edge::ServeConfig`]. The `serve` bin is a thin env/arg shell
+/// over [`serve_edge::run`]; the Rethink lane consumes the SAME edge
+/// over the extension point — re-shared, never forked (riir-ai
+/// Proposal 052).
+pub mod serve_edge;
 /// The serve lane's receipt primitives (Plan 043 C0 — the
 /// one-definition law): the build fingerprint + the input/decision
 /// BLAKE3 halves + the manifest fingerprint, ONE home for the serve
