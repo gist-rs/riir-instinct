@@ -28,7 +28,7 @@ The laws the figure carries (full text: the repo root `AGENTS.md` +
 
 ```mermaid
 %% file: instinct_flow.svg
-%% aria: The Instinct composition flow in two bands: the top band is the question in — the same typed question runs Reflex's modelless engine first, and a confident fused-gate answer returns in microseconds with the specialist never paid; on abstain the bottom band takes over — top-k prune keeps the candidates, the sealed per-domain specialist scores them, an H1 cascade or H2 prior fusion calibrates the pick, and the answer ships with a decision receipt — while arsenal.toml, the only selection surface, hot-swaps registered arms monotonically
+%% aria: The Instinct composition flow in two bands: the top band is the question in — the same typed question runs Reflex's modelless engine first, and a confident fused-gate answer returns in microseconds with the specialist never paid; on abstain the bottom band takes over — top-k prune keeps the candidates, the locked per-domain specialist scores them, an H1 cascade or H2 prior fusion calibrates the pick, and the answer ships with a decision receipt — while arsenal.toml, the only selection surface, hot-swaps registered arms monotonically
 flowchart TB
   subgraph IN["the question in — Reflex · modelless, always first, free"]
     direction LR
@@ -37,7 +37,7 @@ flowchart TB
   end
   subgraph OUT["on abstain — the trained add-on, paid only here"]
     direction LR
-    P["top-k prune<br/>keep the candidates"] --> S["Instinct specialist scores<br/>trained · per-domain · BLAKE3-sealed"] --> F["fuse<br/>H1 cascade pick · H2 prior fusion<br/>p′ᵢ ∝ pᵢ·exp(g·β·mᵢ)"] --> A2["calibrated answer<br/>+ decision receipt<br/>BLAKE3 in · BLAKE3 out"]
+    P["top-k prune<br/>keep the candidates"] --> S["Instinct specialist scores<br/>trained · per-domain · BLAKE3-locked"] --> F["fuse<br/>H1 cascade pick · H2 prior fusion<br/>p′ᵢ ∝ pᵢ·exp(g·β·mᵢ)"] --> A2["calibrated answer<br/>+ decision receipt<br/>BLAKE3 in · BLAKE3 out"]
   end
   T["thresholds + gate fitted offline<br/>from YOUR labeled data · one-off"]
   M["arsenal.toml — the only selection surface<br/>registered arms only (beat Reflex pre-registration)"]
