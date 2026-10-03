@@ -6,7 +6,11 @@ The global `~/.agents/` rules apply; this file documents repo-local context.
 
 **The 2026-09-30 naming law below is SUPERSEDED** (dated amendment in 051;
 the split replaces the rename): **Instinct stays a product and OPENS** as
-the public teaching lane (the fresh-root export at Phase C — owner-gated);
+the public teaching lane (**OPEN: gist-rs/riir-instinct is LIVE — the
+fresh-root export landed at Phase C 2026-10-03, public, `382b6bd`; this
+repo is now the private whole-history tree at
+gist-rs/riir-instinct-internal** — GitHub redirects cover the old name,
+and the 4090 box's remote was re-pointed before the public repo took it);
 **Rethink is the PRIVATE moat** — and it is now a REPO: **`../riir-rethink`**
 (gist-rs/riir-rethink, born 2026-10-03 at `e263686`, seeded verbatim from
 the `moat/` directory at `4ffd08f`; fresh root — the whole git history

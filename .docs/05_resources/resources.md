@@ -45,6 +45,7 @@ and nothing is re-fitted at serve time.
 ## Links
 
 - GitHub: [gist-rs/riir-instinct](https://github.com/gist-rs/riir-instinct)
-  — resolves at the Phase-C open.
+  — **LIVE since 2026-10-03** (the Phase-C fresh-root export; this repo is
+  now gist-rs/riir-instinct-internal, the private whole-history tree).
 - The measured side: [/bench/#instinct](/bench/#instinct) — every verdict
   on this page is a link there, never a typed number.

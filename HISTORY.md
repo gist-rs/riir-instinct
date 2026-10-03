@@ -1,7 +1,43 @@
+## 2026-10-03 — PHASE C LANDED: the public export is LIVE (gist-rs/riir-instinct, public, `382b6bd`); this repo renamed gist-rs/riir-instinct-internal
+
+The owner green-lit the flip in-band ("flip all NO MORE OWNER GATED ALL
+GREEN") and plan 008's Phase C executed the same day:
+
+- **The export** (`.export/` build tree, gitignored + nested — never
+  beside the siblings so the workspace population checks never see it):
+  all 41 [copy] rows verbatim (minus `r5_launch_ab.ps1`, dropped from the
+  manifest with the reason — box-specific ops scaffolding carrying a
+  `../riir-train` private-artifact default), fresh README/AGENTS/BOUNDARY/
+  HISTORY rewrites, MIT LICENSE, `scripts/setup_siblings.sh` (the FOUR
+  public siblings — the fourth, `../riir-infer`, surfaced when the export
+  build failed to resolve reflex's laya face; the private repo resolves it
+  through the shared sibling layout, the export had to name it), CI (fence
+  `--post-split` + clippy/test), `.gitignore`.
+- **Gates at birth:** clippy `-D` clean; lib 56/56 · serve_gates 18/18 ·
+  calibrator 6/6 · staleness 2/2 · tetris parity 1/1 · g4_alloc 1/1 —
+  byte-parity with the B2 gate counts; live boot smoke: `/healthz` 200
+  with the build receipt + `/decide` answered (A0 arm, abstain
+  first-class, full receipt) from the fresh tree over the public datasets.
+- **The fence, both arms, on the PUSHED clone:** `--post-split` GREEN ·
+  `--history` GREEN (single root `382b6bd`, zero moat paths across ALL
+  commits) — the check the plan reserved for the owner's pre-flip read.
+- **The rename:** gist-rs/riir-instinct → **gist-rs/riir-instinct-internal**
+  (private keeps the whole history; GitHub redirects cover the old URL);
+  the 4090 box's remote re-pointed BEFORE the new repo took the old name
+  (its scheduled gitsync can never pull the public tree into the
+  whole-history clone); this checkout's origin updated by the rename.
+- **The manifest amendment** (this repo): the [copy] row dropped + the
+  resolved-deferrals note — the export manifest stays the single source
+  of truth and "every listed file exists / every export file listed"
+  held at build time (diff-asserted).
+
 ## 2026-10-03 — the Instinct/Rethink SPLIT CARVE landed: B1 seam + B2 move family + B3 in-repo registration; fence --post-split GREEN (riir-ai Proposal 052 / riir-instinct Plan 008)
 
 The owner's split directive executed to the fence: **Instinct opens** (the
-public teaching lane, the fresh-root export at Phase C — owner-gated) and
+public teaching lane, **the fresh-root export LANDED at Phase C
+2026-10-03 on the owner's in-band green light — gist-rs/riir-instinct
+public at `382b6bd`; this repo renamed gist-rs/riir-instinct-internal**)
+and
 **Rethink is the private moat** — this repo's whole history IS Rethink
 (GitHub rename or identical-hash mirror at the wave), and the moat's
 working-tree home is `moat/` (the Rethink seed). Three commits:

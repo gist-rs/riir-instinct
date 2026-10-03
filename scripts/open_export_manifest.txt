@@ -67,7 +67,6 @@ tests/calibrator_probe.rs
 tests/tetris_critic_parity.rs
 tests/fixtures/staleness_probe_set.json
 scripts/build_hybrid_doc.py
-scripts/r5_launch_ab.ps1
 scripts/stub_tetmlp_smoke.py
 scripts/fence_gate.sh
 scripts/fence_gate_allowlist.txt
@@ -79,6 +78,13 @@ AGENTS.md
 BOUNDARY.md
 HISTORY.md
 
+# RESOLVED DEFERRALS at the Phase-C build (2026-10-03, the visibility flip):
+# - scripts/r5_launch_ab.ps1 DROPPED from [copy]: box-specific ops scaffolding
+#   (a hardcoded 4090-box temp-exe hash path, E:\git working dirs, and a
+#   ../riir-train private-artifact default) — nothing a student can run and
+#   a private-path reference a teaching repo should not carry. The file
+#   stays here, unexported.
+#
 # Resolved deferrals (the DRAFT's open questions, settled at B2):
 # - src/bin/arena.rs + src/bin/serve.rs: the seam landed (22ae291) and the
 #   moat hunks were cut (the B2 move family) — both bins carry L1 lanes +
