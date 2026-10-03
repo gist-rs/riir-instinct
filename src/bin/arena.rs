@@ -1029,6 +1029,11 @@ fn run_suite_n<const N: usize>(
         genome_select: false,
         genome_accept_margin: 0.0,
         cal_select_caps: vec![],
+        // The arena's published face is the T1.6 cal-slice fused fit —
+        // never the rate levers (the H1-escalation-1.000 face is what the
+        // records publish).
+        gate_fit_selection: false,
+        gate_distance_only: false,
     };
     let posture = fit_posture::<N>(name, &seat, &knobs)?;
     eprintln!(

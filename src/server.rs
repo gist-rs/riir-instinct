@@ -196,6 +196,15 @@ pub struct ServedDecision {
     /// the decision work from option-bridge to pick; excludes HTTP
     /// parse/serialize.
     pub us: u64,
+    /// The seat engine's fused-gate abstention for this question — the
+    /// shipped calibrated gate (score + distance axes) the modelless half
+    /// computes for EVERY arm (`eval_seat` runs unconditionally).
+    /// Distinct from `abstained`: for A0 they agree; for A1/H2 the served
+    /// answer never abstains while the gate may still flag the question.
+    /// The ESC lane's escalation set (Rethink Issue 017 T1) reads this —
+    /// additive and NOT on the wire (the serve edge serializes a fixed
+    /// field list), so the receipt contract is untouched.
+    pub gate_abstained: bool,
 }
 
 /// One suite's serving state: the seat engine + the joined specialist +
@@ -481,6 +490,10 @@ impl<const N: usize> SuiteServer<N> {
             genome_select: false,
             genome_accept_margin: 0.0,
             cal_select_caps: vec![],
+            // The served posture is the T1.6 cal-slice fused fit — never
+            // the rate levers (the serve parity gates pin this face).
+            gate_fit_selection: false,
+            gate_distance_only: false,
         };
         let posture = fit_posture::<N>(suite, &seat, &knobs)?;
         let (engine, _fallbacks) =
@@ -1056,6 +1069,7 @@ impl<const N: usize> SuiteServer<N> {
                 escalated,
                 abstained,
                 us: u64::try_from(t0.elapsed().as_micros()).unwrap_or(u64::MAX),
+                gate_abstained: qo.abstained,
             });
         }
         Ok(decisions)
