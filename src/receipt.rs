@@ -137,6 +137,9 @@ mod tests {
             escalated: false,
             abstained: false,
             us: 42,
+            // Additive and NOT in the decision hash (the serve edge's
+            // fixed field list keeps the receipt contract untouched).
+            gate_abstained: false,
         };
         let canonical = serde_json::json!({
             "suite": d.suite,

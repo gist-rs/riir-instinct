@@ -59,6 +59,62 @@ pub struct ServedQuestion<'a> {
     pub options: &'a [String],
 }
 
+/// The served request → the suite-case shape the seat eval consumes —
+/// the EXACT construction [`SuiteServer::decide_multi`] feeds the
+/// modelless eval (`eval_seat`), exported because a downstream lane
+/// backend must evaluate the SAME bytes: Rethink's ESC lane runs its
+/// selective gate over this case (Rethink Issue 017 T2) so the gate
+/// flags and the served answers read one request shape. The noul
+/// empty-options fixed rendering happens here (the `decision_wire`
+/// law). Pure construction — no bridge resolution, no validation: the
+/// caller's server validated the presentation before this runs.
+pub fn synth_served_case(state: &str, questions: &[ServedQuestion<'_>]) -> SuiteCase {
+    let case_questions: Vec<SuiteQuestion> = questions
+        .iter()
+        .map(|q| {
+            let options: Vec<String> = if q.kind == QKind::Noul && q.options.is_empty() {
+                vec!["false".to_string(), "true".to_string()]
+            } else {
+                q.options.to_vec()
+            };
+            SuiteQuestion {
+                qid: q.qid.to_string(),
+                kind: q.kind,
+                instructions: q.instructions.to_string(),
+                criteria: match q.kind {
+                    QKind::Choice => {
+                        let mut m = serde_json::Map::new();
+                        for key in &options {
+                            m.insert(key.clone(), serde_json::Value::Null);
+                        }
+                        serde_json::Value::Object(m)
+                    }
+                    QKind::Score => serde_json::Value::Array(
+                        options
+                            .iter()
+                            .map(|k| serde_json::Value::String(k.clone()))
+                            .collect(),
+                    ),
+                    QKind::Noul => serde_json::Value::Null,
+                },
+            }
+        })
+        .collect();
+    SuiteCase {
+        id: "served".into(),
+        state: serde_json::Value::String(state.to_string()),
+        questions: case_questions,
+        gold: questions
+            .iter()
+            .map(|_| GoldAnswer {
+                idx: 0,
+                soft: vec![],
+                gold_score: None,
+            })
+            .collect(),
+    }
+}
+
 /// The cascade width the lane joins with when the serving arm is not H1
 /// (the arena's default `top_k`; H1 arms join at their own width).
 const DEFAULT_TOP_K: usize = 8;
@@ -864,45 +920,10 @@ impl<const N: usize> SuiteServer<N> {
         // The modelless lane's answers: the synthesized multi-question case
         // goes through the SAME eval path the seat eval uses
         // (eval_seat → engine_request → decide_with), so A0 here is the
-        // arena's A0 byte for byte, per question.
-        let case_questions: Vec<SuiteQuestion> = questions
-            .iter()
-            .zip(all_options.iter())
-            .map(|(q, options)| SuiteQuestion {
-                qid: q.qid.to_string(),
-                kind: q.kind,
-                instructions: q.instructions.to_string(),
-                criteria: match q.kind {
-                    QKind::Choice => {
-                        let mut m = serde_json::Map::new();
-                        for key in options {
-                            m.insert(key.clone(), serde_json::Value::Null);
-                        }
-                        serde_json::Value::Object(m)
-                    }
-                    QKind::Score => serde_json::Value::Array(
-                        options
-                            .iter()
-                            .map(|k| serde_json::Value::String(k.clone()))
-                            .collect(),
-                    ),
-                    QKind::Noul => serde_json::Value::Null,
-                },
-            })
-            .collect();
-        let case = SuiteCase {
-            id: "served".into(),
-            state: serde_json::Value::String(state.to_string()),
-            questions: case_questions,
-            gold: questions
-                .iter()
-                .map(|_| GoldAnswer {
-                    idx: 0,
-                    soft: vec![],
-                    gold_score: None,
-                })
-                .collect(),
-        };
+        // arena's A0 byte for byte, per question. The construction is the
+        // exported [`synth_served_case`] — one home, shared with the
+        // downstream lanes that evaluate the same bytes.
+        let case = synth_served_case(state, questions);
         let se = eval_seat(&mut self.engine, std::slice::from_ref(&case), &[state.to_string()])?;
         let outs = &se.cases[0];
         if outs.len() != questions.len() {
@@ -1598,5 +1619,66 @@ impl AnySuiteServer {
             AnySuiteServer::S77(s) => s.centroid(),
             AnySuiteServer::Ext(s) => s.centroid(),
         }
+    }
+}
+
+#[cfg(test)]
+mod served_case_tests {
+    use super::*;
+
+    /// The exported construction (Rethink Issue 017 T2 consumes it): the
+    /// criteria rendering per kind, the noul fixed rendering from an EMPTY
+    /// presentation, the serialized-state envelope, and one zero-gold row
+    /// per question — the exact bytes [`SuiteServer::decide_multi`] feeds
+    /// `eval_seat`.
+    #[test]
+    fn synth_served_case_renders_each_kind() {
+        let opts = ["a".to_string(), "b".to_string()];
+        let qs = [
+            ServedQuestion {
+                qid: "q_choice",
+                kind: QKind::Choice,
+                instructions: "pick",
+                options: &opts,
+            },
+            ServedQuestion {
+                qid: "q_score",
+                kind: QKind::Score,
+                instructions: "score",
+                options: &opts,
+            },
+            ServedQuestion {
+                qid: "q_noul",
+                kind: QKind::Noul,
+                instructions: "noul",
+                options: &[],
+            },
+        ];
+        let case = synth_served_case("the state", &qs);
+        assert_eq!(case.id, "served");
+        assert_eq!(case.state, serde_json::Value::String("the state".into()));
+        assert_eq!(case.questions.len(), 3);
+        assert_eq!(case.gold.len(), 3);
+        assert!(case.gold.iter().all(|g| g.idx == 0 && g.soft.is_empty()));
+        // Choice: an object of nulls in presented order (preserve_order
+        // holds the insertion order).
+        let criteria = |i: usize| &case.questions[i].criteria;
+        let choice = criteria(0);
+        let obj = choice.as_object().expect("choice criteria is an object");
+        let keys: Vec<&String> = obj.keys().collect();
+        assert_eq!(keys, vec![&"a".to_string(), &"b".to_string()]);
+        assert!(obj.values().all(|v| v.is_null()));
+        // Score: an array of the presented strings.
+        let score = criteria(1);
+        assert_eq!(
+            score,
+            &serde_json::Value::Array(vec![
+                serde_json::Value::String("a".into()),
+                serde_json::Value::String("b".into())
+            ])
+        );
+        // Noul from an empty presentation: the fixed rendering speaks it.
+        assert_eq!(case.questions[2].criteria, serde_json::Value::Null);
+        assert_eq!(case.questions[2].qid, "q_noul");
     }
 }
