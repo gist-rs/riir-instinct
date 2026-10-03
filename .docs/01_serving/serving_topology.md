@@ -44,6 +44,12 @@ baked into the manifest as data. The runtime is dumb-but-auditable on purpose.
 An ENC row in a build with no lane backend installed refuses **loud at boot**,
 naming the install seam — never a silent degrade to a cheaper arm.
 
+Every served decision also carries the seat engine's own fused-gate
+abstention (`gate_abstained`) — distinct from the lane's `abstained`:
+for `A0` they agree, while `A1`/`H2` never abstain even where the gate
+flags the question. Additive and not on the wire JSON; it is the
+escalation-set signal downstream lanes (Rethink's ESC) read.
+
 ## What IS automatic (lane lifecycle)
 
 - **Lazy load** — `budget.load = "lazy"` rows boot `Unloaded`; the first
