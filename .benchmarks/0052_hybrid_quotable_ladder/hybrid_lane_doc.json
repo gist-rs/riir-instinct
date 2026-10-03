@@ -31,6 +31,7 @@
    "n_questions": 400,
    "n_cases": 400,
    "verdict": "hybrid_arm",
+   "test_digest": "fnv1a64-07eff23c06505584",
    "measured_a0": {
     "lane": "hybrid",
     "model": "A0",
@@ -39,7 +40,10 @@
      "accuracy": 0.8825,
      "ece": 0.8304792892932893,
      "mean_confidence": 0.05202071070671081,
-     "acc_at_50_coverage": 0.93
+     "acc_at_50_coverage": 0.93,
+     "macro_f1": 0.8741933646432797,
+     "jdi_chance": 0.3075,
+     "jdi_skill": 0.8303249097472923
     },
     "consult_rate": 0.0,
     "latency_scope": "seat+arm",
@@ -49,6 +53,8 @@
     "latency_tail_support": 5
    },
    "reason": "instrument pick H2(\u03b2=0.25,nmin=2,\u03c4=2) refused \u2014 paired LB95 -0.0100 (Issue 008 T2)",
+   "test_digest_source": "seat_identity dump (the record predates stamping)",
+   "gold_source": "seat_identity dump (digest-gated join, plan 011 C2)",
    "hybrid": {
     "lane": "hybrid",
     "model": "H2(\u03b2=0.25,nmin=2,\u03c4=2)",
@@ -57,7 +63,10 @@
      "accuracy": 0.8975,
      "ece": 0.013315694555954022,
      "mean_confidence": 0.888912138562494,
-     "acc_at_50_coverage": 0.99
+     "acc_at_50_coverage": 0.99,
+     "macro_f1": 0.8878275558568157,
+     "jdi_chance": 0.3075,
+     "jdi_skill": 0.8519855595667869
     },
     "consult_rate": 1.0,
     "latency_scope": "arm-only",
@@ -74,6 +83,7 @@
    "n_questions": 300,
    "n_cases": 300,
    "verdict": "hybrid_arm",
+   "test_digest": "fnv1a64-49390c8b80475849",
    "measured_a0": {
     "lane": "hybrid",
     "model": "A0",
@@ -82,7 +92,10 @@
      "accuracy": 0.8133333333333334,
      "ece": 0.6663543199623624,
      "mean_confidence": 0.1494972715402643,
-     "acc_at_50_coverage": 0.98
+     "acc_at_50_coverage": 0.98,
+     "macro_f1": 0.8057994371940083,
+     "jdi_chance": 0.08666666666666667,
+     "jdi_skill": 0.7956204379562044
     },
     "consult_rate": 0.0,
     "latency_scope": "seat+arm",
@@ -92,6 +105,8 @@
     "latency_tail_support": 5
    },
    "reason": "instrument pick H2(\u03b2=1,nmin=2,\u03c4=4) refused \u2014 paired LB95 -0.0039 (Issue 008 T2)",
+   "test_digest_source": "seat_identity dump (the record predates stamping)",
+   "gold_source": "seat_identity dump (digest-gated join, plan 011 C2)",
    "hybrid": {
     "lane": "hybrid",
     "model": "H2(\u03b2=1,nmin=2,\u03c4=4)",
@@ -100,7 +115,10 @@
      "accuracy": 0.84,
      "ece": 0.06870501239437647,
      "mean_confidence": 0.8517494499514889,
-     "acc_at_50_coverage": 0.9933333333333333
+     "acc_at_50_coverage": 0.9933333333333333,
+     "macro_f1": 0.8317455255770921,
+     "jdi_chance": 0.08666666666666667,
+     "jdi_skill": 0.8248175182481752
     },
     "consult_rate": 1.0,
     "latency_scope": "arm-only",
@@ -117,6 +135,7 @@
    "n_questions": 500,
    "n_cases": 500,
    "verdict": "hybrid_arm",
+   "test_digest": "fnv1a64-dd8ab35333abb82a",
    "measured_a0": {
     "lane": "hybrid",
     "model": "A0",
@@ -125,7 +144,10 @@
      "accuracy": 0.826,
      "ece": 0.8015380177684128,
      "mean_confidence": 0.024461982231587173,
-     "acc_at_50_coverage": 0.972
+     "acc_at_50_coverage": 0.972,
+     "macro_f1": 0.8210384386854972,
+     "jdi_chance": 0.014,
+     "jdi_skill": 0.8235294117647058
     },
     "consult_rate": 0.0,
     "latency_scope": "seat+arm",
@@ -135,6 +157,8 @@
     "latency_tail_support": 6
    },
    "reason": "instrument pick H2(\u03b2=2,nmin=8,\u03c4=8) refused \u2014 paired LB95 -0.0013 (Issue 008 T2)",
+   "test_digest_source": "seat_identity dump (the record predates stamping)",
+   "gold_source": "seat_identity dump (digest-gated join, plan 011 C2)",
    "hybrid": {
     "lane": "hybrid",
     "model": "H2(\u03b2=2,nmin=8,\u03c4=8)",
@@ -143,7 +167,10 @@
      "accuracy": 0.854,
      "ece": 0.08412793359878214,
      "mean_confidence": 0.9374190933679326,
-     "acc_at_50_coverage": 0.996
+     "acc_at_50_coverage": 0.996,
+     "macro_f1": 0.8527493620885521,
+     "jdi_chance": 0.014,
+     "jdi_skill": 0.8519269776876267
     },
     "consult_rate": 1.0,
     "latency_scope": "arm-only",
@@ -160,6 +187,7 @@
    "n_questions": 600,
    "n_cases": 600,
    "verdict": "hybrid_arm",
+   "test_digest": "fnv1a64-ad64a6cb0039e916",
    "measured_a0": {
     "lane": "hybrid",
     "model": "A0",
@@ -168,7 +196,10 @@
      "accuracy": 0.39666666666666667,
      "ece": 0.3848924572269122,
      "mean_confidence": 0.011774209439754485,
-     "acc_at_50_coverage": 0.46
+     "acc_at_50_coverage": 0.46,
+     "macro_f1": 0.32108008867289706,
+     "jdi_chance": 0.2733333333333333,
+     "jdi_skill": 0.16972477064220184
     },
     "consult_rate": 0.0,
     "latency_scope": "seat+arm",
@@ -178,6 +209,8 @@
     "latency_tail_support": 12
    },
    "reason": "instrument pick A1 refused \u2014 paired LB95 -0.0129 (Issue 008 T2)",
+   "test_digest_source": "seat_identity dump (the record predates stamping)",
+   "gold_source": "seat_identity dump (digest-gated join, plan 011 C2)",
    "hybrid": {
     "lane": "hybrid",
     "model": "A1",
@@ -186,7 +219,10 @@
      "accuracy": 0.4216666666666667,
      "ece": 0.10076249030729133,
      "mean_confidence": 0.4711805712431669,
-     "acc_at_50_coverage": 0.5
+     "acc_at_50_coverage": 0.5,
+     "macro_f1": 0.3645178225884921,
+     "jdi_chance": 0.2733333333333333,
+     "jdi_skill": 0.20412844036697253
     },
     "consult_rate": 1.0,
     "latency_scope": "arm-only",
@@ -203,6 +239,7 @@
    "n_questions": 400,
    "n_cases": 400,
    "verdict": "a0_stands",
+   "test_digest": "fnv1a64-6feefd1c947dd008",
    "measured_a0": {
     "lane": "hybrid",
     "model": "A0",
@@ -211,7 +248,10 @@
      "accuracy": 0.885,
      "ece": 0.8622394363582135,
      "mean_confidence": 0.022760563641786576,
-     "acc_at_50_coverage": 0.97
+     "acc_at_50_coverage": 0.97,
+     "macro_f1": 0.8014284327939634,
+     "jdi_chance": 0.2975,
+     "jdi_skill": 0.8362989323843416
     },
     "consult_rate": 0.0,
     "latency_scope": "seat+arm",
@@ -221,6 +261,8 @@
     "latency_tail_support": 5
    },
    "reason": "the instrument registered A0 outright",
+   "test_digest_source": "seat_identity dump (the record predates stamping)",
+   "gold_source": "seat_identity dump (digest-gated join, plan 011 C2)",
    "hybrid": {
     "lane": "hybrid",
     "model": "A0",
@@ -229,7 +271,10 @@
      "accuracy": 0.885,
      "ece": 0.8622394363582135,
      "mean_confidence": 0.022760563641786576,
-     "acc_at_50_coverage": 0.97
+     "acc_at_50_coverage": 0.97,
+     "macro_f1": 0.8014284327939634,
+     "jdi_chance": 0.2975,
+     "jdi_skill": 0.8362989323843416
     },
     "consult_rate": 0.0,
     "latency_scope": "seat+arm",
@@ -246,6 +291,7 @@
    "n_questions": 300,
    "n_cases": 300,
    "verdict": "a0_stands",
+   "test_digest": "fnv1a64-b136750e5af1d412",
    "measured_a0": {
     "lane": "hybrid",
     "model": "A0",
@@ -254,7 +300,10 @@
      "accuracy": 0.5233333333333333,
      "ece": 0.5026737833023072,
      "mean_confidence": 0.020659550031026205,
-     "acc_at_50_coverage": 0.6466666666666666
+     "acc_at_50_coverage": 0.6466666666666666,
+     "macro_f1": 0.5070059473023049,
+     "jdi_chance": 0.3333333333333333,
+     "jdi_skill": 0.285
     },
     "consult_rate": 0.0,
     "latency_scope": "seat+arm",
@@ -264,6 +313,8 @@
     "latency_tail_support": 5
    },
    "reason": "the instrument registered A0 outright",
+   "test_digest_source": "seat_identity dump (the record predates stamping)",
+   "gold_source": "seat_identity dump (digest-gated join, plan 011 C2)",
    "hybrid": {
     "lane": "hybrid",
     "model": "A0",
@@ -272,7 +323,10 @@
      "accuracy": 0.5233333333333333,
      "ece": 0.5026737833023072,
      "mean_confidence": 0.020659550031026205,
-     "acc_at_50_coverage": 0.6466666666666666
+     "acc_at_50_coverage": 0.6466666666666666,
+     "macro_f1": 0.5070059473023049,
+     "jdi_chance": 0.3333333333333333,
+     "jdi_skill": 0.285
     },
     "consult_rate": 0.0,
     "latency_scope": "seat+arm",
@@ -289,6 +343,7 @@
    "n_questions": 116,
    "n_cases": 116,
    "verdict": "hybrid_arm",
+   "test_digest": "fnv1a64-5080803ec29f2423",
    "measured_a0": {
     "lane": "hybrid",
     "model": "A0",
@@ -297,7 +352,10 @@
      "accuracy": 0.7672413793103449,
      "ece": 0.674452191282963,
      "mean_confidence": 0.0927891880273819,
-     "acc_at_50_coverage": 0.896551724137931
+     "acc_at_50_coverage": 0.896551724137931,
+     "macro_f1": 0.7642808760442538,
+     "jdi_chance": 0.5172413793103449,
+     "jdi_skill": 0.5178571428571429
     },
     "consult_rate": 0.0,
     "latency_scope": "seat+arm",
@@ -307,6 +365,8 @@
     "latency_tail_support": 2
    },
    "reason": null,
+   "test_digest_source": "seat_identity dump (the record predates stamping)",
+   "gold_source": "seat_identity dump (digest-gated join, plan 011 C2)",
    "hybrid": {
     "lane": "hybrid",
     "model": "A1",
@@ -315,7 +375,10 @@
      "accuracy": 0.853448275862069,
      "ece": 0.0823830797754485,
      "mean_confidence": 0.8039373015535289,
-     "acc_at_50_coverage": 0.9655172413793104
+     "acc_at_50_coverage": 0.9655172413793104,
+     "macro_f1": 0.8529126575669427,
+     "jdi_chance": 0.5172413793103449,
+     "jdi_skill": 0.6964285714285714
     },
     "consult_rate": 1.0,
     "latency_scope": "arm-only",
@@ -332,6 +395,7 @@
    "n_questions": 2000,
    "n_cases": 400,
    "verdict": "hybrid_arm",
+   "test_digest": "fnv1a64-6e37760ee2a5b6c9",
    "measured_a0": {
     "lane": "hybrid",
     "model": "A0",
@@ -340,7 +404,10 @@
      "accuracy": 0.5725,
      "ece": 0.48374495857954025,
      "mean_confidence": 0.08875504142045974,
-     "acc_at_50_coverage": 0.641
+     "acc_at_50_coverage": 0.641,
+     "macro_f1": 0.5428588466644556,
+     "jdi_chance": 0.2925,
+     "jdi_skill": 0.39575971731448767
     },
     "consult_rate": 0.0,
     "latency_scope": "seat+arm",
@@ -350,6 +417,8 @@
     "latency_tail_support": 5
    },
    "reason": null,
+   "test_digest_source": "seat_identity dump (the record predates stamping)",
+   "gold_source": "seat_identity dump (digest-gated join, plan 011 C2)",
    "hybrid": {
     "lane": "hybrid",
     "model": "H2(\u03b2=0.5,nmin=2,\u03c4=2)",
@@ -358,7 +427,10 @@
      "accuracy": 0.6475,
      "ece": 0.18986412296281885,
      "mean_confidence": 0.8235891979113439,
-     "acc_at_50_coverage": 0.754
+     "acc_at_50_coverage": 0.754,
+     "macro_f1": 0.6052308469932142,
+     "jdi_chance": 0.2925,
+     "jdi_skill": 0.5017667844522968
     },
     "consult_rate": 1.0,
     "latency_scope": "arm-only",
@@ -375,6 +447,7 @@
    "n_questions": 32,
    "n_cases": 16,
    "verdict": "hybrid_arm",
+   "test_digest": "fnv1a64-93583fda4fc64946",
    "measured_a0": {
     "lane": "hybrid",
     "model": "A0",
@@ -383,7 +456,10 @@
      "accuracy": 0.375,
      "ece": 0.3742090817540884,
      "mean_confidence": 0.0007909182459115982,
-     "acc_at_50_coverage": 0.3125
+     "acc_at_50_coverage": 0.3125,
+     "macro_f1": 0.16398467432950192,
+     "jdi_chance": 0.375,
+     "jdi_skill": 0.0
     },
     "consult_rate": 0.0,
     "latency_scope": "seat+arm",
@@ -393,6 +469,8 @@
     "latency_tail_support": 1
    },
    "reason": null,
+   "test_digest_source": "seat_identity dump (the record predates stamping)",
+   "gold_source": "seat_identity dump (digest-gated join, plan 011 C2)",
    "hybrid": {
     "lane": "hybrid",
     "model": "A1",
@@ -401,7 +479,10 @@
      "accuracy": 0.5625,
      "ece": 0.2524139366578311,
      "mean_confidence": 0.6191526229958981,
-     "acc_at_50_coverage": 0.75
+     "acc_at_50_coverage": 0.75,
+     "macro_f1": 0.4258928571428571,
+     "jdi_chance": 0.375,
+     "jdi_skill": 0.3
     },
     "consult_rate": 1.0,
     "latency_scope": "arm-only",
