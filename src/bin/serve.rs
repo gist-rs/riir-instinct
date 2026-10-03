@@ -80,6 +80,10 @@ fn main() {
         // The CORS posture stays env-driven by default — the edge reads
         // RIIR_INSTINCT_ALLOWED_ORIGIN itself when the config omits it.
         cors_origin: None,
+        // The raw posture: the edge parses + validates the manifest and
+        // loads lanes with its own raw loader (plan 009 T2's defaults).
+        prevalidated_manifest: None,
+        lane_loader: None,
     };
     if let Err(e) = run(cfg) {
         die(&e);

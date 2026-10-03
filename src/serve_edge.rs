@@ -106,6 +106,21 @@ pub struct ServeConfig {
     /// `RIIR_INSTINCT_ALLOWED_ORIGIN` (closed when unset); `Some(list)`
     /// overrides (an empty list = closed).
     pub cors_origin: Option<Vec<String>>,
+    /// An ALREADY-VALIDATED manifest: the caller parsed + validated it
+    /// with its own [`crate::arsenal::ValidateCtx`] (the Rethink vessel
+    /// posture validates with the vessel ctx — the raw validation would
+    /// refuse a vessel manifest: it pins vessel digests, not raw winner
+    /// files). The tuple is (manifest, digest, description) exactly what
+    /// the edge's own parse produces; `None` = parse + validate here
+    /// (path first, else the embedded default).
+    pub prevalidated_manifest: Option<(Arc<ArsenalManifest>, String, String)>,
+    /// The lane-load seam (plan 009 T2): `None` = the raw posture (the
+    /// default loader — seat + `read_bounded` winner file + boot_bytes).
+    /// A downstream host (Rethink) installs its vessel-aware loader —
+    /// the edge stays ONE code path (re-shared, never forked); the
+    /// loader reads its own host config through its own process-global
+    /// (the `install_ext_boots` precedent).
+    pub lane_loader: Option<LaneLoader>,
 }
 
 /// Boot the lane registry and serve it — the accept loop never returns
@@ -124,6 +139,8 @@ pub fn run(cfg: ServeConfig) -> Result<(), String> {
         arsenal_path,
         suite_filter,
         cors_origin,
+        prevalidated_manifest,
+        lane_loader,
     } = cfg;
 
     // The arsenal manifest (Proposal 001, law A5 — the ONE selection
@@ -134,28 +151,34 @@ pub fn run(cfg: ServeConfig) -> Result<(), String> {
     // manifest is the TEACHING default (data/arsenal.toml — artifact-less
     // A0 rows); the production manifest lives in the Rethink lane and
     // loads here via INSTINCT_ARSENAL / --arsenal on a Rethink host.
-    let (manifest, arsenal_digest, arsenal_desc): (ArsenalManifest, String, String) =
-        match &arsenal_path {
-            Some(p) => {
-                let text =
-                    std::fs::read_to_string(p).map_err(|e| format!("read arsenal manifest {p}: {e}"))?;
-                let digest = ArsenalManifest::digest_of(&text);
-                let m = ArsenalManifest::parse(&text)
-                    .map_err(|e| format!("arsenal manifest {p}: {e}"))?;
-                (m, digest, p.clone())
+    let (manifest, arsenal_digest, arsenal_desc): (Arc<ArsenalManifest>, String, String) =
+        match prevalidated_manifest {
+            Some((m, digest, desc)) => (m, digest, desc),
+            None => {
+                let (m, digest, desc): (ArsenalManifest, String, String) = match &arsenal_path {
+                    Some(p) => {
+                        let text = std::fs::read_to_string(p)
+                            .map_err(|e| format!("read arsenal manifest {p}: {e}"))?;
+                        let digest = ArsenalManifest::digest_of(&text);
+                        let m = ArsenalManifest::parse(&text)
+                            .map_err(|e| format!("arsenal manifest {p}: {e}"))?;
+                        (m, digest, p.clone())
+                    }
+                    None => (
+                        ArsenalManifest::embedded_default()
+                            .map_err(|e| format!("embedded arsenal manifest: {e}"))?,
+                        ArsenalManifest::embedded_manifest_digest(),
+                        "embedded default".into(),
+                    ),
+                };
+                let m = Arc::new(m);
+                let vctx = crate::arsenal::ValidateCtx::raw(Path::new(&winners_dir));
+                m.validate(&vctx).map_err(|e| {
+                    format!("arsenal manifest ({desc}): validation refused: {e}")
+                })?;
+                (m, digest, desc)
             }
-            None => (
-                ArsenalManifest::embedded_default()
-                    .map_err(|e| format!("embedded arsenal manifest: {e}"))?,
-                ArsenalManifest::embedded_manifest_digest(),
-                "embedded default".into(),
-            ),
         };
-    let manifest = Arc::new(manifest);
-    let vctx = crate::arsenal::ValidateCtx::raw(Path::new(&winners_dir));
-    manifest.validate(&vctx).map_err(|e| {
-        format!("arsenal manifest ({arsenal_desc}): validation refused: {e}")
-    })?;
     eprintln!(
         "[riir-instinct] arsenal: {} row(s) ({arsenal_desc}, digest blake3:{})",
         manifest.rows().len(),
@@ -217,6 +240,7 @@ pub fn run(cfg: ServeConfig) -> Result<(), String> {
         winners_dir,
         synth_corpus_dir,
         manifest: Arc::clone(&manifest),
+        loader: lane_loader.unwrap_or(raw_lane_loader),
     });
     let mut slots: Vec<Arc<LaneSlot<AnySuiteServer>>> = Vec::with_capacity(suites.len());
     let mut eager: Vec<usize> = Vec::new();
@@ -292,7 +316,40 @@ struct BootCtx {
     /// byte-identical boots.
     synth_corpus_dir: Option<String>,
     manifest: Arc<ArsenalManifest>,
+    /// The lane-load seam (plan 009 T2): the raw posture by default; a
+    /// downstream host installs its own at config time.
+    loader: LaneLoader,
 }
+
+/// The host-facing view of the boot context a [`LaneLoader`] reads — the
+/// exact fields the edge's own raw loader uses. Rethink's loader reads
+/// its vessel config from its own process-global; this carries the
+/// edge-owned inputs.
+pub struct LoadCtx<'a> {
+    pub manifest: &'a ArsenalManifest,
+    pub datasets_dir: &'a str,
+    pub winners_dir: &'a str,
+    pub synth_corpus_dir: Option<&'a str>,
+}
+
+/// What a successful load hands the installer: the serving server, the
+/// artifact bytes' BLAKE3 (the epoch tag's digest half — the same
+/// quantity the manifest row pins), and the optional post-install hook
+/// (vessel mode's monotonic apply state — the edge fires it ONLY after
+/// a successful install: a boot or hoard refusal must never advance the
+/// vessel lineage gate).
+pub struct LoadedLane {
+    pub server: AnySuiteServer,
+    pub artifact_digest: [u8; 32],
+    pub on_install: Option<Box<dyn FnOnce() -> Result<(), String> + Send>>,
+}
+
+/// The lane-load seam (plan 009 T2): turn (boot context, suite, optional
+/// swap artifact name) into a serving lane. The edge's default is the
+/// raw posture; a downstream host (Rethink) installs its vessel-aware
+/// loader via [`ServeConfig::lane_loader`] — the edge stays ONE code
+/// path (re-shared, never forked).
+pub type LaneLoader = fn(&LoadCtx<'_>, &'static str, Option<&str>) -> Result<LoadedLane, String>;
 
 /// The serve registry: one slot per requested suite + the boot context
 /// the lazy trigger and the swap edge share.
@@ -304,8 +361,10 @@ struct SrvState {
 /// Bounded single-read (the vessel reader's discipline, mirrored): a
 /// regular file only, one `take(cap+1)` read that can never allocate past
 /// the ceiling even if the file grows mid-flight. The +1 sees an
-/// oversized file and the refusal carries the length.
-fn read_bounded(path: &Path, cap: usize) -> Result<Vec<u8>, String> {
+/// oversized file and the refusal carries the length. PUBLIC — the
+/// downstream lane loader reads its artifacts with the same primitive
+/// (one bounded read, one spelling).
+pub fn read_bounded(path: &Path, cap: usize) -> Result<Vec<u8>, String> {
     use std::io::Read as _;
     let md = std::fs::metadata(path).map_err(|e| format!("read {}: {e}", path.display()))?;
     if !md.is_file() {
@@ -337,26 +396,34 @@ fn read_bounded(path: &Path, cap: usize) -> Result<Vec<u8>, String> {
     Ok(buf)
 }
 
-/// What a successful load hands the installer: the serving server and
-/// the artifact bytes' BLAKE3 (the epoch tag's digest half — the same
-/// quantity the manifest row pins).
-struct LoadedLane {
-    server: AnySuiteServer,
-    artifact_digest: [u8; 32],
-}
-
-/// Load one suite's lane: the seat (datasets) + the artifact (the row's
-/// file, or the swap's explicit artifact), read ONCE and built from those
-/// bytes — the raw sealed winners (or the artifact-less A0 posture).
-/// (The PUBLIC-RELEASE vessel lane rides the same boot_* calls via a
-/// manifest that names vessel rows; the hosted Rethink lane lives
-/// downstream.)
+/// Load one suite's lane through the configured seam: the raw posture by
+/// default, the host's loader when installed (plan 009 T2).
 fn load_lane(
     ctx: &BootCtx,
     suite: &'static str,
     artifact: Option<&str>,
 ) -> Result<LoadedLane, String> {
-    let Some(row) = ctx.manifest.row(suite) else {
+    let lctx = LoadCtx {
+        manifest: &ctx.manifest,
+        datasets_dir: &ctx.datasets_dir,
+        winners_dir: &ctx.winners_dir,
+        synth_corpus_dir: ctx.synth_corpus_dir.as_deref(),
+    };
+    (ctx.loader)(&lctx, suite, artifact)
+}
+
+/// The default raw loader (the pre-seam behavior, byte-identical): the
+/// seat (datasets) + the artifact (the row's file, or the swap's
+/// explicit artifact), read ONCE and built from those bytes — the raw
+/// sealed winners (or the artifact-less A0 posture). (The PUBLIC-RELEASE
+/// vessel lane rides the same boot_* calls via a manifest that names
+/// vessel rows; the hosted Rethink lane lives downstream.)
+fn raw_lane_loader(
+    lctx: &LoadCtx<'_>,
+    suite: &'static str,
+    artifact: Option<&str>,
+) -> Result<LoadedLane, String> {
+    let Some(row) = lctx.manifest.row(suite) else {
         return Err(format!("suite {suite} is not in the arsenal manifest"));
     };
     let cap = (row.budget.max_payload_mb << 20) as usize;
@@ -364,13 +431,13 @@ fn load_lane(
     // for THIS suite seats it; anything else keeps the gold seat. A present
     // artifact that FAILS verification is fatal (a corrupt corpus must
     // never degrade into a quiet gold seat — the vessel reader's law).
-    let seat = match ctx.synth_corpus_dir.as_ref() {
+    let seat = match lctx.synth_corpus_dir {
         Some(dir) => {
             let synth = Path::new(dir).join(format!("{suite}_synth.jsonl"));
             if synth.is_file() {
                 let s = riir_reflex::harness::runner::seat::prepare_seat_with_synth(
                     suite,
-                    Path::new(&ctx.datasets_dir),
+                    Path::new(lctx.datasets_dir),
                     &synth,
                     SYNTH_EXTRA_CAP,
                 )?;
@@ -385,12 +452,12 @@ fn load_lane(
             } else {
                 riir_reflex::harness::runner::seat::prepare_seat(
                     suite,
-                    Path::new(&ctx.datasets_dir),
+                    Path::new(lctx.datasets_dir),
                 )?
             }
         }
         None => {
-            riir_reflex::harness::runner::seat::prepare_seat(suite, Path::new(&ctx.datasets_dir))?
+            riir_reflex::harness::runner::seat::prepare_seat(suite, Path::new(lctx.datasets_dir))?
         }
     };
     // The artifact-less A0 posture (owner 2026-10-02 full-coverage
@@ -399,10 +466,11 @@ fn load_lane(
     // digest is `lane_tag_digest`'s suite-name BLAKE3 — the same value the
     // slot's birth tag carries, so the install is the idempotent no-op.
     if row.digest.is_none() {
-        let server = AnySuiteServer::boot_a0_from_seat(suite, seat, &ctx.manifest)?;
+        let server = AnySuiteServer::boot_a0_from_seat(suite, seat, lctx.manifest)?;
         return Ok(LoadedLane {
             server,
             artifact_digest: lane_tag_digest(row, suite),
+            on_install: None,
         });
     }
     let name = artifact
@@ -412,13 +480,14 @@ fn load_lane(
     // EXACTLY its bridged file, loud refusal otherwise (bag rows only —
     // the bridge's own law).
     crate::specialist::check_winner_file(suite, &name)?;
-    let path = Path::new(&ctx.winners_dir).join(&name);
+    let path = Path::new(lctx.winners_dir).join(&name);
     let bytes = read_bounded(&path, cap)?;
     let digest = *blake3::hash(&bytes).as_bytes();
-    let server = AnySuiteServer::boot_bytes(suite, seat, &bytes, &ctx.manifest)?;
+    let server = AnySuiteServer::boot_bytes(suite, seat, &bytes, lctx.manifest)?;
     Ok(LoadedLane {
         server,
         artifact_digest: digest,
+        on_install: None,
     })
 }
 
@@ -548,6 +617,14 @@ fn run_loader(state: &Arc<SrvState>, idx: usize) {
                 meta.source,
                 tag.epoch,
             );
+            // The post-install hook (vessel mode's monotonic apply
+            // state) — fired ONLY after the install landed; a boot,
+            // hoard or gate refusal never advances the lineage gate.
+            if let Some(persist) = lane.on_install {
+                if let Err(e) = persist() {
+                    eprintln!("[riir-instinct] lane {suite}: persist applied state: {e}");
+                }
+            }
         }
         Err(e) => {
             let msg = format!("swap gate refused install: {e}");
@@ -1445,6 +1522,13 @@ fn swap_edge(stream: &mut TcpStream, srv: &Arc<SrvState>, body: &[u8], cors: Opt
     }
     match slot.install_ready(lane.server, tag, centroid, req.force) {
         Ok(outcome) => {
+            // The post-install hook (vessel mode's monotonic apply
+            // state) — fired ONLY after the install landed.
+            if let Some(persist) = lane.on_install {
+                if let Err(e) = persist() {
+                    eprintln!("[riir-instinct] arsenal: {suite}: persist applied state: {e}");
+                }
+            }
             use crate::arsenal_ops::InstallOutcome;
             let status = match outcome {
                 InstallOutcome::Advanced => "advanced",

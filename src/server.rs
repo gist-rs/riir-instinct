@@ -1552,6 +1552,48 @@ impl AnySuiteServer {
         }
     }
 
+    /// The parts-based boot for the DOWNSTREAM lane host (Rethink): its
+    /// HOSTED-ONLY vessel reader opens, verifies and decrypts with its
+    /// own key, decodes the specialist and hands it HERE with the vessel
+    /// lineage identity (the 16-hex commitment prefix the raw boot names
+    /// `winner_blake3` from). The open build's own boots never call it —
+    /// theirs open the PUBLIC class internally
+    /// ([`Self::boot_vessel_bytes`]); a caller that has not verified the
+    /// artifact has no business here (the class discipline is the
+    /// caller's, the shape guard is this fn's).
+    pub fn boot_hosted_parts(
+        suite: &'static str,
+        seat: Seat,
+        spec: crate::specialist::Specialist,
+        commitment16: String,
+        arm: Arm,
+    ) -> Result<Self, String> {
+        macro_rules! parts_arm {
+            ($variant:ident, $n:literal) => {{
+                let server = SuiteServer::<$n>::from_parts(
+                    suite,
+                    seat,
+                    spec,
+                    commitment16,
+                    WeightSource::Vessel,
+                    arm,
+                )?;
+                Ok(AnySuiteServer::$variant(Box::new(server)))
+            }};
+        }
+        match seat.labels.len() {
+            2 => parts_arm!(S2, 2),
+            3 => parts_arm!(S3, 3),
+            4 => parts_arm!(S4, 4),
+            5 => parts_arm!(S5, 5),
+            6 => parts_arm!(S6, 6),
+            8 => parts_arm!(S8, 8),
+            59 => parts_arm!(S59, 59),
+            77 => parts_arm!(S77, 77),
+            other => Err(format!("suite {suite}: no engine arity for {other} labels")),
+        }
+    }
+
     pub fn decide(
         &mut self,
         state: &str,
