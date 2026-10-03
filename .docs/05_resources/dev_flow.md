@@ -9,8 +9,10 @@ shows what happens at answer time. One figure:
 3. **stratified holdout + winner law** — the GOAT gate: the candidate
    earns a row only by strictly beating the free engine on one frozen,
    label-stratified test read.
-4. **BLAKE3-lock** — a passing artifact is locked into a tamper-evident,
-   checksum-verified artifact; nothing trains at serve time.
+4. **BLAKE3-lock** — a passing artifact's BLAKE3 digest is pinned in its
+   manifest row and checked at every load, so any change to the file is
+   caught; nothing trains at serve time. (Hashed, not signed: the signed
+   vessel format exists but is not the serving path yet.)
 5. **manifest row** — the locked winner is registered in `arsenal.toml`,
    the ONE selection surface (the composition figure's hot-swap lane).
 6. **serve + receipts** — the lane answers with a decision receipt:
