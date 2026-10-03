@@ -5,7 +5,7 @@ is lib surface. T2 — the open seam (`a295930`+`d5396fc`) + the rethink
 serve bin (`f0fd626`) + the hunk disposition map (`44336d8`, all 13
 hunks landed or superseded-with-reason; the measurement lane is
 LIB-first, the gates verified). The plan is COMPLETE; B4 (the trainer
-half) stays separate — deferred on riir-train Issue 607.
+half) was separate — it LANDED 2026-10-03 (see Plan 008's B4 row).
 
 ## Why this plan exists
 

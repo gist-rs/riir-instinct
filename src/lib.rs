@@ -15,6 +15,21 @@
 //! row is the PUBLIC-RELEASE reader only).
 
 pub mod specialist;
+/// The L1 training lane (Plan 008 B4 — lifted from `../riir-train`, where
+/// it landed as the Issue-576+ trainer family): the Arm-A one-vs-all
+/// logistic specialist + its trainer, the NBSVM ridge mirror, the typed
+/// option-conditioned variant, the banking77 teacher-case law, and the
+/// stratified-holdout/teacher-dump/suite-row substrate the serving
+/// winners' recipes and the `examples/instinct_*` teaching lanes share.
+/// Pure CPU, modelless, zero new deps (blake3/serde_json were already
+/// in-tree) — the teaching arc's train → holdout + winner law → seal →
+/// mint half, now runnable from this repo. The MOAT trainers (the
+/// encoder lane) live in `../riir-rethink`; GPU training + distill stay
+/// in `../riir-train`.
+pub mod instinct_specialist;
+pub mod instinct_nbsvm;
+pub mod instinct_specialist_typed;
+pub mod instinct_bank77_cases;
 pub mod hybrid;
 pub mod stats;
 pub mod arsenal;

@@ -41,6 +41,14 @@ teaching/product sibling of the public modelless engine `../riir-reflex`:
   is measured-negative teaching gold)
 - the measurement-honesty instruments (`staleness.rs`, `stats.rs`) and
   the arena/bench/serve gate suite
+- the **L1 training lane** (Plan 008 B4, lifted from `../riir-train`
+  2026-10-03): the Arm-A one-vs-all logistic specialist trainer + the
+  NBSVM ridge mirror + the typed option-conditioned variant + the
+  banking77 teacher-case law (`src/instinct_specialist*.rs`,
+  `instinct_nbsvm`, `instinct_bank77_cases`) and the teaching recipes
+  (`examples/instinct_arm_a{,_typed,_b}`, `instinct_bank77_cases`,
+  `instinct_v2_gate`, `instinct_emotion_v2`) — the train → holdout +
+  winner law → seal half of the teaching arc, runnable from a clone
 
 ## Does not own — the moat (born as the private `../riir-rethink` repo, 2026-10-03)
 
@@ -50,7 +58,7 @@ teaching/product sibling of the public modelless engine `../riir-reflex`:
 | **The HOSTED-ONLY vessel reader** (blake3-XOF, class gate, mint helper) | **`../riir-rethink`** (`src/vessel.rs`; this repo keeps the PUBLIC-RELEASE reader only) |
 | **The economy plane** (decstat capture + receipt verify + floor runner) | **`../riir-rethink`** (`src/decstat*.rs`, `examples/decstat_floor.rs`; riir-dapps keeps settlement semantics) |
 | The moat records/docs/artifacts (encoder/quant/distill benches 029–048·050–056 subset, deploy.yaml, the production arsenal.toml, .plans/002·006·007, .proposals/001, .issues/016) | **`../riir-rethink`** (born 2026-10-03 from the `moat/` seed at `4ffd08f`; this repo keeps `moat/README.md` as the pointer — the whole git history stays HERE) |
-| Training, distillation, the self-evolve loop, vessel MINTING + lineage store | `../riir-train` (Issue 576; Research 457 moat map); the trainer-module half of the carve is **deferred** (Plan 008 B4 — until riir-train Issue 607 lands + both boxes rebase) |
+| Training, distillation, the self-evolve loop, vessel MINTING + lineage store | `../riir-train` (Issue 576; Research 457 moat map). Amended 2026-10-03 (Plan 008 B4): the L1 CPU trainers + teaching recipes moved HERE (the training lane above); riir-train keeps GPU training, the distill teachers, and the HOSTED vessel minter |
 | Model forward kernels, loaders, tokenizers | `../riir-infer` (public; ships loaders, not weights) |
 | The modelless engine + arena harness | `../riir-reflex` (public) |
 | The vessel FORMAT crate (both classes' wire format) | `../riir-reflexer` (`reflexer-vessel`; capability features split the readers) |
@@ -96,7 +104,16 @@ downstream of it). No game crates, no Python, no candle.
   at the carve — Phase C mints demo winners into it).
 - **No-cheat protocol** (riir-reflex Issue 038): train rows only for any
   corpus/weights; select on held-out train; arena test split read once.
-- **No training code here** — riir-train trains, this repo consumes bytes.
+- **Training scope** (amended 2026-10-03, Plan 008 B4): the L1 training
+  lane IS in-tree as teaching code — the CPU, modelless, public-data
+  trainers (`src/instinct_specialist*.rs`, `instinct_nbsvm`,
+  `instinct_bank77_cases` + the `examples/instinct_*` recipes), so the
+  teaching arc (fetch public data → train → holdout + winner law → seal
+  → mint → serve) runs from a clone. What stays OUT: GPU training,
+  distill and the self-evolve loop (`../riir-train`), and the moat
+  encoder trainers (`../riir-rethink`). Heavy/artifact-producing runs
+  write to `data/trained_specialists/` (gitignored), never into the
+  serving default.
 - **Demo ≠ production**: the embedded manifest serves the modelless tier
   from a fresh clone; the production verdict is Rethink's. Teaching
   numbers never join the board.

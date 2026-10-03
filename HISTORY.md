@@ -1,3 +1,20 @@
+## 2026-10-03 — B4 LANDED: the L1 training lane is in-tree (the carve's deferred riir-train half)
+
+The L1 trainers + teaching recipes moved from `../riir-train` into THIS
+repo (Plan 008 B4 — `src/instinct_specialist*.rs`, `instinct_nbsvm`,
+`instinct_bank77_cases` + the six `examples/instinct_*` lanes; the moat
+encoder half went to `../riir-rethink`). The teaching arc now runs
+end-to-end from a clone: fetch public data → train (arm_a / arm_a_typed /
+arm_b / the v2 + emotion gates) → holdout + winner law → seal → mint a
+PUBLIC-RELEASE vessel → manifest → serve. Trainer output defaults to
+`data/trained_specialists/` (the old `data/instinct_specialists` literal
+is fence-banned and was the private box's layout). Boundary amended: the
+"no training code here" invariant is now "training scope" — L1 CPU
+teaching trainers in-tree; GPU/distill/self-evolve stay in riir-train,
+the moat encoder trainers in Rethink. Gates: clippy `-D --all-targets`,
+lib 57→85 (the 28 moved tests all green), fence `--post-split` GREEN,
+vessel + laya-face postures compile. Full disposition: Plan 008's B4 row.
+
 ## 2026-10-03 — MOAT-LEAK AUDIT (post-reversal): fence GREEN on code; records arm ADDED (the GREEN said nothing about .benchmarks); r5_launch_ab.ps1 removed; B2 record corrected
 
 Full sweep of every PUBLIC tree (riir-instinct, riir-reflex, riir-reflexer, reflex-site, katgpt-rs) after the owner's history sanction: `fence_gate.sh --post-split` GREEN, `sync_mirror.py --check` 13/13 (the Rethink mirror fence layers held — banners present, zero code/digests/paths in the mirrored bytes), zero moat CODE anywhere (encoder_serve/encoder_arm/hosted reader/decstat all absent), zero artifact bytes (no .vessel/.bin/gguf tracked in any public repo), teaching manifest confirmed artifact-less, deps clean (ed25519 dev-only, no riir-kat/papaya), reflexer writes no class-1. Verdict round (Claude, AGREE) corrections folded: (1) EIGHT deliberate-stay records, not seven — 049 also rides; (2) the history regex never matched `0029` (spells `029`); (3) that regex only ran in the retired history check — the working-tree GREEN never covered `.benchmarks/`, so the stays are now ENFORCED, not just documented:
