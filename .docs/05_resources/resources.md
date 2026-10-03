@@ -8,13 +8,13 @@ the survivors on top, never instead.
 
 Reflex is a product — the free modelless engine that runs on your machine.
 Instinct is the idea layered on top of it: the composition itself, taught
-here by an open lane that embodies it. The lane opens publicly at
-Proposal 052 Phase C — the GitHub link below resolves then, the same
-standing as the bench page's existing links. The same idea runs one rung
+here by an open lane that embodies it. The lane is public — the GitHub link
+below is live (one repo, single source of truth since the same-day owner
+retirement of the internal split). The same idea runs one rung
 deeper in Rethink, where a bag-specialist is too coarse and a trained
 encoder head thinks behind HOSTED-ONLY (weights that never leave our
 servers — you call, we think) serving; see the family resources page
-(`/resources/`, incoming) for the full three-name picture.
+(`/resources/` on reflex.gist.rs) for the full three-name picture.
 
 ## How the composition works
 
