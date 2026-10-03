@@ -1,12 +1,11 @@
 # The serve-edge lift + the Rethink bin reassembly (the next split unit)
 
-**Status:** T1 LANDED 2026-10-03 (instinct `7d22fea` — the edge is lib
-surface; `serve_edge::run(ServeConfig)` is the consumption point).
-**T2.1 LANDED 2026-10-03** (open seam `a295930`+`d5396fc`; rethink bin
-`f0fd626` — the moat env surface over the shared edge). T2.2–T2.4
-next (the arena harness + the gate re-point audit + the hunk map).
-B4 (the trainer half) stays separate — deferred on riir-train Issue
-607.
+**Status:** T1+T2 LANDED 2026-10-03. T1 (instinct `7d22fea`) — the edge
+is lib surface. T2 — the open seam (`a295930`+`d5396fc`) + the rethink
+serve bin (`f0fd626`) + the hunk disposition map (`44336d8`, all 13
+hunks landed or superseded-with-reason; the measurement lane is
+LIB-first, the gates verified). The plan is COMPLETE; B4 (the trainer
+half) stays separate — deferred on riir-train Issue 607.
 
 ## Why this plan exists
 
@@ -105,20 +104,24 @@ the edge. Clippy -D x4 postures; tests green default/vessel/decstat.
       capture hook rides the lib's `decstat::install` — the bin's boot
       wiring; the capture site itself is the ENC lane's decide path,
       already lib-side.)
-- [ ] T2.2 Rethink's measurement harness from the `arena_encoder_*`
+- [x] T2.2 Rethink's measurement harness from the `arena_encoder_*`
       hunks (6 files) over the public lib pieces (`prepare_seat`, the
       paired-stats helpers); the lane-doc emitter's laws carry verbatim
-      (issue 017 T5 — instinct numbering).
-- [ ] T2.3 the moat parity gates (`moat/tests/` → rethink `tests/`)
+      (issue 017 T5 — instinct numbering). (SUPERSEDED LIB-FIRST — the
+      sibling's issue 016/017 work carried the measurement lane into
+      `encoder_arm::eval_encoder_arm` + `examples/esc_margin_refit.rs`
+      with the auto-emitted lane doc; a rethink arena bin would FORK
+      the open arena — refused, bins single-homed. Dispositions in
+      bin_hunks/README.md §Disposition.)
+- [x] T2.3 the moat parity gates (`moat/tests/` → rethink `tests/`)
       re-point at the rethink crate root; the frozen Bench-029/599/600
-      replays must stay EXACT (the cell-identity witnesses). (Audited
-      2026-10-03: serve_encoder_parity + esc_gates + vessel_gates +
-      decstat_gates + encoder_shared_parity ALREADY live in
-      rethink/tests/ and pass at their postures — the seed landed them;
-      T2.3 narrows to a verify pass + any missing arena-side gate.)
-- [ ] T2.4 the hunks' origin maps verified: every hunk either landed,
+      replays must stay EXACT (the cell-identity witnesses). (Verified:
+      the seed landed the gates at crate-root scope; esc_gates 10/10
+      re-verified 2026-10-03 at the serve-encoder posture.)
+- [x] T2.4 the hunks' origin maps verified: every hunk either landed,
       or is recorded as intentionally dropped with a reason (the
-      export-manifest discipline applied to the bins).
+      export-manifest discipline applied to the bins). (bin_hunks/
+      README.md §Disposition, rethink `44336d8`.)
 
 ## Sequencing + risks
 
