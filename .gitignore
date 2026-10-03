@@ -17,8 +17,6 @@ CLAUDE.md
 /.deploy/
 /dist/
 
-# cargo-heal runtime data (trajectory store + machine key; local state, never committed)
-/.heal/
-
 # cargo-refine machine-local state (trajectories, fixseq, outbox, active-set)
 .refine/
+.export/
