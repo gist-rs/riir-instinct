@@ -12,6 +12,11 @@ public; history is fine").
 - The moat SOURCE (`src/encoder_arm.rs`, `src/encoder_serve.rs`,
   `src/vessel.rs`, `src/decstat*.rs`), the gates, the records, the
   production manifest, and the deploy shape now live in `../riir-rethink`.
+  The trainer half joined it 2026-10-03 (Plan 008 B4:
+  `src/instinct_encoder_lane.rs`, `src/instinct_laya_head.rs` + the five
+  `examples/instinct_encoder_*` / teacher / static-surrogate recipes);
+  the L1 trainers went PUBLIC into this repo instead (`src/instinct_*.rs`
+  + `examples/instinct_arm_*` etc.).
 - The open crate's coupling to Rethink is the lane-backend seam only:
   `server::{LaneBackend, ExtBoots, install_ext_boots}` + the
   `AnySuiteServer::Ext` seat (Proposal 052).
