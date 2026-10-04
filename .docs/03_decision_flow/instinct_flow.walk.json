@@ -1,0 +1,228 @@
+{
+ "gfflow_walk": 1,
+ "generated_by": "reflex-site scripts/render_flows.py",
+ "file": "instinct_flow.svg",
+ "title": "Instinct: the trained add-on composes on top of the free floor",
+ "accent": "#ff8a3d",
+ "intro": "Press play to walk the composition one step at a time, or click a dot to jump. Each step shows what goes in and what comes out — captured from the real release binary where the step is live.",
+ "steps": {
+  "ask": {
+   "n": "1",
+   "title": "Your question",
+   "lane": "me",
+   "color": "#ff8a3d"
+  },
+  "floor": {
+   "n": "2",
+   "title": "Reflex answers first",
+   "lane": "me",
+   "color": "#ff8a3d"
+  },
+  "ans": {
+   "n": "3a",
+   "title": "Answer + receipt",
+   "lane": "me",
+   "color": "#ff8a3d"
+  },
+  "prune": {
+   "n": "3b.1",
+   "title": "Abstain, prune",
+   "lane": "lane",
+   "color": "#f472b6"
+  },
+  "score": {
+   "n": "3b.2",
+   "title": "Specialist scores",
+   "lane": "lane",
+   "color": "#f472b6"
+  },
+  "fuse": {
+   "n": "3b.3",
+   "title": "Fuse and calibrate",
+   "lane": "lane",
+   "color": "#f472b6"
+  },
+  "enc": {
+   "n": "4",
+   "title": "The encoder rung",
+   "lane": "host",
+   "color": "#a98bfa"
+  },
+  "manifest": {
+   "n": "5",
+   "title": "Registered arms",
+   "lane": "ops",
+   "color": "#f472b6"
+  }
+ },
+ "edges": [
+  {
+   "id": "ask->floor",
+   "back": false
+  },
+  {
+   "id": "floor->ans",
+   "back": false
+  },
+  {
+   "id": "floor->prune",
+   "back": false
+  },
+  {
+   "id": "prune->score",
+   "back": false
+  },
+  {
+   "id": "score->fuse",
+   "back": false
+  },
+  {
+   "id": "fuse->enc",
+   "back": false
+  },
+  {
+   "id": "fuse->ans",
+   "back": true
+  },
+  {
+   "id": "enc->ans",
+   "back": true
+  },
+  {
+   "id": "manifest->score",
+   "back": true
+  }
+ ],
+ "walk": [
+  {
+   "title": "The same typed question",
+   "text": "Your app sends the same typed question it would send the free engine: a state plus questions — choice, score or yes-no. This spot question is one the game heads know.",
+   "steps": [
+    "ask"
+   ],
+   "edges": [],
+   "illustrative": false,
+   "in": {
+    "lang": "json",
+    "src": "data/flows/instinct_flow/01_in.json",
+    "label": "POST /decide",
+    "from": "captured from the reflex 0.2.4 release binary, 2026-10-03 · POST /decide (answered request)",
+    "body": "{\n  \"state\": \"The piece leaves no holes under it on the left edge, sits flat on the surface, and the stack stays low.\",\n  \"questions\": [\n    {\n      \"id\": \"clean\",\n      \"kind\": \"noul\",\n      \"prompt\": \"Does the stack look clean?\"\n    }\n  ]\n}"
+   }
+  },
+  {
+   "title": "The free floor answers first",
+   "text": "Reflex runs before anything paid: embed, route to the corpus, score every option, and the fused gate checks confidence. On this harder triage question the gate abstains — every outcome comes back null — and that abstain is what pays the rung above.",
+   "steps": [
+    "floor"
+   ],
+   "edges": [
+    "ask->floor"
+   ],
+   "illustrative": false,
+   "in": {
+    "lang": "json",
+    "src": "data/flows/instinct_flow/02_in.json",
+    "label": "POST /decide · a harder question",
+    "from": "captured from the reflex 0.2.4 release binary, 2026-10-03 · POST /decide (abstained request)",
+    "body": "{\n  \"state\": \"The staging deploy of release candidate 4.2 finished but the error budget is down to 12 percent and two health endpoints are flapping after the rollout. Rollback is one command. Decide what happens next.\",\n  \"questions\": [\n    {\n      \"id\": \"route\",\n      \"kind\": \"choice\",\n      \"prompt\": \"Route this ticket to the team that owns it.\",\n      \"options\": [\n        \"deploy-ops\",\n        \"billing-support\"\n      ]\n    },\n    {\n      \"id\": \"promote\",\n      \"kind\": \"noul\",\n      \"prompt\": \"Should the rollout be promoted to production right now?\"\n    },\n    {\n      \"id\": \"severity\",\n      \"kind\": \"score\",\n      \"prompt\": \"How severe is this situation?\",\n      \"options\": [\n        \"routine\",\n        \"needs-attention\",\n        \"critical\"\n      ]\n    }\n  ]\n}"
+   },
+   "out": {
+    "lang": "json",
+    "src": "data/flows/instinct_flow/02_out.json",
+    "label": "not sure: the abstain that pays the rung",
+    "from": "captured from the reflex 0.2.4 release binary, 2026-10-03 · POST /decide (abstained response)",
+    "body": "{\n  \"answers\": [\n    {\n      \"question_id\": \"route\",\n      \"outcome\": null,\n      \"probabilities\": [0.52583224, 0.47416782],\n      \"confidence\": 0.0019263625\n    },\n    {\n      \"question_id\": \"promote\",\n      \"outcome\": null,\n      \"probabilities\": [0.49452087],\n      \"confidence\": 0.00008660555\n    },\n    {\n      \"question_id\": \"severity\",\n      \"outcome\": null,\n      \"probabilities\": [0.3601853, 0.2878931, 0.35192165],\n      \"confidence\": 0.004379213\n    }\n  ],\n  \"routing\": {\n    \"lane\": \"modelless\",\n    \"reason\": \"modelless corpus routing: ops=3 support=0; fused abstain (score+distance) armed; drafter-only=1\"\n  },\n  \"calibration\": {\n    \"method\": \"none\",\n    \"temperature\": 1.0\n  }\n}"
+   }
+  },
+  {
+   "title": "Sure — the specialist is never paid",
+   "text": "When the floor is sure, the answer goes straight back with calibrated confidence and a receipt, and no specialist is consulted. That is the rung model: you pay for thinking, never for re-answering what the free floor already knows.",
+   "steps": [
+    "ans"
+   ],
+   "edges": [
+    "floor->ans"
+   ],
+   "illustrative": false,
+   "in": {
+    "lang": "json",
+    "src": "data/flows/instinct_flow/01_in.json",
+    "label": "POST /decide",
+    "from": "captured from the reflex 0.2.4 release binary, 2026-10-03 · POST /decide (answered request)",
+    "body": "{\n  \"state\": \"The piece leaves no holes under it on the left edge, sits flat on the surface, and the stack stays low.\",\n  \"questions\": [\n    {\n      \"id\": \"clean\",\n      \"kind\": \"noul\",\n      \"prompt\": \"Does the stack look clean?\"\n    }\n  ]\n}"
+   },
+   "out": {
+    "lang": "json",
+    "src": "data/flows/instinct_flow/03a_out.json",
+    "label": "sure: outcome yes",
+    "from": "captured from the reflex 0.2.4 release binary, 2026-10-03 · POST /decide (answered response)",
+    "body": "{\n  \"answers\": [\n    {\n      \"question_id\": \"clean\",\n      \"outcome\": {\n        \"noul\": {\n          \"yes\": true\n        }\n      },\n      \"probabilities\": [0.51943666],\n      \"confidence\": 0.51943666\n    }\n  ],\n  \"routing\": {\n    \"lane\": \"modelless\",\n    \"reason\": \"game-head/tetris (corpus-fitted, decoded arm)\"\n  },\n  \"calibration\": {\n    \"method\": \"none\",\n    \"temperature\": 1.0\n  }\n}"
+   }
+  },
+  {
+   "title": "Prune to the candidates",
+   "text": "Only the abstained question goes on. The survivors are pruned to the top candidates so the rung above scores a handful of options, not the whole list.",
+   "steps": [
+    "prune"
+   ],
+   "edges": [
+    "floor->prune"
+   ],
+   "illustrative": false
+  },
+  {
+   "title": "The specialist scores",
+   "text": "A per-domain specialist — a locked artifact whose digest is checked at every load — scores the candidates. Selection is a monotonic hot-swap of whole artifacts from the manifest: never a weighted blend, because blends do not preserve rankings.",
+   "steps": [
+    "score"
+   ],
+   "edges": [
+    "prune->score"
+   ],
+   "illustrative": false
+  },
+  {
+   "title": "Fuse into one calibrated answer",
+   "text": "The composition fuses the floor's read with the specialist's: a cascade pick, or prior fusion lifting the calibrated favourite. A confident pick returns as the answer, receipt attached.",
+   "steps": [
+    "fuse"
+   ],
+   "edges": [
+    "score->fuse",
+    "fuse->ans"
+   ],
+   "illustrative": false
+  },
+  {
+   "title": "Still unsure — one rung deeper",
+   "text": "Where the bag view reads too coarse, a trained encoder head thinks — GPU-hosted, weights on our hosts only. It is measured on the benchmark board today, record-only: the hosted lane opens later, and this is the public request it would carry.",
+   "steps": [
+    "enc"
+   ],
+   "edges": [
+    "fuse->enc",
+    "enc->ans"
+   ],
+   "illustrative": true,
+   "in": {
+    "lang": "json",
+    "src": "data/flows/instinct_flow/04_in.json",
+    "label": "the abstained question, sent up",
+    "from": "captured from the reflex 0.2.4 release binary, 2026-10-03 · POST /decide (abstained request)",
+    "body": "{\n  \"state\": \"The staging deploy of release candidate 4.2 finished but the error budget is down to 12 percent and two health endpoints are flapping after the rollout. Rollback is one command. Decide what happens next.\",\n  \"questions\": [\n    {\n      \"id\": \"route\",\n      \"kind\": \"choice\",\n      \"prompt\": \"Route this ticket to the team that owns it.\",\n      \"options\": [\n        \"deploy-ops\",\n        \"billing-support\"\n      ]\n    },\n    {\n      \"id\": \"promote\",\n      \"kind\": \"noul\",\n      \"prompt\": \"Should the rollout be promoted to production right now?\"\n    },\n    {\n      \"id\": \"severity\",\n      \"kind\": \"score\",\n      \"prompt\": \"How severe is this situation?\",\n      \"options\": [\n        \"routine\",\n        \"needs-attention\",\n        \"critical\"\n      ]\n    }\n  ]\n}"
+   }
+  },
+  {
+   "title": "The manifest hot-swaps arms",
+   "text": "arsenal.toml is the one selection surface: a specialist joins only where it beat free Reflex on one frozen test read, and it is swapped whole — a decision always observes one whole server.",
+   "steps": [
+    "manifest"
+   ],
+   "edges": [
+    "manifest->score"
+   ],
+   "illustrative": false
+  }
+ ]
+}

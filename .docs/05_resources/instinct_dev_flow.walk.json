@@ -1,0 +1,134 @@
+{
+ "gfflow_walk": 1,
+ "generated_by": "reflex-site scripts/render_flows.py",
+ "file": "instinct_dev_flow.svg",
+ "title": "Instinct: how a specialist is made, locked and put on duty",
+ "accent": "#f472b6",
+ "intro": "Press play to walk the build path one step at a time, or click a dot to jump.",
+ "steps": {
+  "corpus": {
+   "n": "1",
+   "title": "Make the corpus",
+   "lane": "data",
+   "color": "#f472b6"
+  },
+  "spec": {
+   "n": "2",
+   "title": "Train a specialist",
+   "lane": "train",
+   "color": "#f472b6"
+  },
+  "holdout": {
+   "n": "3",
+   "title": "The winner law",
+   "lane": "train",
+   "color": "#f472b6"
+  },
+  "lock": {
+   "n": "4",
+   "title": "Lock it",
+   "lane": "artifact",
+   "color": "#f472b6"
+  },
+  "row": {
+   "n": "5",
+   "title": "Register the row",
+   "lane": "artifact",
+   "color": "#f472b6"
+  },
+  "srv": {
+   "n": "6",
+   "title": "Serve with receipts",
+   "lane": "serve",
+   "color": "#f472b6"
+  }
+ },
+ "edges": [
+  {
+   "id": "corpus->spec",
+   "back": false
+  },
+  {
+   "id": "spec->holdout",
+   "back": false
+  },
+  {
+   "id": "holdout->lock",
+   "back": false
+  },
+  {
+   "id": "lock->row",
+   "back": false
+  },
+  {
+   "id": "row->srv",
+   "back": false
+  }
+ ],
+ "walk": [
+  {
+   "title": "Make the corpus",
+   "text": "The training corpus is assembled from public data, with the splits frozen before anything trains — fit on one slice, choose on another, read test once for the verdict.",
+   "steps": [
+    "corpus"
+   ],
+   "edges": [],
+   "illustrative": false
+  },
+  {
+   "title": "Train a specialist",
+   "text": "One small model per domain trains on its slice of the corpus — a specialist for exactly the cases the free engine finds hard.",
+   "steps": [
+    "spec"
+   ],
+   "edges": [
+    "corpus->spec"
+   ],
+   "illustrative": false
+  },
+  {
+   "title": "The winner law decides",
+   "text": "The candidate earns a manifest row only by strictly beating the free engine on one frozen, label-stratified test read. A tie or a loss sells nothing — the free floor keeps answering.",
+   "steps": [
+    "holdout"
+   ],
+   "edges": [
+    "spec->holdout"
+   ],
+   "illustrative": false
+  },
+  {
+   "title": "Lock it",
+   "text": "A passing artifact's digest is pinned and checked at every load, so any change to the file is caught — and nothing trains at serve time.",
+   "steps": [
+    "lock"
+   ],
+   "edges": [
+    "holdout->lock"
+   ],
+   "illustrative": false
+  },
+  {
+   "title": "Register the row",
+   "text": "The locked winner is registered in the manifest — the one selection surface. It is swapped whole, never blended, and a decision always observes one whole server.",
+   "steps": [
+    "row"
+   ],
+   "edges": [
+    "lock->row"
+   ],
+   "illustrative": false
+  },
+  {
+   "title": "Serve with receipts",
+   "text": "The lane answers with a decision receipt: the build fingerprint, hashes of the input and the canonical decision, and the lane id — an audit trail on every answer.",
+   "steps": [
+    "srv"
+   ],
+   "edges": [
+    "row->srv"
+   ],
+   "illustrative": false
+  }
+ ]
+}
