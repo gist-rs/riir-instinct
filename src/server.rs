@@ -1305,6 +1305,22 @@ impl AnySuiteServer {
         Self::boot_from_seat_arm(suite, seat, winners_dir, manifest, arm)
     }
 
+    /// The ESC cheap-leg boot (the sanctioned escalate-aware caller: the
+    /// private Rethink ESC wrapper/loader): boots the row's OWN posture with
+    /// the escalate table deliberately IGNORED — the cheap leg the ESC lane
+    /// composes over. Every other boot path refuses an escalate row loud (the
+    /// open build never serves the composition); this is the one deliberate
+    /// exception, documented for the private lane's wrapper.
+    pub fn boot_cheap_from_seat(
+        suite: &'static str,
+        seat: Seat,
+        winners_dir: &Path,
+        manifest: &ArsenalManifest,
+    ) -> Result<Self, String> {
+        let arm = Self::posture_of(manifest, suite)?;
+        Self::boot_from_seat_arm_inner(suite, seat, winners_dir, manifest, arm, true)
+    }
+
     /// The ARTIFACT-LESS boot (owner 2026-10-02 full-coverage serving):
     /// the manifest row carries no digest, so the lane is the modelless
     /// tier alone — `HybridLane::ReflexOnly` (the G0a arm, byte-identical
@@ -1355,9 +1371,43 @@ impl AnySuiteServer {
         manifest: &ArsenalManifest,
         arm: Arm,
     ) -> Result<Self, String> {
+        Self::boot_from_seat_arm_inner(suite, seat, winners_dir, manifest, arm, false)
+    }
+
+    /// The escalate-row wall (riir-rethink Issue 017 T5): a row carrying
+    /// an `escalate` table composes in the private Rethink lane ONLY — the
+    /// open build refuses rather than serve the cheap leg silently (the
+    /// composition's absence would read as the incumbent's verdict). The
+    /// one sanctioned exception is [`Self::boot_cheap_from_seat`].
+    fn escalate_refusal(suite: &str, arm: &Arm) -> String {
+        format!(
+            "suite {suite}: posture {} carries an `escalate` table — the ESC composition \
+             lives in the private Rethink lane; the open build refuses rather than serve the \
+             cheap leg silently (the sanctioned cheap boot is \
+             AnySuiteServer::boot_cheap_from_seat)",
+            arm.name()
+        )
+    }
+
+    fn boot_from_seat_arm_inner(
+        suite: &'static str,
+        seat: Seat,
+        winners_dir: &Path,
+        manifest: &ArsenalManifest,
+        arm: Arm,
+        allow_escalate: bool,
+    ) -> Result<Self, String> {
         let row = manifest
             .row(suite)
             .ok_or_else(|| format!("suite {suite} is not in the arsenal manifest"))?;
+        // The ESC escalate wall (riir-rethink Issue 017 T5): fires BEFORE
+        // the ext-backend check so the refusal names the composition, never
+        // a downstream class error. boot/boot_from_seat route here with the
+        // wall armed; boot_cheap_from_seat is the one caller that passes
+        // `allow_escalate`.
+        if !allow_escalate && row.escalate.is_some() {
+            return Err(Self::escalate_refusal(suite, &arm));
+        }
         // The encoder route (issue 016 T2): the head is NOT a bridged
         // winner — it loads by its own `file` before the winner-convention
         // check, and only where a lane backend is installed (the carve
@@ -1412,6 +1462,17 @@ impl AnySuiteServer {
         manifest: &ArsenalManifest,
     ) -> Result<Self, String> {
         let arm = Self::posture_of(manifest, suite)?;
+        // The ESC escalate wall (riir-rethink Issue 017 T5) — same law as
+        // the seat path's: the composition is the private lane's; the bytes
+        // entry refuses rather than serve the cheap leg silently.
+        if manifest
+            .row(suite)
+            .ok_or_else(|| format!("suite {suite} is not in the arsenal manifest"))?
+            .escalate
+            .is_some()
+        {
+            return Err(Self::escalate_refusal(suite, &arm));
+        }
         // The encoder route (issue 016 T2) — the bytes ARE the sealed head,
         // consumed by the installed lane backend (the carve seam).
         if arm == Arm::Enc {
@@ -1476,6 +1537,12 @@ impl AnySuiteServer {
         let row = manifest
             .row(suite)
             .ok_or_else(|| format!("suite {suite} is not in the arsenal manifest"))?;
+        // The ESC escalate wall (riir-rethink Issue 017 T5): the hosted ESC
+        // lands with the v1 Phase-C composition — until then vessel mode
+        // refuses an escalate row loud (the manifest's own documented law).
+        if row.escalate.is_some() {
+            return Err(Self::escalate_refusal(suite, &arm));
+        }
         let vessel_path = vessels_dir.join(row.artifact_file(format!("{suite}_v1.vessel")));
         macro_rules! vessel_arm {
             ($variant:ident, $n:literal) => {{
@@ -1525,6 +1592,17 @@ impl AnySuiteServer {
                  lane backend (the HOSTED-ONLY class reads there); this build boots the \
                  PUBLIC-RELEASE class for bag lanes only"
             ));
+        }
+        // The ESC escalate wall (riir-rethink Issue 017 T5) — same law as
+        // boot_vessel's: the hosted ESC is Phase-C future work; an escalate
+        // row refuses loud rather than serve the cheap leg silently.
+        if manifest
+            .row(suite)
+            .ok_or_else(|| format!("suite {suite} is not in the arsenal manifest"))?
+            .escalate
+            .is_some()
+        {
+            return Err(Self::escalate_refusal(suite, &arm));
         }
         macro_rules! vessel_arm {
             ($variant:ident, $n:literal) => {{

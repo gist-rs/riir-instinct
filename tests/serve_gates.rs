@@ -103,6 +103,22 @@ const PRODUCTION_MANIFEST_TOML: &str = r#####"# arsenal.toml — the ONE selecti
 #                the load; POST /arsenal/release evicts it back to
 #                unloaded. Enforced by the serve registry, Proposal 001 T5)
 # budget.max_payload_mb   artifact size ceiling, MiB (the hosted cap is 16)
+# escalate       OPTIONAL (Issue 017 T5, the ESC lane — the Rethink
+#                serve-loader route, never the open bag boot): the
+#                cheap→think composition over THIS row's posture (the
+#                cheap leg — the row stays the incumbent's verbatim;
+#                the wrapper cross-checks the arm against Bench 0057's
+#                seating record and REFUSES a moved row). Fields:
+#                think_file (bare filename in the winners dir, raw mode
+#                — the preflight convention), think_digest (blake3,
+#                drift-checked where the bytes exist), margin +
+#                lcb_floor (Bench 0057's T1 fit — must equal the
+#                ESC_POSTURES record, a stale posture refuses),
+#                min_rate/max_rate (the runtime rate-guard window,
+#                N=200 rolling decisions, latched demotion — must equal
+#                the GOAT's acceptance window). An escalate table on an
+#                ENC row refuses (no nesting); vessel mode refuses loud
+#                (the hosted ESC lands with the v1 Phase-C composition).
 # file           OPTIONAL artifact filename override (bare filename, no
 #                path separators). Default = the established convention:
 #                `<suite>_winner_v1.bin` raw / `<suite>_v1.vessel` vessel.
@@ -143,7 +159,14 @@ const PRODUCTION_MANIFEST_TOML: &str = r#####"# arsenal.toml — the ONE selecti
 suite   = "ag_news"
 digest  = "blake3:ec327ac30250205b2b26c6b00976f9fb50bdf44a9bcbb1d87e35c6ca06f5cf33"
 class   = "hosted_only"
-posture = { arm = "H2", beta = 0.25, n_min = 2.0, tau_n = 2.0 }      # best measured 0.8975 vs A0 0.8825 (+1.5 pt; T2 LB95 -0.0100 — uncertified, serves under best-measured; certify at T4/T5)
+posture = { arm = "H2", beta = 0.25, n_min = 2.0, tau_n = 2.0 }      # the ESC CHEAP leg (the incumbent arm — Bench 0057's cross-check); best measured 0.8975 vs A0 0.8825 (+1.5 pt; T2 LB95 -0.0100 — uncertified, serves under best-measured; certify at T4/T5)
+# ESC (Issue 017 T5, owner GO 2026-10-04; GOAT Bench 0059: composed 0.9200 vs seated 0.8975, +2.25 pt,
+# LB95 +0.0036; escalation rate 37.5% inside [15%,60%]): the think leg = the encoder head (raw mode: the
+# winners dir, the preflight's <suite>_encoder_head_v1.bin convention); margins = Bench 0057's T1 fit;
+# the rates are the GOAT acceptance window promoted to the runtime guard bounds (N=200 rolling, latch).
+# The watch item: thinnest certified margin + second-highest consult cost (upper bound 0.375 × ~30 ms ≈
+# 11 ms/case, p99) — the re-read trigger is the next frozen read or +400 fresh questions (the T5 record).
+escalate = { think_file = "ag_news_encoder_head_v1.bin", think_digest = "blake3:e7e17cf3c2e2380137245dba0103cc41f6ee3ae53f225f07f247f6c3eca1cd66", margin = 0.05, min_rate = 0.15, max_rate = 0.60 }
 pin_keys = []
 budget  = { load = "eager", max_payload_mb = 16 }
 
@@ -159,7 +182,7 @@ budget  = { load = "eager", max_payload_mb = 16 }
 suite   = "sst5"
 digest  = "blake3:430558d6210737a267249500e0c3df4a0534d344752a1b4dae9a0e6952d2c001"
 class   = "hosted_only"
-posture = { arm = "A1" }                                          # best measured 0.4217 vs A0 0.3967 (+2.5 pt; T2 LB95 -0.0129 — uncertified, serves under best-measured)
+posture = { arm = "A1" }                                          # best measured 0.4217 vs A0 0.3967 (+2.5 pt; T2 LB95 -0.0129 — uncertified, serves under best-measured). NO escalate row: the ESC GOAT REFUSED sst5 at G1's LB95 leg (Bench 0059: −0.0039, the marginal-support cell — point estimate +3.00 pt positive, disclosed); the re-open path is more questions, never a rollback (the twice-flip suite's third adverse read).
 pin_keys = []
 budget  = { load = "eager", max_payload_mb = 16 }
 
@@ -184,7 +207,13 @@ budget  = { load = "eager", max_payload_mb = 16 }
 suite   = "xnli_en"
 digest  = "blake3:76bbedfb14031771ea6296f5d5914e08f19281d0c8cf6c6eb3754ac394b76827"
 class   = "hosted_only"
-posture = { arm = "A0" }
+posture = { arm = "A0" }                                          # the ESC CHEAP leg (the incumbent arm — A0 IS the argmax here; Bench 0057's cross-check)
+# ESC (Issue 017 T5, owner GO 2026-10-04; GOAT Bench 0059: composed 0.5833 vs seated A0 0.5233, +6.00 pt,
+# LB95 +0.0331 — the decisive cell; escalation rate 15.7% inside [15%,60%]; consult-cost upper bound
+# 0.157 × ~23 ms ≈ 3.6 ms/case at p99): the think leg = the encoder head (raw mode: the winners dir);
+# margin 0.30 + LCB floor 0.10 = Bench 0057's T1 fit (the reflex 0.16 prior survives ONLY here); the
+# rates are the GOAT acceptance window promoted to the runtime guard bounds (N=200 rolling, latch).
+escalate = { think_file = "xnli_en_encoder_head_v1.bin", think_digest = "blake3:a1e2380b7c6451bb016dc65a8e9970837ec5420be11c0e92a98b00317abbff7c", margin = 0.30, lcb_floor = 0.10, min_rate = 0.15, max_rate = 0.60 }
 pin_keys = []
 budget  = { load = "eager", max_payload_mb = 16 }
 
@@ -200,7 +229,7 @@ budget  = { load = "eager", max_payload_mb = 16 }
 suite   = "typed_decisions"
 digest  = "blake3:7f7a39e1935f8665beaf61106a84a65a0066a73fe3eee4ad7638fda0f776f2f0"   # riir-train Issue 581 / Bench 614's re-mint over the FULL 1200-row train pool
 class   = "hosted_only"
-posture = { arm = "H2", beta = 0.5, n_min = 2.0, tau_n = 2.0 }    # best measured 0.6475 vs A0' 0.5725 (+7.5 pt, T2 LB95 +0.0580 PASS) AND vs the certified A1 0.6300 (+1.75 pt, paired LB95 +0.0062 PASS) AND vs H1 (+1.4 pt, LB95 +0.0034) — Bench 020's full-pool read; G1 PASS (platt 0.0095 vs floor 0.1701). The margin source is the option-conditioned (qid, option) tables (reflex issue 038 T7b + `oc()`, riir-instinct Issue 005's precondition — typed's options are state-field values the domain tables never speak)
+posture = { arm = "H2", beta = 0.5, n_min = 2.0, tau_n = 2.0 }    # best measured 0.6475 vs A0' 0.5725 (+7.5 pt, T2 LB95 +0.0580 PASS) AND vs the certified A1 0.6300 (+1.75 pt, paired LB95 +0.0062 PASS) AND vs H1 (+1.4 pt, LB95 +0.0034) — Bench 020's full-pool read; G1 PASS (platt 0.0095 vs floor 0.1701). The margin source is the option-conditioned (qid, option) tables (reflex issue 038 T7b + `oc()`, riir-instinct Issue 005's precondition — typed's options are state-field values the domain tables never speak). NO escalate row: the ESC GOAT CLEARED typed (Bench 0059: composed 0.6725 vs 0.6475, +2.50 pt, LB95 +0.0129) but the encoder SERVE lane answers the single-question contract only (EncoderLane::from_parts's own guard; typed is 5 q/case) — the ESC cell stays the ARENA record until the per-question scoring shape exists (the T5 record's structural deferral, not a gate refusal).
 pin_keys = []
 budget  = { load = "eager", max_payload_mb = 16 }
 
@@ -236,10 +265,31 @@ fn production_manifest() -> ArsenalManifest {
 /// The production manifest written to a temp file — the spawned serve
 /// binary's `INSTINCT_ARSENAL` (the bin's embedded default is the
 /// TEACHING manifest; these gates replay the PRODUCTION verdict).
+/// ESC-stripped (Issue 017 T5): the escalate tables are the private
+/// Rethink lane's composition — the open bin REFUSES an escalate row at
+/// boot by design, and what these gates replay through the bin is the
+/// CHEAP leg, which IS the row's own arm. Stripping the table expresses
+/// exactly that for a bin with no cheap-boot flag; the FULL manifest
+/// bytes stay pinned by the digest gate above.
 fn production_manifest_file() -> String {
     let path = std::env::temp_dir().join(format!("instinct_arsenal_prod_{}.toml", std::process::id()));
-    std::fs::write(&path, PRODUCTION_MANIFEST_TOML).expect("write production manifest");
+    std::fs::write(&path, open_replay_manifest_toml()).expect("write open-replay manifest");
     path.to_string_lossy().into_owned()
+}
+
+/// The OPEN-replay derivative of the production manifest: the escalate
+/// tables stripped line-wise (the composition is private-lane-only; the
+/// open build serves the row's own arm). Everything else byte-verbatim.
+fn open_replay_manifest_toml() -> String {
+    let mut out = String::with_capacity(PRODUCTION_MANIFEST_TOML.len());
+    for line in PRODUCTION_MANIFEST_TOML.lines() {
+        if line.starts_with("escalate = {") {
+            continue;
+        }
+        out.push_str(line);
+        out.push('\n');
+    }
+    out
 }
 
 // ── face 1a: the TEACHING manifest byte pin (law A6, the embedded default) ──
@@ -265,13 +315,15 @@ fn arsenal_manifest_bytes_are_pinned_byte_for_byte() {
 
 // ── face 1b: the PRODUCTION verdict byte pin (law A6, carried inline) ──
 
-/// The serving-law data survived the Proposal-052 split byte-identically:
-/// this is the SAME digest the manifest pinned when it was the embedded
-/// default (verified 2026-10-03 — `b3sum` over the carve's moat copy and
-/// this inline const agree). A future Rethink-side manifest edit reds
-/// HERE (the pin travels with the law, not with the repo).
+/// The serving-law data survived the Proposal-052 split byte-identically
+/// (verified 2026-10-03 — `b3sum` over the carve's moat copy and this
+/// inline const agree), then RE-PINNED 2026-10-04 when the Rethink file
+/// gained the ESC escalate tables (riir-rethink Issue 017 T5 — the
+/// owner-GO'd cheap→think promotion; the two escalate rows are ag_news and
+/// xnli_en, everything else byte-identical). A future Rethink-side manifest
+/// edit reds HERE (the pin travels with the law, not with the repo).
 const PINNED_PRODUCTION_MANIFEST_DIGEST: &str =
-    "blake3:4c4356c6d31f856e1cf2665cd55ba5e7e079f07a3da0924c5eef2296eebf56f7";
+    "blake3:459d0c09587e0abc752a461187a3187a64e283649fa529c15b63d912f50bd348";
 
 #[test]
 fn production_manifest_bytes_are_pinned_byte_for_byte() {
@@ -442,7 +494,20 @@ fn boot_suite_synth(
                 )?,
                 None => riir_reflex::harness::runner::seat::prepare_seat(suite, &datasets)?,
             };
-            riir_instinct::server::AnySuiteServer::boot_from_seat(suite, seat, &winners, &manifest)
+            // The open replay boots the row's CHEAP leg (Issue 017 T5):
+            // the production manifest's ag_news/xnli rows carry escalate
+            // tables — the composition is the private Rethink lane's, and
+            // the open build's ordinary boots refuse it. What these gates
+            // replay is the ARM the manifest seats (the frozen picks of
+            // that arm), which the sanctioned cheap boot serves verbatim;
+            // for a row without an escalate table this is byte-identical
+            // to boot_from_seat.
+            riir_instinct::server::AnySuiteServer::boot_cheap_from_seat(
+                suite,
+                seat,
+                &winners,
+                &manifest,
+            )
         })
         .expect("spawn boot thread")
         .join()
@@ -1140,6 +1205,294 @@ fn enc_row_boots_to_a_loud_feature_refusal_without_the_lane() {
     );
 }
 
+// ── face 6: the ESC escalate grammar (riir-rethink Issue 017 T5) ─────
+
+/// The GOOD escalate line the grammar gates mutate (the production
+/// ag_news row's shape; the digest is synthetic — the drift gates below
+/// pin their own).
+fn esc_line(think_digest: &str) -> String {
+    format!(
+        "escalate = {{ think_file = \"ag_news_encoder_head_v1.bin\", think_digest = \
+         \"{think_digest}\", margin = 0.05, min_rate = 0.15, max_rate = 0.60 }}\n"
+    )
+}
+
+/// A one-row escalate manifest for the grammar gates (the mutation
+/// pattern's base — mirrors the production ag_news row's shape).
+fn escalate_manifest_text(posture: &str, escalate: &str) -> String {
+    format!(
+        "[[vessel]]\nsuite   = \"ag_news\"\ndigest  = \"blake3:{}\"\nclass   = \
+         \"hosted_only\"\nfile    = \"ag_news_winner_v1.bin\"\nposture = {posture}\n{escalate}pin_keys = \
+         []\nbudget  = {{ load = \"eager\", max_payload_mb = 16 }}\n",
+        "0".repeat(64)
+    )
+}
+
+/// The two production escalate rows parse with their exact fields — the
+/// ESC cheap legs (the row's own arm verbatim) + the think-leg heads +
+/// Bench 0057's T1 fit margins + the GOAT acceptance window as rate
+/// bounds. Every OTHER row carries no escalate table (sst5's GOAT refusal
+/// at G1's LB95 leg; typed's single-question contract deferral).
+#[test]
+fn escalate_parses_on_the_production_escalate_rows() {
+    let m = production_manifest();
+    let ag = m
+        .row("ag_news")
+        .expect("the ag_news row")
+        .escalate
+        .as_ref()
+        .expect("ag_news carries the ESC cheap leg (Issue 017 T5)");
+    assert_eq!(ag.think_file, "ag_news_encoder_head_v1.bin");
+    assert_eq!(
+        ag.think_digest,
+        "blake3:e7e17cf3c2e2380137245dba0103cc41f6ee3ae53f225f07f247f6c3eca1cd66"
+    );
+    assert_eq!(ag.margin, 0.05);
+    assert_eq!(ag.lcb_floor, None);
+    assert_eq!(ag.min_rate, 0.15);
+    assert_eq!(ag.max_rate, 0.60);
+
+    let xnli = m
+        .row("xnli_en")
+        .expect("the xnli_en row")
+        .escalate
+        .as_ref()
+        .expect("xnli_en carries the ESC cheap leg (the decisive cell)");
+    assert_eq!(xnli.think_file, "xnli_en_encoder_head_v1.bin");
+    assert_eq!(
+        xnli.think_digest,
+        "blake3:a1e2380b7c6451bb016dc65a8e9970837ec5420be11c0e92a98b00317abbff7c"
+    );
+    assert_eq!(xnli.margin, 0.30);
+    assert_eq!(xnli.lcb_floor, Some(0.10));
+    assert_eq!(xnli.min_rate, 0.15);
+    assert_eq!(xnli.max_rate, 0.60);
+
+    for suite in [
+        "emotion",
+        "sst5",
+        "massive_intent_en",
+        "banking77",
+        "prompt_injections",
+        "typed_decisions",
+        "code_fixtures",
+    ] {
+        assert!(
+            m.row(suite)
+                .unwrap_or_else(|| panic!("{suite}: missing from the production manifest"))
+                .escalate
+                .is_none(),
+            "{suite}: no escalate table on this row (the GOAT verdicts are \
+             suite-scoped — Bench 0059)"
+        );
+    }
+}
+
+/// The escalate grammar + validator rules, data-independent: no nesting
+/// (an ENC row cannot escalate), deny_unknown_fields on the table, the
+/// bounds (margin > 0, lcb_floor >= 0, 0 < min_rate < max_rate < 1), the
+/// bare-filename law on think_file, and the digest format on
+/// think_digest.
+#[test]
+fn escalate_grammar_and_validator_rules() {
+    let probe_dir = std::env::temp_dir().join(format!("instinct_esc_gate_{}", std::process::id()));
+    let ctx = ValidateCtx::raw(&probe_dir);
+
+    // The well-formed base validates (the think file is absent from the
+    // probe dir — the file checks skip, the schema checks ran). The think
+    // digest is DISTINCT from the row digest so the mutations below can
+    // target it alone.
+    let think_digest = format!("blake3:{}", "1".repeat(64));
+    let good = escalate_manifest_text("{ arm = \"A0\" }", &esc_line(&think_digest));
+    let m = ArsenalManifest::parse(&good).expect("the escalate manifest parses");
+    m.validate(&ctx).expect(
+        "a well-formed escalate row validates (the absent think file is the dataless posture)",
+    );
+
+    // No nesting: an ENC row cannot escalate (the cheap leg is a bag/A0
+    // arm — the think leg IS the encoder).
+    let zeros = format!("blake3:{}", "0".repeat(64));
+    let enc = escalate_manifest_text("{ arm = \"ENC\" }", &esc_line(&zeros));
+    let enc_m = ArsenalManifest::parse(&enc).expect("parses");
+    let err = enc_m.validate(&ctx).unwrap_err();
+    assert!(err.contains("cannot escalate"), "{err}");
+    assert!(err.contains("\"ag_news\""), "the refusal names the row: {err}");
+
+    // An unknown escalate field refuses at PARSE (deny_unknown_fields).
+    let unknown = good.replace("margin = 0.05", "margin = 0.05, bogus = 1.0");
+    let err = ArsenalManifest::parse(&unknown).unwrap_err();
+    assert!(err.contains("unknown field") && err.contains("bogus"), "{err}");
+
+    // margin <= 0 refuses.
+    let bad = good.replace("margin = 0.05", "margin = 0.0");
+    let err = ArsenalManifest::parse(&bad)
+        .expect("parses")
+        .validate(&ctx)
+        .unwrap_err();
+    assert!(err.contains("escalate.margin"), "{err}");
+
+    // min_rate >= max_rate refuses.
+    let bad = good.replace("min_rate = 0.15, max_rate = 0.60", "min_rate = 0.60, max_rate = 0.15");
+    let err = ArsenalManifest::parse(&bad)
+        .expect("parses")
+        .validate(&ctx)
+        .unwrap_err();
+    assert!(err.contains("escalate.min_rate/max_rate"), "{err}");
+
+    // max_rate >= 1.0 refuses (the window is inside (0, 1)).
+    let bad = good.replace("max_rate = 0.60", "max_rate = 1.0");
+    let err = ArsenalManifest::parse(&bad)
+        .expect("parses")
+        .validate(&ctx)
+        .unwrap_err();
+    assert!(err.contains("escalate.min_rate/max_rate"), "{err}");
+
+    // lcb_floor < 0 refuses.
+    let bad = good.replace("margin = 0.05", "margin = 0.05, lcb_floor = -0.1");
+    let err = ArsenalManifest::parse(&bad)
+        .expect("parses")
+        .validate(&ctx)
+        .unwrap_err();
+    assert!(err.contains("escalate.lcb_floor"), "{err}");
+
+    // A think_file path separator refuses (the bare-filename law).
+    let bad = good.replace(
+        "ag_news_encoder_head_v1.bin",
+        "../ag_news_encoder_head_v1.bin",
+    );
+    let err = ArsenalManifest::parse(&bad)
+        .expect("parses")
+        .validate(&ctx)
+        .unwrap_err();
+    assert!(err.contains("escalate.think_file"), "{err}");
+
+    // A malformed think_digest refuses through the digest-format law.
+    let bad = good.replace(&think_digest, "not-a-digest");
+    let err = ArsenalManifest::parse(&bad)
+        .expect("parses")
+        .validate(&ctx)
+        .unwrap_err();
+    assert!(err.contains("escalate.digest"), "{err}");
+}
+
+/// The think-file drift half: WRONG bytes under the think filename refuse
+/// loud naming the digest; CORRECT bytes validate; an ABSENT think file
+/// validates clean (the dataless dev posture — the refusal belongs to the
+/// private lane's loader, never a bare clone).
+#[test]
+fn escalate_think_file_drift_and_absent_posture() {
+    let dir = tempfile::tempdir().expect("the probe winners dir");
+    let ctx = ValidateCtx::raw(dir.path());
+    let think_name = "ag_news_encoder_head_v1.bin";
+
+    // WRONG bytes → drift refuses loud, naming the file + the digest.
+    std::fs::write(dir.path().join(think_name), b"wrong-bytes")
+        .expect("write the drifted think file");
+    let wrong = escalate_manifest_text(
+        "{ arm = \"A0\" }",
+        &esc_line(&format!("blake3:{}", "0".repeat(64))),
+    );
+    let m = ArsenalManifest::parse(&wrong).expect("parses");
+    let err = m.validate(&ctx).unwrap_err();
+    assert!(
+        err.contains("escalate.think_digest") && err.contains("drift fails loud"),
+        "{err}"
+    );
+    assert!(err.contains(think_name), "the drift names the file: {err}");
+
+    // CORRECT bytes → validates (the check compares, never refuses
+    // reflexively — the row's own artifact stays absent, only the think
+    // leg is on disk).
+    let right = b"the-real-head-bytes";
+    let right_digest = format!("blake3:{}", blake3::hash(right));
+    std::fs::write(dir.path().join(think_name), right).expect("write the real think file");
+    let good = escalate_manifest_text("{ arm = \"A0\" }", &esc_line(&right_digest));
+    let m = ArsenalManifest::parse(&good).expect("parses");
+    m.validate(&ctx)
+        .expect("a matching think file validates (drift-checked, not refused)");
+
+    // ABSENT → validates clean (the dataless posture).
+    std::fs::remove_file(dir.path().join(think_name)).expect("remove the think file");
+    m.validate(&ctx)
+        .expect("the absent think file is left to the lane loader (the dataless posture)");
+}
+
+/// The boot wall: every OPEN boot path refuses an escalate row loud,
+/// naming the private lane + the sanctioned cheap boot — never a silent
+/// cheap-leg serve (the moat law). The refusal fires BEFORE any
+/// ext-backend check (the escalate rows are bag arms).
+#[test]
+fn escalate_row_refuses_loud_on_every_open_boot_path() {
+    if !data_present() {
+        eprintln!("SKIP loud: datasets absent (the seat is the refusal's vehicle)");
+        return;
+    }
+    let manifest = production_manifest();
+    let datasets = datasets_dir();
+    let winners = winners_dir();
+    let out = std::thread::Builder::new()
+        .stack_size(64 * 1024 * 1024)
+        .spawn(move || {
+            let seat = riir_reflex::harness::runner::seat::prepare_seat("ag_news", &datasets)
+                .expect("prepare the ag_news seat");
+            let from_seat = AnySuiteServer::boot_from_seat("ag_news", seat, &winners, &manifest);
+            let seat = riir_reflex::harness::runner::seat::prepare_seat("ag_news", &datasets)
+                .expect("prepare the second ag_news seat");
+            let from_bytes =
+                AnySuiteServer::boot_bytes("ag_news", seat, b"not-a-winner", &manifest);
+            (from_seat, from_bytes)
+        })
+        .expect("spawn boot thread")
+        .join()
+        .expect("boot thread panicked");
+    for (lane, out) in [("boot_from_seat", out.0), ("boot_bytes", out.1)] {
+        let err = match out {
+            Err(e) => e,
+            Ok(_) => panic!(
+                "{lane}: the escalate row must refuse on the open build — it booted instead"
+            ),
+        };
+        assert!(
+            err.contains("escalate") && err.contains("boot_cheap_from_seat"),
+            "{lane}: the refusal must name the composition + the sanctioned boot: {err}"
+        );
+    }
+}
+
+/// The sanctioned exception: [`AnySuiteServer::boot_cheap_from_seat`]
+/// boots an escalate row's OWN arm with the table deliberately ignored —
+/// the cheap leg the private ESC lane composes over. The booted server
+/// decides with the row's verbatim arm.
+#[test]
+fn escalate_row_boots_cheap_through_the_sanctioned_path() {
+    if !data_present() {
+        eprintln!("SKIP loud: datasets absent (the seat + winner are the boot's vehicle)");
+        return;
+    }
+    let manifest = production_manifest();
+    let datasets = datasets_dir();
+    let winners = winners_dir();
+    let mut server = std::thread::Builder::new()
+        .stack_size(64 * 1024 * 1024)
+        .spawn(move || {
+            let seat = riir_reflex::harness::runner::seat::prepare_seat("ag_news", &datasets)
+                .expect("prepare the ag_news seat");
+            AnySuiteServer::boot_cheap_from_seat("ag_news", seat, &winners, &manifest)
+        })
+        .expect("spawn boot thread")
+        .join()
+        .expect("boot thread panicked")
+        .expect("the sanctioned cheap boot boots the row's own arm");
+    let decision = server
+        .decide("Wall Street rallies as the Fed signals a rate cut", None)
+        .expect("the cheap leg decides (the incumbent H2 arm, verbatim)");
+    assert_eq!(
+        decision.arm, "H2(β=0.25,nmin=2,τ=2)",
+        "the cheap boot serves the row's OWN arm — the escalate table composes \
+         OVER it, never replaces it"
+    );
+}
+
 // ── face 3: the HTTP edge gates ──────────────────────────────────────
 
 struct ServerProc {
@@ -1470,10 +1823,13 @@ fn wait_suite_state(port: u16, suite: &str, want: &str, secs: u64) -> Result<(),
     Err(last)
 }
 
-/// The ag_news row of the PRODUCTION manifest, flipped to the lazy
-/// posture (the first `budget.load` in the file is ag_news's row).
+/// The ag_news row of the OPEN-REPLAY manifest (the production verdict,
+/// escalate stripped — Issue 017 T5), flipped to the lazy posture (the
+/// first `budget.load` in the file is ag_news's row).
 fn lazy_ag_news_manifest() -> String {
-    PRODUCTION_MANIFEST_TOML.replacen(
+    // The OPEN-replay base (escalate stripped — Issue 017 T5): the lazy
+    // cycle boots ag_news through the bin, which refuses an escalate row.
+    open_replay_manifest_toml().replacen(
         "budget  = { load = \"eager\", max_payload_mb = 16 }",
         "budget  = { load = \"lazy\", max_payload_mb = 16 }",
         1,

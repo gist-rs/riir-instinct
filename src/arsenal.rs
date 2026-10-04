@@ -92,6 +92,13 @@ pub struct VesselRow {
     /// established convention — `<suite>_winner_v1.bin` raw /
     /// `<suite>_v1.vessel` vessel.
     pub file: Option<String>,
+    /// OPTIONAL (Issue 017 T5, the ESC lane): the cheap→think composition
+    /// over this row's posture — the cheap leg IS this row's arm (verbatim);
+    /// the think leg is the encoder head named by `think_file`. The ESC
+    /// composition lives in the private Rethink lane; the open build refuses
+    /// an escalate row at every boot path (the moat law) except the sanctioned
+    /// cheap-leg boot ([`crate::server::AnySuiteServer::boot_cheap_from_seat`]).
+    pub escalate: Option<EscalateSpec>,
 }
 
 /// The serving arm + params (`{ arm = "H2", beta = 1.0, … }` — arms carry
@@ -118,6 +125,76 @@ pub struct BudgetSpec {
     /// Artifact size ceiling, MiB (the hosted cap is
     /// [`MAX_HOSTED_PAYLOAD_MB`]).
     pub max_payload_mb: u64,
+}
+
+/// The ESC escalate table (one line of TOML — inline tables cannot span
+/// lines): `{ think_file, think_digest, margin, lcb_floor?, min_rate, max_rate }`.
+#[derive(Debug, Clone, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct EscalateSpec {
+    /// The think-leg encoder head, a BARE filename resolved against the
+    /// winners dir (raw mode) — the serve preflight's
+    /// `<suite>_encoder_head_v1.bin` convention. No path separators.
+    pub think_file: String,
+    /// `"blake3:<64 hex>"` of the think-leg head file; drift-checked
+    /// wherever the bytes exist (the absent-file law: left to the lane
+    /// loader, never a dataless-clone refusal).
+    pub think_digest: String,
+    /// The worthiness margin leg (`armed = probe delta ≥ margin`) —
+    /// Bench 0057's T1 fit. Must equal the private lane's ESC_POSTURES
+    /// record (the wrapper cross-checks; a stale posture refuses there).
+    pub margin: f64,
+    /// The support-aware LCB leg floor, optional (None = the margin leg
+    /// carries the arm).
+    pub lcb_floor: Option<f64>,
+    /// The runtime rate-guard window lower bound (N=200 rolling decisions,
+    /// latched demotion — the GOAT's [15%, 60%] acceptance axis promoted to
+    /// bounds).
+    pub min_rate: f64,
+    /// The runtime rate-guard window upper bound.
+    pub max_rate: f64,
+}
+
+impl EscalateSpec {
+    /// Field-scoped validation — everything decidable without the
+    /// deployment's files (the think-file drift half lives in
+    /// [`ArsenalManifest::validate_row_files`], with the row's own
+    /// artifact checks).
+    fn validate(&self) -> Result<(), String> {
+        if self.think_file.is_empty()
+            || self.think_file.contains('/')
+            || self.think_file.contains('\\')
+            || self.think_file.contains("..")
+        {
+            return Err(format!(
+                "escalate.think_file: {:?} must be a bare filename (no path separators)",
+                self.think_file
+            ));
+        }
+        validate_digest_format(&self.think_digest).map_err(|e| format!("escalate.{e}"))?;
+        if !self.margin.is_finite() || self.margin <= 0.0 {
+            return Err(format!(
+                "escalate.margin: {} must be finite and > 0 (Bench 0057's T1 fit)",
+                self.margin
+            ));
+        }
+        if let Some(lcb) = self.lcb_floor {
+            if !lcb.is_finite() || lcb < 0.0 {
+                return Err(format!("escalate.lcb_floor: {lcb} must be finite and >= 0"));
+            }
+        }
+        if !self.min_rate.is_finite()
+            || !self.max_rate.is_finite()
+            || !(0.0 < self.min_rate && self.min_rate < self.max_rate && self.max_rate < 1.0)
+        {
+            return Err(format!(
+                "escalate.min_rate/max_rate: min {} / max {} must be finite with \
+                 0 < min < max < 1 (the GOAT's [15%, 60%] acceptance window)",
+                self.min_rate, self.max_rate
+            ));
+        }
+        Ok(())
+    }
 }
 
 /// What the boot validates against — the deployment's artifact source and
@@ -273,6 +350,50 @@ impl ArsenalManifest {
         } else {
             ctx.winners_dir
         };
+        // The ESC think-leg file (riir-rethink Issue 017 T5): drift-checked
+        // where the bytes exist under the SAME dir law as the row's own
+        // artifact — an absent think file is left to the lane loader (the
+        // dataless dev posture; the private lane's preflight owns that
+        // refusal), never a dataless-clone refusal here.
+        if let Some(esc) = &row.escalate {
+            let think_path = dir.join(&esc.think_file);
+            if think_path.exists() {
+                let len = std::fs::metadata(&think_path)
+                    .map_err(|e| {
+                        format!(
+                            "suite {:?}: escalate.think_file {}: {e}",
+                            row.suite, esc.think_file
+                        )
+                    })?
+                    .len();
+                if len > row.budget.max_payload_mb << 20 {
+                    return Err(format!(
+                        "suite {:?}: budget.max_payload_mb: escalate think file {} is {len} \
+                         bytes, over the {} MiB cap",
+                        row.suite, esc.think_file, row.budget.max_payload_mb
+                    ));
+                }
+                let bytes = std::fs::read(&think_path).map_err(|e| {
+                    format!(
+                        "suite {:?}: escalate.think_file {}: {e}",
+                        row.suite, esc.think_file
+                    )
+                })?;
+                let actual = blake3::hash(&bytes).to_hex();
+                let pinned = esc
+                    .think_digest
+                    .strip_prefix(DIGEST_TAG)
+                    .expect("think_digest format validated");
+                if actual.as_str() != pinned {
+                    return Err(format!(
+                        "suite {:?}: escalate.think_digest: file {} is {DIGEST_TAG}{actual} \
+                         but the manifest pins {DIGEST_TAG}{pinned} — drift fails loud \
+                         (law A5/A9)",
+                        row.suite, esc.think_file
+                    ));
+                }
+            }
+        }
         let name = row.artifact_file(if vessel_mode {
             format!("{}_v1.vessel", row.suite)
         } else {
@@ -387,6 +508,20 @@ impl VesselRow {
             // release wire evicts). L9's residue is G3 (exactly one load
             // per activation) + the sticky-`Failed` bound, not a refusal.
             // `eager` stays the embedded default (the production posture).
+        }
+        // The ESC escalate table (riir-rethink Issue 017 T5): grammar only
+        // here — the composition itself is the private Rethink lane's (the
+        // open build's boot wall lives in server.rs). No nesting: the cheap
+        // leg is a bag/A0 arm, so an ENC row cannot escalate.
+        if let Some(esc) = &self.escalate {
+            if matches!(arm, Arm::Enc) {
+                return Err(
+                    "escalate: an ENC row cannot escalate (no nesting — the cheap leg is a \
+                     bag/A0 arm)"
+                        .into(),
+                );
+            }
+            esc.validate()?;
         }
         self.budget.validate()?;
         if let Some(f) = &self.file {
