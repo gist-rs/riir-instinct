@@ -60,5 +60,5 @@ Owner directive (2026-10-03): *"1. i will open src and teach Instinct public · 
 
 - [Proposal 052](../../riir-ai/.proposals/052_rethink_l1_open_source_teaching_carve.md) — the split design + the four verdict corrections; [Proposal 051](../../riir-ai/.proposals/051_rethink_all_tier_adaptive_serving_family.md) — amended.
 - Verdict round 1 (Claude, 2026-10-03): fresh-root law, seam-not-fork, ledger completion, boundary-timed sequencing — addressed in 052 and here.
-- [moat/.proposals/001_arsenal_cognition_vessel_protocol.md](../moat/.proposals/001_arsenal_cognition_vessel_protocol.md) — A1/A10 two-class law (the artifact scalpel extended to source). *(Moved to the moat seed at B2 — the A10 law binds BOTH sides: the open build keeps the public reader only.)*
+- [moat/.proposals/001_arsenal_cognition_vessel_protocol.md](../../riir-rethink/.proposals/001_arsenal_cognition_vessel_protocol.md) — A1/A10 two-class law (the artifact scalpel extended to source). *(Moved to the moat seed at B2 — the A10 law binds BOTH sides: the open build keeps the public reader only.)*
 - Plan 006 (HOLD) — the registration laws this plan inherits (one-family, dual-box, census, fence gate).
