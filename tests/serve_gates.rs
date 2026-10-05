@@ -119,18 +119,23 @@ const PRODUCTION_MANIFEST_TOML: &str = r#####"# arsenal.toml — the ONE selecti
 #                the GOAT's acceptance window). An escalate table on an
 #                ENC row refuses (no nesting); vessel mode refuses loud
 #                (the hosted ESC lands with the v1 Phase-C composition).
+#                NO row carries one today (023 T2/T3 took xnli_en's and
+#                ag_news's with their rows): the grammar + the ESC_
+#                POSTURES records + the research replays live on — a
+#                re-arm rides a re-sourced suite's own GOAT.
 # file           OPTIONAL artifact filename override (bare filename, no
 #                path separators). Default = the established convention:
 #                `<suite>_winner_v1.bin` raw / `<suite>_v1.vessel` vessel.
 #                No NEW convention is created by this manifest.
 #
-# The seven rows are the specialist suites — reflex's other dataset
-# suites have no specialist and no seat posture, so they get no row.
-# (typed_decisions' Issue 578 artifact was UNSEATABLE — Bench 014's
-# refusal — retrained over the full 1200-row pool in riir-train Issue 581
-# / Bench 614 and seated+certified in Bench 015; its serving row is the
-# multi-question contract's, Issue 011. emotion + xnli_en carried rows
-# until Issue 023 T2 — the licence demotion block above owns why.)
+# The five rows are the permissive sellable suites — every other dataset
+# suite either has no specialist and no seat posture, or left at the
+# licence demotions. (typed_decisions' Issue 578 artifact was UNSEATABLE
+# — Bench 014's refusal — retrained over the full 1200-row pool in
+# riir-train Issue 581 / Bench 614 and seated+certified in Bench 015; its
+# serving row is the multi-question contract's, Issue 011. emotion,
+# xnli_en, sst5 + ag_news carried rows until Issues 023 T2/T3 — the
+# licence demotion block above owns why.)
 #
 # ── the serving law (owner verdict 2026-09-27) ──────────────────────
 # The SERVING selector is the BEST MEASURED ARM per suite over the frozen
@@ -141,48 +146,32 @@ const PRODUCTION_MANIFEST_TOML: &str = r#####"# arsenal.toml — the ONE selecti
 # pick the best decision for me and get good score"). Under this law the
 # served arm is never the WORST arm by construction.
 #
-# ⛔ BENCHMARK-ONLY ROWS (Issue 023 T2, 2026-10-05 — the licence ledger):
-# emotion ("educational and research purposes only") and xnli_en
-# (CC BY-NC 4.0) CANNOT back a paid lane, and the A0 seat itself is built
-# from their rows — so neither suite is SERVED here at any arm: both rows
-# left this manifest, the ESC escalate table on xnli_en went with it, and
-# their deploy files: rows (winners + datasets) left deploy.yaml. The
-# bench records stay (research use — Bench 005/0057/0059/0060; the G5
-# replay carries its own research posture). Re-entry is RE-SOURCE, never
-# a re-flag: an Apache/CC-BY NLI + emotion set, its own re-fit, and a
-# fresh GOAT — the ledger at `.issues/023` governs.
+# ⛔ BENCHMARK-ONLY ROWS (Issue 023 T2+T3, 2026-10-05 — the licence
+# ledger): FOUR suites cannot back a paid lane, and the A0 seat itself
+# is built from their rows — so none of them is SERVED here at any arm.
+# T2 (the explicit terms): emotion ("educational and research purposes
+# only") and xnli_en (CC BY-NC 4.0). T3 (verified 2026-10-05, primary
+# sources — no grant EXISTS to clear): sst5 (the Stanford SST zip's own
+# README carries NO licence, only a citation request; content = scraped
+# Rotten Tomatoes review snippets) and ag_news (Antonio Gulli's 2004/05
+# news corpus, 2000+ publishers' headlines/snippets, no licence anywhere
+# — HF card unknown, original hosting gone). Their rows, xnli's ESC
+# escalate table, and their deploy files: rows (winners + datasets)
+# left with them. The bench records stay (research use — Bench
+# 005/0057/0059/0060; the G5 replay carries its own research posture).
+# Re-entry is RE-SOURCE, never a re-flag: a permissive NLI + sentiment +
+# news-classification set, its own re-fit, and a fresh GOAT — the ledger
+# at `.issues/023` governs. (ESC consequence: NO row carries an escalate
+# table today — the composition's grammar, records, and research replays
+# live on; re-arm rides the re-source.)
 #
 # The T2 strict-superiority gate (paired LB95 > 0) REMAINS as the
 # ADVERTISING law — the reflex-site ✓/✗ row and the certification
-# vocabulary — not as the serving selector. ag_news H2 (+1.5 pt mean,
-# LB95 -0.0100 at n=400), sst5 A1 (+2.5 pt mean, LB95 -0.0129) and
-# banking77 H2 (+2.8 pt mean, LB95 -0.0013 at n=500, the Issue 579 nbsvm
-# v2 winner over presence bags — Bench 012) serve under best-measured
-# while still uncertified: expected value positive, downside bounded, and
-# the certification path is more questions, not a posture rollback.
-
-[[vessel]]
-suite   = "ag_news"
-digest  = "blake3:ec327ac30250205b2b26c6b00976f9fb50bdf44a9bcbb1d87e35c6ca06f5cf33"
-class   = "hosted_only"
-posture = { arm = "H2", beta = 0.25, n_min = 2.0, tau_n = 2.0 }      # the ESC CHEAP leg (the incumbent arm — Bench 0057's cross-check); best measured 0.8975 vs A0 0.8825 (+1.5 pt; T2 LB95 -0.0100 — uncertified, serves under best-measured; certify at T4/T5)
-# ESC (Issue 017 T5, owner GO 2026-10-04; GOAT Bench 0059: composed 0.9200 vs seated 0.8975, +2.25 pt,
-# LB95 +0.0036; escalation rate 37.5% inside [15%,60%]): the think leg = the encoder head (raw mode: the
-# winners dir, the preflight's <suite>_encoder_head_v1.bin convention); margins = Bench 0057's T1 fit;
-# the rates are the GOAT acceptance window promoted to the runtime guard bounds (N=200 rolling, latch).
-# The watch item: thinnest certified margin + second-highest consult cost (upper bound 0.375 × ~30 ms ≈
-# 11 ms/case, p99) — the re-read trigger is the next frozen read or +400 fresh questions (the T5 record).
-escalate = { think_file = "ag_news_encoder_head_v1.bin", think_digest = "blake3:e7e17cf3c2e2380137245dba0103cc41f6ee3ae53f225f07f247f6c3eca1cd66", margin = 0.05, min_rate = 0.15, max_rate = 0.60 }
-pin_keys = []
-budget  = { load = "eager", max_payload_mb = 16 }
-
-[[vessel]]
-suite   = "sst5"
-digest  = "blake3:430558d6210737a267249500e0c3df4a0534d344752a1b4dae9a0e6952d2c001"
-class   = "hosted_only"
-posture = { arm = "A1" }                                          # best measured 0.4217 vs A0 0.3967 (+2.5 pt; T2 LB95 -0.0129 — uncertified, serves under best-measured). NO escalate row: the ESC GOAT REFUSED sst5 at G1's LB95 leg (Bench 0059: −0.0039, the marginal-support cell — point estimate +3.00 pt positive, disclosed); the re-open path is more questions, never a rollback (the twice-flip suite's third adverse read).
-pin_keys = []
-budget  = { load = "eager", max_payload_mb = 16 }
+# vocabulary — not as the serving selector. banking77 H2 (+2.8 pt mean,
+# LB95 -0.0013 at n=500, the Issue 579 nbsvm v2 winner over presence
+# bags — Bench 012) serves under best-measured while still uncertified:
+# expected value positive, downside bounded, and the certification path
+# is more questions, not a posture rollback.
 
 [[vessel]]
 suite   = "massive_intent_en"
@@ -249,22 +238,27 @@ fn production_manifest() -> ArsenalManifest {
 /// The production manifest written to a temp file — the spawned serve
 /// binary's `INSTINCT_ARSENAL` (the bin's embedded default is the
 /// TEACHING manifest; these gates replay the PRODUCTION verdict).
-/// ESC-stripped (Issue 017 T5): the escalate tables are the private
-/// Rethink lane's composition — the open bin REFUSES an escalate row at
-/// boot by design, and what these gates replay through the bin is the
-/// CHEAP leg, which IS the row's own arm. Stripping the table expresses
-/// exactly that for a bin with no cheap-boot flag; the FULL manifest
-/// bytes stay pinned by the digest gate above.
+/// ESC-stripped + the ag_news RESEARCH row appended (issue 023 T2/T3):
+/// the escalate tables are the private Rethink lane's composition (the
+/// open bin refuses them by design — stripping expresses the cheap leg
+/// for a bin with no cheap-boot flag), and ag_news left the production
+/// manifest at the licence demotion — its Bench-004 frozen picks stay
+/// the replay target, so its row rides here VERBATIM (the exact posture
+/// that served). The FULL production bytes stay pinned by the digest
+/// gate above; this derivative never ships anywhere.
 fn production_manifest_file() -> String {
     let path = std::env::temp_dir().join(format!("instinct_arsenal_prod_{}.toml", std::process::id()));
-    std::fs::write(&path, open_replay_manifest_toml()).expect("write open-replay manifest");
+    std::fs::write(&path, replay_manifest_toml()).expect("write open-replay manifest");
     path.to_string_lossy().into_owned()
 }
 
 /// The OPEN-replay derivative of the production manifest: the escalate
 /// tables stripped line-wise (the composition is private-lane-only; the
-/// open build serves the row's own arm). Everything else byte-verbatim.
-fn open_replay_manifest_toml() -> String {
+/// open build serves the row's own arm), plus the ag_news RESEARCH row
+/// appended (the verbatim posture that served before the 023 T3 licence
+/// demotion — the frozen-record replay target). Everything else
+/// byte-verbatim.
+fn replay_manifest_toml() -> String {
     let mut out = String::with_capacity(PRODUCTION_MANIFEST_TOML.len());
     for line in PRODUCTION_MANIFEST_TOML.lines() {
         if line.starts_with("escalate = {") {
@@ -273,7 +267,46 @@ fn open_replay_manifest_toml() -> String {
         out.push_str(line);
         out.push('\n');
     }
+    // The ag_news research row — the exact shape that left `arsenal.toml`
+    // at issue 023 T3 (no escalate table: the ESC line is stripped above
+    // for every row, and this spelling carries none anyway).
+    out.push_str(
+        "\n[[vessel]]\nsuite   = \"ag_news\"\ndigest  = \
+         \"blake3:ec327ac30250205b2b26c6b00976f9fb50bdf44a9bcbb1d87e35c6ca06f5cf33\"\n\
+         class   = \"hosted_only\"\nposture = { arm = \"H2\", beta = 0.25, n_min = 2.0, \
+         tau_n = 2.0 }\npin_keys = []\nbudget  = { load = \"eager\", max_payload_mb = 16 }\n",
+    );
     out
+}
+
+/// The parsed REPLAY manifest (production rows + the ag_news research
+/// row) — the boot/parity helpers' subject. The ag_news lane these gates
+/// replay is the RESEARCH posture (benchmark-only in production since
+/// issue 023 T3 — the Bench-004 frozen record stays the replay target).
+fn replay_manifest() -> ArsenalManifest {
+    ArsenalManifest::parse(&replay_manifest_toml()).expect("the replay manifest parses")
+}
+
+/// The ag_news ESC RESEARCH posture (issues 017 T5 + 023 T3): the
+/// verbatim promotion-row shape — the real winner + think-head digests
+/// (Bench 0057/0059's own pins), carried test-locally since the licence
+/// demotion removed the row from production. The open-boot WALL gates
+/// and the sanctioned cheap-boot gate exercise the grammar through it;
+/// it never ships anywhere.
+fn ag_news_esc_research_manifest() -> ArsenalManifest {
+    let text = concat!(
+        "[[vessel]]\n",
+        "suite   = \"ag_news\"\n",
+        "digest  = \"blake3:ec327ac30250205b2b26c6b00976f9fb50bdf44a9bcbb1d87e35c6ca06f5cf33\"\n",
+        "class   = \"hosted_only\"\n",
+        "posture = { arm = \"H2\", beta = 0.25, n_min = 2.0, tau_n = 2.0 }\n",
+        "escalate = { think_file = \"ag_news_encoder_head_v1.bin\", ",
+        "think_digest = \"blake3:e7e17cf3c2e2380137245dba0103cc41f6ee3ae53f225f07f247f6c3eca1cd66\", ",
+        "margin = 0.05, min_rate = 0.15, max_rate = 0.60 }\n",
+        "pin_keys = []\n",
+        "budget  = { load = \"eager\", max_payload_mb = 16 }\n",
+    );
+    ArsenalManifest::parse(text).expect("the ag_news ESC research posture parses")
 }
 
 // ── face 1a: the TEACHING manifest byte pin (law A6, the embedded default) ──
@@ -304,14 +337,17 @@ fn arsenal_manifest_bytes_are_pinned_byte_for_byte() {
 /// inline const agree), then RE-PINNED 2026-10-04 when the Rethink file
 /// gained the ESC escalate tables (riir-rethink Issue 017 T5 — the
 /// owner-GO'd cheap→think promotion; the two escalate rows were ag_news and
-/// xnli_en, everything else byte-identical), and RE-PINNED again 2026-10-05
-/// when the licence ledger demoted xnli_en + emotion to benchmark-only
-/// (riir-rethink Issue 023 T2 — CC BY-NC / research-only data cannot back
-/// the paid lane; both rows left the manifest, ag_news is the sole ESC-
-/// armed row). A future Rethink-side manifest edit reds HERE (the pin
-/// travels with the law, not with the repo).
+/// xnli_en, everything else byte-identical), RE-PINNED 2026-10-05 at the
+/// first licence demotion (riir-rethink Issue 023 T2 — xnli_en + emotion;
+/// ag_news became the sole armed row), and RE-PINNED again the same day at
+/// the second (Issue 023 T3 — sst5 + ag_news verified no-grant at source:
+/// SST's own README carries no licence over scraped Rotten Tomatoes text,
+/// AG News is Gulli's 2004/05 corpus of 2000+ publishers' snippets with no
+/// grant anywhere). The manifest is now the FIVE permissive sellable rows,
+/// NO escalate row armed. A future Rethink-side manifest edit reds HERE
+/// (the pin travels with the law, not with the repo).
 const PINNED_PRODUCTION_MANIFEST_DIGEST: &str =
-    "blake3:e77a42ce008d36f0629176103e128c8652d2396353211734f3f684fabfba47d8";
+    "blake3:5e1ff4755a889e2474dcac78c31cd5530c04ffb900ef3fdc238e73951d30127e";
 
 #[test]
 fn production_manifest_bytes_are_pinned_byte_for_byte() {
@@ -330,18 +366,16 @@ fn manifest_posture_rows_are_the_serving_law_verdict() {
     let m = production_manifest();
     // The owner's serving law (2026-09-27, "pick the best decision for
     // me"): the SERVED arm is the best measured arm per suite over the
-    // frozen test read, A0 included as a candidate. ag_news serves
-    // H2(0.25,2,2) 0.8975 and sst5 serves A1 0.4217 while still
-    // T2-uncertified (the strict-superiority gate stays as the
-    // ADVERTISING law — the reflex-site ✓/✗ row — not the serving
-    // selector); banking77 serves H2(2,8,8) 0.8540 over the Issue 579
-    // nbsvm v2 winner (presence bags, Bench 012) at T2 LB95 -0.0013 —
-    // the same uncertified-under-best-measured class. emotion / xnli_en
-    // carried A0 rows until the licence ledger demoted them to
-    // BENCHMARK-ONLY (riir-rethink Issue 023 T2, 2026-10-05 — CC BY-NC /
-    // research-only data cannot back the paid lane, and the A0 seat
-    // itself is built from their rows; re-entry is a re-source, never a
-    // re-flag — pinned by the licence gate below).
+    // frozen test read, A0 included as a candidate. banking77 serves
+    // H2(2,8,8) 0.8540 over the Issue 579 nbsvm v2 winner (presence bags,
+    // Bench 012) at T2 LB95 -0.0013 — uncertified-under-best-measured
+    // (the strict-superiority gate stays as the ADVERTISING law — the
+    // reflex-site ✓/✗ row — not the serving selector). emotion, xnli_en,
+    // sst5 + ag_news carried rows until the licence ledger demoted ALL
+    // FOUR to BENCHMARK-ONLY (riir-rethink Issue 023 T2+T3, 2026-10-05 —
+    // CC BY-NC / research-only / verified no-grant third-party text;
+    // the A0 seat itself is built from their rows; re-entry is a
+    // re-source, never a re-flag — pinned by the licence gate below).
     // prompt_injections serves A1 0.8534 over the Issue 578 winner
     // (Plan 003's noul bridge, Bench 013): +8.6 pt with the paired LB95
     // POSITIVE (+0.0082) — T2-CERTIFIED, the massive class, at n=116;
@@ -361,17 +395,7 @@ fn manifest_posture_rows_are_the_serving_law_verdict() {
     // bar, so the suite stays unsold under the amended law — the manifest
     // row exists because A1 IS the argmax (the serving law), and the
     // Reflex tie is broken.
-    let expected: [(&str, Arm, &str); 7] = [
-        (
-            "ag_news",
-            Arm::H2 {
-                beta: 0.25,
-                n_min: 2.0,
-                tau_n: 2.0,
-            },
-            "H2(β=0.25,nmin=2,τ=2)",
-        ),
-        ("sst5", Arm::A1, "A1"),
+    let expected: [(&str, Arm, &str); 5] = [
         (
             "massive_intent_en",
             Arm::H2 {
@@ -403,17 +427,16 @@ fn manifest_posture_rows_are_the_serving_law_verdict() {
         ("code_fixtures", Arm::A1, "A1"),
         // (The six harness families' artifact-less A0 rows were REMOVED
         // 2026-10-02 — owner call: the suites are retired from the reflex
-        // harness itself. Bench 011/016's frozen reads remain in
-        // .benchmarks as history. The emotion + xnli_en A0 rows were
-        // REMOVED 2026-10-05 — the licence ledger, riir-rethink Issue
-        // 023 T2 — pinned by the licence gate below.)
+        // harness itself. The emotion + xnli_en A0 rows were REMOVED
+        // 2026-10-05 (issue 023 T2), sst5 + ag_news the same day (T3) —
+        // the licence ledger, pinned by the licence gate below.)
     ];
     assert_eq!(
         m.rows().len(),
-        7,
-        "the manifest carries exactly the seven rows (the measured sellable \
-         suites; the licence-barred two and the six artifact-less A0 families \
-         left with their retirements)"
+        5,
+        "the manifest carries exactly the five permissive sellable rows (the \
+         licence-barred four and the six artifact-less A0 families left with \
+         their retirements)"
     );
     for (suite, arm, name) in expected {
         let row = m
@@ -434,27 +457,32 @@ fn manifest_posture_rows_are_the_serving_law_verdict() {
     );
 }
 
-/// The licence gate (riir-rethink Issue 023 T2, 2026-10-05): the two
+/// The licence gate (riir-rethink Issue 023 T2+T3, 2026-10-05): the four
 /// licence-barred suites carry NO row in the production manifest —
-/// emotion ("educational and research purposes only") and xnli_en
-/// (CC BY-NC 4.0) cannot back the paid lane, and the A0 seat itself is
-/// built from their rows, so no arm of theirs serves. Their bench
-/// records stay (research use); re-entry is a RE-SOURCE with its own
-/// re-fit + GOAT — never a re-flag. A future row for either suite reds
-/// HERE until `.issues/023` (the ledger) is resolved.
+/// emotion ("educational and research purposes only"), xnli_en
+/// (CC BY-NC 4.0), sst5 (the Stanford SST zip's own README carries NO
+/// licence over scraped Rotten Tomatoes text) and ag_news (Gulli's
+/// 2004/05 news corpus — 2000+ publishers' snippets, no grant anywhere).
+/// None can back the paid lane, and the A0 seat itself is built from
+/// their rows, so no arm of theirs serves. Their bench records stay
+/// (research use); re-entry is a RE-SOURCE with its own re-fit + GOAT —
+/// never a re-flag. A future row for any of the four reds HERE until
+/// `.issues/023` (the ledger) is resolved.
 #[test]
 fn licence_barred_suites_carry_no_production_row() {
     let m = production_manifest();
-    assert!(
-        m.row("emotion").is_none(),
-        "emotion is benchmark-only (research-only licence, issue 023 T2) — a \
-         production row for it must not exist without the ledger's re-source"
-    );
-    assert!(
-        m.row("xnli_en").is_none(),
-        "xnli_en is benchmark-only (CC BY-NC, issue 023 T2) — a production row \
-         for it must not exist without the ledger's re-source"
-    );
+    for (suite, why) in [
+        ("emotion", "research-only licence"),
+        ("xnli_en", "CC BY-NC"),
+        ("sst5", "no licence at source — scraped RT review text"),
+        ("ag_news", "no grant at source — Gulli news corpus"),
+    ] {
+        assert!(
+            m.row(suite).is_none(),
+            "{suite} is benchmark-only ({why}, issue 023 T2/T3) — a production \
+             row for it must not exist without the ledger's re-source"
+        );
+    }
 }
 
 /// The deployment half of the manifest pin: validation against the real
@@ -494,7 +522,7 @@ fn boot_suite_synth(
 ) -> Result<riir_instinct::server::AnySuiteServer, String> {
     let datasets = datasets_dir();
     let winners = winners_dir();
-    let manifest = production_manifest();
+    let manifest = replay_manifest();
     const SYNTH_EXTRA_CAP: usize = 128;
     let synth = synth.map(|p| p.to_path_buf());
     std::thread::Builder::new()
@@ -510,14 +538,15 @@ fn boot_suite_synth(
                 None => riir_reflex::harness::runner::seat::prepare_seat(suite, &datasets)?,
             };
             // The open replay boots the row's CHEAP leg (Issue 017 T5):
-            // the production manifest's ag_news row carries an escalate
-            // table (the sole ESC-armed row since the licence demotion,
-            // issue 023 T2 — xnli_en's went with its row) — the composition
-            // is the private Rethink lane's, and the open build's ordinary
-            // boots refuse it. What these gates replay is the ARM the
-            // manifest seats (the frozen picks of that arm), which the
-            // sanctioned cheap boot serves verbatim; for a row without an
-            // escalate table this is byte-identical to boot_from_seat.
+            // the ESC composition is the private Rethink lane's, and the
+            // open build's ordinary boots refuse an escalate-carrying row.
+            // NO production row carries an escalate table since the
+            // licence demotions (issue 023 T2/T3) — but the replay stays
+            // at the sanctioned cheap boot regardless: what these gates
+            // replay is the ARM the manifest seats (the frozen picks of
+            // that arm), which the sanctioned cheap boot serves verbatim;
+            // for a row without an escalate table this is byte-identical
+            // to boot_from_seat.
             riir_instinct::server::AnySuiteServer::boot_cheap_from_seat(
                 suite,
                 seat,
@@ -578,11 +607,12 @@ fn frozen_picks(suite: &str, arm_name: &str) -> Option<(Vec<usize>, Vec<bool>)> 
     frozen_picks_from(&predictions_path(), suite, arm_name)
 }
 
-/// The serving posture's arm for one suite, resolved from the PRODUCTION
-/// manifest and rendered to its record name (Arm::name is the exact
-/// spelling the arena wrote — "H2(β=0.25,nmin=2,τ=2)" and friends).
+/// The serving posture's arm for one suite, resolved from the REPLAY
+/// manifest (production rows + the ag_news research row) and rendered to
+/// its record name (Arm::name is the exact spelling the arena wrote —
+/// "H2(β=0.25,nmin=2,τ=2)" and friends).
 fn serving_arm_name(suite: &str) -> String {
-    let m = production_manifest();
+    let m = replay_manifest();
     let row = m
         .row(suite)
         .unwrap_or_else(|| panic!("{suite}: missing from the arsenal manifest"));
@@ -1244,47 +1274,24 @@ fn escalate_manifest_text(posture: &str, escalate: &str) -> String {
     )
 }
 
-/// The ONE production escalate row parses with its exact fields — the
-/// ESC cheap leg (the row's own arm verbatim) + the think-leg head +
-/// Bench 0057's T1 fit margin + the GOAT acceptance window as rate
-/// bounds. Every OTHER row carries no escalate table (sst5's GOAT refusal
-/// at G1's LB95 leg; typed's single-question contract deferral). xnli_en's
-/// escalate row left WITH its row at the licence demotion (issue 023 T2 —
-/// the Bench-0057/0059 records stay; rethink's G5 replay carries the
-/// research posture locally).
+/// NO production escalate row exists since the licence demotions (issue
+/// 023 T2/T3 removed xnli_en's and ag_news's with their rows) — this gate
+/// pins that ZERO state beside the grammar: the parser + validator rules
+/// stay exercised by the mutation fixtures below, and the Bench-0057
+/// posture records + the G5 research replay live in the Rethink repo. A
+/// future escalate row re-arms ONLY with its own GOAT record AND, for a
+/// licence-barred suite, the ledger's re-source.
 #[test]
-fn escalate_parses_on_the_production_escalate_rows() {
+fn escalate_grammar_pins_the_zero_armed_production_state() {
     let m = production_manifest();
-    let ag = m
-        .row("ag_news")
-        .expect("the ag_news row")
-        .escalate
-        .as_ref()
-        .expect("ag_news carries the ESC cheap leg (Issue 017 T5 — the sole armed row since 023 T2)");
-    assert_eq!(ag.think_file, "ag_news_encoder_head_v1.bin");
-    assert_eq!(
-        ag.think_digest,
-        "blake3:e7e17cf3c2e2380137245dba0103cc41f6ee3ae53f225f07f247f6c3eca1cd66"
+    assert!(
+        m.rows().iter().all(|r| r.escalate.is_none()),
+        "the production manifest carries NO escalate row (issue 023 T2/T3) — \
+         a re-arm rides a re-sourced suite's own GOAT, never a silent re-flag"
     );
-    assert_eq!(ag.margin, 0.05);
-    assert_eq!(ag.lcb_floor, None);
-    assert_eq!(ag.min_rate, 0.15);
-    assert_eq!(ag.max_rate, 0.60);
-
-    // ag_news is the SOLE escalate-armed row: the licence demotion took
-    // xnli_en's (023 T2) and no other row ever carried one.
-    assert_eq!(
-        m.rows()
-            .iter()
-            .filter(|r| r.escalate.is_some())
-            .count(),
-        1,
-        "exactly one escalate-armed row (ag_news) — a second needs its own GOAT \
-         record AND, for a licence-barred suite, the ledger's re-source"
-    );
-
+    // The five permissive rows each carry none, named — a suite-scoped
+    // refusal spelling that names its subject.
     for suite in [
-        "sst5",
         "massive_intent_en",
         "banking77",
         "prompt_injections",
@@ -1434,14 +1441,17 @@ fn escalate_think_file_drift_and_absent_posture() {
 /// The boot wall: every OPEN boot path refuses an escalate row loud,
 /// naming the private lane + the sanctioned cheap boot — never a silent
 /// cheap-leg serve (the moat law). The refusal fires BEFORE any
-/// ext-backend check (the escalate rows are bag arms).
+/// ext-backend check (the escalate rows are bag arms). The row is the
+/// ag_news ESC RESEARCH posture (the verbatim promotion-row shape — it
+/// left the production manifest at the licence demotion, issue 023 T3;
+/// the wall it proves is grammar-level, not selection-level).
 #[test]
 fn escalate_row_refuses_loud_on_every_open_boot_path() {
     if !data_present() {
         eprintln!("SKIP loud: datasets absent (the seat is the refusal's vehicle)");
         return;
     }
-    let manifest = production_manifest();
+    let manifest = ag_news_esc_research_manifest();
     let datasets = datasets_dir();
     let winners = winners_dir();
     let out = std::thread::Builder::new()
@@ -1476,14 +1486,16 @@ fn escalate_row_refuses_loud_on_every_open_boot_path() {
 /// The sanctioned exception: [`AnySuiteServer::boot_cheap_from_seat`]
 /// boots an escalate row's OWN arm with the table deliberately ignored —
 /// the cheap leg the private ESC lane composes over. The booted server
-/// decides with the row's verbatim arm.
+/// decides with the row's verbatim arm. The row is the ag_news ESC
+/// RESEARCH posture (bench-0057/0059's own digests; benchmark-only in
+/// production since issue 023 T3).
 #[test]
 fn escalate_row_boots_cheap_through_the_sanctioned_path() {
     if !data_present() {
         eprintln!("SKIP loud: datasets absent (the seat + winner are the boot's vehicle)");
         return;
     }
-    let manifest = production_manifest();
+    let manifest = ag_news_esc_research_manifest();
     let datasets = datasets_dir();
     let winners = winners_dir();
     let mut server = std::thread::Builder::new()
@@ -1838,15 +1850,19 @@ fn wait_suite_state(port: u16, suite: &str, want: &str, secs: u64) -> Result<(),
 }
 
 /// The ag_news row of the OPEN-REPLAY manifest (the production verdict,
-/// escalate stripped — Issue 017 T5), flipped to the lazy posture (the
-/// first `budget.load` in the file is ag_news's row).
+/// escalate stripped — Issue 017 T5; the row itself is the RESEARCH
+/// posture since 023 T3), flipped to the lazy posture. The ag_news row
+/// is APPENDED by `replay_manifest_toml` (its production row left at the
+/// licence demotion), so the flip targets the appended block's own
+/// budget line — never another row's.
 fn lazy_ag_news_manifest() -> String {
     // The OPEN-replay base (escalate stripped — Issue 017 T5): the lazy
     // cycle boots ag_news through the bin, which refuses an escalate row.
-    open_replay_manifest_toml().replacen(
-        "budget  = { load = \"eager\", max_payload_mb = 16 }",
-        "budget  = { load = \"lazy\", max_payload_mb = 16 }",
-        1,
+    // The flip is scoped to the appended ag_news block: its posture line
+    // is unique to that row, and the budget line follows it.
+    replay_manifest_toml().replace(
+        "posture = { arm = \"H2\", beta = 0.25, n_min = 2.0, tau_n = 2.0 }\npin_keys = []\nbudget  = { load = \"eager\", max_payload_mb = 16 }",
+        "posture = { arm = \"H2\", beta = 0.25, n_min = 2.0, tau_n = 2.0 }\npin_keys = []\nbudget  = { load = \"lazy\", max_payload_mb = 16 }",
     )
 }
 

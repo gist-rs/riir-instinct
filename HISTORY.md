@@ -17,6 +17,27 @@ Serve gates 24/24 with real data; clippy `-D warnings` clean. Full
 narrative + the G5 research-posture re-verification: riir-rethink
 HISTORY.md 2026-10-05 (Issue 023 T2).
 
+## 2026-10-05 — riir-rethink Issue 023 T3 lockstep: the ⚠ pair settled — the manifest is the five permissive rows; ESC zero-armed pinned
+
+Same-day second re-pin (the ledger's ⚠ rows settled by PRIMARY source —
+SST's own README carries no licence over scraped Rotten Tomatoes text;
+AG News is Gulli's no-grant 2004/05 corpus): sst5 + ag_news left the
+production manifest, so `PRODUCTION_MANIFEST_TOML` re-synced (7 → 5
+rows) + the digest re-pinned
+(`blake3:5e1ff4755a889e2474dcac78c31cd5530c04ffb900ef3fdc238e73951d30127e`).
+Structural reworks the zero-armed state demanded: (a) the boot/parity
+helpers now parse a **replay manifest** — production rows + the ag_news
+RESEARCH row appended (the verbatim posture that served; the Bench-004
+frozen picks stay the replay target) — so the ag_news data-gated gates
+keep their subject without shipping the row; (b) the two escalate wall /
+sanctioned-boot gates boot ag_news's ESC RESEARCH posture test-locally
+(real digests); (c) face-6 became `escalate_grammar_pins_the_zero_armed_
+production_state` — NO escalate row may appear without its own GOAT + the
+ledger's re-source; (d) the licence gate now pins all FOUR barred suites.
+Verified with the REAL winners dir: 24/24 incl. the full data battery
+(parity picks, massive sentinel, noul bridge, lazy cycle, swap gate).
+Full narrative: riir-rethink HISTORY.md 2026-10-05 (Issue 023 T3).
+
 ## 2026-10-05 — Issue 013 closed: pool re-baseline (a) EXECUTED — arena → canonical pool at the PINNED reflex baseline; standing triggers → Issue 019
 
 Owner-gate close (delegated Claude verdict 2026-10-05: GO option (a) WITH a
