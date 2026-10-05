@@ -16,13 +16,14 @@
 //!
 //! The measured classes (issue 021's leads, inventoried by Rethink's
 //! G4 doc): the synth case construction (a `serde_json::Value` build
-//! per request), the `eval_seat` result Vecs (per-question probs), the
-//! bridge prelude (per-question pos Vecs + the rendered options), the
-//! receipt tier (pick String, options clone, arm-name String), and the
-//! single-question `decide` prelude's template clones. None of these
-//! are waste (every allocation is exact-size) — the pin exists so the
-//! surface can only move DOWN deliberately (an ownership/scratch
-//! refactor) and never UP silently.
+//! per request), the `eval_seat` result Vecs (per-question probs —
+//! GONE since reflex issue 070 lead 2: the eval refills the per-server
+//! `eval_frame` instead), the bridge prelude (per-question pos Vecs +
+//! the rendered options), the receipt tier (pick String, options
+//! clone, arm-name String), and the single-question `decide` prelude's
+//! template clones. None of these are waste (every allocation is
+//! exact-size) — the pin exists so the surface can only move DOWN
+//! deliberately (an ownership/scratch refactor) and never UP silently.
 //!
 //! Skip-loud posture: `INSTINCT_ENCODER_PARITY=1` (the pay-the-boot
 //! opt-in — the seat preparation pays the minutes-class selection
@@ -46,21 +47,20 @@ const WARMUP: usize = 5;
 const MEASURED: usize = 20;
 
 /// The per-decision allocation ceiling for `decide` (single-question
-/// wire entry). MEASURED-THEN-PINNED: **83** (2026-10-05, issue 021's
-/// ownership/scratch refactor — was **107** pre-refactor, the baseline
-/// this pin was born from; the −24 classes removed: the bridge pass's
-/// per-question pos Vecs + rendered-options build + duplicate-check
-/// HashSet, the receipt's options CLONE (now built once and moved),
-/// the synth case (the reuse form — keep-when-equal keeps the template
-/// fields on the hot path), and the eval state String). Deterministic
-/// across runs for the fixed fixture population. A red means a new
-/// allocation class joined the serve path — or a legitimate code
-/// change moved it: re-measure, inventory, re-pin with the delta named
-/// in the commit. The remaining surface is dominated by `eval_seat`'s
-/// internals (the reflex harness's own result Vecs — outside this
-/// crate) and the single-question prelude's template clones (the
-/// `&mut self` eval borrow forces them), both recorded in issue 021.
-const PINNED_MAX_DECIDE_ALLOCS: usize = 83;
+/// wire entry). MEASURED-THEN-PINNED: **42** (2026-10-05, reflex issue
+/// 070 lead 2 — the serve path's eval refills the per-server
+/// `eval_frame` instead of building `eval_seat`'s result Vecs per
+/// call; was **83**, issue 021's post-refactor pin, itself down from
+/// the **107** baseline this pin was born from). Deterministic across
+/// runs for the fixed fixture population (42 reproduced exactly ×2).
+/// A red means a new allocation class joined the serve path — or a
+/// legitimate code change moved it: re-measure, inventory, re-pin with
+/// the delta named in the commit. The remaining surface is dominated
+/// by the synth case construction (21 of 42 — the per-request
+/// `serde_json::Value` template build) and the single-question
+/// prelude's template clones (the `&mut self` eval borrow forces
+/// them), recorded in issue 021.
+const PINNED_MAX_DECIDE_ALLOCS: usize = 42;
 
 static ALLOCS: AtomicUsize = AtomicUsize::new(0);
 static COUNTING: AtomicBool = AtomicBool::new(false);

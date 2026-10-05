@@ -28,7 +28,8 @@ use std::path::Path;
 use riir_reflex::embed::EMBED_DIM;
 use riir_reflex::engine::DecisionEngine;
 use riir_reflex::harness::runner::seat::{
-    PostureKnobs, Seat, build_seat_engine, eval_seat, fit_posture, prepare_seat,
+    CaseEvalScratch, PostureKnobs, Seat, build_seat_engine, eval_case_into, fit_posture,
+    prepare_seat,
 };
 use riir_reflex::harness::suites::{GoldAnswer, QKind, SuiteCase, SuiteQuestion};
 use riir_reflex::nb_scope::NbView;
@@ -61,7 +62,8 @@ pub struct ServedQuestion<'a> {
 
 /// The served request → the suite-case shape the seat eval consumes —
 /// the EXACT construction [`SuiteServer::decide_multi`] feeds the
-/// modelless eval (`eval_seat`), exported because a downstream lane
+/// modelless eval (`eval_case_into`, reflex issue 070 lead 2), exported
+/// because a downstream lane
 /// backend must evaluate the SAME bytes: Rethink's ESC lane runs its
 /// selective gate over this case (Rethink Issue 017 T2) so the gate
 /// flags and the served answers read one request shape. The noul
@@ -336,7 +338,7 @@ pub struct ServedDecision {
     pub us: u64,
     /// The seat engine's fused-gate abstention for this question — the
     /// shipped calibrated gate (score + distance axes) the modelless half
-    /// computes for EVERY arm (`eval_seat` runs unconditionally).
+    /// computes for EVERY arm (the eval face runs unconditionally).
     /// Distinct from `abstained`: for A0 they agree; for A1/H2 the served
     /// answer never abstains while the gate may still flag the question.
     /// The ESC lane's escalation set (Rethink Issue 017 T1) reads this —
@@ -402,6 +404,14 @@ pub struct SuiteServer<const N: usize> {
     bridge_classes: Vec<Vec<usize>>,
     served_case: SuiteCase,
     state_scratch: String,
+    /// The eval frame the request's answers refill into (reflex issue
+    /// 070, lead 2): the scratch-refill eval face's per-question
+    /// probabilities / picks / confidences / abstain flags. Taken out of
+    /// `self` for the duration of the receipt loop (the take/replace
+    /// idiom — the receipt's `&mut self` calls must not alias it) and
+    /// restored before `Ok`; the early `return Err` paths drop it
+    /// (error paths — the warm capacity is rebuilt on the next call).
+    eval_frame: CaseEvalScratch,
     /// The suite's corpus centroid folded into the admission space (the
     /// hoarding gate's vector for this suite — Proposal 001 T5).
     centroid: [f32; crate::arsenal_ops::DIM],
@@ -777,6 +787,7 @@ impl<const N: usize> SuiteServer<N> {
                 gold: Vec::new(),
             },
             state_scratch: String::new(),
+            eval_frame: CaseEvalScratch::new(),
             centroid,
         })
     }
@@ -1034,9 +1045,11 @@ impl<const N: usize> SuiteServer<N> {
         }
 
         // The modelless lane's answers: the synthesized multi-question case
-        // goes through the SAME eval path the seat eval uses
-        // (eval_seat → engine_request → decide_with), so A0 here is the
-        // arena's A0 byte for byte, per question. The construction is the
+        // goes through the SAME eval path the seat eval uses — its
+        // scratch-refill face (eval_case_into → decide_with; byte-parity
+        // vs eval_seat is the reflex-side contract + the frozen-picks
+        // replay below), so A0 here is the arena's A0 byte for byte, per
+        // question. The construction is the
         // exported [`synth_served_case`] law — [`synth_served_case_into`]
         // writes the same bytes into the per-request case scratch
         // (allocation-reused, issue 021), shared with the downstream
@@ -1044,17 +1057,22 @@ impl<const N: usize> SuiteServer<N> {
         synth_served_case_into(state, questions, &mut self.served_case);
         self.state_scratch.clear();
         self.state_scratch.push_str(state);
-        let se = eval_seat(
+        // The take/replace idiom: the eval frame leaves `self` so the
+        // receipt loop's `&mut self` calls (lane scores, the H2 evidence
+        // gathers) never alias it. Restored after the loop; the early
+        // `return Err` paths below lose its warm capacity (error paths).
+        let mut frame = std::mem::take(&mut self.eval_frame);
+        eval_case_into(
             &mut self.engine,
-            std::slice::from_ref(&self.served_case),
-            std::slice::from_ref(&self.state_scratch),
+            &self.served_case,
+            &self.state_scratch,
+            &mut frame,
         )?;
-        let outs = &se.cases[0];
-        if outs.len() != questions.len() {
+        if frame.abstained.len() != questions.len() {
             return Err(format!(
                 "suite {}: the engine answered {} of {} questions — eval shape drift",
                 self.suite,
-                outs.len(),
+                frame.abstained.len(),
                 questions.len()
             ));
         }
@@ -1068,7 +1086,12 @@ impl<const N: usize> SuiteServer<N> {
         let arm = self.arm;
         let mut decisions = Vec::with_capacity(questions.len());
         for (qi, q) in questions.iter().enumerate() {
-            let qo = &outs[qi];
+            // The frame's per-question outputs as locals — the slice reads
+            // (the frame is a local, taken out of `self` for this loop).
+            let qo_pick = frame.picks[qi];
+            let qo_conf = frame.confs[qi];
+            let qo_abst = frame.abstained[qi];
+            let qo_probs: &[f64] = &frame.probs[qi];
             let pos_class = &self.bridge_classes[qi];
             // The rendered option list, built ONCE per question and MOVED
             // into the receipt below (issue 021 — it was built in the
@@ -1086,17 +1109,17 @@ impl<const N: usize> SuiteServer<N> {
                     .scores_classes_into(&self.bag, pos_class, &mut self.pos_spec);
             }
             let a0_ans = A0Answer {
-                probs: &qo.probs,
-                pick: qo.pick,
-                abstained: qo.abstained,
+                probs: qo_probs,
+                pick: qo_pick,
+                abstained: qo_abst,
             };
             let (pick_index, escalated, abstained, probabilities, specialist_scores, confidence) =
                 match arm {
                     Arm::A0 => {
-                        let abstained = qo.abstained;
-                        let pick = (!abstained).then_some(qo.pick);
-                        let probs = (!qo.probs.is_empty()).then(|| qo.probs.clone());
-                        (pick, false, abstained, probs, None, qo.conf)
+                        let abstained = qo_abst;
+                        let pick = (!abstained).then_some(qo_pick);
+                        let probs = (!qo_probs.is_empty()).then(|| qo_probs.to_vec());
+                        (pick, false, abstained, probs, None, qo_conf)
                     }
                     Arm::A1 => {
                         let (p, c) = argmax_pos(&self.pos_spec);
@@ -1128,10 +1151,10 @@ impl<const N: usize> SuiteServer<N> {
                             (
                                 Some(d.pick),
                                 false,
-                                qo.abstained,
-                                (!qo.probs.is_empty()).then(|| qo.probs.clone()),
+                                qo_abst,
+                                (!qo_probs.is_empty()).then(|| qo_probs.to_vec()),
                                 None,
-                                qo.conf,
+                                qo_conf,
                             )
                         }
                     }
@@ -1217,9 +1240,12 @@ impl<const N: usize> SuiteServer<N> {
                 escalated,
                 abstained,
                 us: u64::try_from(t0.elapsed().as_micros()).unwrap_or(u64::MAX),
-                gate_abstained: qo.abstained,
+                gate_abstained: qo_abst,
             });
         }
+        // Restore the frame (its warm scratch survives to the next
+        // request); error paths above dropped it by design.
+        self.eval_frame = frame;
         Ok(decisions)
     }
 
@@ -1877,7 +1903,7 @@ mod served_case_tests {
     /// criteria rendering per kind, the noul fixed rendering from an EMPTY
     /// presentation, the serialized-state envelope, and one zero-gold row
     /// per question — the exact bytes [`SuiteServer::decide_multi`] feeds
-    /// `eval_seat`.
+    /// `eval_case_into` (the eval face; reflex issue 070 lead 2).
     #[test]
     fn synth_served_case_renders_each_kind() {
         let opts = ["a".to_string(), "b".to_string()];
