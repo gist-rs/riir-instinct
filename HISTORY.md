@@ -1,3 +1,50 @@
+## 2026-10-05 — Issue 021 closed: the ESC cheap-path allocation surface — bag serve path 107 → 83 allocs/decision, composed ESC 190 → 161; every pick bit-identical
+
+Measured lead from riir-refine Issue 146 T0.6's hotpath profile, closed
+with the ownership/scratch refactor the issue asked for ("an
+ownership/scratch refactor lead, not a `vec-with-capacity` fix" — none
+of the measured allocations were waste; every one was exact-size):
+
+- **Instrument born**: `tests/serve_g4_alloc.rs` — the bag serve path's
+  own counting-allocator pin (the open lane had none; Rethink's
+  `esc_g4_alloc` deliberately includes this surface inside its composed
+  number, so a bag-server regression now reds in BOTH repos at their
+  own addresses). Baseline measured **107** (deterministic ×2), synth
+  case alone 21.
+- **`synth_served_case_into`** (new, pub): the reuse form of
+  `synth_served_case` — same bytes every call by construction
+  (keep-when-equal preserves stored fields; everything else is
+  overwritten), the id/state/Vec buffers persist, and the criteria map
+  is kept when the presented option set is unchanged. `decide_multi`
+  evaluates from the server's own case scratch + a state-string
+  scratch.
+- **The bridge pass is allocation-free after warmup**: per-question
+  label/class positions land in reused `Vec<Vec<usize>>` scratches
+  (grown on demand, cleared per question); validation reads the wire
+  slice directly (the rendered option list is materialized ONCE per
+  question, at the receipt — and MOVED into it, where it was built in
+  the bridge pass and cloned again); the duplicate check is an
+  allocation-free O(k²) scan (k ≤ 77, the hash-set's per-question
+  allocation was the worse trade). All error strings byte-identical.
+- **Results**: bag serve path **107 → 83** (pinned, deterministic ×2);
+  composed ESC cheap decision **190 → 166 → 161** (instinct half, then
+  Rethink's `synth_served_case_into` gate-case scratch — Rethink's pin
+  sharpened to 161 with the re-measure disclosed). Validation:
+  serve_gates **24/24 with full material incl. the frozen-picks parity**
+  (`served_decisions_are_the_frozen_goat_picks`), hybrid g4_alloc
+  (zero-alloc) green, lib 85 green, clippy `-D warnings` clean at
+  default + `laya-face-metal`; Rethink esc_gates **17/17** + esc_g4
+  green at the re-pinned 161.
+- **What remains (measured, filed where it lives)**: ~69 of the 83 are
+  THIS stack's `eval_seat`/`eval_engine` internals — reflex-side, filed
+  as **reflex Issue 070** (the `SeatEval` copy layer the gate leg reads
+  only `abstained` through; the arena pays the same path). The
+  borrow-bound `decide()` prelude template clones (~8) and the G5 law's
+  canonical-criteria clones stay, disclosed in the pins' docs. The
+  wall-time value of the cut is deliberately UNMEASURED (the T0.6
+  timing readings were box-noise-dominated); the deterministic alloc
+  counts are the deliverable.
+
 ## 2026-10-05 — riir-rethink Issue 023 T2 lockstep: the production manifest pin re-synced — xnli_en + emotion are benchmark-only
 
 The pin travels with the law (the lockstep law in `../riir-rethink/AGENTS.md`):

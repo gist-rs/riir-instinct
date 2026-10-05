@@ -69,50 +69,132 @@ pub struct ServedQuestion<'a> {
 /// law). Pure construction — no bridge resolution, no validation: the
 /// caller's server validated the presentation before this runs.
 pub fn synth_served_case(state: &str, questions: &[ServedQuestion<'_>]) -> SuiteCase {
-    let case_questions: Vec<SuiteQuestion> = questions
-        .iter()
-        .map(|q| {
-            let options: Vec<String> = if q.kind == QKind::Noul && q.options.is_empty() {
-                vec!["false".to_string(), "true".to_string()]
-            } else {
-                q.options.to_vec()
-            };
-            SuiteQuestion {
-                qid: q.qid.to_string(),
-                kind: q.kind,
-                instructions: q.instructions.to_string(),
-                criteria: match q.kind {
-                    QKind::Choice => {
-                        let mut m = serde_json::Map::new();
-                        for key in &options {
-                            m.insert(key.clone(), serde_json::Value::Null);
-                        }
-                        serde_json::Value::Object(m)
-                    }
-                    QKind::Score => serde_json::Value::Array(
-                        options
-                            .iter()
-                            .map(|k| serde_json::Value::String(k.clone()))
-                            .collect(),
-                    ),
-                    QKind::Noul => serde_json::Value::Null,
-                },
-            }
-        })
-        .collect();
-    SuiteCase {
-        id: "served".into(),
-        state: serde_json::Value::String(state.to_string()),
-        questions: case_questions,
-        gold: questions
-            .iter()
-            .map(|_| GoldAnswer {
-                idx: 0,
-                soft: vec![],
-                gold_score: None,
-            })
-            .collect(),
+    let mut case = SuiteCase {
+        id: String::new(),
+        state: serde_json::Value::Null,
+        questions: Vec::new(),
+        gold: Vec::new(),
+    };
+    synth_served_case_into(state, questions, &mut case);
+    case
+}
+
+/// The reuse form of [`synth_served_case`] (issue 021): writes the SAME
+/// case content into `case` while reusing its allocations — the serve
+/// path builds the same case shape every decision (the suite's template
+/// plus the presented options), so the id/state/question-Vec/gold-Vec
+/// buffers persist and any field whose incoming value equals what is
+/// already stored is kept, not re-allocated. The result is
+/// byte-identical to a fresh [`synth_served_case`] every call, by
+/// construction (keep-when-equal preserves the stored bytes; every
+/// other field is overwritten from the request).
+pub fn synth_served_case_into(
+    state: &str,
+    questions: &[ServedQuestion<'_>],
+    case: &mut SuiteCase,
+) {
+    if case.id != "served" {
+        case.id.clear();
+        case.id.push_str("served");
     }
+    match &mut case.state {
+        serde_json::Value::String(s) if s == state => {}
+        serde_json::Value::String(s) => {
+            s.clear();
+            s.push_str(state);
+        }
+        _ => case.state = serde_json::Value::String(state.to_string()),
+    }
+    if case.questions.len() != questions.len() {
+        case.questions.clear();
+        case.questions.resize(
+            questions.len(),
+            SuiteQuestion {
+                qid: String::new(),
+                kind: QKind::Choice,
+                instructions: String::new(),
+                criteria: serde_json::Value::Null,
+            },
+        );
+    }
+    for (cq, q) in case.questions.iter_mut().zip(questions.iter()) {
+        if cq.qid != q.qid {
+            cq.qid.clear();
+            cq.qid.push_str(q.qid);
+        }
+        cq.kind = q.kind;
+        if cq.instructions != q.instructions {
+            cq.instructions.clear();
+            cq.instructions.push_str(q.instructions);
+        }
+        let options = rendered_options(q);
+        match q.kind {
+            QKind::Choice => set_choice_criteria(&mut cq.criteria, &options),
+            QKind::Score => set_score_criteria(&mut cq.criteria, &options),
+            QKind::Noul => cq.criteria = serde_json::Value::Null,
+        }
+    }
+    case.gold.clear();
+    case.gold.extend(questions.iter().map(|_| GoldAnswer {
+        idx: 0,
+        soft: vec![],
+        gold_score: None,
+    }));
+}
+
+/// The owned rendered option list of a served question (the fixed
+/// `[false, true]` rendering when a noul question presents none) — the
+/// one home for the rendering rule; validation reads the wire slice
+/// directly, the receipt materializes this once per question.
+fn rendered_options(q: &ServedQuestion<'_>) -> Vec<String> {
+    if q.kind == QKind::Noul && q.options.is_empty() {
+        vec!["false".to_string(), "true".to_string()]
+    } else {
+        q.options.to_vec()
+    }
+}
+
+/// The Choice criteria for the rendered options, keeping `old` when it
+/// already holds exactly those keys — the serve path re-presents the
+/// same option set every decision, so the hot path pays nothing. The
+/// values are Null by construction (this fn is the field's only writer
+/// and always builds Null values), which is what keep-when-equal
+/// preserves.
+fn set_choice_criteria(old: &mut serde_json::Value, options: &[String]) {
+    if let serde_json::Value::Object(m) = old {
+        if m.len() == options.len()
+            && m.keys()
+                .zip(options.iter())
+                .all(|(k, o)| k == o)
+        {
+            return;
+        }
+    }
+    let mut m = serde_json::Map::new();
+    for key in options {
+        m.insert(key.clone(), serde_json::Value::Null);
+    }
+    *old = serde_json::Value::Object(m);
+}
+
+/// The Score criteria for the rendered options — the same
+/// keep-when-equal law as [`set_choice_criteria`].
+fn set_score_criteria(old: &mut serde_json::Value, options: &[String]) {
+    if let serde_json::Value::Array(a) = old {
+        if a.len() == options.len()
+            && a.iter()
+                .zip(options.iter())
+                .all(|(v, o)| matches!(v, serde_json::Value::String(s) if s == o))
+        {
+            return;
+        }
+    }
+    *old = serde_json::Value::Array(
+        options
+            .iter()
+            .map(|k| serde_json::Value::String(k.clone()))
+            .collect(),
+    );
 }
 
 /// The cascade width the lane joins with when the serving arm is not H1
@@ -311,6 +393,15 @@ pub struct SuiteServer<const N: usize> {
     pos_label: Vec<usize>,
     pos_spec: Vec<f32>,
     pos_nb: Vec<f32>,
+    // Scratch (pre-allocated at boot, reused per request) — issue 021's
+    // serve-path block: the bridge resolution (per-question label/class
+    // positions, grown on demand and cleared per question), the
+    // synthesized eval case, and the eval state string. Content is
+    // rebuilt per request; the allocations persist.
+    bridge_labels: Vec<Vec<usize>>,
+    bridge_classes: Vec<Vec<usize>>,
+    served_case: SuiteCase,
+    state_scratch: String,
     /// The suite's corpus centroid folded into the admission space (the
     /// hoarding gate's vector for this suite — Proposal 001 T5).
     centroid: [f32; crate::arsenal_ops::DIM],
@@ -677,6 +768,15 @@ impl<const N: usize> SuiteServer<N> {
             pos_label: Vec::new(),
             pos_spec: Vec::new(),
             pos_nb: Vec::new(),
+            bridge_labels: Vec::new(),
+            bridge_classes: Vec::new(),
+            served_case: SuiteCase {
+                id: String::new(),
+                state: serde_json::Value::Null,
+                questions: Vec::new(),
+                gold: Vec::new(),
+            },
+            state_scratch: String::new(),
             centroid,
         })
     }
@@ -775,33 +875,51 @@ impl<const N: usize> SuiteServer<N> {
         // no seat-label meaning. An EMPTY noul presentation takes the
         // fixed [false, true] rendering (the decision_wire law: a noul
         // question carries no option list).
-        let mut all_labels: Vec<Vec<usize>> = Vec::with_capacity(questions.len());
-        let mut all_classes: Vec<Vec<usize>> = Vec::with_capacity(questions.len());
-        let mut all_options: Vec<Vec<String>> = Vec::with_capacity(questions.len());
-        for q in questions {
+        //
+        // Positions land in the per-request scratch (allocation-reused —
+        // issue 021); validation reads the wire slice directly — the
+        // rendered option list is materialized ONCE per question, at the
+        // receipt (the decide loop below).
+        if self.bridge_labels.len() < questions.len() {
+            self.bridge_labels.resize(questions.len(), Vec::new());
+        }
+        if self.bridge_classes.len() < questions.len() {
+            self.bridge_classes.resize(questions.len(), Vec::new());
+        }
+        for (qi, q) in questions.iter().enumerate() {
             // Noul questions may present the FIXED rendering by sending no
             // options at all (the decision_wire law: a noul question carries
             // no option list — [false, true] speaks it).
-            let options: Vec<String> = if q.kind == QKind::Noul && q.options.is_empty() {
-                vec!["false".to_string(), "true".to_string()]
+            let noul_fixed = q.kind == QKind::Noul && q.options.is_empty();
+            let rendered_len = if noul_fixed {
+                NOUL_PAIR.len()
             } else {
-                q.options.to_vec()
+                q.options.len()
             };
-            if options.len() < 2 {
+            if rendered_len < 2 {
                 return Err(format!(
                     "question {:?}: need ≥2 presented options",
                     q.qid
                 ));
             }
-            let mut seen = std::collections::HashSet::new();
-            if !options.iter().all(|o| seen.insert(o.as_str())) {
-                return Err(format!(
-                    "question {:?}: duplicate presented options — the answer space would collide",
-                    q.qid
-                ));
+            if !noul_fixed {
+                // O(k²) duplicate scan over the presented spellings (k ≤
+                // the largest seat universe, 77) — allocation-free; at the
+                // serve path's k the hash-set's per-question allocation is
+                // the worse trade (issue 021).
+                for (i, o) in q.options.iter().enumerate() {
+                    if q.options[..i].contains(o) {
+                        return Err(format!(
+                            "question {:?}: duplicate presented options — the answer space would collide",
+                            q.qid
+                        ));
+                    }
+                }
             }
-            let mut pos_label = Vec::with_capacity(options.len());
-            let mut pos_class = Vec::with_capacity(options.len());
+            let pos_label = &mut self.bridge_labels[qi];
+            pos_label.clear();
+            let pos_class = &mut self.bridge_classes[qi];
+            pos_class.clear();
             if q.kind == QKind::Noul {
                 if !self.perm.contains(&usize::MAX) {
                     // Named join. Name-first (the arena's fill_positions
@@ -821,13 +939,13 @@ impl<const N: usize> SuiteServer<N> {
                     // hostile presentation answered over the pair).
                     let pair_named = NOUL_PAIR.iter().all(|n| self.key_map.contains_key(*n));
                     if pair_named {
-                        if options.len() != NOUL_PAIR.len() {
+                        if rendered_len != NOUL_PAIR.len() {
                             return Err(format!(
                                 "suite {}: a noul presentation carries {} options — the fixed \
                                  [false, true] rendering has exactly {} (pick_index speaks that \
                                  space whatever names are presented)",
                                 self.suite,
-                                options.len(),
+                                rendered_len,
                                 NOUL_PAIR.len()
                             ));
                         }
@@ -838,7 +956,7 @@ impl<const N: usize> SuiteServer<N> {
                             pos_label.push(li);
                             pos_class.push(cls);
                         }
-                    } else if options.len() != self.labels.len() {
+                    } else if rendered_len != self.labels.len() {
                         // The single-question contract's positional law,
                         // byte-preserved: the presented names never reorder
                         // the fixed rendering, position p takes seat label
@@ -850,7 +968,7 @@ impl<const N: usize> SuiteServer<N> {
                              [false, true] rendering has exactly {} (pick_index speaks that \
                              space whatever names are presented)",
                             self.suite,
-                            options.len(),
+                            rendered_len,
                             self.labels.len()
                         ));
                     } else {
@@ -865,11 +983,12 @@ impl<const N: usize> SuiteServer<N> {
                     // from the pair — resolve NOUL_PAIR BY NAME through the
                     // key map (the artifact's unified no/yes rows; a missing
                     // row is a producer-contract break, loud).
-                    if !is_fixed_noul_presentation(&options) {
+                    if !(noul_fixed || is_fixed_noul_presentation(q.options)) {
                         return Err(format!(
                             "suite {}: a context noul presentation must be the fixed pair in order \
-                             (or empty — the fixed rendering): {options:?} vs [\"false\", \"true\"]",
-                            self.suite
+                             (or empty — the fixed rendering): {:?} vs [\"false\", \"true\"]",
+                            self.suite,
+                            rendered_options(q)
                         ));
                     }
                     for name in NOUL_PAIR {
@@ -885,22 +1004,22 @@ impl<const N: usize> SuiteServer<N> {
                     }
                 }
             } else {
-                let all_named = options.iter().all(|k| self.key_map.contains_key(k));
+                let all_named = q.options.iter().all(|k| self.key_map.contains_key(k));
                 if all_named {
-                    for key in &options {
+                    for key in q.options {
                         let (li, cls) = self.key_map[key];
                         pos_label.push(li);
                         pos_class.push(cls);
                     }
                 } else if !self.perm.contains(&usize::MAX)
-                    && options.len() == self.perm.len()
+                    && rendered_len == self.perm.len()
                 {
                     for (li, &cls) in self.perm.iter().enumerate() {
                         pos_label.push(li);
                         pos_class.push(cls);
                     }
                 } else {
-                    let unmatched: Vec<String> = options
+                    let unmatched: Vec<String> = q.options
                         .iter()
                         .filter(|k| !self.key_map.contains_key(*k))
                         .cloned()
@@ -912,19 +1031,24 @@ impl<const N: usize> SuiteServer<N> {
                     ));
                 }
             }
-            all_labels.push(pos_label);
-            all_classes.push(pos_class);
-            all_options.push(options);
         }
 
         // The modelless lane's answers: the synthesized multi-question case
         // goes through the SAME eval path the seat eval uses
         // (eval_seat → engine_request → decide_with), so A0 here is the
         // arena's A0 byte for byte, per question. The construction is the
-        // exported [`synth_served_case`] — one home, shared with the
-        // downstream lanes that evaluate the same bytes.
-        let case = synth_served_case(state, questions);
-        let se = eval_seat(&mut self.engine, std::slice::from_ref(&case), &[state.to_string()])?;
+        // exported [`synth_served_case`] law — [`synth_served_case_into`]
+        // writes the same bytes into the per-request case scratch
+        // (allocation-reused, issue 021), shared with the downstream
+        // lanes that evaluate the same bytes.
+        synth_served_case_into(state, questions, &mut self.served_case);
+        self.state_scratch.clear();
+        self.state_scratch.push_str(state);
+        let se = eval_seat(
+            &mut self.engine,
+            std::slice::from_ref(&self.served_case),
+            std::slice::from_ref(&self.state_scratch),
+        )?;
         let outs = &se.cases[0];
         if outs.len() != questions.len() {
             return Err(format!(
@@ -945,8 +1069,11 @@ impl<const N: usize> SuiteServer<N> {
         let mut decisions = Vec::with_capacity(questions.len());
         for (qi, q) in questions.iter().enumerate() {
             let qo = &outs[qi];
-            let pos_class = &all_classes[qi];
-            let options = &all_options[qi];
+            let pos_class = &self.bridge_classes[qi];
+            // The rendered option list, built ONCE per question and MOVED
+            // into the receipt below (issue 021 — it was built in the
+            // bridge pass and cloned again here).
+            let options = rendered_options(q);
             self.pos_spec.clear();
             self.pos_spec.resize(pos_class.len(), 0.0);
             // The specialist scores unconditionally for the weighted arms
@@ -1035,14 +1162,14 @@ impl<const N: usize> SuiteServer<N> {
                                 // exact same spellings in the same order).
                                 self.pos_options
                                     .extend(["no".to_string(), "yes".to_string()]);
-                            } else {
-                                self.pos_options.extend_from_slice(options);
-                            }
+                                } else {
+                                    self.pos_options.extend_from_slice(&options);
+                                }
                             self.gather_positions_oc(q.qid);
                             &self.pos_nb
                         } else if self.nb_armed {
                             self.pos_label.clear();
-                            self.pos_label.extend_from_slice(&all_labels[qi]);
+                            self.pos_label.extend_from_slice(&self.bridge_labels[qi]);
                             self.gather_positions_nb();
                             &self.pos_nb
                         } else {
@@ -1081,7 +1208,7 @@ impl<const N: usize> SuiteServer<N> {
             decisions.push(ServedDecision {
                 suite: self.suite,
                 arm: arm.name(),
-                options: options.clone(),
+                options,
                 pick_index,
                 pick,
                 probabilities,

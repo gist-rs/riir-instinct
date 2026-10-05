@@ -1,0 +1,220 @@
+//! G4 — the bag serve path's allocation pin (instinct issue 021, the
+//! ESC cheap-path alloc lead). A dedicated test binary (the house
+//! counting-allocator pattern, `g4_alloc.rs` + Rethink's
+//! `esc_g4_alloc.rs`) so the global allocator sees no concurrent test
+//! traffic.
+//!
+//! SCOPE: the CHEAP bag server's own serve path — `decide` /
+//! `decide_multi` on a booted [`AnySuiteServer`]. This is the open
+//! lane's own surface (the serve bin answers through it directly) AND
+//! the ESC cheap tier's inner half; Rethink's `esc_g4_alloc` pins the
+//! COMPOSED armed path (190, a ceiling) and deliberately includes this
+//! surface inside its number — that pin is NOT restated here: this
+//! gate measures the cheap server WITHOUT the wrapper prelude, the
+//! gate leg, and the receipt `format!`, so a regression local to the
+//! bag server reds here even when the composed number happens to hold.
+//!
+//! The measured classes (issue 021's leads, inventoried by Rethink's
+//! G4 doc): the synth case construction (a `serde_json::Value` build
+//! per request), the `eval_seat` result Vecs (per-question probs), the
+//! bridge prelude (per-question pos Vecs + the rendered options), the
+//! receipt tier (pick String, options clone, arm-name String), and the
+//! single-question `decide` prelude's template clones. None of these
+//! are waste (every allocation is exact-size) — the pin exists so the
+//! surface can only move DOWN deliberately (an ownership/scratch
+//! refactor) and never UP silently.
+//!
+//! Skip-loud posture: `INSTINCT_ENCODER_PARITY=1` (the pay-the-boot
+//! opt-in — the seat preparation pays the minutes-class selection
+//! ladders) + the t20k datasets + the winners dir. A skip is a
+//! deferral, never a green.
+
+use std::alloc::{GlobalAlloc, Layout, System};
+use std::hint::black_box;
+use std::path::PathBuf;
+use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
+
+use riir_instinct::arsenal::ArsenalManifest;
+use riir_instinct::server::{AnySuiteServer, ServedQuestion, synth_served_case};
+use riir_reflex::harness::runner::seat::prepare_seat;
+
+/// The suite: sst5 — the same population Rethink's esc_g4 measures (the
+/// ESC cheap tier's measured suite), so the two pins decompose against
+/// one shared fixture front.
+const SUITE: &str = "sst5";
+const WARMUP: usize = 5;
+const MEASURED: usize = 20;
+
+/// The per-decision allocation ceiling for `decide` (single-question
+/// wire entry). MEASURED-THEN-PINNED: **83** (2026-10-05, issue 021's
+/// ownership/scratch refactor — was **107** pre-refactor, the baseline
+/// this pin was born from; the −24 classes removed: the bridge pass's
+/// per-question pos Vecs + rendered-options build + duplicate-check
+/// HashSet, the receipt's options CLONE (now built once and moved),
+/// the synth case (the reuse form — keep-when-equal keeps the template
+/// fields on the hot path), and the eval state String). Deterministic
+/// across runs for the fixed fixture population. A red means a new
+/// allocation class joined the serve path — or a legitimate code
+/// change moved it: re-measure, inventory, re-pin with the delta named
+/// in the commit. The remaining surface is dominated by `eval_seat`'s
+/// internals (the reflex harness's own result Vecs — outside this
+/// crate) and the single-question prelude's template clones (the
+/// `&mut self` eval borrow forces them), both recorded in issue 021.
+const PINNED_MAX_DECIDE_ALLOCS: usize = 83;
+
+static ALLOCS: AtomicUsize = AtomicUsize::new(0);
+static COUNTING: AtomicBool = AtomicBool::new(false);
+
+struct Counting;
+
+unsafe impl GlobalAlloc for Counting {
+    unsafe fn alloc(&self, layout: Layout) -> *mut u8 {
+        if COUNTING.load(Ordering::Relaxed) {
+            ALLOCS.fetch_add(1, Ordering::Relaxed);
+        }
+        unsafe { System.alloc(layout) }
+    }
+
+    unsafe fn dealloc(&self, ptr: *mut u8, layout: Layout) {
+        unsafe { System.dealloc(ptr, layout) }
+    }
+
+    unsafe fn realloc(&self, ptr: *mut u8, layout: Layout, new_size: usize) -> *mut u8 {
+        if COUNTING.load(Ordering::Relaxed) {
+            ALLOCS.fetch_add(1, Ordering::Relaxed);
+        }
+        unsafe { System.realloc(ptr, layout, new_size) }
+    }
+
+    unsafe fn alloc_zeroed(&self, layout: Layout) -> *mut u8 {
+        if COUNTING.load(Ordering::Relaxed) {
+            ALLOCS.fetch_add(1, Ordering::Relaxed);
+        }
+        unsafe { System.alloc_zeroed(layout) }
+    }
+}
+
+#[global_allocator]
+static A: Counting = Counting;
+
+fn repo_root() -> PathBuf {
+    PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+}
+
+fn datasets_dir() -> PathBuf {
+    std::env::var("INSTINCT_DATASETS_DIR")
+        .map(PathBuf::from)
+        .unwrap_or_else(|_| repo_root().join("../riir-reflex/.raw/datasets_t20k"))
+}
+
+fn winners_dir() -> PathBuf {
+    std::env::var("INSTINCT_WINNERS_DIR")
+        .map(PathBuf::from)
+        .unwrap_or_else(|_| repo_root().join("../riir-train/data/instinct_specialists"))
+}
+
+fn skip_loud(why: &str) {
+    eprintln!("SKIP loud: {why} — a skip is a deferral, never a green");
+}
+
+#[test]
+fn cheap_serve_path_allocation_pin() {
+    if std::env::var("INSTINCT_ENCODER_PARITY").as_deref() != Ok("1") {
+        skip_loud(
+            "INSTINCT_ENCODER_PARITY=1 not set — the boot pays the minutes-class \
+             selection ladders",
+        );
+        return;
+    }
+    let datasets = datasets_dir();
+    let winners = winners_dir();
+    if !datasets.join(SUITE).is_dir() || !winners_dir().is_dir() {
+        skip_loud("the sst5 datasets or the winners dir are absent");
+        return;
+    }
+
+    // The sst5 RESEARCH posture, carried verbatim from Rethink's
+    // esc_g4_alloc (the row left the production manifest at the licence
+    // demotions, issue 023 T3 — test-local, the record's own digest; no
+    // escalate table: the harness/gates posture, legal by design).
+    let manifest_text = "[[vessel]]\nsuite   = \"sst5\"\ndigest  = \"blake3:430558d6210737a267249500e0c3df4a0534d344752a1b4dae9a0e6952d2c001\"\nclass   = \"hosted_only\"\nposture = { arm = \"A1\" }\npin_keys = []\nbudget  = { load = \"eager\", max_payload_mb = 16 }\n";
+    let manifest =
+        ArsenalManifest::parse(manifest_text).expect("the sst5 research posture parses");
+
+    // Boot the CHEAP server only (no encoder lane — this pin is the bag
+    // surface) on a big-stack thread: the seat boot's stack frames exceed
+    // a test thread's 2 MiB default (the serve_gates pattern).
+    let datasets_for_boot = datasets.clone();
+    let winners_for_boot = winners.clone();
+    let mut server = std::thread::Builder::new()
+        .stack_size(64 * 1024 * 1024)
+        .spawn(move || {
+            let seat = prepare_seat(SUITE, &datasets_for_boot)?;
+            AnySuiteServer::boot_cheap_from_seat(SUITE, seat, &winners_for_boot, &manifest)
+        })
+        .expect("spawn boot thread")
+        .join()
+        .expect("boot thread panicked")
+        .expect("the cheap server boots");
+
+    // The cal cases + state strings (the replay population — the same
+    // front Rethink's esc_g4 measures).
+    let seat = prepare_seat(SUITE, &datasets).expect("prepare_seat");
+    let states: Vec<String> = seat.cal_state_strs.clone();
+    assert!(
+        states.len() >= WARMUP + MEASURED,
+        "the cal front must cover {WARMUP} warmup + {MEASURED} measured cases"
+    );
+
+    // Warm any lazy paths OUTSIDE the counting window (the specialist
+    // loader, the nb/oc gathers, the engine's first eval).
+    let mut warm_checksum = 0usize;
+    for state in states.iter().take(WARMUP) {
+        let d = server.decide(state, None).expect("warmup decide");
+        warm_checksum += d.pick_index.unwrap_or(0);
+    }
+    black_box(warm_checksum);
+
+    // Decomposition: the synth case construction ALONE (pure fn — its
+    // own counting window), so the case share of a decision is quotable
+    // beside the total.
+    let state0 = states[WARMUP].as_str();
+    let template_q = [ServedQuestion {
+        qid: "q",
+        kind: riir_reflex::harness::suites::QKind::Choice,
+        instructions: "instructions",
+        options: seat.labels.as_slice(),
+    }];
+    let before_case = ALLOCS.load(Ordering::Relaxed);
+    COUNTING.store(true, Ordering::Relaxed);
+    let case = synth_served_case(state0, &template_q);
+    COUNTING.store(false, Ordering::Relaxed);
+    let case_allocs = ALLOCS.load(Ordering::Relaxed) - before_case;
+    black_box(&case);
+    drop(case);
+
+    // Measure: one decide per case.
+    let mut max_decide = 0usize;
+    for state in states.iter().skip(WARMUP).take(MEASURED) {
+        let before = ALLOCS.load(Ordering::Relaxed);
+        COUNTING.store(true, Ordering::Relaxed);
+        let d = server.decide(state, None).expect("measured decide");
+        COUNTING.store(false, Ordering::Relaxed);
+        let delta = ALLOCS.load(Ordering::Relaxed) - before;
+        black_box(&d);
+        max_decide = max_decide.max(delta);
+    }
+
+    eprintln!(
+        "serve g4: {MEASURED} decides measured — max per-decision allocs {max_decide} \
+         (synth case alone: {case_allocs}; PINNED_MAX_DECIDE_ALLOCS \
+         {PINNED_MAX_DECIDE_ALLOCS}) — a red means a new allocation class joined the \
+         serve path, or this is the owed re-pin: measure, inventory, pin"
+    );
+    assert!(
+        max_decide <= PINNED_MAX_DECIDE_ALLOCS,
+        "the serve path allocated {max_decide} for one decision (pin \
+         {PINNED_MAX_DECIDE_ALLOCS}) — a new allocation class joined the hot path, or \
+         this is the owed re-pin: measure, inventory, and pin the measured value"
+    );
+}
