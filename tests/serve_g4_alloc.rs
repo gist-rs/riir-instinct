@@ -36,7 +36,9 @@ use std::path::PathBuf;
 use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 
 use riir_instinct::arsenal::ArsenalManifest;
-use riir_instinct::server::{AnySuiteServer, ServedQuestion, synth_served_case};
+use riir_instinct::server::{
+    AnySuiteServer, ServedQuestion, synth_served_case, synth_served_case_into,
+};
 use riir_reflex::harness::runner::seat::prepare_seat;
 
 /// The suite: sst5 — the same population Rethink's esc_g4 measures (the
@@ -47,20 +49,15 @@ const WARMUP: usize = 5;
 const MEASURED: usize = 20;
 
 /// The per-decision allocation ceiling for `decide` (single-question
-/// wire entry). MEASURED-THEN-PINNED: **42** (2026-10-05, reflex issue
-/// 070 lead 2 — the serve path's eval refills the per-server
-/// `eval_frame` instead of building `eval_seat`'s result Vecs per
-/// call; was **83**, issue 021's post-refactor pin, itself down from
-/// the **107** baseline this pin was born from). Deterministic across
-/// runs for the fixed fixture population (42 reproduced exactly ×2).
-/// A red means a new allocation class joined the serve path — or a
-/// legitimate code change moved it: re-measure, inventory, re-pin with
-/// the delta named in the commit. The remaining surface is dominated
-/// by the synth case construction (21 of 42 — the per-request
-/// `serde_json::Value` template build) and the single-question
-/// prelude's template clones (the `&mut self` eval borrow forces
-/// them), recorded in issue 021.
-const PINNED_MAX_DECIDE_ALLOCS: usize = 42;
+/// wire entry). MEASURED-THEN-PINNED: **36** (2026-10-06, issue 022 lead
+/// 1 — the serve loop feeds the criteria keep-checks the wire slice
+/// directly; `rendered_options`' per-request `Vec<String>` left the hot
+/// path, `_into` steady/cold both read **0**, was **42**, issue 070 lead
+/// 2's pin, itself down from **83**/107). Deterministic across runs (36
+/// reproduced ×2). A red means a new allocation class joined the serve
+/// path — or a legitimate code change moved it: re-measure, inventory,
+/// re-pin with the delta named in the commit.
+const PINNED_MAX_DECIDE_ALLOCS: usize = 36;
 
 static ALLOCS: AtomicUsize = AtomicUsize::new(0);
 static COUNTING: AtomicBool = AtomicBool::new(false);
@@ -193,6 +190,28 @@ fn cheap_serve_path_allocation_pin() {
     black_box(&case);
     drop(case);
 
+    // Issue 022 intake — the REUSE form's own split: the decide path
+    // calls `synth_served_case_into` on the per-server scratch, where
+    // keep-when-equal should hold in steady state (same template, same
+    // option set). Cold = the first `_into` into a fresh case (builds
+    // everything); steady = the second `_into` with IDENTICAL inputs
+    // (the keep path). The fresh-form window above is a STAND-IN for the
+    // in-decide cost only until this window exists — the issue's 21-of-42
+    // attribution was read off the fresh form.
+    let mut reuse_case = synth_served_case(state0, &template_q);
+    let before_cold_into = ALLOCS.load(Ordering::Relaxed);
+    COUNTING.store(true, Ordering::Relaxed);
+    synth_served_case_into(state0, &template_q, &mut reuse_case);
+    COUNTING.store(false, Ordering::Relaxed);
+    let cold_into_allocs = ALLOCS.load(Ordering::Relaxed) - before_cold_into;
+    let before_steady_into = ALLOCS.load(Ordering::Relaxed);
+    COUNTING.store(true, Ordering::Relaxed);
+    synth_served_case_into(state0, &template_q, &mut reuse_case);
+    COUNTING.store(false, Ordering::Relaxed);
+    let steady_into_allocs = ALLOCS.load(Ordering::Relaxed) - before_steady_into;
+    black_box(&reuse_case);
+    drop(reuse_case);
+
     // Measure: one decide per case.
     let mut max_decide = 0usize;
     for state in states.iter().skip(WARMUP).take(MEASURED) {
@@ -207,7 +226,8 @@ fn cheap_serve_path_allocation_pin() {
 
     eprintln!(
         "serve g4: {MEASURED} decides measured — max per-decision allocs {max_decide} \
-         (synth case alone: {case_allocs}; PINNED_MAX_DECIDE_ALLOCS \
+         (synth case fresh: {case_allocs}; into cold: {cold_into_allocs}; into steady: \
+         {steady_into_allocs}; PINNED_MAX_DECIDE_ALLOCS \
          {PINNED_MAX_DECIDE_ALLOCS}) — a red means a new allocation class joined the \
          serve path, or this is the owed re-pin: measure, inventory, pin"
     );

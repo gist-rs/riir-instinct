@@ -129,10 +129,17 @@ pub fn synth_served_case_into(
             cq.instructions.clear();
             cq.instructions.push_str(q.instructions);
         }
-        let options = rendered_options(q);
+        // Issue 022 lead 1: the criteria keep-check runs against the WIRE
+        // slice directly — `rendered_options` never joins the serve path.
+        // It was pure waste here: a noul question's criteria is Null (the
+        // rendered list was computed and dropped), and a choice/score
+        // question's rendered list IS `q.options` (only the noul-empty
+        // fixed `[false, true]` rendering synthesizes, and noul never
+        // builds criteria). Steady state (same presented set) is now
+        // zero-alloc; a changed set rebuilds from the same slice.
         match q.kind {
-            QKind::Choice => set_choice_criteria(&mut cq.criteria, &options),
-            QKind::Score => set_score_criteria(&mut cq.criteria, &options),
+            QKind::Choice => set_choice_criteria(&mut cq.criteria, q.options),
+            QKind::Score => set_score_criteria(&mut cq.criteria, q.options),
             QKind::Noul => cq.criteria = serde_json::Value::Null,
         }
     }
@@ -156,12 +163,13 @@ fn rendered_options(q: &ServedQuestion<'_>) -> Vec<String> {
     }
 }
 
-/// The Choice criteria for the rendered options, keeping `old` when it
+/// The Choice criteria for the presented options, keeping `old` when it
 /// already holds exactly those keys — the serve path re-presents the
 /// same option set every decision, so the hot path pays nothing. The
 /// values are Null by construction (this fn is the field's only writer
 /// and always builds Null values), which is what keep-when-equal
-/// preserves.
+/// preserves. Fed the wire slice (`q.options`) — for choice/score the
+/// rendered list IS the wire slice (issue 022 lead 1).
 fn set_choice_criteria(old: &mut serde_json::Value, options: &[String]) {
     if let serde_json::Value::Object(m) = old {
         if m.len() == options.len()
@@ -1953,5 +1961,67 @@ mod served_case_tests {
         // Noul from an empty presentation: the fixed rendering speaks it.
         assert_eq!(case.questions[2].criteria, serde_json::Value::Null);
         assert_eq!(case.questions[2].qid, "q_noul");
+    }
+
+    /// Issue 022 lead 1 — the reuse form is byte-identical to a fresh
+    /// construction across the SHAPES (choice unsorted, score, noul from an
+    /// empty presentation) and across the TRANSITIONS the serve path can
+    /// hit (steady same-set keep, set change, kind change on the same
+    /// question slot, options-length change). The served bytes are pinned;
+    /// the alloc savings ride on top, never through them.
+    #[test]
+    fn served_case_into_is_byte_identical_to_fresh_across_shapes_and_transitions() {
+        // Unsorted on purpose — the keep-check is order-sensitive by law
+        // (preserve_order holds the presented order).
+        let ab = ["zebra".to_string(), "apple".to_string()];
+        let cd = ["cherry".to_string(), "date".to_string(), "apple".to_string()];
+        let one = ["only".to_string()];
+
+        let shapes: Vec<(String, Vec<ServedQuestion<'_>>)> = vec![
+            (
+                "state one".into(),
+                vec![
+                    ServedQuestion { qid: "c", kind: QKind::Choice, instructions: "i", options: &ab },
+                    ServedQuestion { qid: "s", kind: QKind::Score, instructions: "j", options: &cd },
+                    ServedQuestion { qid: "n", kind: QKind::Noul, instructions: "k", options: &[] },
+                ],
+            ),
+            // Steady state: identical inputs (the keep path).
+            (
+                "state one".into(),
+                vec![
+                    ServedQuestion { qid: "c", kind: QKind::Choice, instructions: "i", options: &ab },
+                    ServedQuestion { qid: "s", kind: QKind::Score, instructions: "j", options: &cd },
+                    ServedQuestion { qid: "n", kind: QKind::Noul, instructions: "k", options: &[] },
+                ],
+            ),
+            // Set change + kind flip on the same slots + a different state.
+            (
+                "state two".into(),
+                vec![
+                    ServedQuestion { qid: "c", kind: QKind::Score, instructions: "i2", options: &one },
+                    ServedQuestion { qid: "s", kind: QKind::Choice, instructions: "j2", options: &ab },
+                    ServedQuestion { qid: "n", kind: QKind::Noul, instructions: "k", options: &[] },
+                ],
+            ),
+            // Fewer questions (the questions vec shrinks-grows path).
+            (
+                "state three".into(),
+                vec![ServedQuestion { qid: "c", kind: QKind::Choice, instructions: "i", options: &cd }],
+            ),
+        ];
+
+        let mut reused = synth_served_case(&shapes[0].0, &shapes[0].1);
+        for (state, qs) in shapes.iter().skip(1) {
+            synth_served_case_into(state, qs, &mut reused);
+            let fresh = synth_served_case(state, qs);
+            assert_eq!(reused, fresh, "reuse must equal a fresh build for {state}");
+            // The serialized bytes too — the eval face consumes the case,
+            // and the criteria's Key/Array order is contract.
+            assert_eq!(
+                serde_json::to_string(&reused).unwrap(),
+                serde_json::to_string(&fresh).unwrap()
+            );
+        }
     }
 }
