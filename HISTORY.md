@@ -1,3 +1,22 @@
+## 2026-10-05 — riir-rethink Issue 023 T2 lockstep: the production manifest pin re-synced — xnli_en + emotion are benchmark-only
+
+The pin travels with the law (the lockstep law in `../riir-rethink/AGENTS.md`):
+the Rethink production `arsenal.toml` demoted its licence-barred pair (CC
+BY-NC / research-only data cannot back the paid lane; the A0 seat itself is
+built from their rows), so THIS repo's `serve_gates.rs` followed in the same
+family — `PRODUCTION_MANIFEST_TOML` re-synced byte-verbatim (9 → 7 rows;
+`b3sum`-verified against the Rethink file), `PINNED_PRODUCTION_
+MANIFEST_DIGEST` re-pinned
+(`blake3:e77a42ce008d36f0629176103e128c8652d2396353211734f3f684fabfba47d8`),
+the face-2 posture table 9 → 7, and face-6 now asserts **ag_news is the
+SOLE ESC-armed row** (xnli's escalate table left with its row). New gate
+`licence_barred_suites_carry_no_production_row`: a future production row
+for either suite reds HERE TOO until `.issues/023`'s re-source lands —
+the licence posture is enforced in both media, not just documented.
+Serve gates 24/24 with real data; clippy `-D warnings` clean. Full
+narrative + the G5 research-posture re-verification: riir-rethink
+HISTORY.md 2026-10-05 (Issue 023 T2).
+
 ## 2026-10-05 — Issue 013 closed: pool re-baseline (a) EXECUTED — arena → canonical pool at the PINNED reflex baseline; standing triggers → Issue 019
 
 Owner-gate close (delegated Claude verdict 2026-10-05: GO option (a) WITH a

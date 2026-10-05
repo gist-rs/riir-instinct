@@ -124,24 +124,33 @@ const PRODUCTION_MANIFEST_TOML: &str = r#####"# arsenal.toml — the ONE selecti
 #                `<suite>_winner_v1.bin` raw / `<suite>_v1.vessel` vessel.
 #                No NEW convention is created by this manifest.
 #
-# The eight rows are the specialist suites — reflex's other dataset
+# The seven rows are the specialist suites — reflex's other dataset
 # suites have no specialist and no seat posture, so they get no row.
 # (typed_decisions' Issue 578 artifact was UNSEATABLE — Bench 014's
 # refusal — retrained over the full 1200-row pool in riir-train Issue 581
 # / Bench 614 and seated+certified in Bench 015; its serving row is the
-# multi-question contract's, Issue 011.)
+# multi-question contract's, Issue 011. emotion + xnli_en carried rows
+# until Issue 023 T2 — the licence demotion block above owns why.)
 #
 # ── the serving law (owner verdict 2026-09-27) ──────────────────────
 # The SERVING selector is the BEST MEASURED ARM per suite over the frozen
 # test read (Bench 005, `.benchmarks/005_hybrid_every_suite_measured/`;
 # banking77 re-read at Bench 012 over the Issue 579 v2 winner),
-# with A0 as a candidate like any other — "pick the best decision" is
-# the product law (owner: "i dont care what arm you attach but it should
+# with A0 as a candidate like any other — "pick the best decision" is the
+# product law (owner: "i dont care what arm you attach but it should
 # pick the best decision for me and get good score"). Under this law the
-# served arm is never the WORST arm by construction; where A0 is the
-# argmax (emotion, xnli) the reflex half IS the best Instinct
-# has today, and the losing specialists are the open improvement backlog
-# (Issue 008 T4/T5), not a refusal to serve.
+# served arm is never the WORST arm by construction.
+#
+# ⛔ BENCHMARK-ONLY ROWS (Issue 023 T2, 2026-10-05 — the licence ledger):
+# emotion ("educational and research purposes only") and xnli_en
+# (CC BY-NC 4.0) CANNOT back a paid lane, and the A0 seat itself is built
+# from their rows — so neither suite is SERVED here at any arm: both rows
+# left this manifest, the ESC escalate table on xnli_en went with it, and
+# their deploy files: rows (winners + datasets) left deploy.yaml. The
+# bench records stay (research use — Bench 005/0057/0059/0060; the G5
+# replay carries its own research posture). Re-entry is RE-SOURCE, never
+# a re-flag: an Apache/CC-BY NLI + emotion set, its own re-fit, and a
+# fresh GOAT — the ledger at `.issues/023` governs.
 #
 # The T2 strict-superiority gate (paired LB95 > 0) REMAINS as the
 # ADVERTISING law — the reflex-site ✓/✗ row and the certification
@@ -151,9 +160,6 @@ const PRODUCTION_MANIFEST_TOML: &str = r#####"# arsenal.toml — the ONE selecti
 # v2 winner over presence bags — Bench 012) serve under best-measured
 # while still uncertified: expected value positive, downside bounded, and
 # the certification path is more questions, not a posture rollback.
-# emotion / xnli serve A0 because A0 IS the argmax there — the losing
-# specialists are the open improvement backlog (Issue 008 T4/T5), not a
-# refusal to serve.
 
 [[vessel]]
 suite   = "ag_news"
@@ -167,14 +173,6 @@ posture = { arm = "H2", beta = 0.25, n_min = 2.0, tau_n = 2.0 }      # the ESC C
 # The watch item: thinnest certified margin + second-highest consult cost (upper bound 0.375 × ~30 ms ≈
 # 11 ms/case, p99) — the re-read trigger is the next frozen read or +400 fresh questions (the T5 record).
 escalate = { think_file = "ag_news_encoder_head_v1.bin", think_digest = "blake3:e7e17cf3c2e2380137245dba0103cc41f6ee3ae53f225f07f247f6c3eca1cd66", margin = 0.05, min_rate = 0.15, max_rate = 0.60 }
-pin_keys = []
-budget  = { load = "eager", max_payload_mb = 16 }
-
-[[vessel]]
-suite   = "emotion"
-digest  = "blake3:95c9d7f3314ec774d6549f1ff5db95e79146c4201d354b969e37f0d99ffe46eb"
-class   = "hosted_only"
-posture = { arm = "A0" }                                          # best measured IS A0 0.8850 (A1 0.8550 / H1 0.8775 lose — specialist backlog)
 pin_keys = []
 budget  = { load = "eager", max_payload_mb = 16 }
 
@@ -200,20 +198,6 @@ digest  = "blake3:693b0d6c580d035645e2af9338847d7783102be4ca24ff89ec0fd92a25743e
 class   = "hosted_only"
 file    = "banking77_nbsvm_v2.bin"   # the Issue 579 nbsvm v2 winner (presence-bag convention, winner_bridge) — the v1 winner_v1 file stays on disk for reproduction
 posture = { arm = "H2", beta = 2.0, n_min = 8.0, tau_n = 8.0 }    # best measured 0.8540 vs A0 0.8260 (+2.8 pt; T2 LB95 -0.0013 — uncertified, serves under best-measured; Bench 012)
-pin_keys = []
-budget  = { load = "eager", max_payload_mb = 16 }
-
-[[vessel]]
-suite   = "xnli_en"
-digest  = "blake3:76bbedfb14031771ea6296f5d5914e08f19281d0c8cf6c6eb3754ac394b76827"
-class   = "hosted_only"
-posture = { arm = "A0" }                                          # the ESC CHEAP leg (the incumbent arm — A0 IS the argmax here; Bench 0057's cross-check)
-# ESC (Issue 017 T5, owner GO 2026-10-04; GOAT Bench 0059: composed 0.5833 vs seated A0 0.5233, +6.00 pt,
-# LB95 +0.0331 — the decisive cell; escalation rate 15.7% inside [15%,60%]; consult-cost upper bound
-# 0.157 × ~23 ms ≈ 3.6 ms/case at p99): the think leg = the encoder head (raw mode: the winners dir);
-# margin 0.30 + LCB floor 0.10 = Bench 0057's T1 fit (the reflex 0.16 prior survives ONLY here); the
-# rates are the GOAT acceptance window promoted to the runtime guard bounds (N=200 rolling, latch).
-escalate = { think_file = "xnli_en_encoder_head_v1.bin", think_digest = "blake3:a1e2380b7c6451bb016dc65a8e9970837ec5420be11c0e92a98b00317abbff7c", margin = 0.30, lcb_floor = 0.10, min_rate = 0.15, max_rate = 0.60 }
 pin_keys = []
 budget  = { load = "eager", max_payload_mb = 16 }
 
@@ -319,11 +303,15 @@ fn arsenal_manifest_bytes_are_pinned_byte_for_byte() {
 /// (verified 2026-10-03 — `b3sum` over the carve's moat copy and this
 /// inline const agree), then RE-PINNED 2026-10-04 when the Rethink file
 /// gained the ESC escalate tables (riir-rethink Issue 017 T5 — the
-/// owner-GO'd cheap→think promotion; the two escalate rows are ag_news and
-/// xnli_en, everything else byte-identical). A future Rethink-side manifest
-/// edit reds HERE (the pin travels with the law, not with the repo).
+/// owner-GO'd cheap→think promotion; the two escalate rows were ag_news and
+/// xnli_en, everything else byte-identical), and RE-PINNED again 2026-10-05
+/// when the licence ledger demoted xnli_en + emotion to benchmark-only
+/// (riir-rethink Issue 023 T2 — CC BY-NC / research-only data cannot back
+/// the paid lane; both rows left the manifest, ag_news is the sole ESC-
+/// armed row). A future Rethink-side manifest edit reds HERE (the pin
+/// travels with the law, not with the repo).
 const PINNED_PRODUCTION_MANIFEST_DIGEST: &str =
-    "blake3:459d0c09587e0abc752a461187a3187a64e283649fa529c15b63d912f50bd348";
+    "blake3:e77a42ce008d36f0629176103e128c8652d2396353211734f3f684fabfba47d8";
 
 #[test]
 fn production_manifest_bytes_are_pinned_byte_for_byte() {
@@ -348,9 +336,12 @@ fn manifest_posture_rows_are_the_serving_law_verdict() {
     // ADVERTISING law — the reflex-site ✓/✗ row — not the serving
     // selector); banking77 serves H2(2,8,8) 0.8540 over the Issue 579
     // nbsvm v2 winner (presence bags, Bench 012) at T2 LB95 -0.0013 —
-    // the same uncertified-under-best-measured class; emotion / xnli
-    // serve A0 because A0 IS the argmax there — the losing specialists
-    // are the Issue-008 T4/T5 backlog, not a refusal to serve.
+    // the same uncertified-under-best-measured class. emotion / xnli_en
+    // carried A0 rows until the licence ledger demoted them to
+    // BENCHMARK-ONLY (riir-rethink Issue 023 T2, 2026-10-05 — CC BY-NC /
+    // research-only data cannot back the paid lane, and the A0 seat
+    // itself is built from their rows; re-entry is a re-source, never a
+    // re-flag — pinned by the licence gate below).
     // prompt_injections serves A1 0.8534 over the Issue 578 winner
     // (Plan 003's noul bridge, Bench 013): +8.6 pt with the paired LB95
     // POSITIVE (+0.0082) — T2-CERTIFIED, the massive class, at n=116;
@@ -370,7 +361,7 @@ fn manifest_posture_rows_are_the_serving_law_verdict() {
     // bar, so the suite stays unsold under the amended law — the manifest
     // row exists because A1 IS the argmax (the serving law), and the
     // Reflex tie is broken.
-    let expected: [(&str, Arm, &str); 9] = [
+    let expected: [(&str, Arm, &str); 7] = [
         (
             "ag_news",
             Arm::H2 {
@@ -380,7 +371,6 @@ fn manifest_posture_rows_are_the_serving_law_verdict() {
             },
             "H2(β=0.25,nmin=2,τ=2)",
         ),
-        ("emotion", Arm::A0, "A0"),
         ("sst5", Arm::A1, "A1"),
         (
             "massive_intent_en",
@@ -400,7 +390,6 @@ fn manifest_posture_rows_are_the_serving_law_verdict() {
             },
             "H2(β=2,nmin=8,τ=8)",
         ),
-        ("xnli_en", Arm::A0, "A0"),
         ("prompt_injections", Arm::A1, "A1"),
         (
             "typed_decisions",
@@ -415,13 +404,16 @@ fn manifest_posture_rows_are_the_serving_law_verdict() {
         // (The six harness families' artifact-less A0 rows were REMOVED
         // 2026-10-02 — owner call: the suites are retired from the reflex
         // harness itself. Bench 011/016's frozen reads remain in
-        // .benchmarks as history.)
+        // .benchmarks as history. The emotion + xnli_en A0 rows were
+        // REMOVED 2026-10-05 — the licence ledger, riir-rethink Issue
+        // 023 T2 — pinned by the licence gate below.)
     ];
     assert_eq!(
         m.rows().len(),
-        9,
-        "the manifest carries exactly the nine rows (the measured suites; the \
-         six artifact-less A0 families left with their retirement)"
+        7,
+        "the manifest carries exactly the seven rows (the measured sellable \
+         suites; the licence-barred two and the six artifact-less A0 families \
+         left with their retirements)"
     );
     for (suite, arm, name) in expected {
         let row = m
@@ -439,6 +431,29 @@ fn manifest_posture_rows_are_the_serving_law_verdict() {
     assert!(
         m.row("typed_decisions").is_some(),
         "the typed_decisions serving row vanished — Bench 015's certified posture must keep it"
+    );
+}
+
+/// The licence gate (riir-rethink Issue 023 T2, 2026-10-05): the two
+/// licence-barred suites carry NO row in the production manifest —
+/// emotion ("educational and research purposes only") and xnli_en
+/// (CC BY-NC 4.0) cannot back the paid lane, and the A0 seat itself is
+/// built from their rows, so no arm of theirs serves. Their bench
+/// records stay (research use); re-entry is a RE-SOURCE with its own
+/// re-fit + GOAT — never a re-flag. A future row for either suite reds
+/// HERE until `.issues/023` (the ledger) is resolved.
+#[test]
+fn licence_barred_suites_carry_no_production_row() {
+    let m = production_manifest();
+    assert!(
+        m.row("emotion").is_none(),
+        "emotion is benchmark-only (research-only licence, issue 023 T2) — a \
+         production row for it must not exist without the ledger's re-source"
+    );
+    assert!(
+        m.row("xnli_en").is_none(),
+        "xnli_en is benchmark-only (CC BY-NC, issue 023 T2) — a production row \
+         for it must not exist without the ledger's re-source"
     );
 }
 
@@ -495,13 +510,14 @@ fn boot_suite_synth(
                 None => riir_reflex::harness::runner::seat::prepare_seat(suite, &datasets)?,
             };
             // The open replay boots the row's CHEAP leg (Issue 017 T5):
-            // the production manifest's ag_news/xnli rows carry escalate
-            // tables — the composition is the private Rethink lane's, and
-            // the open build's ordinary boots refuse it. What these gates
-            // replay is the ARM the manifest seats (the frozen picks of
-            // that arm), which the sanctioned cheap boot serves verbatim;
-            // for a row without an escalate table this is byte-identical
-            // to boot_from_seat.
+            // the production manifest's ag_news row carries an escalate
+            // table (the sole ESC-armed row since the licence demotion,
+            // issue 023 T2 — xnli_en's went with its row) — the composition
+            // is the private Rethink lane's, and the open build's ordinary
+            // boots refuse it. What these gates replay is the ARM the
+            // manifest seats (the frozen picks of that arm), which the
+            // sanctioned cheap boot serves verbatim; for a row without an
+            // escalate table this is byte-identical to boot_from_seat.
             riir_instinct::server::AnySuiteServer::boot_cheap_from_seat(
                 suite,
                 seat,
@@ -1228,11 +1244,14 @@ fn escalate_manifest_text(posture: &str, escalate: &str) -> String {
     )
 }
 
-/// The two production escalate rows parse with their exact fields — the
-/// ESC cheap legs (the row's own arm verbatim) + the think-leg heads +
-/// Bench 0057's T1 fit margins + the GOAT acceptance window as rate
+/// The ONE production escalate row parses with its exact fields — the
+/// ESC cheap leg (the row's own arm verbatim) + the think-leg head +
+/// Bench 0057's T1 fit margin + the GOAT acceptance window as rate
 /// bounds. Every OTHER row carries no escalate table (sst5's GOAT refusal
-/// at G1's LB95 leg; typed's single-question contract deferral).
+/// at G1's LB95 leg; typed's single-question contract deferral). xnli_en's
+/// escalate row left WITH its row at the licence demotion (issue 023 T2 —
+/// the Bench-0057/0059 records stay; rethink's G5 replay carries the
+/// research posture locally).
 #[test]
 fn escalate_parses_on_the_production_escalate_rows() {
     let m = production_manifest();
@@ -1241,7 +1260,7 @@ fn escalate_parses_on_the_production_escalate_rows() {
         .expect("the ag_news row")
         .escalate
         .as_ref()
-        .expect("ag_news carries the ESC cheap leg (Issue 017 T5)");
+        .expect("ag_news carries the ESC cheap leg (Issue 017 T5 — the sole armed row since 023 T2)");
     assert_eq!(ag.think_file, "ag_news_encoder_head_v1.bin");
     assert_eq!(
         ag.think_digest,
@@ -1252,24 +1271,19 @@ fn escalate_parses_on_the_production_escalate_rows() {
     assert_eq!(ag.min_rate, 0.15);
     assert_eq!(ag.max_rate, 0.60);
 
-    let xnli = m
-        .row("xnli_en")
-        .expect("the xnli_en row")
-        .escalate
-        .as_ref()
-        .expect("xnli_en carries the ESC cheap leg (the decisive cell)");
-    assert_eq!(xnli.think_file, "xnli_en_encoder_head_v1.bin");
+    // ag_news is the SOLE escalate-armed row: the licence demotion took
+    // xnli_en's (023 T2) and no other row ever carried one.
     assert_eq!(
-        xnli.think_digest,
-        "blake3:a1e2380b7c6451bb016dc65a8e9970837ec5420be11c0e92a98b00317abbff7c"
+        m.rows()
+            .iter()
+            .filter(|r| r.escalate.is_some())
+            .count(),
+        1,
+        "exactly one escalate-armed row (ag_news) — a second needs its own GOAT \
+         record AND, for a licence-barred suite, the ledger's re-source"
     );
-    assert_eq!(xnli.margin, 0.30);
-    assert_eq!(xnli.lcb_floor, Some(0.10));
-    assert_eq!(xnli.min_rate, 0.15);
-    assert_eq!(xnli.max_rate, 0.60);
 
     for suite in [
-        "emotion",
         "sst5",
         "massive_intent_en",
         "banking77",
