@@ -1,8 +1,8 @@
 {
-  "fixture_digest": "98a683969c285f157a3d81de7ffbdabebfac77873ce57eaa4b33ffe298d20f93",
+  "fixture_digest": "3d332d6c816d8c7162fe7f127e51ac3749417b6f321be0e5f0750b2efe5c2caa",
   "fire_gold_delta_bar": 0.02,
   "box_state": {
-    "recorded_at_unix": 1790629341,
+    "recorded_at_unix": 1791167167,
     "loadavg_1m_or_n_a": "n/a (macOS)",
     "note": "divergence is a correctness/determinism readout, not a latency claim — the load figure is provenance, not a gate"
   },
@@ -15,7 +15,7 @@
       "ref_name": "v2 (self — canary)",
       "ref_digest": "693b0d6c580d035645e2af9338847d7783102be4ca24ff89ec0fd92a25743e37",
       "ref_convention": "presence",
-      "fixture_digest": "98a683969c285f157a3d81de7ffbdabebfac77873ce57eaa4b33ffe298d20f93",
+      "fixture_digest": "3d332d6c816d8c7162fe7f127e51ac3749417b6f321be0e5f0750b2efe5c2caa",
       "items": 64,
       "label_universe": {
         "live_labels": 77,
@@ -425,7 +425,7 @@
       "ref_name": "v1 (pre-bridge)",
       "ref_digest": "611cf0d22e9d45a3f082994994c783e357b96514255825ad8ae95a9328612d94",
       "ref_convention": "count",
-      "fixture_digest": "98a683969c285f157a3d81de7ffbdabebfac77873ce57eaa4b33ffe298d20f93",
+      "fixture_digest": "3d332d6c816d8c7162fe7f127e51ac3749417b6f321be0e5f0750b2efe5c2caa",
       "items": 64,
       "label_universe": {
         "live_labels": 77,
@@ -828,813 +828,813 @@
       "fire_reason": "pick flip"
     },
     {
-      "suite": "ag_news",
+      "suite": "massive_intent_en",
       "live_name": "winner v1",
-      "live_digest": "ec327ac30250205b2b26c6b00976f9fb50bdf44a9bcbb1d87e35c6ca06f5cf33",
+      "live_digest": "7bc3ee385f81abc0f2a91e47f6dca08db37f9fb6cee6d48121b80e3f11378556",
       "live_convention": "count",
       "ref_name": "armA v1",
-      "ref_digest": "9f33299a4f920bb823ba398272f1f524cdf8c93ccf5ce7a9c2e5acdae72857fc",
+      "ref_digest": "a625624ad5263cb22c1017109f021b62124f44fcf52a59f453b983fc94e3eb71",
       "ref_convention": "count",
-      "fixture_digest": "98a683969c285f157a3d81de7ffbdabebfac77873ce57eaa4b33ffe298d20f93",
+      "fixture_digest": "3d332d6c816d8c7162fe7f127e51ac3749417b6f321be0e5f0750b2efe5c2caa",
       "items": 64,
       "label_universe": {
-        "live_labels": 4,
-        "ref_labels": 4,
+        "live_labels": 60,
+        "ref_labels": 60,
         "identical": true,
         "live_only": [],
         "ref_only": []
       },
       "divergences": [
         {
-          "id": "ag_news:12:49",
-          "gold_delta": -0.2378670871257782,
+          "id": "massive_intent_en:0:32",
+          "gold_delta": -0.6824414134025574,
           "pick_flip": false,
-          "margin_delta": -0.2432333081960678
+          "margin_delta": -0.7007445096969604
         },
         {
-          "id": "ag_news:13:55",
-          "gold_delta": 0.18186530470848083,
+          "id": "massive_intent_en:0:4",
+          "gold_delta": -0.479246586561203,
           "pick_flip": false,
-          "margin_delta": -0.19217130541801453
+          "margin_delta": -0.5737317800521851
         },
         {
-          "id": "ag_news:13:53",
-          "gold_delta": -0.17307311296463013,
-          "pick_flip": false,
-          "margin_delta": -0.1469278335571289
-        },
-        {
-          "id": "ag_news:4:17",
-          "gold_delta": -0.16621547937393188,
-          "pick_flip": false,
-          "margin_delta": -0.21572798490524292
-        },
-        {
-          "id": "ag_news:1:7",
-          "gold_delta": -0.14610308408737183,
-          "pick_flip": false,
-          "margin_delta": -0.19676589965820312
-        },
-        {
-          "id": "ag_news:5:23",
-          "gold_delta": 0.13015295565128326,
-          "pick_flip": false,
-          "margin_delta": -0.08273138105869293
-        },
-        {
-          "id": "ag_news:14:57",
-          "gold_delta": 0.12278527021408081,
-          "pick_flip": false,
-          "margin_delta": 0.25791046023368835
-        },
-        {
-          "id": "ag_news:13:52",
-          "gold_delta": 0.11334490776062012,
-          "pick_flip": false,
-          "margin_delta": 0.03873521089553833
-        },
-        {
-          "id": "ag_news:2:10",
-          "gold_delta": 0.10914778709411621,
-          "pick_flip": false,
-          "margin_delta": 0.09905865788459778
-        },
-        {
-          "id": "ag_news:3:13",
-          "gold_delta": -0.10668882727622986,
-          "pick_flip": false,
-          "margin_delta": -0.09339183568954468
-        },
-        {
-          "id": "ag_news:7:29",
-          "gold_delta": -0.0952615737915039,
-          "pick_flip": false,
-          "margin_delta": -0.14804035425186157
-        },
-        {
-          "id": "ag_news:8:32",
-          "gold_delta": -0.0840490460395813,
-          "pick_flip": false,
-          "margin_delta": -0.08494001626968384
-        },
-        {
-          "id": "ag_news:8:35",
-          "gold_delta": -0.07637780904769897,
-          "pick_flip": false,
-          "margin_delta": -0.10991513729095459
-        },
-        {
-          "id": "ag_news:1:5",
-          "gold_delta": -0.06524389982223511,
-          "pick_flip": false,
-          "margin_delta": -0.07867205142974854
-        },
-        {
-          "id": "ag_news:1:4",
-          "gold_delta": -0.06376704573631287,
-          "pick_flip": false,
-          "margin_delta": 0.07192087173461914
-        },
-        {
-          "id": "ag_news:6:25",
-          "gold_delta": 0.06343039870262146,
-          "pick_flip": false,
-          "margin_delta": -0.04268297553062439
-        },
-        {
-          "id": "ag_news:2:9",
-          "gold_delta": 0.054017141461372375,
-          "pick_flip": false,
-          "margin_delta": 0.07386323809623718
-        },
-        {
-          "id": "ag_news:13:54",
-          "gold_delta": -0.05296856164932251,
-          "pick_flip": false,
-          "margin_delta": -0.06962168216705322
-        },
-        {
-          "id": "ag_news:4:18",
-          "gold_delta": -0.051694393157958984,
-          "pick_flip": false,
-          "margin_delta": -0.15216505527496338
-        },
-        {
-          "id": "ag_news:4:19",
-          "gold_delta": -0.0447884202003479,
-          "pick_flip": false,
-          "margin_delta": 0.3668011724948883
-        },
-        {
-          "id": "ag_news:0:0",
-          "gold_delta": -0.041551053524017334,
-          "pick_flip": false,
-          "margin_delta": -0.14242464303970337
-        },
-        {
-          "id": "ag_news:3:15",
-          "gold_delta": -0.039562761783599854,
-          "pick_flip": false,
-          "margin_delta": -0.05115485191345215
-        },
-        {
-          "id": "ag_news:0:2",
-          "gold_delta": -0.037847280502319336,
-          "pick_flip": false,
-          "margin_delta": -0.06481367349624634
-        },
-        {
-          "id": "ag_news:12:51",
-          "gold_delta": -0.03174149990081787,
-          "pick_flip": false,
-          "margin_delta": -0.06869280338287354
-        },
-        {
-          "id": "ag_news:12:50",
-          "gold_delta": -0.024400949478149414,
-          "pick_flip": false,
-          "margin_delta": 0.08501201868057251
-        },
-        {
-          "id": "ag_news:3:12",
-          "gold_delta": -0.023200273513793945,
-          "pick_flip": false,
-          "margin_delta": -0.06578677892684937
-        },
-        {
-          "id": "ag_news:5:21",
-          "gold_delta": -0.021144181489944458,
-          "pick_flip": false,
-          "margin_delta": -0.187077134847641
-        },
-        {
-          "id": "ag_news:15:60",
-          "gold_delta": -0.020954132080078125,
-          "pick_flip": false,
-          "margin_delta": 0.010884761810302734
-        },
-        {
-          "id": "ag_news:11:47",
-          "gold_delta": -0.019380569458007812,
-          "pick_flip": false,
-          "margin_delta": -0.01693713665008545
-        },
-        {
-          "id": "ag_news:7:30",
-          "gold_delta": -0.019174695014953613,
-          "pick_flip": false,
-          "margin_delta": -0.016661524772644043
-        },
-        {
-          "id": "ag_news:10:43",
-          "gold_delta": -0.017818689346313477,
-          "pick_flip": false,
-          "margin_delta": -0.013403832912445068
-        },
-        {
-          "id": "ag_news:5:20",
-          "gold_delta": -0.01690143346786499,
-          "pick_flip": false,
-          "margin_delta": -0.05064445734024048
-        },
-        {
-          "id": "ag_news:15:62",
-          "gold_delta": -0.015858173370361328,
-          "pick_flip": false,
-          "margin_delta": -0.007864952087402344
-        },
-        {
-          "id": "ag_news:1:6",
-          "gold_delta": -0.015736639499664307,
-          "pick_flip": false,
-          "margin_delta": -0.02751481533050537
-        },
-        {
-          "id": "ag_news:11:45",
-          "gold_delta": 0.014503836631774902,
-          "pick_flip": false,
-          "margin_delta": 0.06985080242156982
-        },
-        {
-          "id": "ag_news:3:14",
-          "gold_delta": -0.013032257556915283,
-          "pick_flip": false,
-          "margin_delta": -0.022650837898254395
-        },
-        {
-          "id": "ag_news:9:39",
-          "gold_delta": -0.011397838592529297,
-          "pick_flip": false,
-          "margin_delta": -0.0018045306205749512
-        },
-        {
-          "id": "ag_news:12:48",
-          "gold_delta": -0.011391222476959229,
-          "pick_flip": false,
-          "margin_delta": -0.03079921007156372
-        },
-        {
-          "id": "ag_news:15:61",
-          "gold_delta": -0.010078191757202148,
-          "pick_flip": false,
-          "margin_delta": 0.02032768726348877
-        },
-        {
-          "id": "ag_news:9:38",
-          "gold_delta": -0.009817540645599365,
-          "pick_flip": false,
-          "margin_delta": -0.0314403772354126
-        },
-        {
-          "id": "ag_news:14:56",
-          "gold_delta": -0.009639251977205276,
-          "pick_flip": false,
-          "margin_delta": 0.007963836193084717
-        },
-        {
-          "id": "ag_news:0:1",
-          "gold_delta": -0.005274951457977295,
-          "pick_flip": false,
-          "margin_delta": -0.020939171314239502
-        },
-        {
-          "id": "ag_news:14:58",
-          "gold_delta": -0.004973053932189941,
-          "pick_flip": false,
-          "margin_delta": -0.033352553844451904
-        },
-        {
-          "id": "ag_news:0:3",
-          "gold_delta": -0.0044629573822021484,
-          "pick_flip": false,
-          "margin_delta": -0.003019571304321289
-        },
-        {
-          "id": "ag_news:2:11",
-          "gold_delta": -0.00439000129699707,
-          "pick_flip": false,
-          "margin_delta": -0.004577159881591797
-        },
-        {
-          "id": "ag_news:10:41",
-          "gold_delta": -0.0036813020706176758,
-          "pick_flip": false,
-          "margin_delta": -0.011862099170684814
-        },
-        {
-          "id": "ag_news:6:27",
-          "gold_delta": -0.0032425522804260254,
-          "pick_flip": false,
-          "margin_delta": -0.009795904159545898
-        },
-        {
-          "id": "ag_news:15:63",
-          "gold_delta": -0.002605736255645752,
-          "pick_flip": false,
-          "margin_delta": -0.007683157920837402
-        },
-        {
-          "id": "ag_news:5:22",
-          "gold_delta": -0.0024747848510742188,
-          "pick_flip": false,
-          "margin_delta": -0.002899467945098877
-        },
-        {
-          "id": "ag_news:11:44",
-          "gold_delta": -0.0022307634353637695,
-          "pick_flip": false,
-          "margin_delta": -0.017605304718017578
-        },
-        {
-          "id": "ag_news:7:28",
-          "gold_delta": -0.002043604850769043,
-          "pick_flip": false,
-          "margin_delta": -0.004491686820983887
-        },
-        {
-          "id": "ag_news:6:24",
-          "gold_delta": 0.0016572435852140188,
-          "pick_flip": false,
-          "margin_delta": -0.006719827651977539
-        },
-        {
-          "id": "ag_news:9:36",
-          "gold_delta": -0.0014874935150146484,
-          "pick_flip": false,
-          "margin_delta": -0.047932446002960205
-        },
-        {
-          "id": "ag_news:8:33",
-          "gold_delta": 0.001290053129196167,
+          "id": "massive_intent_en:0:42",
+          "gold_delta": 0.35529187321662903,
           "pick_flip": true,
-          "margin_delta": -0.23664036393165588
+          "margin_delta": 0.11790227890014648
         },
         {
-          "id": "ag_news:7:31",
-          "gold_delta": -0.001234889030456543,
+          "id": "massive_intent_en:0:15",
+          "gold_delta": 0.30166125297546387,
           "pick_flip": false,
-          "margin_delta": -0.004061877727508545
+          "margin_delta": 0.28382235765457153
         },
         {
-          "id": "ag_news:4:16",
-          "gold_delta": -0.0009372234344482422,
+          "id": "massive_intent_en:1:59",
+          "gold_delta": 0.27628594636917114,
           "pick_flip": false,
-          "margin_delta": -0.005080163478851318
+          "margin_delta": 0.298508882522583
         },
         {
-          "id": "ag_news:9:37",
-          "gold_delta": -0.0008157491683959961,
-          "pick_flip": false,
-          "margin_delta": -0.002191483974456787
+          "id": "massive_intent_en:0:7",
+          "gold_delta": 0.25048238039016724,
+          "pick_flip": true,
+          "margin_delta": 0.19777710735797882
         },
         {
-          "id": "ag_news:2:8",
-          "gold_delta": -0.0005596280097961426,
-          "pick_flip": false,
-          "margin_delta": -0.002640366554260254
+          "id": "massive_intent_en:0:36",
+          "gold_delta": 0.23815575242042542,
+          "pick_flip": true,
+          "margin_delta": 0.15009257197380066
         },
         {
-          "id": "ag_news:10:42",
-          "gold_delta": -0.0004838109016418457,
+          "id": "massive_intent_en:0:24",
+          "gold_delta": 0.23113715648651123,
           "pick_flip": false,
-          "margin_delta": -0.0008388161659240723
+          "margin_delta": 0.22989797592163086
         },
         {
-          "id": "ag_news:8:34",
-          "gold_delta": -0.00016766786575317383,
+          "id": "massive_intent_en:0:21",
+          "gold_delta": 0.2309071570634842,
           "pick_flip": false,
-          "margin_delta": -0.00026351213455200195
+          "margin_delta": 0.29902350902557373
         },
         {
-          "id": "ag_news:6:26",
-          "gold_delta": -0.00013524293899536133,
+          "id": "massive_intent_en:0:10",
+          "gold_delta": 0.22958746552467346,
           "pick_flip": false,
-          "margin_delta": 0.00003319978713989258
+          "margin_delta": 0.16043820977210999
         },
         {
-          "id": "ag_news:10:40",
-          "gold_delta": -0.00013387203216552734,
+          "id": "massive_intent_en:0:25",
+          "gold_delta": -0.20301449298858643,
           "pick_flip": false,
-          "margin_delta": -0.0008022785186767578
+          "margin_delta": 0.11771336197853088
         },
         {
-          "id": "ag_news:11:46",
-          "gold_delta": -0.0000978708267211914,
+          "id": "massive_intent_en:0:35",
+          "gold_delta": 0.18696564435958862,
           "pick_flip": false,
-          "margin_delta": -0.0004912018775939941
+          "margin_delta": 0.17816302180290222
         },
         {
-          "id": "ag_news:14:59",
-          "gold_delta": -0.00009739398956298828,
+          "id": "massive_intent_en:0:1",
+          "gold_delta": 0.17888545989990234,
           "pick_flip": false,
-          "margin_delta": -0.0005388259887695312
+          "margin_delta": 0.1722227931022644
+        },
+        {
+          "id": "massive_intent_en:0:30",
+          "gold_delta": -0.1767532080411911,
+          "pick_flip": false,
+          "margin_delta": -0.1672351062297821
+        },
+        {
+          "id": "massive_intent_en:1:61",
+          "gold_delta": 0.17088764905929565,
+          "pick_flip": false,
+          "margin_delta": 0.16466617584228516
+        },
+        {
+          "id": "massive_intent_en:0:40",
+          "gold_delta": 0.16852733492851257,
+          "pick_flip": false,
+          "margin_delta": -0.35211628675460815
+        },
+        {
+          "id": "massive_intent_en:0:23",
+          "gold_delta": 0.15639716386795044,
+          "pick_flip": true,
+          "margin_delta": 0.0365152433514595
+        },
+        {
+          "id": "massive_intent_en:0:52",
+          "gold_delta": 0.15108102560043335,
+          "pick_flip": false,
+          "margin_delta": 0.1801878958940506
+        },
+        {
+          "id": "massive_intent_en:0:38",
+          "gold_delta": -0.14913636445999146,
+          "pick_flip": false,
+          "margin_delta": -0.1292238086462021
+        },
+        {
+          "id": "massive_intent_en:0:20",
+          "gold_delta": 0.14693398773670197,
+          "pick_flip": false,
+          "margin_delta": 0.13029293715953827
+        },
+        {
+          "id": "massive_intent_en:1:62",
+          "gold_delta": 0.14388781785964966,
+          "pick_flip": false,
+          "margin_delta": -0.1710166186094284
+        },
+        {
+          "id": "massive_intent_en:1:63",
+          "gold_delta": -0.13730889558792114,
+          "pick_flip": false,
+          "margin_delta": -0.30391258001327515
+        },
+        {
+          "id": "massive_intent_en:0:22",
+          "gold_delta": 0.12396544218063354,
+          "pick_flip": true,
+          "margin_delta": -0.08917002379894257
+        },
+        {
+          "id": "massive_intent_en:0:31",
+          "gold_delta": 0.12147527933120728,
+          "pick_flip": false,
+          "margin_delta": 0.09681367874145508
+        },
+        {
+          "id": "massive_intent_en:0:53",
+          "gold_delta": 0.1182788610458374,
+          "pick_flip": false,
+          "margin_delta": 0.11828780174255371
+        },
+        {
+          "id": "massive_intent_en:0:13",
+          "gold_delta": 0.108491450548172,
+          "pick_flip": true,
+          "margin_delta": 0.06181788071990013
+        },
+        {
+          "id": "massive_intent_en:0:12",
+          "gold_delta": 0.10079377889633179,
+          "pick_flip": false,
+          "margin_delta": 0.13141807913780212
+        },
+        {
+          "id": "massive_intent_en:0:54",
+          "gold_delta": 0.09683334827423096,
+          "pick_flip": false,
+          "margin_delta": 0.08859825134277344
+        },
+        {
+          "id": "massive_intent_en:0:51",
+          "gold_delta": 0.09027045965194702,
+          "pick_flip": false,
+          "margin_delta": 0.09672927856445312
+        },
+        {
+          "id": "massive_intent_en:0:49",
+          "gold_delta": 0.07636392116546631,
+          "pick_flip": false,
+          "margin_delta": 0.14582529664039612
+        },
+        {
+          "id": "massive_intent_en:0:56",
+          "gold_delta": 0.07628081738948822,
+          "pick_flip": true,
+          "margin_delta": 0.011692151427268982
+        },
+        {
+          "id": "massive_intent_en:0:18",
+          "gold_delta": -0.06916135549545288,
+          "pick_flip": false,
+          "margin_delta": -0.14952224493026733
+        },
+        {
+          "id": "massive_intent_en:0:0",
+          "gold_delta": 0.06652820110321045,
+          "pick_flip": false,
+          "margin_delta": 0.06734758615493774
+        },
+        {
+          "id": "massive_intent_en:0:37",
+          "gold_delta": 0.06177380681037903,
+          "pick_flip": false,
+          "margin_delta": 0.16697193682193756
+        },
+        {
+          "id": "massive_intent_en:0:11",
+          "gold_delta": -0.05466181039810181,
+          "pick_flip": false,
+          "margin_delta": -0.1947648525238037
+        },
+        {
+          "id": "massive_intent_en:0:28",
+          "gold_delta": 0.04722755029797554,
+          "pick_flip": false,
+          "margin_delta": -0.00046220049262046814
+        },
+        {
+          "id": "massive_intent_en:0:14",
+          "gold_delta": 0.03972354531288147,
+          "pick_flip": false,
+          "margin_delta": -0.007707491517066956
+        },
+        {
+          "id": "massive_intent_en:0:50",
+          "gold_delta": -0.03917896747589111,
+          "pick_flip": false,
+          "margin_delta": -0.08873927593231201
+        },
+        {
+          "id": "massive_intent_en:0:58",
+          "gold_delta": 0.03540932387113571,
+          "pick_flip": false,
+          "margin_delta": -0.2206101417541504
+        },
+        {
+          "id": "massive_intent_en:0:19",
+          "gold_delta": 0.03255053609609604,
+          "pick_flip": true,
+          "margin_delta": 0.008107826113700867
+        },
+        {
+          "id": "massive_intent_en:1:60",
+          "gold_delta": 0.030872464179992676,
+          "pick_flip": false,
+          "margin_delta": 0.006727278232574463
+        },
+        {
+          "id": "massive_intent_en:0:6",
+          "gold_delta": -0.028383158147335052,
+          "pick_flip": true,
+          "margin_delta": 0.12994050979614258
+        },
+        {
+          "id": "massive_intent_en:0:43",
+          "gold_delta": 0.02816588804125786,
+          "pick_flip": false,
+          "margin_delta": -0.003664731979370117
+        },
+        {
+          "id": "massive_intent_en:0:48",
+          "gold_delta": 0.02227172441780567,
+          "pick_flip": false,
+          "margin_delta": -0.07364541292190552
+        },
+        {
+          "id": "massive_intent_en:0:9",
+          "gold_delta": 0.020054548978805542,
+          "pick_flip": false,
+          "margin_delta": -0.010127134621143341
+        },
+        {
+          "id": "massive_intent_en:0:29",
+          "gold_delta": 0.019894814118742943,
+          "pick_flip": false,
+          "margin_delta": -0.008024359121918678
+        },
+        {
+          "id": "massive_intent_en:0:33",
+          "gold_delta": 0.014621462672948837,
+          "pick_flip": false,
+          "margin_delta": 0.04976263642311096
+        },
+        {
+          "id": "massive_intent_en:0:39",
+          "gold_delta": 0.013749656267464161,
+          "pick_flip": false,
+          "margin_delta": -0.1142316535115242
+        },
+        {
+          "id": "massive_intent_en:0:17",
+          "gold_delta": 0.01185956783592701,
+          "pick_flip": true,
+          "margin_delta": 0.0017111320048570633
+        },
+        {
+          "id": "massive_intent_en:0:55",
+          "gold_delta": 0.010609311051666737,
+          "pick_flip": false,
+          "margin_delta": 0.09230466932058334
+        },
+        {
+          "id": "massive_intent_en:0:47",
+          "gold_delta": 0.008297891356050968,
+          "pick_flip": true,
+          "margin_delta": 0.023241430521011353
+        },
+        {
+          "id": "massive_intent_en:0:34",
+          "gold_delta": 0.007871407084167004,
+          "pick_flip": true,
+          "margin_delta": -0.018375301733613014
+        },
+        {
+          "id": "massive_intent_en:0:27",
+          "gold_delta": 0.005916657857596874,
+          "pick_flip": false,
+          "margin_delta": -0.3288310170173645
+        },
+        {
+          "id": "massive_intent_en:0:46",
+          "gold_delta": -0.005454540252685547,
+          "pick_flip": false,
+          "margin_delta": -0.003435790538787842
+        },
+        {
+          "id": "massive_intent_en:0:41",
+          "gold_delta": 0.005387755110859871,
+          "pick_flip": false,
+          "margin_delta": -0.0018522515892982483
+        },
+        {
+          "id": "massive_intent_en:0:44",
+          "gold_delta": 0.004083281382918358,
+          "pick_flip": true,
+          "margin_delta": 0.145984947681427
+        },
+        {
+          "id": "massive_intent_en:0:3",
+          "gold_delta": 0.002471409272402525,
+          "pick_flip": true,
+          "margin_delta": 0.02023962140083313
+        },
+        {
+          "id": "massive_intent_en:0:57",
+          "gold_delta": -0.0020776689052581787,
+          "pick_flip": false,
+          "margin_delta": 0.10574047267436981
+        },
+        {
+          "id": "massive_intent_en:0:8",
+          "gold_delta": -0.0018534064292907715,
+          "pick_flip": false,
+          "margin_delta": -0.011296451091766357
+        },
+        {
+          "id": "massive_intent_en:0:2",
+          "gold_delta": 0.0018366477452218533,
+          "pick_flip": false,
+          "margin_delta": 0.03058030642569065
+        },
+        {
+          "id": "massive_intent_en:0:45",
+          "gold_delta": 0.0014341622591018677,
+          "pick_flip": false,
+          "margin_delta": -0.00214347243309021
+        },
+        {
+          "id": "massive_intent_en:0:26",
+          "gold_delta": -0.0013766884803771973,
+          "pick_flip": false,
+          "margin_delta": -0.03836560249328613
+        },
+        {
+          "id": "massive_intent_en:0:5",
+          "gold_delta": 0.00023296047584153712,
+          "pick_flip": false,
+          "margin_delta": 0.024269383400678635
+        },
+        {
+          "id": "massive_intent_en:0:16",
+          "gold_delta": 0.00002627893991302699,
+          "pick_flip": false,
+          "margin_delta": 0.28622400760650635
         }
       ],
-      "flips": 1,
-      "mean_abs_gold_delta": 0.04075706912772148,
-      "max_abs_gold_delta": 0.2378670871257782,
-      "mean_abs_margin_delta": 0.06536636780947447,
+      "flips": 14,
+      "mean_abs_gold_delta": 0.10707418492825127,
+      "max_abs_gold_delta": 0.6824414134025574,
+      "mean_abs_margin_delta": 0.13110172789311036,
       "fired": true,
       "fire_reason": "pick flip"
     },
     {
-      "suite": "emotion",
+      "suite": "prompt_injections",
       "live_name": "winner v1",
-      "live_digest": "95c9d7f3314ec774d6549f1ff5db95e79146c4201d354b969e37f0d99ffe46eb",
+      "live_digest": "ee0b4eb4336299b21347a2816ed93fb50ee6b6642d2c86bb05915caf037cddd3",
       "live_convention": "count",
       "ref_name": "armA v1 (byte-identical)",
-      "ref_digest": "95c9d7f3314ec774d6549f1ff5db95e79146c4201d354b969e37f0d99ffe46eb",
+      "ref_digest": "ee0b4eb4336299b21347a2816ed93fb50ee6b6642d2c86bb05915caf037cddd3",
       "ref_convention": "count",
-      "fixture_digest": "98a683969c285f157a3d81de7ffbdabebfac77873ce57eaa4b33ffe298d20f93",
+      "fixture_digest": "3d332d6c816d8c7162fe7f127e51ac3749417b6f321be0e5f0750b2efe5c2caa",
       "items": 64,
       "label_universe": {
-        "live_labels": 6,
-        "ref_labels": 6,
+        "live_labels": 2,
+        "ref_labels": 2,
         "identical": true,
         "live_only": [],
         "ref_only": []
       },
       "divergences": [
         {
-          "id": "emotion:0:0",
+          "id": "prompt_injections:0:0",
           "gold_delta": 0.0,
           "pick_flip": false,
           "margin_delta": 0.0
         },
         {
-          "id": "emotion:0:1",
+          "id": "prompt_injections:0:1",
           "gold_delta": 0.0,
           "pick_flip": false,
           "margin_delta": 0.0
         },
         {
-          "id": "emotion:0:2",
+          "id": "prompt_injections:1:2",
           "gold_delta": 0.0,
           "pick_flip": false,
           "margin_delta": 0.0
         },
         {
-          "id": "emotion:0:3",
+          "id": "prompt_injections:1:3",
           "gold_delta": 0.0,
           "pick_flip": false,
           "margin_delta": 0.0
         },
         {
-          "id": "emotion:0:4",
+          "id": "prompt_injections:2:4",
           "gold_delta": 0.0,
           "pick_flip": false,
           "margin_delta": 0.0
         },
         {
-          "id": "emotion:0:5",
+          "id": "prompt_injections:2:5",
           "gold_delta": 0.0,
           "pick_flip": false,
           "margin_delta": 0.0
         },
         {
-          "id": "emotion:1:6",
+          "id": "prompt_injections:3:6",
           "gold_delta": 0.0,
           "pick_flip": false,
           "margin_delta": 0.0
         },
         {
-          "id": "emotion:1:7",
+          "id": "prompt_injections:3:7",
           "gold_delta": 0.0,
           "pick_flip": false,
           "margin_delta": 0.0
         },
         {
-          "id": "emotion:1:8",
+          "id": "prompt_injections:4:8",
           "gold_delta": 0.0,
           "pick_flip": false,
           "margin_delta": 0.0
         },
         {
-          "id": "emotion:1:9",
+          "id": "prompt_injections:4:9",
           "gold_delta": 0.0,
           "pick_flip": false,
           "margin_delta": 0.0
         },
         {
-          "id": "emotion:1:10",
+          "id": "prompt_injections:5:10",
           "gold_delta": 0.0,
           "pick_flip": false,
           "margin_delta": 0.0
         },
         {
-          "id": "emotion:1:11",
+          "id": "prompt_injections:5:11",
           "gold_delta": 0.0,
           "pick_flip": false,
           "margin_delta": 0.0
         },
         {
-          "id": "emotion:2:12",
+          "id": "prompt_injections:6:12",
           "gold_delta": 0.0,
           "pick_flip": false,
           "margin_delta": 0.0
         },
         {
-          "id": "emotion:2:13",
+          "id": "prompt_injections:6:13",
           "gold_delta": 0.0,
           "pick_flip": false,
           "margin_delta": 0.0
         },
         {
-          "id": "emotion:2:14",
+          "id": "prompt_injections:7:14",
           "gold_delta": 0.0,
           "pick_flip": false,
           "margin_delta": 0.0
         },
         {
-          "id": "emotion:2:15",
+          "id": "prompt_injections:7:15",
           "gold_delta": 0.0,
           "pick_flip": false,
           "margin_delta": 0.0
         },
         {
-          "id": "emotion:2:16",
+          "id": "prompt_injections:8:16",
           "gold_delta": 0.0,
           "pick_flip": false,
           "margin_delta": 0.0
         },
         {
-          "id": "emotion:2:17",
+          "id": "prompt_injections:8:17",
           "gold_delta": 0.0,
           "pick_flip": false,
           "margin_delta": 0.0
         },
         {
-          "id": "emotion:3:18",
+          "id": "prompt_injections:9:18",
           "gold_delta": 0.0,
           "pick_flip": false,
           "margin_delta": 0.0
         },
         {
-          "id": "emotion:3:19",
+          "id": "prompt_injections:9:19",
           "gold_delta": 0.0,
           "pick_flip": false,
           "margin_delta": 0.0
         },
         {
-          "id": "emotion:3:20",
+          "id": "prompt_injections:10:20",
           "gold_delta": 0.0,
           "pick_flip": false,
           "margin_delta": 0.0
         },
         {
-          "id": "emotion:3:21",
+          "id": "prompt_injections:10:21",
           "gold_delta": 0.0,
           "pick_flip": false,
           "margin_delta": 0.0
         },
         {
-          "id": "emotion:3:22",
+          "id": "prompt_injections:11:22",
           "gold_delta": 0.0,
           "pick_flip": false,
           "margin_delta": 0.0
         },
         {
-          "id": "emotion:3:23",
+          "id": "prompt_injections:11:23",
           "gold_delta": 0.0,
           "pick_flip": false,
           "margin_delta": 0.0
         },
         {
-          "id": "emotion:4:24",
+          "id": "prompt_injections:12:24",
           "gold_delta": 0.0,
           "pick_flip": false,
           "margin_delta": 0.0
         },
         {
-          "id": "emotion:4:25",
+          "id": "prompt_injections:12:25",
           "gold_delta": 0.0,
           "pick_flip": false,
           "margin_delta": 0.0
         },
         {
-          "id": "emotion:4:26",
+          "id": "prompt_injections:13:26",
           "gold_delta": 0.0,
           "pick_flip": false,
           "margin_delta": 0.0
         },
         {
-          "id": "emotion:4:27",
+          "id": "prompt_injections:13:27",
           "gold_delta": 0.0,
           "pick_flip": false,
           "margin_delta": 0.0
         },
         {
-          "id": "emotion:4:28",
+          "id": "prompt_injections:14:28",
           "gold_delta": 0.0,
           "pick_flip": false,
           "margin_delta": 0.0
         },
         {
-          "id": "emotion:4:29",
+          "id": "prompt_injections:14:29",
           "gold_delta": 0.0,
           "pick_flip": false,
           "margin_delta": 0.0
         },
         {
-          "id": "emotion:5:30",
+          "id": "prompt_injections:15:30",
           "gold_delta": 0.0,
           "pick_flip": false,
           "margin_delta": 0.0
         },
         {
-          "id": "emotion:5:31",
+          "id": "prompt_injections:15:31",
           "gold_delta": 0.0,
           "pick_flip": false,
           "margin_delta": 0.0
         },
         {
-          "id": "emotion:5:32",
+          "id": "prompt_injections:16:32",
           "gold_delta": 0.0,
           "pick_flip": false,
           "margin_delta": 0.0
         },
         {
-          "id": "emotion:5:33",
+          "id": "prompt_injections:16:33",
           "gold_delta": 0.0,
           "pick_flip": false,
           "margin_delta": 0.0
         },
         {
-          "id": "emotion:5:34",
+          "id": "prompt_injections:17:34",
           "gold_delta": 0.0,
           "pick_flip": false,
           "margin_delta": 0.0
         },
         {
-          "id": "emotion:5:35",
+          "id": "prompt_injections:17:35",
           "gold_delta": 0.0,
           "pick_flip": false,
           "margin_delta": 0.0
         },
         {
-          "id": "emotion:6:36",
+          "id": "prompt_injections:18:36",
           "gold_delta": 0.0,
           "pick_flip": false,
           "margin_delta": 0.0
         },
         {
-          "id": "emotion:6:37",
+          "id": "prompt_injections:18:37",
           "gold_delta": 0.0,
           "pick_flip": false,
           "margin_delta": 0.0
         },
         {
-          "id": "emotion:6:38",
+          "id": "prompt_injections:19:38",
           "gold_delta": 0.0,
           "pick_flip": false,
           "margin_delta": 0.0
         },
         {
-          "id": "emotion:6:39",
+          "id": "prompt_injections:19:39",
           "gold_delta": 0.0,
           "pick_flip": false,
           "margin_delta": 0.0
         },
         {
-          "id": "emotion:6:40",
+          "id": "prompt_injections:20:40",
           "gold_delta": 0.0,
           "pick_flip": false,
           "margin_delta": 0.0
         },
         {
-          "id": "emotion:6:41",
+          "id": "prompt_injections:20:41",
           "gold_delta": 0.0,
           "pick_flip": false,
           "margin_delta": 0.0
         },
         {
-          "id": "emotion:7:42",
+          "id": "prompt_injections:21:42",
           "gold_delta": 0.0,
           "pick_flip": false,
           "margin_delta": 0.0
         },
         {
-          "id": "emotion:7:43",
+          "id": "prompt_injections:21:43",
           "gold_delta": 0.0,
           "pick_flip": false,
           "margin_delta": 0.0
         },
         {
-          "id": "emotion:7:44",
+          "id": "prompt_injections:22:44",
           "gold_delta": 0.0,
           "pick_flip": false,
           "margin_delta": 0.0
         },
         {
-          "id": "emotion:7:45",
+          "id": "prompt_injections:22:45",
           "gold_delta": 0.0,
           "pick_flip": false,
           "margin_delta": 0.0
         },
         {
-          "id": "emotion:7:46",
+          "id": "prompt_injections:23:46",
           "gold_delta": 0.0,
           "pick_flip": false,
           "margin_delta": 0.0
         },
         {
-          "id": "emotion:7:47",
+          "id": "prompt_injections:23:47",
           "gold_delta": 0.0,
           "pick_flip": false,
           "margin_delta": 0.0
         },
         {
-          "id": "emotion:8:48",
+          "id": "prompt_injections:24:48",
           "gold_delta": 0.0,
           "pick_flip": false,
           "margin_delta": 0.0
         },
         {
-          "id": "emotion:8:49",
+          "id": "prompt_injections:24:49",
           "gold_delta": 0.0,
           "pick_flip": false,
           "margin_delta": 0.0
         },
         {
-          "id": "emotion:8:50",
+          "id": "prompt_injections:25:50",
           "gold_delta": 0.0,
           "pick_flip": false,
           "margin_delta": 0.0
         },
         {
-          "id": "emotion:8:51",
+          "id": "prompt_injections:25:51",
           "gold_delta": 0.0,
           "pick_flip": false,
           "margin_delta": 0.0
         },
         {
-          "id": "emotion:8:52",
+          "id": "prompt_injections:26:52",
           "gold_delta": 0.0,
           "pick_flip": false,
           "margin_delta": 0.0
         },
         {
-          "id": "emotion:8:53",
+          "id": "prompt_injections:26:53",
           "gold_delta": 0.0,
           "pick_flip": false,
           "margin_delta": 0.0
         },
         {
-          "id": "emotion:9:54",
+          "id": "prompt_injections:27:54",
           "gold_delta": 0.0,
           "pick_flip": false,
           "margin_delta": 0.0
         },
         {
-          "id": "emotion:9:55",
+          "id": "prompt_injections:27:55",
           "gold_delta": 0.0,
           "pick_flip": false,
           "margin_delta": 0.0
         },
         {
-          "id": "emotion:9:56",
+          "id": "prompt_injections:28:56",
           "gold_delta": 0.0,
           "pick_flip": false,
           "margin_delta": 0.0
         },
         {
-          "id": "emotion:9:57",
+          "id": "prompt_injections:28:57",
           "gold_delta": 0.0,
           "pick_flip": false,
           "margin_delta": 0.0
         },
         {
-          "id": "emotion:9:58",
+          "id": "prompt_injections:29:58",
           "gold_delta": 0.0,
           "pick_flip": false,
           "margin_delta": 0.0
         },
         {
-          "id": "emotion:9:59",
+          "id": "prompt_injections:29:59",
           "gold_delta": 0.0,
           "pick_flip": false,
           "margin_delta": 0.0
         },
         {
-          "id": "emotion:10:60",
+          "id": "prompt_injections:30:60",
           "gold_delta": 0.0,
           "pick_flip": false,
           "margin_delta": 0.0
         },
         {
-          "id": "emotion:10:61",
+          "id": "prompt_injections:30:61",
           "gold_delta": 0.0,
           "pick_flip": false,
           "margin_delta": 0.0
         },
         {
-          "id": "emotion:10:62",
+          "id": "prompt_injections:31:62",
           "gold_delta": 0.0,
           "pick_flip": false,
           "margin_delta": 0.0
         },
         {
-          "id": "emotion:10:63",
+          "id": "prompt_injections:31:63",
           "gold_delta": 0.0,
           "pick_flip": false,
           "margin_delta": 0.0

@@ -35,14 +35,20 @@ fn winners_dir() -> PathBuf {
         .unwrap_or_else(|_| PathBuf::from("data/demo_specialists"))
 }
 
-/// The suite builders' text+gold extraction for the three probed suites —
+/// The suite builders' text+gold extraction for the probed suites —
 /// the same row fields the reflex builders read (banking77 mteb: `text` +
-/// `label_text`; ag_news/emotion: `text` + int `label`), written ONCE into
+/// `label_text`; massive_intent_en: `text` + slug `label`;
+/// prompt_injections: `text` + int `label`), written ONCE into
 /// the fixture so probe time never re-reads datasets.
 fn row_text_gold(suite: &str, row: &serde_json::Value) -> Option<(String, String)> {
     let text = row.get("text")?.as_str()?.to_string();
     let gold = match suite {
         "banking77" => row.get("label_text")?.as_str()?.to_string(),
+        // MASSIVE's rows carry the intent slug as a plain string label
+        // (`label == label_text` in the fetched mirror — the reflex
+        // manifest's verified note); the artifact's class rows are the
+        // slugs, so gold resolves by name directly.
+        "massive_intent_en" => row.get("label")?.as_str()?.to_string(),
         _ => row.get("label")?.as_i64()?.to_string(),
     };
     Some((text, gold))
@@ -166,20 +172,38 @@ fn presented_keys_for(suite: &str, datasets: &Path) -> Result<Vec<String>, Strin
                 .map(|l| l.replace('_', " "))
                 .collect())
         }
-        "ag_news" => Ok(vec![
-            "world".into(),
-            "sports".into(),
-            "business".into(),
-            "sci_tech".into(),
-        ]),
-        "emotion" => Ok(vec![
-            "sadness".into(),
-            "joy".into(),
-            "love".into(),
-            "anger".into(),
-            "fear".into(),
-            "surprise".into(),
-        ]),
+        "prompt_injections" => Ok(vec!["0".into(), "1".into()]),
+        "massive_intent_en" => {
+            // Sorted unique label slugs over ALL test rows (the same rule
+            // as banking77's scan, on the `label` string field — the
+            // artifact's class rows ARE these slugs).
+            let mut labels: Vec<String> = Vec::new();
+            let dir = datasets.join(suite);
+            let mut names: Vec<String> = std::fs::read_dir(&dir)
+                .map_err(|e| format!("read_dir {}: {e}", dir.display()))?
+                .filter_map(|e| e.ok())
+                .map(|e| e.file_name().to_string_lossy().to_string())
+                .filter(|n| n.starts_with("test-") && n.ends_with(".json"))
+                .collect();
+            names.sort();
+            for name in &names {
+                let text = std::fs::read_to_string(dir.join(name)).map_err(|e| e.to_string())?;
+                let v: serde_json::Value =
+                    serde_json::from_str(&text).map_err(|e| format!("parse {name}: {e}"))?;
+                if let Some(rs) = v.get("rows").and_then(|r| r.as_array()) {
+                    for r in rs {
+                        if let Some(t) = r.get("row").and_then(|r| r.get("label")).and_then(|t| t.as_str())
+                        {
+                            if !labels.iter().any(|l| l == t) {
+                                labels.push(t.to_string());
+                            }
+                        }
+                    }
+                }
+            }
+            labels.sort();
+            Ok(labels)
+        }
         other => Err(format!("no presented-key universe for suite {other:?}")),
     }
 }
@@ -187,7 +211,12 @@ fn presented_keys_for(suite: &str, datasets: &Path) -> Result<Vec<String>, Strin
 fn build_probe() -> Result<(), String> {
     let datasets = datasets_dir();
     let mut suites = Vec::new();
-    for suite in ["banking77", "ag_news", "emotion"] {
+    // Issue 023 T4 (riir-rethink): the probed suites are PERMISSIVE-only —
+    // ag_news (unknown licence) and emotion (research-only) left the
+    // PUBLIC fixture at the 2026-10-05 rebuild; massive_intent_en
+    // (Apache-2.0) and prompt_injections (Apache-2.0) took their slots.
+    // banking77's slice is UNTOUCHED (the drift specimen's pins ride it).
+    for suite in ["banking77", "massive_intent_en", "prompt_injections"] {
         let keys = presented_keys_for(suite, &datasets)?;
         let probe = build_suite_probe(&datasets, suite, &keys)?;
         println!(
@@ -198,8 +227,11 @@ fn build_probe() -> Result<(), String> {
         suites.push(probe);
     }
     let set = ProbeSet {
-        generated: "2026-09-29".into(),
-        source: format!("{} (test splits, label-stratified round-robin)", datasets.display()),
+        generated: "2026-10-05".into(),
+        source: format!(
+            "{} (test splits, label-stratified round-robin; permissive suites only — Issue 023 T4)",
+            datasets.display()
+        ),
         suites,
     };
     let json = set.canonical_json();
@@ -264,29 +296,29 @@ fn run_report() -> Result<(), String> {
             },
         ),
         (
-            "ag_news",
+            "massive_intent_en",
             Side {
                 name: "winner v1",
-                file: "ag_news_winner_v1.bin",
-                convention: winner_bridge("ag_news").convention,
+                file: "massive_intent_en_winner_v1.bin",
+                convention: winner_bridge("massive_intent_en").convention,
             },
             Side {
                 name: "armA v1",
-                file: "ag_news_armA_v1.bin",
-                convention: winner_bridge("ag_news").convention,
+                file: "massive_intent_en_armA_v1.bin",
+                convention: winner_bridge("massive_intent_en").convention,
             },
         ),
         (
-            "emotion",
+            "prompt_injections",
             Side {
                 name: "winner v1",
-                file: "emotion_winner_v1.bin",
-                convention: winner_bridge("emotion").convention,
+                file: "prompt_injections_winner_v1.bin",
+                convention: winner_bridge("prompt_injections").convention,
             },
             Side {
                 name: "armA v1 (byte-identical)",
-                file: "emotion_armA_v1.bin",
-                convention: winner_bridge("emotion").convention,
+                file: "prompt_injections_armA_v1.bin",
+                convention: winner_bridge("prompt_injections").convention,
             },
         ),
     ];

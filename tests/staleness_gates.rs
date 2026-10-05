@@ -10,11 +10,19 @@ use riir_instinct::specialist::{load_artifact, winner_bridge, BagConvention};
 use std::path::{Path, PathBuf};
 
 const FIXTURE_PATH: &str = "tests/fixtures/staleness_probe_set.json";
-/// Bench 022's measured pins.
-const PIN_FIXTURE_DIGEST: &str = "98a683969c285f157a3d81de7ffbdabebfac77873ce57eaa4b33ffe298d20f93";
+/// The measured pins. **RE-PINNED 2026-10-05 (riir-rethink Issue 023 T4):**
+/// ag_news (unknown licence) and emotion (research-only) raw texts left
+/// the PUBLIC fixture — massive_intent_en (Apache-2.0) and prompt_injections
+/// (Apache-2.0) took their slots. The banking77 drift row measured
+/// EXACTLY its old pins across the rebuild (the slice is byte-identical —
+/// the deterministic round-robin law); the candidate row is now the MASSIVE
+/// winner-vs-armA pair (14 flips — richer than ag_news's 1); the
+/// byte-identical control role moved from emotion to prompt_injections
+/// (winner == armA bytes, verified sha256).
+const PIN_FIXTURE_DIGEST: &str = "3d332d6c816d8c7162fe7f127e51ac3749417b6f321be0e5f0750b2efe5c2caa";
 const PIN_DRIFT_FLIPS: usize = 13;
 const PIN_DRIFT_MEAN_GOLD: f64 = 0.24003;
-const PIN_CANDIDATE_FLIPS: usize = 1;
+const PIN_CANDIDATE_FLIPS: usize = 14;
 
 fn winners_dir() -> PathBuf {
     std::env::var("INSTINCT_WINNERS_DIR")
@@ -127,21 +135,23 @@ fn banking77_v1_to_v2_bridge_drift_fires_as_measured() {
     assert!(r.label_universe.identical, "v1/v2 universes were identical at the pin");
 }
 
-/// The candidate row: two same-generation ag_news artifacts ALSO read
-/// divergent (1/64 flips, mean |Δgold| 0.041) — the pre-swap report's exact
-/// use case: a candidate swap is visible before it is served.
+/// The candidate row: two same-generation massive_intent_en artifacts
+/// read divergent (14 flips, mean |Δgold| 0.107 — re-measured 2026-10-05
+/// at the licence swap; the pre-swap ag_news row was 1 flip / 0.041) —
+/// the pre-swap report's exact use case: a candidate swap is visible
+/// before it is served.
 #[test]
-fn ag_news_candidate_pair_fires_as_measured() {
+fn massive_candidate_pair_fires_as_measured() {
     let Some(set) = fixture() else { return };
-    let Some(probe) = slice(&set, "ag_news") else { return };
+    let Some(probe) = slice(&set, "massive_intent_en") else { return };
     let dir = winners_dir();
-    let Some((live, live_digest)) = artifact(&dir, "ag_news_winner_v1.bin") else {
+    let Some((live, live_digest)) = artifact(&dir, "massive_intent_en_winner_v1.bin") else {
         return;
     };
-    let Some((reference, ref_digest)) = artifact(&dir, "ag_news_armA_v1.bin") else {
+    let Some((reference, ref_digest)) = artifact(&dir, "massive_intent_en_armA_v1.bin") else {
         return;
     };
-    let conv = winner_bridge("ag_news").convention;
+    let conv = winner_bridge("massive_intent_en").convention;
     let r = compare_pair(
         probe,
         side(&live, conv, "winner v1", &live_digest),
@@ -189,14 +199,14 @@ fn drift_row_is_bit_identical_across_runs() {
 fn fire_rule_is_the_pre_registered_disjunction() {
     let Some(set) = fixture() else { return };
     let dir = winners_dir();
-    let Some(probe) = slice(&set, "ag_news") else { return };
-    let Some((live, live_digest)) = artifact(&dir, "ag_news_winner_v1.bin") else {
+    let Some(probe) = slice(&set, "massive_intent_en") else { return };
+    let Some((live, live_digest)) = artifact(&dir, "massive_intent_en_winner_v1.bin") else {
         return;
     };
-    let Some((reference, ref_digest)) = artifact(&dir, "ag_news_armA_v1.bin") else {
+    let Some((reference, ref_digest)) = artifact(&dir, "massive_intent_en_armA_v1.bin") else {
         return;
     };
-    let conv = winner_bridge("ag_news").convention;
+    let conv = winner_bridge("massive_intent_en").convention;
     let r = compare_pair(
         probe,
         side(&live, conv, "w", &live_digest),
