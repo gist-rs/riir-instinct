@@ -1,3 +1,25 @@
+## 2026-10-05 — reflex issue 070 lead 2 adopted: bag serve path 83 → 42 allocs/decision (instinct `9ac84c8`)
+
+The reflex side landed `eval_case_into` + `CaseEvalScratch` (reflex
+`e0c43c7`): the eval path's per-request machinery — the engine solve
+scratch, the wire request, the result Vecs, the `SeatEval` copy layer —
+is now ONE caller-owned frame refilled in place. `decide_multi` takes
+the frame out of the server around the receipt loop (the take/replace
+idiom keeps it out of the `&mut self` calls) and restores it before the
+return.
+
+- **Pin**: `tests/serve_g4_alloc.rs` re-pinned **83 → 42**, measured ×3
+  (deterministic). Lineage 107 → 83 → 42 (issue 021's halves, then this).
+  The stale inventory clause was corrected: the eval-path class is gone;
+  the remaining surface is dominated by the synth case build (21 of 42)
+  — filed as `.issues/022_synth_case_build_alloc_lead.md`.
+- **Byte-parity proof**: `serve_gates` 24/24 with full material — the
+  frozen-picks replay answers every suite byte-identically through the
+  new face. Arena (`bin/arena.rs`) untouched — the measurement path stays
+  on `eval_seat`.
+- Gates: clippy `-D warnings` default + all-features; lib 85; hybrid g4
+  zero-alloc green.
+
 ## 2026-10-05 — Issue 021 closed: the ESC cheap-path allocation surface — bag serve path 107 → 83 allocs/decision, composed ESC 190 → 161; every pick bit-identical
 
 Measured lead from riir-refine Issue 146 T0.6's hotpath profile, closed
