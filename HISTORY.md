@@ -1,3 +1,53 @@
+## 2026-10-05 — Issue 013 closed: pool re-baseline (a) EXECUTED — arena → canonical pool at the PINNED reflex baseline; standing triggers → Issue 019
+
+Owner-gate close (delegated Claude verdict 2026-10-05: GO option (a) WITH a
+pinned reflex SHA; E2 + mainnet T4 moved to standing trigger rows). The E2
+divergence 013's three dated notes chased is STRUCTURAL (pool × engine),
+root-caused reflex-side (reflex `.issues/058`, commits `f1371c1` + `7d725b2`:
+the board's canonical-pool runs read the DEFAULT `.raw/datasets` while every
+posture-selecting run before them read the frozen t20k pool — same binary,
+same flags, only `--datasets-dir` moved, reproducing both columns exactly);
+the frozen t20k sst5 pool's 3 exact-duplicate rows are accepted under
+reflex's KNOWN_DIRTY triple pin with SUB-MEASURABLE effect (t20k sst5 0.2017
+== the deduped canonical reading).
+
+EXECUTED (a): the ARENA's datasets default is now the canonical
+`../riir-reflex/.raw/datasets`, and the engine baseline is a NAMED pin —
+`REFLEX_BASELINE_SHA = 6365fab0261b2123ae0953a12b06ef0eec596c2b` (reflex
+develop HEAD at the verdict), a const in `src/bin/arena.rs` stamped into
+the startup banner and every RESULTS.md ("Pool: … · reflex engine baseline
+pinned at …"; the Pool line reports the ACTUAL dir so an override run
+reports its override, never a lying record). The pin is RECORDED, not
+mechanical — the path dep compiles whatever `../riir-reflex` holds, so keep
+the checkout at or knowingly ahead of the pin and bump it as a re-baseline
+decision. t20k stays on disk as the ARCHIVED pool: every published hybrid
+row (Bench 005/011/012/015…) is a t20k-seated archived reference —
+reproduce with `--datasets-dir ../riir-reflex/.raw/datasets_t20k`. The
+SERVE lane is UNTOUCHED (its t20k default stands — the winners are
+t20k-trained; serve gates 23/23 green on it). `INSTINCT_DATASETS_DIR` now
+wins over the arena default too (flag > env > default, the serve shape).
+
+BOX-STATE LAW for the first measured canonical-pool run: quote the
+box_state.json / preflight PROVENANCE line beside any latency figure (the
+reflex Issue-021 law — the arena already stamps `box_state.json`), and read
+the new accuracy rows as a NEW series — never comparable with the archived
+t20k rows except through the site's modelless rows (canonical) or a
+same-session `--datasets-dir` t20k control.
+
+En-route compile repair (pre-existing at HEAD, not the re-baseline's):
+reflex `9ecface` (Issue 066) had added `density_gate: bool` to
+`RunOptions` — the arena's A0-pin literal missed it and `clippy
+--all-targets` was red at HEAD. Fixed with `density_gate: false` (default
+off = the shipped fused gate, byte-identical; the `nli_m1` precedent for
+sibling-forward fields). Standing triggers moved to
+`.issues/019_standing_triggers.md` (E2 manual credentialed devnet push —
+local e2e green + staged artifact verified; mainnet T4 — deferred until the
+owner lifts the hold; decstat KAT pricing record-only — trigger is a priced
+verification design, the never-lever doctrine bars a free mint). Issue 013
+removed (this record is its compact conclusion); `.issues/.highwater`
+018 → 019. Gates: clippy `-D --all-targets` clean; `cargo test` green
+(lib 85 · serve_gates 23 · staleness 6 · calibrator 2 · g4_alloc 1).
+
 ## 2026-10-03 — B4 LANDED: the L1 training lane is in-tree (the carve's deferred riir-train half)
 
 The L1 trainers + teaching recipes moved from `../riir-train` into THIS

@@ -88,6 +88,15 @@ const REFLEX_WON: &[&str] = &["emotion", "sst5", "massive_intent_en", "banking77
 /// Laya wins these (Bench 051) — G5's pre-registration duty.
 const GAP_SUITES: &[&str] = &["ag_news", "xnli_en"];
 
+/// The pinned riir-reflex baseline the Issue-013 re-baseline (option a,
+/// owner verdict 2026-10-05) was decided against — a NAMED commit, never
+/// a moving "HEAD". The engine that actually runs is whatever the
+/// `../riir-reflex` path dep resolves at build time; this constant is the
+/// RECORDED pin, stamped into every emitted record (startup banner +
+/// RESULTS.md), so a future reader knows exactly which reflex the numbers
+/// rode. Bump it deliberately, as a re-baseline decision.
+const REFLEX_BASELINE_SHA: &str = "6365fab0261b2123ae0953a12b06ef0eec596c2b";
+
 /// The H2 grid (train-side selection only): β, n_min, τ_n.
 const BETA_GRID: &[f32] = &[0.0, 0.25, 0.5, 1.0, 2.0];
 const N_MIN_GRID: &[f32] = &[2.0, 4.0, 8.0];
@@ -328,13 +337,24 @@ fn main() {
 
 fn arena_main() {
     let args: Vec<String> = std::env::args().collect();
-    // The datasets dir is the FROZEN Bench-005 re-baseline pool — every
-    // published arena row (Bench 005/011/012/015) is measured on these
-    // bytes. reflex's canonical ".raw/datasets" is a DIFFERENT pool (its
-    // re-fetches moved rows: ag_news 0.8625 / emotion 0.77 / sst5 0.2017
-    // there vs 0.8825 / 0.885 / 0.3967 here). Re-pointing this default is
-    // a re-baseline decision, never a cleanup.
-    let mut datasets_dir = PathBuf::from("../riir-reflex/.raw/datasets_t20k");
+    // Issue 013's owner verdict (2026-10-05, delegated Claude GO — option
+    // a): the arena defaults to reflex's CANONICAL pool, the same pool the
+    // site's modelless rows read, so arena A0 and the published site rows
+    // compare within ONE (pool × engine) cell (the E2 divergence was
+    // root-caused STRUCTURAL — reflex `.issues/058`, f1371c1 + 7d725b2).
+    // The engine baseline is the PINNED REFLEX_BASELINE_SHA, never "HEAD"
+    // (it is a recorded pin: the path dep compiles whatever ../riir-reflex
+    // holds — keep the checkout at or knowingly ahead of the pin, and bump
+    // the pin as a re-baseline decision). The frozen t20k pool stays on
+    // disk as an ARCHIVED REFERENCE: every published hybrid row (Bench
+    // 005/011/012/015…) is t20k-seated — reproduce them with
+    // `--datasets-dir ../riir-reflex/.raw/datasets_t20k`. The SERVE lane
+    // keeps its own t20k default (the winners are t20k-trained).
+    // INSTINCT_DATASETS_DIR wins over this default for both lanes;
+    // --datasets-dir wins over everything.
+    let mut datasets_dir = std::env::var("INSTINCT_DATASETS_DIR")
+        .map(PathBuf::from)
+        .unwrap_or_else(|_| PathBuf::from("../riir-reflex/.raw/datasets"));
     let mut winners_dir = PathBuf::from("data/demo_specialists");
     let mut out_dir = PathBuf::from(".benchmarks/001_hybrid_goat");
     let mut top_k = 8usize;
@@ -407,10 +427,11 @@ fn arena_main() {
 
     eprintln!("=== riir-instinct arena — the Reflex · instinct GOAT run ===");
     eprintln!(
-        "datasets: {} · winners: {} · out: {} · top_k {top_k}",
+        "datasets: {} · winners: {} · out: {} · top_k {top_k} · reflex baseline {}",
         datasets_dir.display(),
         winners_dir.display(),
-        out_dir.display()
+        out_dir.display(),
+        &REFLEX_BASELINE_SHA[..12.min(REFLEX_BASELINE_SHA.len())]
     );
     let box_state = riir_reflex::harness::box_state::capture();
     let box_summary = format_box_state(&box_state);
@@ -449,7 +470,7 @@ fn arena_main() {
 
     std::fs::create_dir_all(&out_dir).expect("create out dir");
     write_predictions(&out_dir, &runs);
-    write_results(&out_dir, &runs, &box_summary);
+    write_results(&out_dir, &runs, &box_summary, &datasets_dir);
     write_box_state(&out_dir, &box_state);
     eprintln!("=== done — results in {} ===", out_dir.display());
 }
@@ -2063,6 +2084,10 @@ fn pin_a0_identity(datasets_dir: &Path, runs: &[SuiteRun], suites: &[&str]) -> R
         // separation) — measurement-only upstream, never the pin's
         // posture. (Field landed by the sibling's in-flight tree.)
         nli_m1: false,
+        // reflex's Issue 066 fused-abstain DENSITY-half A/B — report-only
+        // upstream (NOT CERTIFIED at Bench 124, stays opt-in there); off =
+        // the shipped fused gate, byte-identical. Never the pin's posture.
+        density_gate: false,
     };
     let (out, errors) = riir_reflex::harness::runner::run(&opts)?;
     if !errors.is_empty() {
@@ -2290,7 +2315,7 @@ fn write_predictions(out_dir: &Path, runs: &[SuiteRun]) {
     eprintln!("registration table: {}", rpath.display());
 }
 
-fn write_results(out_dir: &Path, runs: &[SuiteRun], box_state: &str) {
+fn write_results(out_dir: &Path, runs: &[SuiteRun], box_state: &str, datasets_dir: &Path) {
     // The record number comes from the OUT DIR the caller chose — a
     // hand-typed title here would have kept saying "Bench 001" when the
     // 052-protocol rerun landed in 002_ (it did).
@@ -2333,6 +2358,15 @@ gold. A0 rows are PER QUESTION (reflex's hard-metrics convention; latency stays 
 for seat-composing arms, `n_cases` disclosed)."
     ));
     md.push_str(&format!("Box state: {box_state}\n\n"));
+    // The Issue-013 re-baseline disclosure: the pool this record measured
+    // and the pinned engine baseline it rode. The path is the ACTUAL dir
+    // (an override run reports its override), so the record never lies.
+    md.push_str(&format!(
+        "Pool: {} · reflex engine baseline pinned at `{REFLEX_BASELINE_SHA}` \
+(Issue 013 re-baseline a: hybrid rows published before it are t20k-seated, \
+archived references — `.raw/datasets_t20k` stays on disk to reproduce them).\n\n",
+        datasets_dir.display(),
+    ));
 
     for run in runs {
         md.push_str(&format!("## {}\n\n", run.suite));

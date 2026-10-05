@@ -135,9 +135,14 @@ cargo check
 cargo clippy --all-targets -- -D warnings
 cargo test                                   # the gate suite (serve gates skip loud without data)
 cargo run --release --bin arena              # the GOAT run (writes .benchmarks/<out>/)
+#   arena datasets default = reflex CANONICAL ../riir-reflex/.raw/datasets at the
+#   pinned engine baseline REFLEX_BASELINE_SHA (Issue 013 re-baseline a; t20k stays
+#   on disk as the ARCHIVED pool — published hybrid rows are t20k-seated references,
+#   reproduce via --datasets-dir ../riir-reflex/.raw/datasets_t20k)
 cargo bench --bench arsenal_budget_goat --features arsenal_goat   # the arsenal budget GOAT (Bench 003)
 
-# The hosted serving lane (P5, Issue 002):
+# The hosted serving lane (P5, Issue 002) — serve keeps its OWN t20k default
+# (winners are t20k-trained; the arena re-baseline must NOT move it):
 cargo run --release --bin serve -- --bind 127.0.0.1:8091 --suites ag_news,massive_intent_en
 #   datasets default ../riir-reflex/.raw/datasets_t20k · winners
 #   ../riir-train/data/instinct_specialists · INSTINCT_DATASETS_DIR /
