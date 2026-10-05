@@ -1,6 +1,6 @@
 # Issue 020 — Artifact class adoption: public demo lane + serving dirs
 
-**Status:** OPEN — Plan 623 T4 (workspace Proposal 054 / riir-ai Plan 623)
+**Status:** OPEN — Plan 623 T4 (workspace Proposal 054 / riir-ai Plan 623). **PROVISIONING UNBLOCKED 2026-10-05: the HF lane + write token are live** — org datasets `gist-rs/riir-instinct-artifacts` + `gist-rs/riir-reflex-artifacts` exist (public), the fine-grained write token is in the ops `.env` (M3 only; name `gist-rs-artifacts-write-m3`, org-scoped — see riir-ai `.docs/01_orientation/623_t8_hf_lane_record.md`). The publish half of this issue can land; the fetch half needs no token (anonymous reads).
 
 ## Why
 
