@@ -31,7 +31,7 @@ those surfaces live in `moat/` now.
 
 ## Naming law — SUPERSEDED by the split (kept for the record until C1)
 
-Decided 2026-09-30 (owner call), SUPERSEDED 2026-10-03 by Proposal 052's
+Decided 2026-09-30 (owner call), SUPERSEDED 2026-10-03 by riir-ai Proposal 052's
 split: Instinct does not retire as a brand; the repo does not rename. The
 disambiguation table's third axis lives in
 `../riir-game-sdk/.docs/10_multiplayer_topology/tick_tier_model.md` §(a);
@@ -49,7 +49,7 @@ via the `boundary-guard` skill (`../riir-ai/scripts/ci_boundary_contract.sh`).
 
 ## Role
 
-Per Proposal 051, the **all-tier adaptive decision-serving family** — rungs
+Per riir-ai Proposal 051, the **all-tier adaptive decision-serving family** — rungs
 L1 bags/hybrids through L3 encoder thinks (L4/L5 gated on 048's). **Reflex**
 = hard-wired modelless response (`../riir-reflex`, public, the free floor);
 **Rethink** = the trained/adaptive private product (`../riir-rethink`). The
@@ -129,7 +129,7 @@ cargo run --release --bin arena              # the GOAT run (writes .benchmarks/
 #   reproduce via --datasets-dir ../riir-reflex/.raw/datasets_t20k)
 cargo bench --bench arsenal_budget_goat --features arsenal_goat   # the arsenal budget GOAT (Bench 003)
 
-# The public artifact fetch lane (instinct issue 020 / Plan 623 T4): pulls
+# The public artifact fetch lane (instinct issue 020 / riir-ai Plan 623 T4): pulls
 # the public-class rows of artifacts/manifest.toml from the org HF dataset
 # lane (gist-rs/riir-instinct-artifacts) into artifacts/cache/, BLAKE3 +
 # exact-size verified against the manifest BEFORE use (public rows only —
