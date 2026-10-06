@@ -1,6 +1,6 @@
 # Issue 022 — the serve path's remaining 42 allocs/decision: the synth case build is 21 of them
 
-**Status:** LEAD 1 LANDED (instinct `f8ee3a6`, 2026-10-06): decide max **42 → 36** (−14%), `_into` steady/cold **6 → 0**, the served bytes pinned identical; the intake measurement CORRECTED the attribution (see below). Remaining leads recorded under Leads.
+**Status:** LEAD 1 LANDED (instinct `f8ee3a6`, 2026-10-06): decide max **42 → 36** (−14%), `_into` steady/cold **6 → 0**, the served bytes pinned identical; the intake measurement CORRECTED the attribution (see below). LEAD 2 LANDED (instinct `1ed58b7`, 2026-10-06): decide max **36 → 28** (−22%). Remaining leads recorded under Leads.
 
 Filed from the reflex issue 070 lead 2 close-out (instinct `9ac84c8`,
 2026-10-05): the bag serve path's allocation pin read **83 → 42** after
@@ -38,16 +38,50 @@ service_gates 24/24 incl. the data-gated parity face; lib 86/86.
 ## Leads (instinct-owned classes only)
 
 1. ~~The criteria-map value construction~~ — **LANDED** (above); the case
-   build is out of the hot path at steady state. The remaining per-decision
-   surface (36) is: the engine's wire response (`DecisionResponse` +
+   build is out of the hot path at steady state. ~~The single-question
+   `decide` prelude's template clones (the `&mut self`
+   eval borrow forces them — issue 021's note; a take/replace shape
+   there is the next measured lead if this lane re-opens)~~ — **LANDED**
+   as Lead 2 (below). The remaining per-decision surface (28) is: the
+   engine's wire response (`DecisionResponse` +
    `Answer.probabilities` per question — katgpt-core's boundary, by
    design), the receipt's owned `probabilities`/`specialist_scores` clones,
-   the receipt's rendered-options `Vec<String>` (the contract), and the
-   single-question `decide` prelude's template clones (the `&mut self`
-   eval borrow forces them — issue 021's note; a take/replace shape there
-   is the next measured lead if this lane re-opens).
+   and the receipt's rendered-options `Vec<String>` (the contract).
 2. The receipt's `qo_probs.to_vec()` is the contract (the receipt owns
    its bytes) — NOT a lead.
+
+## Lead 2 LANDED (`1ed58b7`)
+
+The single-question `decide`'s clone prelude left the hot path via the
+take/replace window (mirror of the `eval_frame` idiom): the three
+template fields (`labels` / `qid` / `q_instructions`) leave `self` for
+the `decide_multi` call, the question slice borrows the TAKEN locals,
+and all three are restored on ALL paths before the result propagates —
+no `?` inside the window. While taken `self.labels` is empty, so
+`decide_multi`'s three count reads go through a new `labels_len` boot
+mirror (set in `from_parts_opt`, the single constructor tail; those
+reads are count-only — never iteration — so the empty Vec is never
+walked in the window). A caller-provided option set still pays its Vec
+(`o.to_vec()` — the caller's bytes, not self's; not a lead).
+
+Measured, deterministic ×3: decide max **36 → 28** (the −8: the
+None-options prelude's 1 Vec + 5 label Strings + 2 Strings);
+`_into` steady/cold still **0**, fresh 15 (unchanged); the G4 pin
+re-pinned 28 with the delta named per its own protocol. Zero behavior
+change (the anti-goal holds): `serve_gates` 24/24 with the dev winners
+dir incl. the frozen-picks parity face `served_decisions_are_the_
+frozen_goat_picks` with REAL boots (1024s wall); plain run (demo
+winners default) 24/24 with the parity face skipping loud (the gate's
+own bare-clone disclosure); lib 86/86; clippy `--all-targets -D
+warnings` clean. One-off: the first full gates run under dev winners
+failed `arsenal_release_refuses_the_eager_posture` (an HTTP
+bind/timeout edge test, decide-untouched) — passes in isolation and on
+the full rerun; parallel-load flake, not this change. Remaining
+surface after it (28): the engine's wire response (`DecisionResponse` +
+`Answer.probabilities` per question — katgpt-core's boundary, by
+design), the receipt's owned `probabilities`/`specialist_scores`
+clones, the receipt's rendered-options `Vec<String>` (the contract),
+and the caller-provided-options Vec (caller bytes, not a lead).
 
 **Anti-goal**: zero behavior change — the served case bytes are pinned by
 `tests/serve_gates.rs`'s frozen-picks replays and `synth_served_case_into`
