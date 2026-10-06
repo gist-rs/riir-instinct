@@ -355,7 +355,10 @@ fn arena_main() {
     let mut datasets_dir = std::env::var("INSTINCT_DATASETS_DIR")
         .map(PathBuf::from)
         .unwrap_or_else(|_| PathBuf::from("../riir-reflex/.raw/datasets"));
-    let mut winners_dir = PathBuf::from("data/demo_specialists");
+    // The artifact lane's pull target (instinct issue 020 / Plan 623
+    // T4): a fresh clone boots the demo lane after the public fetch
+    // (`scripts/fetch_artifacts.sh`) lands the manifest's rows here.
+    let mut winners_dir = PathBuf::from("artifacts/cache");
     let mut out_dir = PathBuf::from(".benchmarks/001_hybrid_goat");
     let mut top_k = 8usize;
     let mut pin_a0 = true;

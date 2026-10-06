@@ -27,7 +27,8 @@ const PIN_CANDIDATE_FLIPS: usize = 14;
 fn winners_dir() -> PathBuf {
     std::env::var("INSTINCT_WINNERS_DIR")
         .map(PathBuf::from)
-        .unwrap_or_else(|_| PathBuf::from("data/demo_specialists"))
+        // The artifact lane's pull target (instinct issue 020 / Plan 623 T4).
+        .unwrap_or_else(|_| PathBuf::from("artifacts/cache"))
 }
 
 fn side<'a>(

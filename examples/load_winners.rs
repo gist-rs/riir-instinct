@@ -5,8 +5,12 @@
 //!
 //! ```text
 //! cargo run --release --example load_winners -- \
-//!     data/demo_specialists [ag_news,emotion,...]
+//!     artifacts/cache [ag_news,emotion,...]
 //! ```
+//!
+//! The default dir is the artifact lane's pull target (instinct issue
+//! 020 / Plan 623 T4) — `scripts/fetch_artifacts.sh` fills it from the
+//! public HF lane.
 //!
 //! Suite → winner arm per Bench 609: A on emotion/sst5/banking77,
 //! B(gold_mix=0) on ag_news/xnli_en, B(gold_mix=0.5) on massive_intent_en
@@ -17,7 +21,7 @@ fn main() {
     let dir = args
         .first()
         .map(std::path::PathBuf::from)
-        .unwrap_or_else(|| std::path::PathBuf::from("data/demo_specialists"));
+        .unwrap_or_else(|| std::path::PathBuf::from("artifacts/cache"));
     let suites: Vec<String> = args
         .get(1)
         .map(|s| s.split(',').map(str::to_string).collect())

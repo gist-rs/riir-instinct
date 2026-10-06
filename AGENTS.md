@@ -29,7 +29,10 @@ left the bins.
 Feature-name changes: `arena-laya` → **`laya-face`** (renamed, stays — the
 G2 paired face vs public reflex's laya lane); `serve-encoder*` and
 `decstat` are GONE from this tree (Rethink-only). Winners default to
-`data/demo_specialists` (env `INSTINCT_WINNERS_DIR` overrides); the
+`artifacts/cache` (env `INSTINCT_WINNERS_DIR` overrides) — the artifact
+lane's pull target: `scripts/fetch_artifacts.sh` pulls the public rows
+(`artifacts/manifest.toml`) from the org HF lane and hash-verifies them
+(instinct issue 020 / Plan 623 T4); the
 embedded manifest is the teaching default (`data/arsenal.toml`, artifact-less
 A0 rows) and the production verdict rides inline byte-pinned in
 `tests/serve_gates.rs`. The sections below predate the split where they
@@ -140,6 +143,14 @@ cargo run --release --bin arena              # the GOAT run (writes .benchmarks/
 #   on disk as the ARCHIVED pool — published hybrid rows are t20k-seated references,
 #   reproduce via --datasets-dir ../riir-reflex/.raw/datasets_t20k)
 cargo bench --bench arsenal_budget_goat --features arsenal_goat   # the arsenal budget GOAT (Bench 003)
+
+# The public artifact fetch lane (instinct issue 020 / Plan 623 T4): pulls
+# the public-class rows of artifacts/manifest.toml from the org HF dataset
+# lane (gist-rs/riir-instinct-artifacts) into artifacts/cache/, BLAKE3 +
+# exact-size verified against the manifest BEFORE use (public rows only —
+# a protected row is refused loud); CHECK=1 verifies cached bytes only, no
+# network. With no manifest the lane is an honest no-op:
+scripts/fetch_artifacts.sh
 
 # The hosted serving lane (P5, Issue 002) — serve keeps its OWN t20k default
 # (winners are t20k-trained; the arena re-baseline must NOT move it):

@@ -16,8 +16,12 @@ use riir_instinct::serve_edge::{run, ServeConfig};
 fn main() {
     let mut datasets_dir = std::env::var("INSTINCT_DATASETS_DIR")
         .unwrap_or_else(|_| "../riir-reflex/.raw/datasets_t20k".into());
-    let mut winners_dir =
-        std::env::var("INSTINCT_WINNERS_DIR").unwrap_or_else(|_| "data/demo_specialists".into());
+    let mut winners_dir = std::env::var("INSTINCT_WINNERS_DIR").unwrap_or_else(|_| {
+        // The artifact lane's pull target (instinct issue 020 / Plan 623
+        // T4): a fresh clone boots the demo lane after the public fetch
+        // (`scripts/fetch_artifacts.sh`) lands the manifest's rows here.
+        "artifacts/cache".into()
+    });
     let mut bind = std::env::var("INSTINCT_BIND").unwrap_or_else(|_| "0.0.0.0:8080".into());
     // Plan 426 T6's serve posture: unset = the gold corpus everywhere
     // (byte-identical boots); set = suites with a present

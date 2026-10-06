@@ -14,8 +14,11 @@
 //!
 //! ```text
 //! cargo run --release --example massive_anomaly_probe -- \
-//!     [data/demo_specialists]
+//!     [artifacts/cache]
 //! ```
+//!
+//! The default dir is the artifact lane's pull target (instinct issue
+//! 020 / Plan 623 T4).
 
 use std::collections::BTreeMap;
 use std::path::PathBuf;
@@ -124,7 +127,7 @@ fn main() {
     let winners = args
         .first()
         .map(PathBuf::from)
-        .unwrap_or_else(|| PathBuf::from("data/demo_specialists"));
+        .unwrap_or_else(|| PathBuf::from("artifacts/cache"));
     let winner_path = winners.join("massive_intent_en_winner_v1.bin");
     let m = load_artifact(&winner_path).unwrap_or_else(|e| {
         eprintln!("load {}: {e}", winner_path.display());

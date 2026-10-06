@@ -1,0 +1,46 @@
+# riir-instinct artifact manifest — schema v0 (riir-reflexer
+# .docs/04_vessel_format/artifact_manifest_spec.md; enforcement:
+# ../riir-ai/scripts/artifact_boundary.py; sync tool: riir-deployer
+# artifact-sync, Plan 623 T7).
+#
+# This is the PUBLIC lane (instinct issue 020 / Plan 623 T4): every row
+# below is class "public" — this manifest carries ZERO protected rows
+# (the workspace gate's law; a protected artifact a public binary
+# consumes is owned by a PRIVATE manifest and pulled into cache/ at
+# serve time). Public rows carry no age envelope, so blake3_cipher ==
+# blake3_plain and cipher_bytes == plain_bytes — the cipher fields are
+# the schema's required identity twins, not a second object.
+#
+# `name` is the LOADABLE filename: the consumer lane's winner bridge
+# constructs `<suite>_winner_v1.bin` (src/specialist.rs winner_bridge)
+# and the fetch lane lands `artifacts/cache/<name>`, so a name without
+# its extension would pull a file the demo lane cannot load (issue 020's
+# acceptance: fresh clone + public pull → demo lane boots).
+#
+# Placement: the canonical bytes live at
+# `artifacts/<kind>/<class>/<name>.<class>.<ext>` (producer + publish
+# staging); pulls land at `artifacts/cache/<name>` (consumer). The two
+# locations coexist by design. The `remote` key is the content address
+# (the blake3 hash) — filenames stay out of remote keys (spec law).
+
+[[artifact]]
+name = "s1mb_choice_winner_v1.bin"
+kind = "weights"
+class = "public"
+env = "none"
+blake3_plain = "f5c583e29f4b11617c433845b1346f4bf76757f7d2093b81f9f1624d4ed288b9"
+blake3_cipher = "f5c583e29f4b11617c433845b1346f4bf76757f7d2093b81f9f1624d4ed288b9"
+plain_bytes = 119817785
+cipher_bytes = 119817785
+remote = ["hf://gist-rs/riir-instinct-artifacts/f5c583e29f4b11617c433845b1346f4bf76757f7d2093b81f9f1624d4ed288b9"]
+
+[[artifact]]
+name = "s1mb_noul_winner_v1.bin"
+kind = "weights"
+class = "public"
+env = "none"
+blake3_plain = "f24566cf9c2d8969b9f4dd155a8ac78314271fbe027ea761b95f87cd47230f6a"
+blake3_cipher = "f24566cf9c2d8969b9f4dd155a8ac78314271fbe027ea761b95f87cd47230f6a"
+plain_bytes = 262222
+cipher_bytes = 262222
+remote = ["hf://gist-rs/riir-instinct-artifacts/f24566cf9c2d8969b9f4dd155a8ac78314271fbe027ea761b95f87cd47230f6a"]

@@ -100,8 +100,11 @@ downstream of it). No game crates, no Python, no candle.
   in via `install_ext_boots` — never a fork of `server.rs`/`serve.rs`/
   `arena.rs` (the 6.3k-line entanglement verdict).
 - **Weights never enter any repo** (`.gitignore` refuses `*.vessel`,
-  `*.bin`, `*.safetensors`, `*.gguf`; `/data/demo_specialists/` joins them
-  at the carve — Phase C mints demo winners into it).
+  `*.bin`, `*.safetensors`, `*.gguf`; the artifact lane's directory law
+  `artifacts/**` + `!artifacts/manifest.toml` joins them — instinct issue
+  020 / Plan 623 T4: payloads are runtime data pulled into
+  `artifacts/cache/` by `scripts/fetch_artifacts.sh`, the tracked
+  manifest is the only file under `artifacts/`).
 - **No-cheat protocol** (riir-reflex Issue 038): train rows only for any
   corpus/weights; select on held-out train; arena test split read once.
 - **Training scope** (amended 2026-10-03, Plan 008 B4): the L1 training

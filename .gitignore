@@ -9,9 +9,12 @@ CLAUDE.md
 *.safetensors
 *.gguf
 
-# The demo winners dir (Phase C mints them; the manifest data/arsenal.toml
-# IS committed — only the minted artifacts are runtime data).
-/data/demo_specialists/
+# The artifact lane (instinct issue 020 / Plan 623 T4): payloads are
+# runtime data, gitignored BY DIRECTORY — artifacts/manifest.toml is the
+# only tracked file (the workspace artifact-boundary law:
+# artifacts/<kind>/<class>/ canonical placement + cache/ pulls).
+artifacts/**
+!artifacts/manifest.toml
 # The L1 training lane's output (Plan 008 B4): the teaching recipes'
 # freshly-trained winner candidates + seals — runtime data, never
 # committed (the *.bin/*.vessel rules already refuse the artifacts; this

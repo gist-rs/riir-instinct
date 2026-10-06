@@ -8,7 +8,8 @@
 //!   probe time needs no dataset dir). One-time + on fixture change.
 //! - default — load the fixture, verify its digest, run the report rows over
 //!   the artifact pairs (`INSTINCT_WINNERS_DIR`, default
-//!   `data/demo_specialists`), print the verdict table and
+//!   `artifacts/cache` — the public fetch lane's pull target), print the
+//!   verdict table and
 //!   write `.benchmarks/022_staleness_probe/` (results.json + REPORT.md).
 //!
 //! REPORT-ONLY: nothing here serves, swaps, or writes any serving state.
@@ -32,7 +33,7 @@ fn datasets_dir() -> PathBuf {
 fn winners_dir() -> PathBuf {
     std::env::var("INSTINCT_WINNERS_DIR")
         .map(PathBuf::from)
-        .unwrap_or_else(|_| PathBuf::from("data/demo_specialists"))
+        .unwrap_or_else(|_| PathBuf::from("artifacts/cache"))
 }
 
 /// The suite builders' text+gold extraction for the probed suites —

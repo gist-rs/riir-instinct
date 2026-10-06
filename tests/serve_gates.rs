@@ -43,12 +43,13 @@ fn datasets_dir() -> PathBuf {
 
 /// The winners dir: `INSTINCT_WINNERS_DIR` over the DEMO default (the
 /// teaching posture — a fresh clone has no winners; every data-gated gate
-/// skips loud). A dev box points the env at its winners dir; the demo
-/// winners are minted at the Phase-C open (Proposal 052).
+/// skips loud). The default is the artifact lane's pull target (instinct
+/// issue 020 / Plan 623 T4): the public fetch
+/// (`scripts/fetch_artifacts.sh`) lands the manifest's rows there.
 fn winners_dir() -> PathBuf {
     std::env::var("INSTINCT_WINNERS_DIR")
         .map(PathBuf::from)
-        .unwrap_or_else(|_| repo_root().join("data/demo_specialists"))
+        .unwrap_or_else(|_| repo_root().join("artifacts/cache"))
 }
 
 fn predictions_path() -> PathBuf {
