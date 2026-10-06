@@ -19,11 +19,14 @@
 //! per request), the `eval_seat` result Vecs (per-question probs —
 //! GONE since reflex issue 070 lead 2: the eval refills the per-server
 //! `eval_frame` instead), the bridge prelude (per-question pos Vecs +
-//! the rendered options), the receipt tier (pick String, options
-//! clone, arm-name String), and the single-question `decide` prelude's
-//! template clones. None of these are waste (every allocation is
-//! exact-size) — the pin exists so the surface can only move DOWN
-//! deliberately (an ownership/scratch refactor) and never UP silently.
+//! the rendered options), and the receipt tier (pick String, options
+//! clone, arm-name String) — the single-question `decide` prelude's
+//! template clones left with issue 022 lead 2 (the take/replace window
+//! moves the three fields out of `self` for the call; the None-options
+//! arm presents the TAKEN labels, zero allocations). None of these are
+//! waste (every allocation is exact-size) — the pin exists so the
+//! surface can only move DOWN deliberately (an ownership/scratch
+//! refactor) and never UP silently.
 //!
 //! Skip-loud posture: `INSTINCT_ENCODER_PARITY=1` (the pay-the-boot
 //! opt-in — the seat preparation pays the minutes-class selection
@@ -49,15 +52,17 @@ const WARMUP: usize = 5;
 const MEASURED: usize = 20;
 
 /// The per-decision allocation ceiling for `decide` (single-question
-/// wire entry). MEASURED-THEN-PINNED: **36** (2026-10-06, issue 022 lead
-/// 1 — the serve loop feeds the criteria keep-checks the wire slice
-/// directly; `rendered_options`' per-request `Vec<String>` left the hot
-/// path, `_into` steady/cold both read **0**, was **42**, issue 070 lead
-/// 2's pin, itself down from **83**/107). Deterministic across runs (36
-/// reproduced ×2). A red means a new allocation class joined the serve
-/// path — or a legitimate code change moved it: re-measure, inventory,
-/// re-pin with the delta named in the commit.
-const PINNED_MAX_DECIDE_ALLOCS: usize = 36;
+/// wire entry). MEASURED-THEN-PINNED: **28** (2026-10-06, issue 022
+/// lead 2 — the decide prelude's template clones left the hot path: the
+/// take/replace window moves `labels`/`qid`/`q_instructions` out of
+/// `self` for the call and `decide_multi` reads the `labels_len` boot
+/// mirror; the sst5 None-options prelude was 1 Vec + 5 label Strings +
+/// 2 Strings = 8, was **36**, issue 022 lead 1's pin, itself down from
+/// **42**/83; `_into` steady/cold still read **0**). Deterministic
+/// across runs (28 reproduced ×3). A red means a new allocation class
+/// joined the serve path — or a legitimate code change moved it:
+/// re-measure, inventory, re-pin with the delta named in the commit.
+const PINNED_MAX_DECIDE_ALLOCS: usize = 28;
 
 static ALLOCS: AtomicUsize = AtomicUsize::new(0);
 static COUNTING: AtomicBool = AtomicBool::new(false);

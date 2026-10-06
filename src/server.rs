@@ -372,6 +372,11 @@ pub struct SuiteServer<const N: usize> {
     /// serve seam so the served fusion IS the registered one.
     oc_armed: bool,
     labels: Vec<String>,
+    /// Mirror of `labels.len()`, fixed at boot: the single-question
+    /// `decide`'s take/replace window empties `self.labels` for the
+    /// duration of the `decide_multi` call, so the count reads inside it
+    /// read this instead.
+    labels_len: usize,
     /// Presented-option key → (seat label idx, artifact class row). The
     /// seat-label sentinel `usize::MAX` marks the artifact-known,
     /// seat-unknown option (NB evidence NaN; the specialist still scores
@@ -768,6 +773,7 @@ impl<const N: usize> SuiteServer<N> {
             oc_armed: posture.cfg.oc_scale > 0.0 && engine.oc().is_some(),
             engine,
             lane: joined_lane,
+            labels_len: seat.labels.len(),
             labels: seat.labels,
             key_map,
             perm,
@@ -844,23 +850,36 @@ impl<const N: usize> SuiteServer<N> {
                 self.suite
             ));
         }
-        // Everything the question slice needs is cloned out of `self` —
-        // decide_multi takes `&mut self` (the engine's eval needs it), so
-        // the slice cannot borrow from the server.
-        let owned_options: Vec<String> = match options {
-            Some(o) => o.to_vec(),
-            None => self.labels.clone(),
-        };
-        let qid = self.qid.clone();
-        let instructions = self.q_instructions.clone();
+        // The take/replace idiom: the template fields leave `self` so the
+        // question slice can borrow them while `decide_multi` runs under
+        // `&mut self` (the eval needs it) — zero allocations where the
+        // clone prelude paid eight. Restored on ALL paths before the
+        // result propagates — no `?` inside the window. While taken,
+        // `self.labels` is empty: decide_multi's count reads go through
+        // the `labels_len` boot mirror. A caller-provided option set still
+        // pays its Vec (the caller's bytes, not self's).
         let kind = self.q_kind;
+        let (labels, qid, instructions) = (
+            std::mem::take(&mut self.labels),
+            std::mem::take(&mut self.qid),
+            std::mem::take(&mut self.q_instructions),
+        );
+        let caller_options: Option<Vec<String>> = options.map(|o| o.to_vec());
+        let presented: &[String] = match &caller_options {
+            Some(v) => v,
+            None => &labels,
+        };
         let q = [ServedQuestion {
             qid: qid.as_str(),
             kind,
             instructions: instructions.as_str(),
-            options: &owned_options,
+            options: presented,
         }];
-        Ok(self.decide_multi(state, &q)?.remove(0))
+        let result = self.decide_multi(state, &q);
+        self.labels = labels;
+        self.qid = qid;
+        self.q_instructions = instructions;
+        result.map(|mut v| v.remove(0))
     }
 
     /// One multi-question decision (Issue 011 — the `decision_wire` law:
@@ -975,7 +994,7 @@ impl<const N: usize> SuiteServer<N> {
                             pos_label.push(li);
                             pos_class.push(cls);
                         }
-                    } else if rendered_len != self.labels.len() {
+                    } else if rendered_len != self.labels_len {
                         // The single-question contract's positional law,
                         // byte-preserved: the presented names never reorder
                         // the fixed rendering, position p takes seat label
@@ -988,7 +1007,7 @@ impl<const N: usize> SuiteServer<N> {
                              space whatever names are presented)",
                             self.suite,
                             rendered_len,
-                            self.labels.len()
+                            self.labels_len
                         ));
                     } else {
                         for (li, &cls) in self.perm.iter().enumerate() {
@@ -1046,7 +1065,7 @@ impl<const N: usize> SuiteServer<N> {
                     return Err(format!(
                         "presented options neither all name seat labels nor match the label count \
                          ({}) — the specialist bridge is undefined; unmatched {unmatched:?}",
-                        self.labels.len()
+                        self.labels_len
                     ));
                 }
             }
