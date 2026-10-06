@@ -197,7 +197,7 @@ reflex `31b11d2`) — board 15 → 9.
 
 - Composition (`src/hybrid.rs`): H1 cascade (reflex fused-gate pass-through
   → top-k prune → specialist over survivors) + H2 prior fusion
-  (p′ᵢ ∝ pᵢ·exp(g·β·mᵢ), the Proposal 013 shape) + the G0 kill-switch arm;
+  (p′ᵢ ∝ pᵢ·exp(g·β·mᵢ), the katgpt-rs Proposal 013 shape) + the G0 kill-switch arm;
   allocation-free hot path (`tests/g4_alloc.rs`); the label join is a
   name-injection asserted both directions (seat⊆artifact).
 - Arena (`src/bin/arena.rs`): the GOAT runner over reflex's ONE-WAY
