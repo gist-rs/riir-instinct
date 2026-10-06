@@ -112,7 +112,7 @@ fn datasets_dir() -> PathBuf {
 fn winners_dir() -> PathBuf {
     std::env::var("INSTINCT_WINNERS_DIR")
         .map(PathBuf::from)
-        .unwrap_or_else(|_| repo_root().join("../riir-train/data/instinct_specialists"))
+        .unwrap_or_else(|_| repo_root().join("artifacts/cache"))
 }
 
 fn skip_loud(why: &str) {
@@ -130,8 +130,20 @@ fn cheap_serve_path_allocation_pin() {
     }
     let datasets = datasets_dir();
     let winners = winners_dir();
-    if !datasets.join(SUITE).is_dir() || !winners_dir().is_dir() {
+    if !datasets.join(SUITE).is_dir() || !winners.is_dir() {
         skip_loud("the sst5 datasets or the winners dir are absent");
+        return;
+    }
+    // The research digest's artifact has no public home: the winner file
+    // arrives via INSTINCT_WINNERS_DIR on a box carrying the trained
+    // specialists. A dir-level check alone would proceed into a digest
+    // refusal (the cache holds the public demo pair, not this row) — the
+    // skip must name the missing file.
+    if !winners.join("sst5_winner_v1.bin").is_file() {
+        skip_loud(
+            "sst5_winner_v1.bin (the research posture's own digest) is absent from the \
+             winners dir — point INSTINCT_WINNERS_DIR at the box's trained-specialists dir",
+        );
         return;
     }
 

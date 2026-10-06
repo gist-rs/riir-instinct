@@ -1,3 +1,30 @@
+## 2026-10-06 — boundary: the fence's two post-split REDs fixed (found during the 020/022 pass; both pre-existing, not introduced by it)
+
+`fence_gate.sh --post-split` read RED on `develop` before this pass — two
+moat references in `*.rs` code surfaces, each introduced by an earlier
+session's landing (verified with `git log -S`):
+
+- `tests/serve_gates.rs:206` — `EncoderLane::from_parts` inside the
+  inline production manifest's typed_decisions comment (introduced
+  `b7225f0`, the ESC escalate grammar lockstep). Reworded token-free
+  ("the lane class's own boot guard") — same meaning, no amnesty row.
+  ⚠ The comment lives inside the byte-pinned `PRODUCTION_MANIFEST_TOML`,
+  so the A6 production digest pin red on the edit (the pin covers bytes,
+  comments included): re-pinned `47fcd95c…`, comment-only delta, zero
+  data rows, no GOAT implication — history noted at the pin.
+- `tests/serve_g4_alloc.rs:115` — the G4 winners-dir DEFAULT was the
+  trained-specialists dir (`93a6498`, issue 021) — the fence law's
+  "must not default to production data paths". Default re-pointed to the
+  public `artifacts/cache` (the 020 convention), and the skip gate gained
+  the file-level check (`sst5_winner_v1.bin`, the research posture's own
+  digest — no public home): boxes carrying the trained specialists opt in
+  via `INSTINCT_WINNERS_DIR`; everyone else skips loud at the named file
+  instead of dying in a digest refusal. Pin intact: 28 reproduced through
+  the new gate (104 s boot, deterministic).
+
+Gates: fence `--post-split` GREEN; serve_gates 24/24; lib 86/86; clippy
+`-D warnings` clean.
+
 ## 2026-10-05 — reflex issue 070 lead 2 adopted: bag serve path 83 → 42 allocs/decision (instinct `9ac84c8`)
 
 The reflex side landed `eval_case_into` + `CaseEvalScratch` (reflex

@@ -203,7 +203,7 @@ budget  = { load = "eager", max_payload_mb = 16 }
 suite   = "typed_decisions"
 digest  = "blake3:7f7a39e1935f8665beaf61106a84a65a0066a73fe3eee4ad7638fda0f776f2f0"   # riir-train Issue 581 / Bench 614's re-mint over the FULL 1200-row train pool
 class   = "hosted_only"
-posture = { arm = "H2", beta = 0.5, n_min = 2.0, tau_n = 2.0 }    # best measured 0.6475 vs A0' 0.5725 (+7.5 pt, T2 LB95 +0.0580 PASS) AND vs the certified A1 0.6300 (+1.75 pt, paired LB95 +0.0062 PASS) AND vs H1 (+1.4 pt, LB95 +0.0034) — Bench 020's full-pool read; G1 PASS (platt 0.0095 vs floor 0.1701). The margin source is the option-conditioned (qid, option) tables (reflex issue 038 T7b + `oc()`, riir-instinct Issue 005's precondition — typed's options are state-field values the domain tables never speak). NO escalate row: the ESC GOAT CLEARED typed (Bench 0059: composed 0.6725 vs 0.6475, +2.50 pt, LB95 +0.0129) but the encoder SERVE lane answers the single-question contract only (EncoderLane::from_parts's own guard; typed is 5 q/case) — the ESC cell stays the ARENA record until the per-question scoring shape exists (the T5 record's structural deferral, not a gate refusal).
+posture = { arm = "H2", beta = 0.5, n_min = 2.0, tau_n = 2.0 }    # best measured 0.6475 vs A0' 0.5725 (+7.5 pt, T2 LB95 +0.0580 PASS) AND vs the certified A1 0.6300 (+1.75 pt, paired LB95 +0.0062 PASS) AND vs H1 (+1.4 pt, LB95 +0.0034) — Bench 020's full-pool read; G1 PASS (platt 0.0095 vs floor 0.1701). The margin source is the option-conditioned (qid, option) tables (reflex issue 038 T7b + `oc()`, riir-instinct Issue 005's precondition — typed's options are state-field values the domain tables never speak). NO escalate row: the ESC GOAT CLEARED typed (Bench 0059: composed 0.6725 vs 0.6475, +2.50 pt, LB95 +0.0129) but the encoder SERVE lane answers the single-question contract only (the lane class's own boot guard; typed is 5 q/case) — the ESC cell stays the ARENA record until the per-question scoring shape exists (the T5 record's structural deferral, not a gate refusal).
 pin_keys = []
 budget  = { load = "eager", max_payload_mb = 16 }
 
@@ -346,9 +346,12 @@ fn arsenal_manifest_bytes_are_pinned_byte_for_byte() {
 /// AG News is Gulli's 2004/05 corpus of 2000+ publishers' snippets with no
 /// grant anywhere). The manifest is now the FIVE permissive sellable rows,
 /// NO escalate row armed. A future Rethink-side manifest edit reds HERE
-/// (the pin travels with the law, not with the repo).
+/// (the pin travels with the law, not with the repo). RE-PINNED 2026-10-06
+/// comment-only (the fence's post-split moat-token reword inside the
+/// typed_decisions row's comment — zero data rows changed, no GOAT
+/// implication; the pin covers the bytes, comments included).
 const PINNED_PRODUCTION_MANIFEST_DIGEST: &str =
-    "blake3:5e1ff4755a889e2474dcac78c31cd5530c04ffb900ef3fdc238e73951d30127e";
+    "blake3:47fcd95c1b0025562d4753bef14e9c859beef68a966ffdf1b6445a6559e15c3b";
 
 #[test]
 fn production_manifest_bytes_are_pinned_byte_for_byte() {
