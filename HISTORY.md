@@ -1,3 +1,37 @@
+## 2026-10-06 — issue-file hygiene: 020 / 022 removed (both fully landed; the residue is by-design contract surface, not actionable leads)
+
+One action per the fleet noise-reduction rule; the files were the last
+copies of records already carried elsewhere (this history + the gate
+pins themselves):
+
+- **020 (artifact-class adoption: public demo lane + serving dirs)** —
+  LANDED `f78a45f` (record `6d601b1`; boundary follow-up `c21984e`):
+  `artifacts/manifest.toml` (schema v0, two public weights rows, zero
+  protected), both demo winners published to
+  `gist-rs/riir-instinct-artifacts` under content-addressed keys
+  (dataset commits `1799a755` choice / `976548f5` noul), the anonymous
+  fetch round-trip proven (`scripts/fetch_artifacts.sh` → `clean — 2
+  public row(s) verified`), 8 defaults re-pointed
+  `data/demo_specialists` → `artifacts/cache`, AGENTS.md/BOUNDARY.md
+  updated. Durable records: AGENTS.md §Build Commands (the fetch lane
+  row) + BOUNDARY.md; the manifest IS the artifact record (BLAKE3 rows
+  per spec law).
+- **022 (the serve path's remaining allocs: the synth case build)** —
+  both leads landed: LEAD 1 `f8ee3a6` (`rendered_options` leaves the
+  serve loop; `_into` steady/cold 6 → 0) and LEAD 2 `1ed58b7` (the
+  single-question `decide` prelude's template clones leave via the
+  take/replace window; decide max 36 → 28, deterministic ×3; record
+  `c617805`). The remaining 28-alloc surface is measured and BY
+  DESIGN: the engine's wire response (`DecisionResponse` +
+  per-question `Answer.probabilities` — katgpt-core's boundary), the
+  receipt's owned probability/score clones and its rendered-options
+  `Vec<String>` (the receipt contract), and the caller-provided-options
+  Vec (caller bytes, not self's). The standing pin is
+  `tests/serve_g4_alloc.rs` (28) — a regression reds there; the issue
+  file carried nothing the pin + this entry do not.
+
+Full narrative of each removed file: `git log --follow -- .issues/<file>`.
+
 ## 2026-10-06 — boundary: the fence's two post-split REDs fixed (found during the 020/022 pass; both pre-existing, not introduced by it)
 
 `fence_gate.sh --post-split` read RED on `develop` before this pass — two
