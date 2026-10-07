@@ -31,7 +31,18 @@ use riir_instinct::server::{
 };
 use riir_instinct::serve_edge::{lane_tag_digest, prepare_lane_seat, LoadCtx, LoadedLane, ServeConfig};
 
-const SUITE: &str = "sst5";
+const SUITE: &str = "heal";
+
+/// The seat vehicle the stub lane boots through (the R7 one-heal-suite
+/// decision: "heal" is the ROUTING key — the manifest row's suite, the
+/// filter, and every client speak it — but `prepare_seat` seats DATASET
+/// suites, and the heal lane has no dataset row). The rerank backend
+/// answers presented options, not a fixed label universe, so the seat is
+/// vestigial above the [`LaneBackend`] seam; the vehicle only satisfies
+/// the boot signature. Borrow sst5's corpus — the same vehicle Bench
+/// 107's spike proved the wire with (`INSTINCT_DATASETS_DIR` must carry
+/// it, the loud-absent refusal below still applies).
+const SEAT_VEHICLE: &str = "sst5";
 
 /// The rerank stub — byte-identical CONTRACT to the gates' `StubRerank`
 /// (pick the second presented option; abstain on an `ABSTAIN`-prefixed
@@ -152,7 +163,9 @@ fn stub_lane_loader(
     suite: &'static str,
     _artifact: Option<&str>,
 ) -> Result<LoadedLane, String> {
-    let seat = prepare_lane_seat(lctx, suite)?;
+    // The seat boots through the VEHICLE suite (see SEAT_VEHICLE); the
+    // lane, the manifest row, and the wire all speak SUITE ("heal").
+    let seat = prepare_lane_seat(lctx, SEAT_VEHICLE)?;
     let row = lctx
         .manifest
         .row(suite)
