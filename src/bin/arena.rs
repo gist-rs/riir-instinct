@@ -2083,6 +2083,12 @@ fn pin_a0_identity(datasets_dir: &Path, runs: &[SuiteRun], suites: &[&str]) -> R
         // reflex's issue-044 probe arm — measurement-only upstream, and
         // never part of the published posture the pin reproduces.
         nli_feature_ab: false,
+        // Reflex Issue 072's `--dump-items` (rethink 028 T1's instrument)
+        // — off: the A0 drift pin asserts BYTE-IDENTITY with the arena's
+        // own A0 answers; `dump_items` is measurement-only (results.json
+        // unchanged) but writes nothing here because the pin persists no
+        // items directory of its own.
+        dump_items: false,
         // reflex's Issue 047 M1 reopen lane (xnli pick/confidence
         // separation) — measurement-only upstream, never the pin's
         // posture. (Field landed by the sibling's in-flight tree.)

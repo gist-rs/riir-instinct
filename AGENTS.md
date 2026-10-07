@@ -17,7 +17,12 @@ born `e263686`, seeded verbatim from `moat/` at `4ffd08f`; fresh root — the
 whole git history stays HERE, `moat/README.md` is the pointer). The seam
 (`server::install_ext_boots` + `LaneBackend` + the `Ext` seat) is the
 plug-in path Rethink uses; `../riir-rethink/bin_hunks/` archives what left
-the bins.
+the bins. The seam's RERANK contract (options in → pick-or-abstain out,
+options echoed exactly as presented) is gated by
+`tests/ext_seat_rerank_gates.rs` — refine Plan 202 R3a's first-customer
+traffic; the gate is its OWN test binary because the install is
+once-per-process and `serve_gates` pins the no-backend refusal of the
+same build.
 Split feature changes: `arena-laya` → **`laya-face`** (the G2 paired face vs
 public reflex's laya lane); `serve-encoder*` and `decstat` are GONE from
 this tree (Rethink-only). Winners default to `artifacts/cache` (env
