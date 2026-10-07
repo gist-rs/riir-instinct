@@ -183,10 +183,11 @@ impl EscalateSpec {
                 return Err(format!("escalate.lcb_floor: {lcb} must be finite and >= 0"));
             }
         }
-        if !self.min_rate.is_finite()
-            || !self.max_rate.is_finite()
-            || !(0.0 < self.min_rate && self.min_rate < self.max_rate && self.max_rate < 1.0)
-        {
+        // The bounds grammar is the SHARED katgpt-core primitive's
+        // predicate (Issue 923 / riir-refine Plan 202 R1 — one definition
+        // consumed by EscalateSpec here AND refine's escalation manifest;
+        // cross-pinned by tests on both sides).
+        if !katgpt_core::escalation_guard::rate_bounds_valid(self.min_rate, self.max_rate) {
             return Err(format!(
                 "escalate.min_rate/max_rate: min {} / max {} must be finite with \
                  0 < min < max < 1 (the GOAT's [15%, 60%] acceptance window)",
