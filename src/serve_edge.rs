@@ -8,10 +8,13 @@
 //! - `GET  /healthz` — liveness + per-suite readiness (lanes load in
 //!   background threads; the listener binds FIRST so the container
 //!   HEALTHCHECK sees a live process during the seat boot).
-//! - `POST /decide` — `{"suite", "state", "options"?}` → the served
-//!   decision + the verifiable receipt (Proposal 014 §4: build
-//!   fingerprint + feature set + BLAKE3(input) + lane id + decision; a
-//!   client running the SAME release can re-derive and check).
+//! - `POST /decide` — `{"suite", "state", "options"?,
+//!   "contract_version"?}` → the served decision + the verifiable
+//!   receipt (Proposal 014 §4: build fingerprint + feature set +
+//!   BLAKE3(input) + lane id + decision; a client running the SAME
+//!   release can re-derive and check). The envelope is the v1
+//!   decision_wire contract — the R7 freeze, reflex issue 074; the
+//!   version law lives on [`CONTRACT_VERSION`].
 //! - `POST /arsenal/release` — `{"suite"}` evicts a loaded LAZY suite
 //!   (the L5 curator's release message — a wire-only server has no AOI
 //!   to observe; Proposal 001 T5). Loopback only.
@@ -72,6 +75,27 @@ const LOADER_STACK: usize = 64 * 1024 * 1024;
 const CONN_STACK: usize = 8 * 1024 * 1024;
 const READ_TIMEOUT: Duration = Duration::from_secs(10);
 const VERSION: &str = env!("CARGO_PKG_VERSION");
+
+/// The decision_wire contract version — the R7 v1 freeze (reflex issue
+/// 074): **1**. The REQUEST carries `contract_version` (an integer);
+/// ABSENT means `1` — every client predating the field is a v1 client by
+/// construction. An unknown version refuses `400
+/// unsupported_contract_version` loud, naming the supported set —
+/// fail-closed, never a guessed dialect — and the refusal PRECEDES the
+/// suite lookup, so it answers even where the suite does not exist. The
+/// RESPONSE echoes the served version on every answer (the single doc,
+/// the multi envelope, and each multi element) so a proxy/lane mismatch
+/// is visible at the client. From here the contract is ADDITIVE-ONLY
+/// forever: v2+ appends optional fields, never a shape change. The
+/// response field set is frozen (issue 074 T2): `suite, arm, lane,
+/// contract_version, options, pick, pick_index, probabilities,
+/// specialist_scores, confidence, escalated, abstained, us, lane_load,
+/// receipt{build, features, input_blake3, decision_blake3, lane}` —
+/// nothing removable; the membership pins live in
+/// `tests/ext_seat_rerank_gates.rs` (the rerank route, runnable on any
+/// box with the seat datasets) and `tests/serve_gates.rs` (the full
+/// ag_news envelope, data-gated).
+pub const CONTRACT_VERSION: u64 = 1;
 /// Plan 426 T6: synth rows enter BEYOND the per-label gold cap — the V5
 /// measured posture (extra-cap 128/label, reflex bench 091).
 const SYNTH_EXTRA_CAP: usize = 128;
@@ -975,6 +999,12 @@ fn decide_edge(stream: &mut TcpStream, srv: &Arc<SrvState>, body: &[u8], cors: O
         /// exclusive with `options` — a body carrying both is ambiguous
         /// and refuses.
         questions: Option<Vec<WireQuestion>>,
+        /// The wire contract version the caller speaks
+        /// ([`CONTRACT_VERSION`]). Absent = 1 (back-compat by
+        /// construction). Typed permissive (`Value`) so a wrong-TYPED
+        /// version (a string, a float) hits the same loud supported-set
+        /// refusal instead of a serde parse error that names nothing.
+        contract_version: Option<serde_json::Value>,
     }
     #[derive(serde::Deserialize)]
     struct WireQuestion {
@@ -996,6 +1026,28 @@ fn decide_edge(stream: &mut TcpStream, srv: &Arc<SrvState>, body: &[u8], cors: O
             return;
         }
     };
+    // The wire contract version (the R7 v1 freeze — reflex issue 074):
+    // fail-closed BEFORE any lane work — an unknown dialect must never
+    // reach a lane, however plausible it looks. The refusal also precedes
+    // the suite lookup, so it answers where the suite does not exist.
+    match req.contract_version {
+        None => {}
+        Some(v) if v.as_u64() == Some(CONTRACT_VERSION) => {}
+        Some(v) => {
+            json_error(
+                stream,
+                "400 Bad Request",
+                "unsupported_contract_version",
+                &format!(
+                    "contract_version {v} is not served here (supported: \
+                     [{CONTRACT_VERSION}]); the contract is additive-only — v2+ \
+                     appends optional fields, never a shape change"
+                ),
+                cors,
+            );
+            return;
+        }
+    }
     if req.options.is_some() && req.questions.is_some() {
         json_error(
             stream,
@@ -1031,6 +1083,53 @@ fn decide_edge(stream: &mut TcpStream, srv: &Arc<SrvState>, body: &[u8], cors: O
                     "bad_field",
                     &format!(
                         "question {id:?}: unknown kind {kind:?} — the wire speaks \"choice\" | \"score\" | \"noul\""
+                    ),
+                    cors,
+                );
+                return;
+            }
+        }
+    }
+    // The presentation-shape contract, enforced at the EDGE (before any
+    // lane): a choice/score question answers a ≥2 presentation, and a
+    // noul question may carry NO options (the fixed [false, true]
+    // rendering is the lane's). A <2 presentation MUST refuse here —
+    // the bag server refuses it downstream, but the ext-seat dispatch
+    // hands questions to the backend UNVALIDATED, and a lane that
+    // indexes the presentation panics the conn thread and POISONS the
+    // slot lock: one malformed body takes the whole suite down for
+    // every subsequent caller. Found by the contract-version gate's
+    // multi-form arm (the contract_version freeze, reflex issue 074).
+    const MIN_PRESENTED: usize = 2;
+    if let Some(v) = &req.options {
+        if v.len() < MIN_PRESENTED {
+            json_error(
+                stream,
+                "422 Unprocessable Entity",
+                "bad_field",
+                &format!(
+                    "need ≥{MIN_PRESENTED} presented options (got {}) — a choice question \
+                     answers a ≥2 presentation; omit `options` to present the suite's own universe",
+                    v.len()
+                ),
+                cors,
+            );
+            return;
+        }
+    }
+    if let Some(questions) = &wire_questions {
+        for (id, kind, options) in questions.iter().map(|(i, k, _, o)| (i, k, o)) {
+            let noul_fixed = *kind == "noul" && options.is_empty();
+            if !noul_fixed && options.len() < MIN_PRESENTED {
+                json_error(
+                    stream,
+                    "422 Unprocessable Entity",
+                    "bad_field",
+                    &format!(
+                        "question {id:?}: need ≥{MIN_PRESENTED} presented options (got {}) — \
+                         a noul question may omit options entirely (the fixed [false, true] \
+                         rendering speaks it)",
+                        options.len()
                     ),
                     cors,
                 );
@@ -1146,6 +1245,7 @@ fn decide_edge(stream: &mut TcpStream, srv: &Arc<SrvState>, body: &[u8], cors: O
                 "suite": d.suite,
                 "arm": d.arm,
                 "lane": "hybrid",
+                "contract_version": CONTRACT_VERSION,
                 "options": d.options,
                 "pick": d.pick,
                 "pick_index": d.pick_index,
@@ -1159,8 +1259,8 @@ fn decide_edge(stream: &mut TcpStream, srv: &Arc<SrvState>, body: &[u8], cors: O
                 "receipt": {
                     "build": fingerprint(),
                     "features": COMPILED_FEATURES,
-                    "input": input_blake3(&req.state, &d.options),
-                    "decision": decision_blake3(&d),
+                    "input_blake3": input_blake3(&req.state, &d.options),
+                    "decision_blake3": decision_blake3(&d),
                     "lane": "hybrid",
                 },
             });
@@ -1182,6 +1282,7 @@ fn decide_edge(stream: &mut TcpStream, srv: &Arc<SrvState>, body: &[u8], cors: O
                         "arm": d.arm,
                         "lane": "hybrid",
                         "question_id": id,
+                        "contract_version": CONTRACT_VERSION,
                         "options": d.options,
                         "pick": d.pick,
                         "pick_index": d.pick_index,
@@ -1195,8 +1296,8 @@ fn decide_edge(stream: &mut TcpStream, srv: &Arc<SrvState>, body: &[u8], cors: O
                         "receipt": {
                             "build": fingerprint(),
                             "features": COMPILED_FEATURES,
-                            "input": input_blake3(&req.state, &d.options),
-                            "decision": decision_blake3(d),
+                            "input_blake3": input_blake3(&req.state, &d.options),
+                            "decision_blake3": decision_blake3(d),
                             "lane": "hybrid",
                         },
                     })
@@ -1205,6 +1306,7 @@ fn decide_edge(stream: &mut TcpStream, srv: &Arc<SrvState>, body: &[u8], cors: O
             let doc = serde_json::json!({
                 "suite": req.suite,
                 "lane": "hybrid",
+                "contract_version": CONTRACT_VERSION,
                 "n_decisions": decisions.len(),
                 "decisions": docs,
             });

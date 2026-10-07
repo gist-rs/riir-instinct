@@ -1635,6 +1635,24 @@ fn http_edge_refusal_and_healthz_faces() {
     assert_eq!(status, 400, "{body}");
     assert!(body.contains("\"code\":\"bad_json\""), "{body}");
 
+    // The wire contract version (the R7 freeze — reflex issue 074): an
+    // unknown version is fail-closed LOUD — 400 naming the supported
+    // set — and a wrong-TYPED version (a string) is the same refusal,
+    // not a parse error. Suite "nope" proves the ordering: a 400 here
+    // (not the 404 unknown_suite) means the contract check precedes the
+    // suite lookup.
+    for ver in ["2", r#""1""#, "0"] {
+        let req_body =
+            format!(r#"{{"suite":"nope","state":"x","contract_version":{ver}}}"#);
+        let (status, body) = http(srv.port, "POST /decide HTTP/1.1", Some(&req_body));
+        assert_eq!(status, 400, "contract_version {ver}: {body}");
+        assert!(
+            body.contains("\"code\":\"unsupported_contract_version\"")
+                && body.contains("supported"),
+            "the refusal must name the code and the supported set: {body}"
+        );
+    }
+
     // 413 for an oversized body.
     let big = format!(
         r#"{{"suite":"ag_news","state":"{}"}}"#,
@@ -1730,13 +1748,49 @@ fn http_decide_happy_path_with_data() {
     } else {
         panic!("ag_news criteria must be an object");
     };
-    let req = serde_json::json!({ "suite": "ag_news", "state": state, "options": options });
+    let req = serde_json::json!({
+        "suite": "ag_news",
+        "state": state,
+        "options": options,
+        // The v1 contract spoken EXPLICITLY (the R7 freeze — the client
+        // names its dialect; the absent-field back-compat arm is pinned
+        // in ext_seat_rerank_gates::unknown_contract_version_refuses_fail_closed).
+        "contract_version": 1
+    });
     let req_body = req.to_string();
     let (status, body) = http(srv.port, "POST /decide HTTP/1.1", Some(&req_body));
     assert_eq!(status, 200, "{body}");
     let doc: serde_json::Value = serde_json::from_str(&body).expect("decide body parses");
     assert_eq!(doc["lane"], "hybrid");
     assert_eq!(doc["suite"], "ag_news");
+    // The contract echo: the served version rides the answer.
+    assert_eq!(doc["contract_version"], 1, "{body}");
+    // The frozen v1 field set (reflex issue 074 T2): MEMBERSHIP — a
+    // silent field removal reds; new fields append without reding (the
+    // additive-only law).
+    let obj = doc.as_object().expect("the decision is an object");
+    for field in [
+        "suite",
+        "arm",
+        "lane",
+        "contract_version",
+        "options",
+        "pick",
+        "pick_index",
+        "probabilities",
+        "specialist_scores",
+        "confidence",
+        "escalated",
+        "abstained",
+        "us",
+        "lane_load",
+        "receipt",
+    ] {
+        assert!(
+            obj.contains_key(field),
+            "the frozen v1 field {field:?} vanished from the response: {body}"
+        );
+    }
     // ag_news serves the manifest's arm (the serving law) — resolved live
     // so the test tracks the manifest, never a hard-coded arm. An A0 lane
     // answers with the full-arity PROBABILITIES and no specialist scores;
@@ -1766,8 +1820,8 @@ fn http_decide_happy_path_with_data() {
     }
     let receipt = &doc["receipt"];
     assert!(receipt["build"].as_str().unwrap().len() == 16, "{body}");
-    assert!(receipt["input"].as_str().unwrap().len() == 64, "{body}");
-    assert!(receipt["decision"].as_str().unwrap().len() == 64, "{body}");
+    assert!(receipt["input_blake3"].as_str().unwrap().len() == 64, "{body}");
+    assert!(receipt["decision_blake3"].as_str().unwrap().len() == 64, "{body}");
     assert!(doc["us"].as_u64().is_some(), "{body}");
 }
 

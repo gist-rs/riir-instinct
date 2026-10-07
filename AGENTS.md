@@ -228,7 +228,15 @@ reflex `31b11d2`) — board 15 → 9.
   answer 503 with the state named); every response carries the decision
   receipt (blake3 build fingerprint + BLAKE3(input) + BLAKE3(canonical
   decision) + lane id); machine-readable refusal `code`s; CORS via
-  `RIIR_INSTINCT_ALLOWED_ORIGIN`, closed by default.
+  `RIIR_INSTINCT_ALLOWED_ORIGIN`, closed by default. The `/decide`
+  envelope is the **v1 decision_wire contract** (the R7 freeze — reflex
+  issue 074): `contract_version` on the request (absent = 1, unknown →
+  400 fail-closed naming the supported set, echoed on every answer), the
+  response field set frozen additive-only, and `<2` presentations refuse
+  422 at the edge before any lane (a malformed body must never poison a
+  lane's slot lock). The contract record:
+  `../riir-reflex/.docs/03_decision_flow/wire_contract_v1.md`; the
+  in-source law: `src/serve_edge.rs` `CONTRACT_VERSION`.
 - Tetris lane (Issue 009, closed out of levers): the b0 champion stands as
   the modelless floor (907.8 / 532.5 pieces); every priced critic lever
   measured or closed; a re-open needs a lever bringing new information

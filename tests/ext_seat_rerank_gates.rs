@@ -81,18 +81,27 @@ impl StubRerank {
             .lock()
             .expect("seen options lock")
             .push(opts.to_vec());
+        // A noul question may present NO options — the fixed [false,
+        // true] rendering is the LANE's (the bag server's decide_multi
+        // law; the stub mirrors the lane side, never the edge's — the
+        // edge only validates the shape and passes the empty slice
+        // through).
+        let noul_fixed = opts.is_empty();
+        let fixed = ["false".to_string(), "true".to_string()];
+        let presented: &[String] = if noul_fixed { &fixed } else { opts };
         let abstained = state.starts_with("ABSTAIN");
-        let pick_index = if abstained { None } else { Some(1.min(opts.len() - 1)) };
+        let pick_index =
+            if abstained { None } else { Some(1.min(presented.len() - 1)) };
         Ok(ServedDecision {
             suite: self.suite,
             arm: "ENC".to_string(),
-            options: opts.to_vec(),
+            options: presented.to_vec(),
             pick_index,
-            pick: pick_index.map(|i| opts[i].clone()),
+            pick: pick_index.map(|i| presented[i].clone()),
             // The specialist's own scores decided (honest about not being
             // a distribution — the ServedDecision doc's shape).
             probabilities: None,
-            specialist_scores: pick_index.map(|_| vec![0.1; opts.len()]),
+            specialist_scores: pick_index.map(|_| vec![0.1; presented.len()]),
             confidence: if abstained { 0.0 } else { 0.9 },
             escalated: true,
             abstained,
@@ -352,9 +361,43 @@ fn rerank_options_reach_the_backend_exactly_presented() {
     assert_eq!(v["pick"].as_str(), Some(candidates[1]));
     assert_eq!(v["abstained"].as_bool(), Some(false));
     assert_eq!(v["arm"].as_str(), Some("ENC"), "the ENC seat answered");
+
+    // The v1 contract echo (the R7 freeze): the served version rides the
+    // answer so a proxy/lane mismatch is visible at the client.
+    assert_eq!(v["contract_version"].as_u64(), Some(1), "{v}");
+    // The frozen v1 field set (reflex issue 074 T2): MEMBERSHIP — a
+    // silent field removal reds here; new fields append without reding
+    // (the additive-only law).
+    let doc = v.as_object().expect("the decision is an object");
+    for field in [
+        "suite",
+        "arm",
+        "lane",
+        "contract_version",
+        "options",
+        "pick",
+        "pick_index",
+        "probabilities",
+        "specialist_scores",
+        "confidence",
+        "escalated",
+        "abstained",
+        "us",
+        "lane_load",
+        "receipt",
+    ] {
+        assert!(
+            doc.contains_key(field),
+            "the frozen v1 field {field:?} vanished from the response: {v}"
+        );
+    }
     assert!(
-        v["receipt"]["decision"].is_string(),
-        "every answer carries its receipt"
+        v["receipt"]["decision_blake3"].as_str().unwrap_or_default().len() == 64,
+        "the decision commitment rides the receipt (blake3 spelling): {v}"
+    );
+    assert!(
+        v["receipt"]["input_blake3"].as_str().unwrap_or_default().len() == 64,
+        "the input commitment rides the receipt (blake3 spelling): {v}"
     );
 }
 
@@ -411,6 +454,120 @@ fn a_rerank_lane_answers_only_presented_options() {
         err.contains("presented options") && err.contains("generate"),
         "the refusal names the rerank contract: {err}"
     );
+}
+
+/// The wire contract version refusal (the R7 v1 freeze — reflex issue
+/// 074 T1): an unknown version is fail-closed LOUD — 400 naming the
+/// supported set — and the refusal PRECEDES the suite lookup (suite
+/// `nope`: a 400 here, never the 404 `unknown_suite`). Deliberately
+/// UNGATED on data: the check fires before any lane exists, so it must
+/// run on every box the edge boots on — a data-gated contract refusal
+/// would be green-by-skip on exactly the fresh-clone boxes most likely
+/// to carry a stale client.
+#[test]
+fn unknown_contract_version_refuses_fail_closed() {
+    let port = shared_edge_port();
+    for ver in ["2", r#""1""#] {
+        let raw = post_decide(
+            port,
+            &format!(r#"{{"suite":"nope","state":"x","contract_version":{ver}}}"#),
+        );
+        assert!(
+            raw.starts_with("HTTP/1.1 400"),
+            "an unknown contract_version {ver} must refuse 400: {raw}"
+        );
+        let v = json(body_of(&raw));
+        assert_eq!(
+            v["code"].as_str(),
+            Some("unsupported_contract_version"),
+            "the refusal code: {v}"
+        );
+        let err = v["error"].as_str().unwrap_or_default();
+        assert!(
+            err.contains("supported") && err.contains('1'),
+            "the refusal must name the supported set: {err}"
+        );
+    }
+    // The absent field stays a v1 client by construction: the same body
+    // WITHOUT the field passes the contract check and reaches the suite
+    // lookup — the 404 `unknown_suite` spelling is byte-unchanged
+    // (back-compat by construction, pinned).
+    let raw = post_decide(port, r#"{"suite":"nope","state":"x"}"#);
+    assert!(
+        raw.starts_with("HTTP/1.1 404"),
+        "the absent field must read as v1 and reach the suite lookup: {raw}"
+    );
+    assert!(
+        body_of(&raw).contains("unknown_suite"),
+        "the absent-field body must fail on the suite, never the contract: {raw}"
+    );
+}
+
+/// The presentation-shape contract at the EDGE (the crash-class fix): a
+/// <2 presented-option body — single form `"options":[]`/1-wide, or a
+/// multi-form choice carrying <2 — refuses 422 `bad_field` BEFORE the
+/// suite lookup. Before this pin the body reached the lane unvalidated
+/// (the ext-seat dispatch) and a lane indexing the presentation panicked
+/// the conn thread and POISONED the slot lock — one malformed body took
+/// the whole suite down. Data-independent by construction (the refusal
+/// precedes any lane work), so it runs ungated like the version gate.
+#[test]
+fn a_sub2_presentation_refuses_at_the_edge() {
+    let port = shared_edge_port();
+    for body in [
+        r#"{"suite":"nope","state":"x","options":[]}"#,
+        r#"{"suite":"nope","state":"x","options":["lonely"]}"#,
+        r#"{"suite":"nope","state":"x","questions":[{"id":"q1","kind":"choice","options":[]}]}"#,
+    ] {
+        let raw = post_decide(port, body);
+        assert!(
+            raw.starts_with("HTTP/1.1 422"),
+            "a <2 presentation must refuse 422 at the edge: {body} → {raw}"
+        );
+        let v = json(body_of(&raw));
+        assert_eq!(v["code"].as_str(), Some("bad_field"), "{v}");
+        assert!(
+            v["error"].as_str().unwrap_or_default().contains("presented options"),
+            "the refusal names the presentation law: {v}"
+        );
+    }
+    // The noul exemption: an EMPTY noul presentation is the fixed
+    // [false, true] rendering — legal at the edge (the lane renders
+    // it; the multi-form echo gate answers it end to end).
+    let raw = post_decide(
+        port,
+        r#"{"suite":"nope","state":"x","questions":[{"id":"q1","kind":"noul"}]}"#,
+    );
+    assert!(
+        raw.starts_with("HTTP/1.1 404"),
+        "the noul-empty presentation passes the shape check and reaches the suite lookup: {raw}"
+    );
+}
+
+/// The multi-question form (the decision_wire law — one state, ALL
+/// questions answered in one call) echoes the contract version at the
+/// envelope AND on each decision element — the freeze covers both
+/// answer shapes (reflex issue 074 T1).
+#[test]
+fn contract_version_echoes_on_the_multi_form() {
+    if !data_present() {
+        eprintln!("SKIP loud: datasets absent (the seat is the gate's vehicle)");
+        return;
+    }
+    let port = shared_edge_port();
+    let body = concat!(
+        r#"{"suite":"sst5","state":"multi contract","contract_version":1,"questions":"#,
+        r#"[{"id":"q1","kind":"choice","options":["a","b"]},{"id":"q2","kind":"noul"}]}"#
+    );
+    let raw = post_decide_until_ready(port, body);
+    assert!(raw.starts_with("HTTP/1.1 200"), "{raw}");
+    let v = json(body_of(&raw));
+    assert_eq!(v["contract_version"].as_u64(), Some(1), "{v}");
+    let elems = v["decisions"].as_array().expect("decisions array");
+    assert_eq!(elems.len(), 2, "{v}");
+    for d in elems {
+        assert_eq!(d["contract_version"].as_u64(), Some(1), "{d}");
+    }
 }
 
 /// The lazy posture itself: the FIRST decision on a lazy lane answers
