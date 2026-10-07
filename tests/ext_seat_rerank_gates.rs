@@ -570,6 +570,179 @@ fn contract_version_echoes_on_the_multi_form() {
     }
 }
 
+// ── the R5 per-domain LRU policy (Plan 202; INSTINCT_LRU_CAPACITY) ────
+
+/// The 2-suite lazy edge the LRU cycle gates against: two synthetic
+/// suites ("lru-a", "lru-b") over the sst5 VEHICLE (the loader maps any
+/// row's suite to the vehicle seat — the routing key is data, the R7
+/// law), both rows lazy, stub backend, capacity 1 via the env knob the
+/// edge reads LIVE at every lazy trigger. Own port (a second OnceLock
+/// edge in this binary — install-once is per process, and the stub is
+/// already the installed backend).
+fn lru_edge_port() -> (u16, &'static str) {
+    static PORT: OnceLock<(u16, &'static str)> = OnceLock::new();
+    *PORT.get_or_init(|| {
+        install_stub_once();
+        let row = |suite: &str| {
+            format!(
+                "[[vessel]]\nsuite   = \"{suite}\"\ndigest  = \"blake3:{}\"\nclass   = \
+                 \"hosted_only\"\nfile    = \"rerank_stub_head.bin\"\nposture = {{ arm = \"ENC\" \
+                 }}\npin_keys = []\nbudget  = {{ load = \"lazy\", max_payload_mb = 16 }}\n",
+                "0".repeat(64)
+            )
+        };
+        let text = format!("{}{}", row("lru-a"), row("lru-b"));
+        let digest = ArsenalManifest::digest_of(&text);
+        let manifest = std::sync::Arc::new(ArsenalManifest::parse(&text).expect("manifest parses"));
+        let probe = std::net::TcpListener::bind("127.0.0.1:0").expect("probe bind");
+        let port = probe.local_addr().expect("probe addr").port();
+        drop(probe);
+        // The vehicle loader: every row seats through sst5 (the stub
+        // never reads the seat — only the boot signature consumes it).
+        fn vehicle_loader(
+            lctx: &LoadCtx<'_>,
+            suite: &'static str,
+            _artifact: Option<&str>,
+        ) -> Result<LoadedLane, String> {
+            let seat = riir_instinct::serve_edge::prepare_lane_seat(lctx, "sst5")?;
+            let row = lctx
+                .manifest
+                .row(suite)
+                .ok_or_else(|| format!("suite {suite} is not in the arsenal manifest"))?;
+            let digest = riir_instinct::serve_edge::lane_tag_digest(row, suite);
+            let server = riir_instinct::server::AnySuiteServer::boot_bytes(
+                suite,
+                seat,
+                b"rerank-stub-head-bytes",
+                lctx.manifest,
+            )?;
+            Ok(LoadedLane { server, artifact_digest: digest, on_install: None })
+        }
+        let cfg = ServeConfig {
+            bind: format!("127.0.0.1:{port}"),
+            datasets_dir: datasets_dir().to_string_lossy().into_owned(),
+            winners_dir: "unused-stub-loader-reads-no-artifact".to_string(),
+            synth_corpus_dir: None,
+            arsenal_path: None,
+            suite_filter: None,
+            cors_origin: Some(vec![]),
+            prevalidated_manifest: Some((manifest, digest, "lru gate".into())),
+            lane_loader: Some(vehicle_loader),
+        };
+        std::thread::Builder::new()
+            .name("lru-edge".into())
+            .spawn(move || {
+                let _ = riir_instinct::serve_edge::run(cfg);
+            })
+            .expect("edge thread");
+        let deadline = Instant::now() + Duration::from_secs(10);
+        loop {
+            if TcpStream::connect(("127.0.0.1", port)).is_ok() {
+                break;
+            }
+            assert!(Instant::now() < deadline, "the lru edge never opened port {port}");
+            std::thread::sleep(Duration::from_millis(50));
+        }
+        (port, "INSTINCT_LRU_CAPACITY")
+    })
+}
+
+fn healthz_state(port: u16, suite: &str) -> String {
+    // One GET /healthz exchange (the rerank gates' POST helper is
+    // decide-shaped; this reads the suite states).
+    let mut s = TcpStream::connect(("127.0.0.1", port)).expect("connect");
+    s.set_read_timeout(Some(Duration::from_secs(10))).ok();
+    s.write_all(b"GET /healthz HTTP/1.1\r\nConnection: close\r\n\r\n")
+        .expect("write");
+    let mut raw = String::new();
+    let _ = s.read_to_string(&mut raw);
+    let body = raw.split_once("\r\n\r\n").map(|(_, b)| b).unwrap_or("");
+    assert!(raw.starts_with("HTTP/1.1 200"), "{raw}");
+    let v = json(body);
+    v["suites"][suite]["state"]
+        .as_str()
+        .unwrap_or("absent")
+        .to_string()
+}
+
+/// The R5 cycle over the wire: capacity 1, two lazy suites — a loads,
+/// b's first decision EVICTS a (the LRU resident), a's next decision
+/// re-triggers (503 window) and evicts b in turn. The eviction rides the
+/// SAME release machinery (the tag kept, the reload installs
+/// Idempotent) — the policy is a decision, not new machinery (the R5
+/// law). Data-gated: the sst5 vehicle seats from the datasets.
+#[test]
+fn lru_capacity_evicts_the_least_recently_used_lane() {
+    if !data_present() {
+        eprintln!("SKIP loud: datasets absent (the seat is the gate's vehicle)");
+        return;
+    }
+    let (port, cap_var) = lru_edge_port();
+    // Set BEFORE the first lazy trigger — the edge reads the knob live,
+    // but the FIRST decision is the cleanest observation point.
+    std::env::set_var(cap_var, "1");
+
+    // a loads (resident 0 → 1, nothing to evict).
+    let raw = post_decide_until_ready(
+        port,
+        r#"{"suite":"lru-a","state":"a warm","options":["x","y"]}"#,
+    );
+    assert!(raw.starts_with("HTTP/1.1 200"), "a must load and answer: {raw}");
+    assert_eq!(healthz_state(port, "lru-a"), "ready");
+
+    // b's first decision evicts a (the only resident, a is LRU) then
+    // loads — the 503 window covers the load, not the eviction.
+    let raw = post_decide_until_ready(
+        port,
+        r#"{"suite":"lru-b","state":"b arrives","options":["x","y"]}"#,
+    );
+    assert!(raw.starts_with("HTTP/1.1 200"), "b must load and answer: {raw}");
+    assert_eq!(
+        healthz_state(port, "lru-a"),
+        "unloaded",
+        "the LRU resident (a) must be evicted for b"
+    );
+    assert_eq!(healthz_state(port, "lru-b"), "ready");
+
+    // a's return: b is now the LRU resident — the cycle repeats. The
+    // FIRST post is the 503 (re-trigger), the retry settles ready.
+    let first = post_decide(
+        port,
+        r#"{"suite":"lru-a","state":"a returns","options":["x","y"]}"#,
+    );
+    assert!(
+        first.starts_with("HTTP/1.1 503"),
+        "the evicted lane must re-trigger the load window: {first}"
+    );
+    let raw = post_decide_until_ready(
+        port,
+        r#"{"suite":"lru-a","state":"a returns","options":["x","y"]}"#,
+    );
+    assert!(raw.starts_with("HTTP/1.1 200"), "{raw}");
+    assert_eq!(
+        healthz_state(port, "lru-b"),
+        "unloaded",
+        "b must now be the LRU eviction"
+    );
+    assert_eq!(healthz_state(port, "lru-a"), "ready");
+
+    // Recency, not order, decides: touching b AGAIN (a second decision
+    // while a is resident would evict... a is resident now — a decision
+    // on b must NOT evict b itself and must evict a).
+    let raw = post_decide_until_ready(
+        port,
+        r#"{"suite":"lru-b","state":"b returns","options":["x","y"]}"#,
+    );
+    assert!(raw.starts_with("HTTP/1.1 200"), "{raw}");
+    assert_eq!(
+        healthz_state(port, "lru-a"),
+        "unloaded",
+        "recency decides: a (older touch) must be the eviction, never the incoming b"
+    );
+
+    std::env::remove_var(cap_var);
+}
+
 /// The lazy posture itself: the FIRST decision on a lazy lane answers
 /// 503 `loading` and TRIGGERS the load — the gate that the retry loop
 /// above rides. Pinned directly so the rerank lane's load window stays

@@ -29,7 +29,9 @@
 //! exact string `"0"` disarms ([`hoard_gate_armed_for`]) — a typo must
 //! never silently restore a gate.
 
-use std::sync::Mutex;
+use std::sync::atomic::{AtomicU64, Ordering};
+use std::sync::{Mutex, OnceLock};
+use std::time::Instant;
 
 use katgpt_core::set_admission::{CertificateReport, SetAdmissionConfig, certify_set};
 
@@ -413,6 +415,19 @@ impl<L> LaneState<L> {
 pub struct LaneSlot<L> {
     pub suite: &'static str,
     pub state: Mutex<LaneState<L>>,
+    /// Monotonic last-use stamp (process-relative millis; [`Self::touch`])
+    /// — the R5 LRU policy's recency input, touched at the lazy trigger
+    /// and every Ready decide. 0 = never used (the boot state).
+    last_used: AtomicU64,
+}
+
+/// The process epoch every [`LaneSlot::touch`] stamps against — one
+/// [`Instant`] at first use, monotonic, cross-thread as plain millis
+/// (LRU needs ORDER, never wall-clock meaning). PUBLIC: the policy's log
+/// half (serve_edge) reads the same epoch for idle-time rendering.
+pub fn process_epoch_ms() -> u64 {
+    static EPOCH: OnceLock<Instant> = OnceLock::new();
+    EPOCH.get_or_init(Instant::now).elapsed().as_millis() as u64
 }
 
 /// What [`LaneSlot::install_ready`] did.
@@ -452,18 +467,40 @@ impl<L> LaneSlot<L> {
         Self {
             suite,
             state: Mutex::new(state),
+            last_used: AtomicU64::new(0),
         }
+    }
+
+    /// Stamp + read the recency input (the R5 LRU policy). Relaxed is
+    /// enough: a stale read only risks evicting a JUST-touched slot by
+    /// one scheduler tick, and the policy is best-effort by contract.
+    /// The stored value is `epoch_ms + 1` — `0` stays the unambiguous
+    /// never-used sentinel (a first-millisecond touch would otherwise
+    /// collide with it).
+    pub fn touch(&self) -> u64 {
+        let t = process_epoch_ms().saturating_add(1);
+        self.last_used.store(t, Ordering::Relaxed);
+        t
+    }
+
+    /// The last [`Self::touch`] value (0 = never used). ≥1 after any use;
+    /// the raw epoch skew of +1 is noise at LRU granularity.
+    pub fn last_used_ms(&self) -> u64 {
+        self.last_used.load(Ordering::Relaxed)
     }
 
     /// The lazy trigger (T5): `Unloaded → Loading` exactly once. `false`
     /// when the slot is in any other state (the caller then answers from
-    /// it). The loader thread is the caller's to spawn.
+    /// it). The loader thread is the caller's to spawn. A load IS a use —
+    /// the win stamps recency.
     pub fn begin_lazy_load(&self) -> bool {
         let mut st = self.state.lock().expect("slot lock");
         match &*st {
             LaneState::Unloaded { applied } => {
                 let tag = *applied;
                 *st = LaneState::Loading { applied: tag };
+                drop(st);
+                self.touch();
                 true
             }
             _ => false,
@@ -561,6 +598,35 @@ mod tests {
         for (i, x) in v.iter().enumerate().skip(2) {
             assert_eq!(*x, 0.0, "dim {i} untouched");
         }
+    }
+
+    // ── the R5 LRU recency input ────────────────────────────────────────
+
+    #[test]
+    fn recency_stamps_are_monotonic_and_ordered() {
+        let a: LaneSlot<()> = LaneSlot::new("a", LaneState::Unloaded { applied: EpochTag::GENESIS });
+        let b: LaneSlot<()> = LaneSlot::new("b", LaneState::Unloaded { applied: EpochTag::GENESIS });
+        assert_eq!(a.last_used_ms(), 0, "boot state = never used");
+        let ta = a.touch();
+        let tb = b.touch();
+        assert!(tb >= ta, "stamps are process-monotonic");
+        assert_eq!(a.last_used_ms(), ta);
+        assert_eq!(b.last_used_ms(), tb);
+        std::thread::sleep(std::time::Duration::from_millis(2));
+        assert!(
+            a.touch() > ta,
+            "a later touch moves the stamp forward (the LRU order changes)"
+        );
+    }
+
+    #[test]
+    fn lazy_trigger_touches_recency_exactly_once_per_load() {
+        let s: LaneSlot<()> = LaneSlot::new("s", LaneState::Unloaded { applied: EpochTag::GENESIS });
+        assert!(s.begin_lazy_load(), "the first trigger wins");
+        let t = s.last_used_ms();
+        assert!(t > 0, "a load IS a use — the win stamps recency");
+        assert!(!s.begin_lazy_load(), "the second trigger loses (Loading)");
+        assert_eq!(s.last_used_ms(), t, "a losing trigger does not touch");
     }
 
     #[test]

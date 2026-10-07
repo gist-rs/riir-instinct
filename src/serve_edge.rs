@@ -29,7 +29,13 @@
 //! window covers it; `eager` rows keep the boot-load posture. The
 //! Vendi hoarding gate (katgpt-core `set_admission`) refuses a lazy or
 //! swapped load that pushes the loaded set past the certificate
-//! (`RIIR_INSTINCT_HOARD_GATE=0` disarms — the exact literal). The admin
+//! (`RIIR_INSTINCT_HOARD_GATE=0` disarms — the exact literal). The R5
+//! per-domain LRU policy (`INSTINCT_LRU_CAPACITY`, resident-lane budget;
+//! 0/unset = off) rides the SAME lazy trigger: while residency is
+//! at/over capacity, the least-recently-used Ready LAZY lane is released
+//! (the T5 release machinery, tag kept, reload `Idempotent`) — best-
+//! effort, never a refusal; eager rows are never evicted (posture-as-
+//! data), and the hoard gate stays the only admission control. The admin
 //! endpoints' recorded auth posture is LOOPBACK-ONLY: this server has no
 //! token surface today, so anything off the loopback interface is
 //! refused (403 `remote_forbidden`); the operator/curator calls from the
@@ -589,6 +595,89 @@ fn hoard_gate(
         }
         Err(r) => Err(r.to_string()),
     }
+}
+
+/// The R5 per-domain LRU capacity knob (`INSTINCT_LRU_CAPACITY`): the
+/// resident-lane budget the lazy lanes evict against. `0`/unset = OFF —
+/// the byte-identical default posture (residency unbounded, the hoard
+/// gate remains the only admission control). Read LIVE at every lazy
+/// trigger (the same posture as the hoard kill-switch): a deploy turns
+/// the policy on without a rebuild.
+fn lru_capacity() -> usize {
+    std::env::var("INSTINCT_LRU_CAPACITY")
+        .ok()
+        .and_then(|v| v.trim().parse::<usize>().ok())
+        .unwrap_or(0)
+}
+
+/// The R5 LRU policy, best-effort by contract: while the resident lazy
+/// set is at/over [`lru_capacity`], [`LaneSlot::release`] the
+/// least-recently-used evictable lane to make room for `incoming`.
+/// Evictable = Ready AND a lazy manifest row (posture-as-data — eager
+/// rows are boot-critical and refuse release at the wire, so the policy
+/// never side-doors that law) AND not the incoming suite itself. When
+/// nothing is evictable the load proceeds anyway — the policy bounds a
+/// resource, it never refuses a decision; the hoard gate stays the only
+/// admission control (orthogonal bounds: Vendi judges DIVERSITY, the LRU
+/// policy bounds RESIDENCY). Returns the eviction count (logged per
+/// lane; the released tag is kept, so the re-load installs `Idempotent`).
+fn lru_make_room(state: &SrvState, incoming: &str, capacity: usize) -> usize {
+    let mut evicted = 0;
+    loop {
+        // (last_used, slot index) of every candidate — Ready, lazy row,
+        // not the incoming suite. Slot order breaks recency ties (the
+        // registry is the stable order).
+        let candidates: Vec<(u64, usize)> = state
+            .slots
+            .iter()
+            .enumerate()
+            .filter(|(_, s)| {
+                s.suite != incoming
+                    && state
+                        .ctx
+                        .manifest
+                        .row(s.suite)
+                        .map(|r| r.budget.load.as_str() == "lazy")
+                        .unwrap_or(false)
+                    && matches!(&*s.state.lock().expect("slot lock"), LaneState::Ready { .. })
+            })
+            .map(|(i, s)| (s.last_used_ms(), i))
+            .collect();
+        if candidates.len() < capacity {
+            return evicted;
+        }
+        let Some((_, victim_idx)) = candidates.iter().copied().min_by_key(|(t, i)| (*t, *i))
+        else {
+            return evicted;
+        };
+        let victim = &state.slots[victim_idx];
+        match victim.release() {
+            Ok(crate::arsenal_ops::ReleaseOutcome::Released) => {
+                evicted += 1;
+                eprintln!(
+                    "[riir-instinct] arsenal: LRU evicted {:?} (idle {} ms, resident {}/{}, \
+                     making room for {incoming:?}; epoch kept — the next decision reloads)",
+                    victim.suite,
+                    process_elapsed_since(victim.last_used_ms()),
+                    candidates.len(),
+                    capacity,
+                );
+            }
+            _ => return evicted,
+        }
+    }
+}
+
+/// Human-readable idle time for the LRU log line (millis since the
+/// stamp; a 0 stamp = never used → "never").
+fn process_elapsed_since(stamp_ms: u64) -> String {
+    if stamp_ms == 0 {
+        return "never".to_string();
+    }
+    // The stored stamp carries the +1 never-used offset — strip it so the
+    // log line renders true elapsed millis (a 0 raw epoch renders 0 ms).
+    let now = crate::arsenal_ops::process_epoch_ms();
+    format!("{} ms", now.saturating_sub(stamp_ms - 1))
 }
 
 /// Spawn a lane loader thread (boot for eager rows; the first decision
@@ -1159,8 +1248,15 @@ fn decide_edge(stream: &mut TcpStream, srv: &Arc<SrvState>, body: &[u8], cors: O
     // The lazy trigger (Proposal 001 T5): an Unloaded slot transitions to
     // Loading ATOMICALLY exactly once (a second concurrent decide sees
     // Loading and waits like the boot window); the winner spawns the
-    // loader. The 503 covers the load window.
+    // loader. The 503 covers the load window. Before spawning, the R5
+    // LRU policy makes room — evicting the least-recently-used lazy lane
+    // while residency is at/over `INSTINCT_LRU_CAPACITY` (best-effort,
+    // never a refusal; 0 = off).
     if slot.begin_lazy_load() {
+        let capacity = lru_capacity();
+        if capacity > 0 {
+            lru_make_room(srv, &req.suite, capacity);
+        }
         eprintln!(
             "[riir-instinct] arsenal: lazy load triggered for {:?} (first decision)",
             req.suite
@@ -1206,6 +1302,10 @@ fn decide_edge(stream: &mut TcpStream, srv: &Arc<SrvState>, body: &[u8], cors: O
         }
         LaneState::Unloaded { .. } => unreachable!("the lazy trigger above consumed Unloaded"),
     };
+    // A served decision IS a use (the R5 LRU recency input).
+    if lane_load == "ready" {
+        slot.touch();
+    }
     // The contract dispatch (Issue 011): a `questions` body is the
     // multi-question form; the legacy `options`/bare body stays the
     // single-question form byte-for-byte. The responses share one shape
