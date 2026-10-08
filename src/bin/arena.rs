@@ -635,14 +635,27 @@ fn presented_keys(q: &SuiteQuestion) -> Vec<String> {
     if let Some(obj) = q.criteria.as_object() {
         obj.keys().cloned().collect()
     } else if let Some(levels) = q.criteria.as_array() {
-        // Plan 010 (s1mb_score): the score space speaks the LEVEL INDEX
-        // strings — reflex's option_key_union spelling for array criteria
-        // (`i.to_string()` over the presented levels), NOT the criteria
-        // values. The old value-spelling read no seat label ever named
-        // (a value like "1.0" vs the union's "1"), which would unseat or
-        // panic the bridge the first time a specialist artifact existed
-        // for a score suite; s1mb_score is the first one.
-        (0..levels.len()).map(|i| i.to_string()).collect()
+        // Two array spellings, decided by the ELEMENT kind (the seat
+        // label space the consumer resolves against):
+        // - STRING levels carry their VALUE (typed_decisions' score
+        //   criteria: the level descriptions — the typed winner
+        //   artifact's label universe IS those value strings, seated
+        //   and served that way at Benches 019+020; spelling digits
+        //   here unseats the specialist — the Plan-010 digit branch
+        //   measured that regression 2026-10-08).
+        // - NUMERIC (and any non-string) levels spell the LEVEL INDEX
+        //   digit — Plan 010 (s1mb_score): reflex's option_key_union
+        //   spelling for array criteria (`i.to_string()` over the
+        //   presented levels), NOT the criteria values (a value like
+        //   "1.0" names no union key; the union carries "1").
+        levels
+            .iter()
+            .enumerate()
+            .map(|(i, v)| match v {
+                serde_json::Value::String(s) => s.clone(),
+                _ => i.to_string(),
+            })
+            .collect()
     } else {
         Vec::new()
     }
@@ -2041,6 +2054,15 @@ fn pin_a0_identity(datasets_dir: &Path, runs: &[SuiteRun], suites: &[&str]) -> R
         // its default, so the pin mirrors it (`--no-gate-fit-calibrated`
         // is the old measurement posture).
         gate_fit_calibrated: true,
+        // Issue 079 (reflex `4ad25df`): `true` = the shipped default — the
+        // INDEX-ANCHORED route arm (the blind `k == N` fill became a NAME
+        // check; typed reads content-bound at this default, bench 131's
+        // 0.5630 row). `false` is the A/B instrument, not a posture.
+        kn_route: true,
+        // Issue 079 (reflex bench 131): the drafter-only correction mode —
+        // `Off` = shipped scores (the 0.5630 default; `per_byte` measured
+        // 0.5700 opt-in and is NOT the shipped posture).
+        drafter_fix: riir_reflex::engine::DrafterFix::Off,
         laya_python: false,
         gliner: false,
         // The bekko JSONL-oracle comparison lane (reflex Bench 103) — off:
@@ -2051,6 +2073,11 @@ fn pin_a0_identity(datasets_dir: &Path, runs: &[SuiteRun], suites: &[&str]) -> R
         // their served model is a comparison lane, never the pin's
         // subject.
         openthai: false,
+        // Reflex Issues 073/078 — the Drex DLM and LiquidAI d1 comparison
+        // lanes, both default-off measurement-only upstream; never the
+        // pin's subject. (Fields landed by the sibling's engine change.)
+        drex: false,
+        d1: false,
         // The Cloudflare Clef comparison lane (reflex plan 011 Phase A) —
         // off: a comparison lane, never the A0 drift pin's subject.
         clef: false,
