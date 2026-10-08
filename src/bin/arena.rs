@@ -3,8 +3,10 @@
 //! suites.
 //!
 //! Per suite, the arena prepares the byte-identical question seat (reflex
-//! harness), fits the DEPLOYED modelless posture (the Bench 051 protocol —
-//! head-select + nb-select, registry caps), builds the seat engine, and
+//! harness), fits the DEPLOYED modelless posture (the CURRENT published
+//! posture — nb-select + oc-select + ridge-select, registry caps, head-select
+//! retired at the 10-01 re-basis, + the issue-079 per_byte drafter lever;
+//! Bench 0059's re-baseline), builds the seat engine, and
 //! loads the sealed winner artifact. Then every arm runs — A0 reflex, A1
 //! instinct, H1 cascade, and the H2 prior fusion grid (β·n_min·τ_n) —
 //! first on the cal front, where the pre-registration instrument (Pareto
@@ -1104,9 +1106,15 @@ fn run_suite_n<const N: usize>(
     winners_dir: &Path,
     top_k: usize,
 ) -> Result<SuiteRun, String> {
-    // The CURRENT PUBLISHED reflex posture (Issue 008 T1's re-baseline):
-    // head-select + nb-select + oc-select + ridge-select, registry caps,
-    // genome off. `ridge_select` is the cal-selected NBSVM-ridge lane
+    // The CURRENT PUBLISHED reflex posture (Issue 008 T1's re-baseline,
+    // amended twice since): nb-select + oc-select + ridge-select, registry
+    // caps, genome off, head-select RETIRED, + the issue-079 per_byte
+    // drafter lever. HEAD: the site's rows are generated head-off since
+    // the 10-01 full-pool re-basis (reflex issue 058, site `d750175`) —
+    // head_selection is null on every published row and the lever is
+    // outcome-load-bearing only on banking77 (0.8260 head@1 vs the
+    // published 0.842); the bench-0059 full-pin run caught the drift the
+    // focused 0057/0058 runs could not see. `ridge_select` is the cal-selected NBSVM-ridge lane
     // (reflex Bench 057) and `oc_select` the cal-selected option-
     // conditioned lane (reflex issue 038 T7b): both run their selection
     // on every suite and DECLINE at the arming bar where the cal slice
@@ -1123,8 +1131,14 @@ fn run_suite_n<const N: usize>(
     // 0.3300 against the published 0.4655 (the capped-pool row; the
     // Issue-052 extension moved the published modelless row to 0.5725
     // — reflex Bench 078) — the oc-armed posture is what published.)
+    // The issue-079 re-baseline: the published typed row carries the
+    // per_byte drafter lever (reflex Bench 131 cell 2 + the site
+    // republish `d3aeeae` — typed the only mover, every other suite
+    // digit-identical), so the seat arms it; without it the pin's site
+    // half reds (run() 0.5630 ≠ published 0.5700) exactly as its own
+    // remedy message says ("re-baseline the knobs").
     let knobs = PostureKnobs {
-        head_select: true,
+        head_select: false,
         nb_select: true,
         oc_select: true,
         ridge_select: true,
@@ -1136,14 +1150,16 @@ fn run_suite_n<const N: usize>(
         // records publish).
         gate_fit_selection: false,
         gate_distance_only: false,
+        drafter_fix: riir_reflex::engine::DrafterFix::PerByte,
     };
     let posture = fit_posture::<N>(name, &seat, &knobs)?;
     eprintln!(
-        "  posture: cap {} · head {:.2} · nb {:.2} · ridge {:.2} · gates {:.3}/{:.3}",
+        "  posture: cap {} · head {:.2} · nb {:.2} · ridge {:.2} · fix {} · gates {:.3}/{:.3}",
         posture.effective_cap,
         posture.cfg.head_scale,
         posture.cfg.nb_scale,
         posture.cfg.ridge_scale,
+        posture.cfg.drafter_fix.as_str(),
         posture.score_threshold,
         posture.distance_threshold
     );
@@ -2059,10 +2075,13 @@ fn pin_a0_identity(datasets_dir: &Path, runs: &[SuiteRun], suites: &[&str]) -> R
         // check; typed reads content-bound at this default, bench 131's
         // 0.5630 row). `false` is the A/B instrument, not a posture.
         kn_route: true,
-        // Issue 079 (reflex bench 131): the drafter-only correction mode —
-        // `Off` = shipped scores (the 0.5630 default; `per_byte` measured
-        // 0.5700 opt-in and is NOT the shipped posture).
-        drafter_fix: riir_reflex::engine::DrafterFix::Off,
+        // Issue 079 (reflex bench 131 + the `d3aeeae` site republish): the
+        // drafter-only correction mode — `per_byte` IS the published
+        // posture now (typed 0.5700, the board cell the site carries);
+        // `Off` was the 0.5630 pre-publish default. The seat knobs arm the
+        // same lever, so the pin's run() must too or the engine half
+        // reds (measured: run() 0.5630 vs arena 0.5700).
+        drafter_fix: riir_reflex::engine::DrafterFix::PerByte,
         laya_python: false,
         gliner: false,
         // The bekko JSONL-oracle comparison lane (reflex Bench 103) — off:
@@ -2086,7 +2105,14 @@ fn pin_a0_identity(datasets_dir: &Path, runs: &[SuiteRun], suites: &[&str]) -> R
         cal_select_caps: vec![],
         pair_head_ab: false,
         head_scale: 0.0,
-        head_select: true,
+        // Head-select RETIRED from the published face: the site's rows are
+        // generated head-off since the 10-01 full-pool re-basis (reflex
+        // issue 058, site `d750175`) — head_selection is null on every
+        // published row, and the lever is outcome-load-bearing only on
+        // banking77 (head@1 reads 0.8260 vs the published 0.842; inert on
+        // every other suite — bench 0059's pin catch, the first full-pin
+        // run since the re-basis).
+        head_select: false,
         nb_select: true,
         clm: false,
         paw_local: false,
@@ -2374,8 +2400,9 @@ Issue 003 T4); arms pre-registered on the cal front by the Pareto rank-0 + \
 argmax Beta-LCB instrument; predictions frozen in `predictions.json`.\n\n");
     md.push_str(&format!(
         "Protocol: the seat posture = the CURRENT PUBLISHED reflex posture (Issue 008 T1's \
-re-baseline: `--head-select --nb-select --oc-select --ridge-select`, registry caps, genome \
-off — oc and ridge arm only where their cal-slice selection clears the bar: oc on \
+re-baseline, amended: `--nb-select --oc-select --ridge-select`, registry caps, genome \
+off, head-select RETIRED at the 10-01 full-pool re-basis + the issue-079 `per_byte` drafter lever (Bench 131 cell 2 + the `d3aeeae` site \
+republish — engages only on the drafter-only path: typed the sole mover) — oc and ridge arm only where their cal-slice selection clears the bar: oc on \
 typed_decisions, ridge on emotion, byte-identical to off elsewhere) fit \
 through the SAME code reflex's runner uses (`harness::runner::seat`). The A0 drift pin \
 asserts the arena's A0 accuracy equals reflex's own `run()` row on EVERY arena suite, and \

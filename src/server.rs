@@ -632,10 +632,14 @@ impl<const N: usize> SuiteServer<N> {
         };
 
         // The CURRENT PUBLISHED reflex posture (Issue 008 T1's
-        // re-baseline): head-select + nb-select + OC-select + ridge-
-        // select, registry caps, genome off — byte-identical knobs to the
-        // arena's (`run_suite_n`), so the serve path stays the arena
-        // path. `ridge_select` is the cal-selected NBSVM-ridge lane
+        // re-baseline, amended twice since): nb-select + OC-select +
+        // ridge-select, registry caps, genome off, head-select RETIRED,
+        // + the issue-079 per_byte drafter lever — byte-identical knobs
+        // to the arena's (`run_suite_n`), so the serve path stays the
+        // arena path. HEAD: the site's rows are generated head-off since
+        // the 10-01 full-pool re-basis (reflex issue 058) — outcome-
+        // load-bearing only on banking77 (bench 0059's pin catch).
+        // `ridge_select` is the cal-selected NBSVM-ridge lane
         // (reflex Bench 057): emotion arms @8, every other suite's ladder
         // declines at the arming bar (selected 0.0 — byte-identical to
         // off, reflex's full-workspace delta 0.0000). Boot cost: the
@@ -653,7 +657,7 @@ impl<const N: usize> SuiteServer<N> {
         // identically on every suite whose train rows carry no gold
         // events (typed is the only armer — the published posture).
         let knobs = PostureKnobs {
-            head_select: true,
+            head_select: false,
             nb_select: true,
             oc_select: true,
             ridge_select: true,
@@ -664,6 +668,12 @@ impl<const N: usize> SuiteServer<N> {
             // the rate levers (the serve parity gates pin this face).
             gate_fit_selection: false,
             gate_distance_only: false,
+            // The issue-079 published face: the per_byte drafter lever (reflex
+            // Bench 131 cell 2 + the site republish `d3aeeae`), byte-identical
+            // knobs to the arena's `run_suite_n` — the serve path stays the
+            // arena path. Engages only on the drafter-only path (typed's score
+            // keys); inert on every by-name/route-armed suite.
+            drafter_fix: riir_reflex::engine::DrafterFix::PerByte,
         };
         let posture = fit_posture::<N>(suite, &seat, &knobs)?;
         let (engine, _fallbacks) =
