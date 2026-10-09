@@ -1,0 +1,796 @@
+[
+  {
+    "suite": "s1mb_choice",
+    "registered": "A0",
+    "rows": [
+      {
+        "arm": "A0",
+        "cal_acc": 0.155,
+        "acc_lcb": 0.11826103925704956,
+        "consult": 0.0,
+        "p99_us": 5232.0,
+        "rank0": true
+      },
+      {
+        "arm": "A1",
+        "cal_acc": 0.125,
+        "acc_lcb": 0.09224291145801544,
+        "consult": 1.0,
+        "p99_us": 53.792,
+        "rank0": true
+      },
+      {
+        "arm": "H1",
+        "cal_acc": 0.135,
+        "acc_lcb": 0.10084812343120575,
+        "consult": 0.485,
+        "p99_us": 5232.042,
+        "rank0": false
+      },
+      {
+        "arm": "H2(β=0,nmin=2,τ=2)",
+        "cal_acc": 0.125,
+        "acc_lcb": 0.09224291145801544,
+        "consult": 1.0,
+        "p99_us": 53.792,
+        "rank0": true
+      },
+      {
+        "arm": "H2(β=0,nmin=2,τ=4)",
+        "cal_acc": 0.125,
+        "acc_lcb": 0.09224291145801544,
+        "consult": 1.0,
+        "p99_us": 53.792,
+        "rank0": true
+      },
+      {
+        "arm": "H2(β=0,nmin=2,τ=8)",
+        "cal_acc": 0.125,
+        "acc_lcb": 0.09224291145801544,
+        "consult": 1.0,
+        "p99_us": 53.792,
+        "rank0": true
+      },
+      {
+        "arm": "H2(β=0,nmin=4,τ=2)",
+        "cal_acc": 0.125,
+        "acc_lcb": 0.09224291145801544,
+        "consult": 1.0,
+        "p99_us": 53.792,
+        "rank0": true
+      },
+      {
+        "arm": "H2(β=0,nmin=4,τ=4)",
+        "cal_acc": 0.125,
+        "acc_lcb": 0.09224291145801544,
+        "consult": 1.0,
+        "p99_us": 53.792,
+        "rank0": true
+      },
+      {
+        "arm": "H2(β=0,nmin=4,τ=8)",
+        "cal_acc": 0.125,
+        "acc_lcb": 0.09224291145801544,
+        "consult": 1.0,
+        "p99_us": 53.792,
+        "rank0": true
+      },
+      {
+        "arm": "H2(β=0,nmin=8,τ=2)",
+        "cal_acc": 0.125,
+        "acc_lcb": 0.09224291145801544,
+        "consult": 1.0,
+        "p99_us": 53.792,
+        "rank0": true
+      },
+      {
+        "arm": "H2(β=0,nmin=8,τ=4)",
+        "cal_acc": 0.125,
+        "acc_lcb": 0.09224291145801544,
+        "consult": 1.0,
+        "p99_us": 53.792,
+        "rank0": true
+      },
+      {
+        "arm": "H2(β=0,nmin=8,τ=8)",
+        "cal_acc": 0.125,
+        "acc_lcb": 0.09224291145801544,
+        "consult": 1.0,
+        "p99_us": 53.792,
+        "rank0": true
+      },
+      {
+        "arm": "H2(β=0.25,nmin=2,τ=2)",
+        "cal_acc": 0.125,
+        "acc_lcb": 0.09224291145801544,
+        "consult": 1.0,
+        "p99_us": 53.792,
+        "rank0": true
+      },
+      {
+        "arm": "H2(β=0.25,nmin=2,τ=4)",
+        "cal_acc": 0.125,
+        "acc_lcb": 0.09224291145801544,
+        "consult": 1.0,
+        "p99_us": 53.792,
+        "rank0": true
+      },
+      {
+        "arm": "H2(β=0.25,nmin=2,τ=8)",
+        "cal_acc": 0.125,
+        "acc_lcb": 0.09224291145801544,
+        "consult": 1.0,
+        "p99_us": 53.792,
+        "rank0": true
+      },
+      {
+        "arm": "H2(β=0.25,nmin=4,τ=2)",
+        "cal_acc": 0.125,
+        "acc_lcb": 0.09224291145801544,
+        "consult": 1.0,
+        "p99_us": 53.792,
+        "rank0": true
+      },
+      {
+        "arm": "H2(β=0.25,nmin=4,τ=4)",
+        "cal_acc": 0.125,
+        "acc_lcb": 0.09224291145801544,
+        "consult": 1.0,
+        "p99_us": 53.792,
+        "rank0": true
+      },
+      {
+        "arm": "H2(β=0.25,nmin=4,τ=8)",
+        "cal_acc": 0.125,
+        "acc_lcb": 0.09224291145801544,
+        "consult": 1.0,
+        "p99_us": 53.792,
+        "rank0": true
+      },
+      {
+        "arm": "H2(β=0.25,nmin=8,τ=2)",
+        "cal_acc": 0.125,
+        "acc_lcb": 0.09224291145801544,
+        "consult": 1.0,
+        "p99_us": 53.792,
+        "rank0": true
+      },
+      {
+        "arm": "H2(β=0.25,nmin=8,τ=4)",
+        "cal_acc": 0.125,
+        "acc_lcb": 0.09224291145801544,
+        "consult": 1.0,
+        "p99_us": 53.792,
+        "rank0": true
+      },
+      {
+        "arm": "H2(β=0.25,nmin=8,τ=8)",
+        "cal_acc": 0.125,
+        "acc_lcb": 0.09224291145801544,
+        "consult": 1.0,
+        "p99_us": 53.792,
+        "rank0": true
+      },
+      {
+        "arm": "H2(β=0.5,nmin=2,τ=2)",
+        "cal_acc": 0.125,
+        "acc_lcb": 0.09224291145801544,
+        "consult": 1.0,
+        "p99_us": 53.792,
+        "rank0": true
+      },
+      {
+        "arm": "H2(β=0.5,nmin=2,τ=4)",
+        "cal_acc": 0.125,
+        "acc_lcb": 0.09224291145801544,
+        "consult": 1.0,
+        "p99_us": 53.792,
+        "rank0": true
+      },
+      {
+        "arm": "H2(β=0.5,nmin=2,τ=8)",
+        "cal_acc": 0.125,
+        "acc_lcb": 0.09224291145801544,
+        "consult": 1.0,
+        "p99_us": 53.792,
+        "rank0": true
+      },
+      {
+        "arm": "H2(β=0.5,nmin=4,τ=2)",
+        "cal_acc": 0.125,
+        "acc_lcb": 0.09224291145801544,
+        "consult": 1.0,
+        "p99_us": 53.792,
+        "rank0": true
+      },
+      {
+        "arm": "H2(β=0.5,nmin=4,τ=4)",
+        "cal_acc": 0.125,
+        "acc_lcb": 0.09224291145801544,
+        "consult": 1.0,
+        "p99_us": 53.792,
+        "rank0": true
+      },
+      {
+        "arm": "H2(β=0.5,nmin=4,τ=8)",
+        "cal_acc": 0.125,
+        "acc_lcb": 0.09224291145801544,
+        "consult": 1.0,
+        "p99_us": 53.792,
+        "rank0": true
+      },
+      {
+        "arm": "H2(β=0.5,nmin=8,τ=2)",
+        "cal_acc": 0.125,
+        "acc_lcb": 0.09224291145801544,
+        "consult": 1.0,
+        "p99_us": 53.792,
+        "rank0": true
+      },
+      {
+        "arm": "H2(β=0.5,nmin=8,τ=4)",
+        "cal_acc": 0.125,
+        "acc_lcb": 0.09224291145801544,
+        "consult": 1.0,
+        "p99_us": 53.792,
+        "rank0": true
+      },
+      {
+        "arm": "H2(β=0.5,nmin=8,τ=8)",
+        "cal_acc": 0.125,
+        "acc_lcb": 0.09224291145801544,
+        "consult": 1.0,
+        "p99_us": 53.792,
+        "rank0": true
+      },
+      {
+        "arm": "H2(β=1,nmin=2,τ=2)",
+        "cal_acc": 0.125,
+        "acc_lcb": 0.09224291145801544,
+        "consult": 1.0,
+        "p99_us": 53.792,
+        "rank0": true
+      },
+      {
+        "arm": "H2(β=1,nmin=2,τ=4)",
+        "cal_acc": 0.125,
+        "acc_lcb": 0.09224291145801544,
+        "consult": 1.0,
+        "p99_us": 53.792,
+        "rank0": true
+      },
+      {
+        "arm": "H2(β=1,nmin=2,τ=8)",
+        "cal_acc": 0.125,
+        "acc_lcb": 0.09224291145801544,
+        "consult": 1.0,
+        "p99_us": 53.792,
+        "rank0": true
+      },
+      {
+        "arm": "H2(β=1,nmin=4,τ=2)",
+        "cal_acc": 0.125,
+        "acc_lcb": 0.09224291145801544,
+        "consult": 1.0,
+        "p99_us": 53.792,
+        "rank0": true
+      },
+      {
+        "arm": "H2(β=1,nmin=4,τ=4)",
+        "cal_acc": 0.125,
+        "acc_lcb": 0.09224291145801544,
+        "consult": 1.0,
+        "p99_us": 53.792,
+        "rank0": true
+      },
+      {
+        "arm": "H2(β=1,nmin=4,τ=8)",
+        "cal_acc": 0.125,
+        "acc_lcb": 0.09224291145801544,
+        "consult": 1.0,
+        "p99_us": 53.792,
+        "rank0": true
+      },
+      {
+        "arm": "H2(β=1,nmin=8,τ=2)",
+        "cal_acc": 0.125,
+        "acc_lcb": 0.09224291145801544,
+        "consult": 1.0,
+        "p99_us": 53.792,
+        "rank0": true
+      },
+      {
+        "arm": "H2(β=1,nmin=8,τ=4)",
+        "cal_acc": 0.125,
+        "acc_lcb": 0.09224291145801544,
+        "consult": 1.0,
+        "p99_us": 53.792,
+        "rank0": true
+      },
+      {
+        "arm": "H2(β=1,nmin=8,τ=8)",
+        "cal_acc": 0.125,
+        "acc_lcb": 0.09224291145801544,
+        "consult": 1.0,
+        "p99_us": 53.792,
+        "rank0": true
+      },
+      {
+        "arm": "H2(β=2,nmin=2,τ=2)",
+        "cal_acc": 0.125,
+        "acc_lcb": 0.09224291145801544,
+        "consult": 1.0,
+        "p99_us": 53.792,
+        "rank0": true
+      },
+      {
+        "arm": "H2(β=2,nmin=2,τ=4)",
+        "cal_acc": 0.125,
+        "acc_lcb": 0.09224291145801544,
+        "consult": 1.0,
+        "p99_us": 53.792,
+        "rank0": true
+      },
+      {
+        "arm": "H2(β=2,nmin=2,τ=8)",
+        "cal_acc": 0.125,
+        "acc_lcb": 0.09224291145801544,
+        "consult": 1.0,
+        "p99_us": 53.792,
+        "rank0": true
+      },
+      {
+        "arm": "H2(β=2,nmin=4,τ=2)",
+        "cal_acc": 0.125,
+        "acc_lcb": 0.09224291145801544,
+        "consult": 1.0,
+        "p99_us": 53.792,
+        "rank0": true
+      },
+      {
+        "arm": "H2(β=2,nmin=4,τ=4)",
+        "cal_acc": 0.125,
+        "acc_lcb": 0.09224291145801544,
+        "consult": 1.0,
+        "p99_us": 53.792,
+        "rank0": true
+      },
+      {
+        "arm": "H2(β=2,nmin=4,τ=8)",
+        "cal_acc": 0.125,
+        "acc_lcb": 0.09224291145801544,
+        "consult": 1.0,
+        "p99_us": 53.792,
+        "rank0": true
+      },
+      {
+        "arm": "H2(β=2,nmin=8,τ=2)",
+        "cal_acc": 0.125,
+        "acc_lcb": 0.09224291145801544,
+        "consult": 1.0,
+        "p99_us": 53.792,
+        "rank0": true
+      },
+      {
+        "arm": "H2(β=2,nmin=8,τ=4)",
+        "cal_acc": 0.125,
+        "acc_lcb": 0.09224291145801544,
+        "consult": 1.0,
+        "p99_us": 53.792,
+        "rank0": true
+      },
+      {
+        "arm": "H2(β=2,nmin=8,τ=8)",
+        "cal_acc": 0.125,
+        "acc_lcb": 0.09224291145801544,
+        "consult": 1.0,
+        "p99_us": 53.792,
+        "rank0": true
+      }
+    ]
+  },
+  {
+    "suite": "s1mb_noul",
+    "registered": "A0",
+    "rows": [
+      {
+        "arm": "A0",
+        "cal_acc": 0.5,
+        "acc_lcb": 0.44225677847862244,
+        "consult": 0.0,
+        "p99_us": 715.0,
+        "rank0": true
+      },
+      {
+        "arm": "A1",
+        "cal_acc": 0.52,
+        "acc_lcb": 0.46199241280555725,
+        "consult": 1.0,
+        "p99_us": 34.208,
+        "rank0": true
+      },
+      {
+        "arm": "H1",
+        "cal_acc": 0.52,
+        "acc_lcb": 0.46199241280555725,
+        "consult": 1.0,
+        "p99_us": 716.167,
+        "rank0": false
+      },
+      {
+        "arm": "H2(β=0,nmin=2,τ=2)",
+        "cal_acc": 0.52,
+        "acc_lcb": 0.46199241280555725,
+        "consult": 1.0,
+        "p99_us": 34.208,
+        "rank0": true
+      },
+      {
+        "arm": "H2(β=0,nmin=2,τ=4)",
+        "cal_acc": 0.52,
+        "acc_lcb": 0.46199241280555725,
+        "consult": 1.0,
+        "p99_us": 34.208,
+        "rank0": true
+      },
+      {
+        "arm": "H2(β=0,nmin=2,τ=8)",
+        "cal_acc": 0.52,
+        "acc_lcb": 0.46199241280555725,
+        "consult": 1.0,
+        "p99_us": 34.208,
+        "rank0": true
+      },
+      {
+        "arm": "H2(β=0,nmin=4,τ=2)",
+        "cal_acc": 0.52,
+        "acc_lcb": 0.46199241280555725,
+        "consult": 1.0,
+        "p99_us": 34.208,
+        "rank0": true
+      },
+      {
+        "arm": "H2(β=0,nmin=4,τ=4)",
+        "cal_acc": 0.52,
+        "acc_lcb": 0.46199241280555725,
+        "consult": 1.0,
+        "p99_us": 34.208,
+        "rank0": true
+      },
+      {
+        "arm": "H2(β=0,nmin=4,τ=8)",
+        "cal_acc": 0.52,
+        "acc_lcb": 0.46199241280555725,
+        "consult": 1.0,
+        "p99_us": 34.208,
+        "rank0": true
+      },
+      {
+        "arm": "H2(β=0,nmin=8,τ=2)",
+        "cal_acc": 0.52,
+        "acc_lcb": 0.46199241280555725,
+        "consult": 1.0,
+        "p99_us": 34.208,
+        "rank0": true
+      },
+      {
+        "arm": "H2(β=0,nmin=8,τ=4)",
+        "cal_acc": 0.52,
+        "acc_lcb": 0.46199241280555725,
+        "consult": 1.0,
+        "p99_us": 34.208,
+        "rank0": true
+      },
+      {
+        "arm": "H2(β=0,nmin=8,τ=8)",
+        "cal_acc": 0.52,
+        "acc_lcb": 0.46199241280555725,
+        "consult": 1.0,
+        "p99_us": 34.208,
+        "rank0": true
+      },
+      {
+        "arm": "H2(β=0.25,nmin=2,τ=2)",
+        "cal_acc": 0.52,
+        "acc_lcb": 0.46199241280555725,
+        "consult": 1.0,
+        "p99_us": 34.208,
+        "rank0": true
+      },
+      {
+        "arm": "H2(β=0.25,nmin=2,τ=4)",
+        "cal_acc": 0.52,
+        "acc_lcb": 0.46199241280555725,
+        "consult": 1.0,
+        "p99_us": 34.208,
+        "rank0": true
+      },
+      {
+        "arm": "H2(β=0.25,nmin=2,τ=8)",
+        "cal_acc": 0.52,
+        "acc_lcb": 0.46199241280555725,
+        "consult": 1.0,
+        "p99_us": 34.208,
+        "rank0": true
+      },
+      {
+        "arm": "H2(β=0.25,nmin=4,τ=2)",
+        "cal_acc": 0.52,
+        "acc_lcb": 0.46199241280555725,
+        "consult": 1.0,
+        "p99_us": 34.208,
+        "rank0": true
+      },
+      {
+        "arm": "H2(β=0.25,nmin=4,τ=4)",
+        "cal_acc": 0.52,
+        "acc_lcb": 0.46199241280555725,
+        "consult": 1.0,
+        "p99_us": 34.208,
+        "rank0": true
+      },
+      {
+        "arm": "H2(β=0.25,nmin=4,τ=8)",
+        "cal_acc": 0.52,
+        "acc_lcb": 0.46199241280555725,
+        "consult": 1.0,
+        "p99_us": 34.208,
+        "rank0": true
+      },
+      {
+        "arm": "H2(β=0.25,nmin=8,τ=2)",
+        "cal_acc": 0.52,
+        "acc_lcb": 0.46199241280555725,
+        "consult": 1.0,
+        "p99_us": 34.208,
+        "rank0": true
+      },
+      {
+        "arm": "H2(β=0.25,nmin=8,τ=4)",
+        "cal_acc": 0.52,
+        "acc_lcb": 0.46199241280555725,
+        "consult": 1.0,
+        "p99_us": 34.208,
+        "rank0": true
+      },
+      {
+        "arm": "H2(β=0.25,nmin=8,τ=8)",
+        "cal_acc": 0.52,
+        "acc_lcb": 0.46199241280555725,
+        "consult": 1.0,
+        "p99_us": 34.208,
+        "rank0": true
+      },
+      {
+        "arm": "H2(β=0.5,nmin=2,τ=2)",
+        "cal_acc": 0.52,
+        "acc_lcb": 0.46199241280555725,
+        "consult": 1.0,
+        "p99_us": 34.208,
+        "rank0": true
+      },
+      {
+        "arm": "H2(β=0.5,nmin=2,τ=4)",
+        "cal_acc": 0.52,
+        "acc_lcb": 0.46199241280555725,
+        "consult": 1.0,
+        "p99_us": 34.208,
+        "rank0": true
+      },
+      {
+        "arm": "H2(β=0.5,nmin=2,τ=8)",
+        "cal_acc": 0.52,
+        "acc_lcb": 0.46199241280555725,
+        "consult": 1.0,
+        "p99_us": 34.208,
+        "rank0": true
+      },
+      {
+        "arm": "H2(β=0.5,nmin=4,τ=2)",
+        "cal_acc": 0.52,
+        "acc_lcb": 0.46199241280555725,
+        "consult": 1.0,
+        "p99_us": 34.208,
+        "rank0": true
+      },
+      {
+        "arm": "H2(β=0.5,nmin=4,τ=4)",
+        "cal_acc": 0.52,
+        "acc_lcb": 0.46199241280555725,
+        "consult": 1.0,
+        "p99_us": 34.208,
+        "rank0": true
+      },
+      {
+        "arm": "H2(β=0.5,nmin=4,τ=8)",
+        "cal_acc": 0.52,
+        "acc_lcb": 0.46199241280555725,
+        "consult": 1.0,
+        "p99_us": 34.208,
+        "rank0": true
+      },
+      {
+        "arm": "H2(β=0.5,nmin=8,τ=2)",
+        "cal_acc": 0.52,
+        "acc_lcb": 0.46199241280555725,
+        "consult": 1.0,
+        "p99_us": 34.208,
+        "rank0": true
+      },
+      {
+        "arm": "H2(β=0.5,nmin=8,τ=4)",
+        "cal_acc": 0.52,
+        "acc_lcb": 0.46199241280555725,
+        "consult": 1.0,
+        "p99_us": 34.208,
+        "rank0": true
+      },
+      {
+        "arm": "H2(β=0.5,nmin=8,τ=8)",
+        "cal_acc": 0.52,
+        "acc_lcb": 0.46199241280555725,
+        "consult": 1.0,
+        "p99_us": 34.208,
+        "rank0": true
+      },
+      {
+        "arm": "H2(β=1,nmin=2,τ=2)",
+        "cal_acc": 0.52,
+        "acc_lcb": 0.46199241280555725,
+        "consult": 1.0,
+        "p99_us": 34.208,
+        "rank0": true
+      },
+      {
+        "arm": "H2(β=1,nmin=2,τ=4)",
+        "cal_acc": 0.52,
+        "acc_lcb": 0.46199241280555725,
+        "consult": 1.0,
+        "p99_us": 34.208,
+        "rank0": true
+      },
+      {
+        "arm": "H2(β=1,nmin=2,τ=8)",
+        "cal_acc": 0.52,
+        "acc_lcb": 0.46199241280555725,
+        "consult": 1.0,
+        "p99_us": 34.208,
+        "rank0": true
+      },
+      {
+        "arm": "H2(β=1,nmin=4,τ=2)",
+        "cal_acc": 0.52,
+        "acc_lcb": 0.46199241280555725,
+        "consult": 1.0,
+        "p99_us": 34.208,
+        "rank0": true
+      },
+      {
+        "arm": "H2(β=1,nmin=4,τ=4)",
+        "cal_acc": 0.52,
+        "acc_lcb": 0.46199241280555725,
+        "consult": 1.0,
+        "p99_us": 34.208,
+        "rank0": true
+      },
+      {
+        "arm": "H2(β=1,nmin=4,τ=8)",
+        "cal_acc": 0.52,
+        "acc_lcb": 0.46199241280555725,
+        "consult": 1.0,
+        "p99_us": 34.208,
+        "rank0": true
+      },
+      {
+        "arm": "H2(β=1,nmin=8,τ=2)",
+        "cal_acc": 0.52,
+        "acc_lcb": 0.46199241280555725,
+        "consult": 1.0,
+        "p99_us": 34.208,
+        "rank0": true
+      },
+      {
+        "arm": "H2(β=1,nmin=8,τ=4)",
+        "cal_acc": 0.52,
+        "acc_lcb": 0.46199241280555725,
+        "consult": 1.0,
+        "p99_us": 34.208,
+        "rank0": true
+      },
+      {
+        "arm": "H2(β=1,nmin=8,τ=8)",
+        "cal_acc": 0.52,
+        "acc_lcb": 0.46199241280555725,
+        "consult": 1.0,
+        "p99_us": 34.208,
+        "rank0": true
+      },
+      {
+        "arm": "H2(β=2,nmin=2,τ=2)",
+        "cal_acc": 0.52,
+        "acc_lcb": 0.46199241280555725,
+        "consult": 1.0,
+        "p99_us": 34.208,
+        "rank0": true
+      },
+      {
+        "arm": "H2(β=2,nmin=2,τ=4)",
+        "cal_acc": 0.52,
+        "acc_lcb": 0.46199241280555725,
+        "consult": 1.0,
+        "p99_us": 34.208,
+        "rank0": true
+      },
+      {
+        "arm": "H2(β=2,nmin=2,τ=8)",
+        "cal_acc": 0.52,
+        "acc_lcb": 0.46199241280555725,
+        "consult": 1.0,
+        "p99_us": 34.208,
+        "rank0": true
+      },
+      {
+        "arm": "H2(β=2,nmin=4,τ=2)",
+        "cal_acc": 0.52,
+        "acc_lcb": 0.46199241280555725,
+        "consult": 1.0,
+        "p99_us": 34.208,
+        "rank0": true
+      },
+      {
+        "arm": "H2(β=2,nmin=4,τ=4)",
+        "cal_acc": 0.52,
+        "acc_lcb": 0.46199241280555725,
+        "consult": 1.0,
+        "p99_us": 34.208,
+        "rank0": true
+      },
+      {
+        "arm": "H2(β=2,nmin=4,τ=8)",
+        "cal_acc": 0.52,
+        "acc_lcb": 0.46199241280555725,
+        "consult": 1.0,
+        "p99_us": 34.208,
+        "rank0": true
+      },
+      {
+        "arm": "H2(β=2,nmin=8,τ=2)",
+        "cal_acc": 0.52,
+        "acc_lcb": 0.46199241280555725,
+        "consult": 1.0,
+        "p99_us": 34.208,
+        "rank0": true
+      },
+      {
+        "arm": "H2(β=2,nmin=8,τ=4)",
+        "cal_acc": 0.52,
+        "acc_lcb": 0.46199241280555725,
+        "consult": 1.0,
+        "p99_us": 34.208,
+        "rank0": true
+      },
+      {
+        "arm": "H2(β=2,nmin=8,τ=8)",
+        "cal_acc": 0.52,
+        "acc_lcb": 0.46199241280555725,
+        "consult": 1.0,
+        "p99_us": 34.208,
+        "rank0": true
+      }
+    ]
+  },
+  {
+    "suite": "s1mb_score",
+    "registered": "A0",
+    "rows": [
+      {
+        "arm": "A0",
+        "cal_acc": 0.23,
+        "acc_lcb": 0.18543009459972382,
+        "consult": 0.0,
+        "p99_us": 660.0,
+        "rank0": true
+      }
+    ]
+  }
+]

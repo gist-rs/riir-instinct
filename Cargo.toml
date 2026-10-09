@@ -12,7 +12,7 @@ blake3 = "1"
 # (parity-critical; the reflex-side reason verbatim). Declared LOCALLY so
 # the law survives reflex dropping it (feature unification is an accident,
 # not a contract).
-serde_json = { version = "1", features = ["preserve_order"] }
+serde_json = { version = "1", features = ["preserve_order", "float_roundtrip"] }
 # derive: the /decide request envelope at the HTTP edge (already in-tree
 # via katgpt-core's non-optional serde — no new package; edge-only by law,
 # the reflex serve posture).

@@ -2097,8 +2097,12 @@ fn pin_a0_identity(datasets_dir: &Path, runs: &[SuiteRun], suites: &[&str]) -> R
         // pin's subject. (Fields landed by the sibling's engine change.)
         drex: false,
         d1: false,
+        // Reflex Issue 082 — the pplx-decider v1.1 (27B) comparison lane
+        // (the JDI 2026-10-07 #1); off: a comparison lane, never the A0
+        // drift pin's subject. (Field landed by the sibling's lane add.)
+        pplx: false,
         // The Cloudflare Clef comparison lane (reflex plan 011 Phase A) —
-        // off: a comparison lane, never the A0 drift pin's subject.
+        // off: a comparison lane, never the pin's subject.
         clef: false,
         paw: false,
         corpus_cap_override: 0,
