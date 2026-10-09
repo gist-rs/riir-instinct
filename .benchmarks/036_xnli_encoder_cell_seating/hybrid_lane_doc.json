@@ -35,7 +35,10 @@
         "model": "ENC-xnli_en_encoder_v1 (laya-english encoder + NLEH v1 head)",
         "hard": {
           "n": 300,
-          "accuracy": 0.86
+          "accuracy": 0.86,
+          "ece": 0.09030396024386092,
+          "mean_confidence": 0.947332436243693,
+          "acc_at_50_coverage": 0.9733333333333334
         },
         "consult_rate": 1.0,
         "latency_scope": "arm-only",

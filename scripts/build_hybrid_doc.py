@@ -75,6 +75,17 @@ LANE_ID = "hybrid"
 ENCODER_LANE_ID = "encoder"
 
 
+def acc_at_50_of(confs: list[float], correct: list[bool]) -> float:
+    """acc@50cov — the ONE law, consumed by lane_cell, encoder_cell and the
+    surgical doc stamp (stamp_doc_conf_metrics), never a second copy:
+    python's sort is stable, so `key=-conf` keeps first-index order on ties
+    (the harness argsort law); k = floor(n*0.5).max(1); hits/k."""
+    n = len(confs)
+    order = sorted(range(n), key=lambda i: -confs[i])
+    k = max(1, math.floor(n * 0.5))
+    return sum(1 for i in order[:k] if correct[i]) / k
+
+
 def bin_of(conf: float) -> int | None:
     """Index of the `(edges[i], edges[i+1]]` bin, or None — a conf
     exactly ON an edge belongs to the bin it closes; 0.0 in no bin."""
@@ -244,11 +255,7 @@ def lane_cell(arm: dict, gold: list[int] | None = None) -> dict:
     accuracy = sum(correct) / n
     ece = ece_of(list(zip(confs, correct)))
 
-    # acc@50cov: python's sort is stable, so `key=-conf` keeps first-index
-    # order on ties — the harness argsort law; k = floor(n*0.5).max(1).
-    order = sorted(range(n), key=lambda i: -confs[i])
-    k = max(1, math.floor(n * 0.5))
-    acc50 = sum(1 for i in order[:k] if correct[i]) / k
+    acc50 = acc_at_50_of(confs, correct)
 
     srt = sorted(durs)
     m = len(srt)
@@ -330,11 +337,7 @@ def encoder_cell(run: dict, gold: list[int] | None = None) -> dict | None:
     if confs and correct and len(confs) == len(correct) == n:
         cell["hard"]["ece"] = ece_of(list(zip(confs, correct)))
         cell["hard"]["mean_confidence"] = sum(confs) / n
-        order = sorted(range(n), key=lambda i: -confs[i])
-        k = max(1, math.floor(n * 0.5))
-        cell["hard"]["acc_at_50_coverage"] = (
-            sum(1 for i in order[:k] if correct[i]) / k
-        )
+        cell["hard"]["acc_at_50_coverage"] = acc_at_50_of(confs, correct)
     # Plan 011 C2: the same JDI axes on the encoder cell (gold + the
     # encoder arm's frozen picks — the plan-011 C2 crosswalk compares
     # THIS cell against the Clef row on the same axes).

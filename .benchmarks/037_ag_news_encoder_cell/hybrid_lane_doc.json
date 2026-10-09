@@ -35,7 +35,10 @@
         "model": "ENC-ag_news_encoder_v1 (laya-english encoder + NLEH v1 head)",
         "hard": {
           "n": 400,
-          "accuracy": 0.9475
+          "accuracy": 0.9475,
+          "ece": 0.03893379544839259,
+          "mean_confidence": 0.980914422031492,
+          "acc_at_50_coverage": 0.995
         },
         "consult_rate": 1.0,
         "latency_scope": "arm-only",
