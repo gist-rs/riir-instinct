@@ -1,5 +1,22 @@
 # HISTORY.md — riir-instinct
 
+## 2026-10-09 — Plan 010 LANDED: the Runetrace scene-loop composition (Proposal 005 Phase 4, first lane — Research 613 executed)
+
+`ffdc9a8` — the modelless scene-agent loop over shipped GOAT primitives,
+all consumed, none re-implemented (the substrate audit table is the plan's
+§T0): scene in as a deterministic `RunetraceDoc`, judgment out on
+`decision_wire` with first-class abstention, and the loop's OWN reasoning
+rendered back as a Runetrace `EntityBlock` (self-inspectable +
+digest-freezable). Stage homes: `katgpt_core::runetrace` wire-in ·
+`riir_reflex::embed` (256-bucket hashed bag, zero-alloc) · the DEPLOYED
+`KarcForecaster<FourierBasis<8>, 8, 8, 4>` forecast shape · `katgpt_core::rating`
+· `LeoHead`/`DualLeoMixer` goal · the `gain_cost_halt`/`risk_control_exit`/
+`state_probe`/`ignition` refine quartet. T1–T6 complete, gates green (the
+record: `.plans/010_runetrace_scene_loop_composition.md`; Research 613
+verdict AGREE 2026-10-09). Deferred as designed: the Ext-seat serve wiring
+(`/decide` + `arsenal.toml` row), the rethink trained escalation arm, the
+hosted-LLM leg (owner-gated per Research 613 §6.6).
+
 ## 2026-10-06 — issue-file hygiene: 020 / 022 removed (both fully landed; the residue is by-design contract surface, not actionable leads)
 
 020 (artifact-class adoption) LANDED `f78a45f` (record `6d601b1`, boundary follow-up `c21984e`): `artifacts/manifest.toml` (two public weights rows, zero protected), demo winners published to gist-rs/riir-instinct-artifacts (dataset commits `1799a755` choice / `976548f5` noul), anonymous fetch round-trip via `scripts/fetch_artifacts.sh`, 8 defaults re-pointed `artifacts/cache`. 022 both leads landed — LEAD 1 `f8ee3a6` (`rendered_options` leaves the serve loop; steady/cold 6 → 0), LEAD 2 `1ed58b7` (decide max 36 → 28, deterministic ×3; record `c617805`); the remaining 28-alloc surface is BY DESIGN (the wire response, the receipt contract, caller bytes), pinned by `tests/serve_g4_alloc.rs` (28).
