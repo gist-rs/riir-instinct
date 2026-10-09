@@ -214,6 +214,24 @@ re-basis caught both drifts. Served cells digit-hold (registered == served,
 no manifest edit); sst5's T2 reads REFUSED at the canonical population
 disclosed in the bench record.
 
+**Bench 0060 s1mb A0-pin close (2026-10-09, `60f373c`):** the trio's dataset
+dirs wired into the canonical pool (`.raw/datasets_s1mb`, Plan 010's fetch —
+m3 symlinks + 4090 copies), closing 0059's standing disclosure. **A0 pin
+GREEN 3/3 both halves** — the first s1mb verification since the 650202c
+section. s1mb_score's site row was genuinely stale (`0.4967 → 0.4982`, the
+issue-079 `per_byte` vintage; +4 questions) — republished via the sanctioned
+`publish_bench.py` with BOTH hosts refreshed in one publish after the
+cross-host gate correctly REFUSED the m3-only update (4090 leg re-measured,
+bit-identity 3/3). choice/noul bit-stable. Two fixes rode the bench: the
+choice-pin red was a serde_json 1-ULP parse artifact (issue #505 class — the
+17-digit literal parses to `…d63f` vs computed `…d640`; `float_roundtrip`
+feature added; run-1's WIP attribution corrected), and the arena's
+`RunOptions` gained `pplx: false` (the reflex-082 field add broke this
+arena's build). Verdicts: choice a0_stands (A0 registered at the instrument),
+noul's A1 T2-refused (LB95 −0.0169), score no-winner (Issue 010 T2). The site
+rows' hybrid/encoder aux seat-readout fields remain b6425bf-era —
+stale-but-unrendered, disclosed in the bench record.
+
 - Composition (`src/hybrid.rs`): H1 cascade (reflex fused-gate pass-through
   → top-k prune → specialist over survivors) + H2 prior fusion
   (p′ᵢ ∝ pᵢ·exp(g·β·mᵢ), the katgpt-rs Proposal 013 shape) + the G0 kill-switch arm;
