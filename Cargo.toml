@@ -78,6 +78,33 @@ tetris = ["dep:katgpt-tetris", "dep:fastrand", "katgpt-core/chance_puct", "katgp
 # The teacher-check bench target (007) + the critic-arm bench target
 # (009): select their bench targets behind the lane feature.
 tetris_goat = ["tetris"]
+# Plan 010 (Runetrace Phase 4, Research 613 — the modelless scene-agent
+# loop): the composition of shipped katgpt-core GOAT primitives over a
+# RunetraceDoc capture window — hashed-field embed (reflex) → KARC forecast
+# (the deployed Fourier R=1 shape) → Elo rating → modelless LEO/dual-LEO
+# goals → bounded looped refine (state_probe worthiness · affine step ·
+# entropic tilt · gain_cost_halt/risk_control_exit/ignition bounds ·
+# saddle_escape kicks) → decision_wire answer with first-class abstention,
+# the loop's own trace rendered back as a Runetrace EntityBlock. Opt-in:
+# the primitives are consumed, never re-implemented; the loop's own gates
+# (G1 determinism, G2 latency) live in this crate's tests. The refine
+# tails (saddle_escape/state_probe/entropic_tilt) carry their own pending
+# upstream quality records — disclosed in the plan, not re-claimed here.
+runetrace_loop = [
+  "katgpt-core/runetrace",
+  "katgpt-core/decision_wire",
+  "katgpt-core/rating",
+  "katgpt-core/leo_all_goals",
+  "katgpt-core/dual_leo",
+  "katgpt-core/karc_forecaster",
+  "katgpt-core/gain_cost_halt",
+  "katgpt-core/risk_control_exit",
+  "katgpt-core/ignition_schedule",
+  "katgpt-core/saddle_escape",
+  "katgpt-core/state_probe",
+  "katgpt-core/entropic_tilt",
+  "katgpt-core/loop_guidance",
+]
 
 [workspace]
 

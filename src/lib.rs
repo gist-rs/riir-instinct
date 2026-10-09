@@ -67,6 +67,14 @@ pub mod tetris_critic;
 /// the search's value seam. weight 0 is the plain teacher, bit-exact.
 #[cfg(feature = "tetris")]
 pub mod tetris_blend;
+/// The Runetrace scene-loop composition (Plan 010 — seal-remake Proposal
+/// 005 Phase 4, Research 613): the MODELLESS scene-agent loop over shipped
+/// katgpt-core GOAT primitives — RunetraceDoc in, decision_wire out with
+/// first-class abstention, the loop's own reasoning rendered back as a
+/// Runetrace EntityBlock (self-inspectable + digest-freezable). Opt-in;
+/// the /decide path is byte-identical without it.
+#[cfg(feature = "runetrace_loop")]
+pub mod scene_loop;
 
 pub use hybrid::{
     A0Answer, Cascade, FusedPick, HybridDecision, HybridLane, MAX_TOP_K, NOUL_PAIR, PriorFusion,
