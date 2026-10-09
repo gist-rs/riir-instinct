@@ -28,13 +28,27 @@ acc_at_50_of) — one law, consumed, not a second copy.
 Usage:
   scripts/stamp_doc_conf_metrics.py <lane_doc.json> <predictions.json> \
       [--suite NAME] [--source-doc <lane_doc.json>] [--write]
+  scripts/stamp_doc_conf_metrics.py <lane_doc.json> --from-doc <re-read doc> \
+      [--write]
 
 Default: dry-run (prints what would land). --write mutates the doc.
+
+The --from-doc mode (reflex-site issue 011): the per-row source is a
+FRESH RE-READ's lane doc (arena_encoder_read, which computes the fields
+natively at the emit) instead of a frozen predictions file — the gates
+adapt: n identity + bit-exact accuracy reproduction against the target's
+published cell (the population/posture identity witness — the sst5 read
+reproduced 316/600 across four independent postures), plus the digest
+match when BOTH rows carry one, plus the re-read's own test_digest
+printed for the record. The re-read's LATENCY is never transferred — a
+loaded-box re-read's timing is not quotable and the target keeps its
+original quiet-run figures.
 """
 from __future__ import annotations
 
 import argparse
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -57,6 +71,20 @@ def die(msg: str) -> "NoReturn":  # type: ignore[valid-type]
     raise SystemExit(1)
 
 
+def write_pure_addition(path: Path, doc: dict) -> None:
+    """A stamp is a PURE field addition: the doc keeps its own indentation
+    (the arena auto-emitter writes indent=2; build_hybrid_doc writes 1) AND
+    its own escape posture (auto-emitted docs are raw UTF-8 —, ✗;
+    build_hybrid_doc writes ASCII-escaped \u2014). Either dimension
+    normalised buries the three new lines in a whole-file diff."""
+    raw = path.read_text(encoding="utf-8")
+    second = next((l for l in raw.splitlines()[1:] if l.strip()), "")
+    indent = len(second) - len(second.lstrip()) if second else 1
+    ascii_escaped = bool(re.search(r"\\u[0-9a-fA-F]{4}", raw))
+    path.write_text(json.dumps(doc, indent=indent, ensure_ascii=ascii_escaped) + "\n",
+                    encoding="utf-8")
+
+
 def suite_row(doc: dict, suite: str | None, what: str) -> dict:
     rows = doc.get("suites") or []
     if suite is None and len(rows) == 1:
@@ -71,8 +99,11 @@ def suite_row(doc: dict, suite: str | None, what: str) -> dict:
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("doc", type=Path, help="the lane doc to stamp")
-    ap.add_argument("predictions", type=Path,
-                    help="the arena's frozen predictions.json")
+    ap.add_argument("predictions", type=Path, nargs="?",
+                    help="the arena's frozen predictions.json (omit with --from-doc)")
+    ap.add_argument("--from-doc", type=Path, default=None,
+                    help="a fresh re-read's lane doc carrying the computed fields "
+                         "(arena_encoder_read) — the source instead of predictions.json")
     ap.add_argument("--suite", default=None,
                     help="the suite to stamp (required when the doc or the "
                          "record carries more than one)")
@@ -97,7 +128,48 @@ def main() -> int:
         die(f"{name}: hard already carries {have} — stamps are never "
             f"re-derived (drop the fields first if a re-join is wanted)")
 
-    pred = json.loads(args.predictions.read_text(encoding="utf-8"))
+    if args.from_doc is not None:
+        if args.predictions is not None:
+            die("pass either <predictions.json> or --from-doc, never both")
+        src = json.loads(args.from_doc.read_text(encoding="utf-8"))
+        srow = suite_row(src, name, str(args.from_doc))
+        scell = srow.get("encoder")
+        if not isinstance(scell, dict) or not isinstance(scell.get("hard"), dict):
+            die(f"{args.from_doc}: no encoder lane cell — the re-read doc is malformed")
+        shard = scell["hard"]
+        missing = [f for f in FIELDS if not isinstance(shard.get(f), (int, float))]
+        if missing:
+            die(f"{name}: the re-read doc's cell lacks {missing} — rebuild the "
+                "example at a commit that emits them")
+        sn = shard.get("n")
+        if sn != hard.get("n"):
+            die(f"{name}: n identity failed — the re-read froze {sn} rows vs the "
+                f"published {hard.get('n')}")
+        sacc, pub = shard.get("accuracy"), hard.get("accuracy")
+        if not isinstance(pub, (int, float)) or abs(sacc - pub) > 1e-12:
+            die(f"{name}: accuracy reproduction failed — the re-read computes "
+                f"{sacc!r} vs the published {pub!r}; the posture/population moved")
+        a, b = row.get("test_digest"), srow.get("test_digest")
+        if a and b and a != b:
+            die(f"{name}: test_digest {a!r} vs the re-read's {b!r} — the "
+                "populations differ")
+        stamped = {f: shard[f] for f in FIELDS}
+        for k, v in stamped.items():
+            print(f"  {name}: hard.{k} = {v!r}")
+        print(f"  (source: {args.from_doc} · re-read test_digest "
+              f"{b or '(none)'} · its latency is NOT transferred)")
+        if not args.write:
+            print("dry-run — pass --write to stamp")
+            return 0
+        hard.update(stamped)
+        write_pure_addition(args.doc, doc)
+        print(f"✓ stamped {args.doc} ({name}) from the re-read doc")
+        return 0
+        print(f"✓ stamped {args.doc} ({name}) from the re-read doc")
+        return 0
+
+    if args.predictions is None:
+        ap.error("either <predictions.json> or --from-doc is required")
     recs = pred.get("frozen_test_predictions") or []
     rec = next((r for r in recs if r.get("suite") == name), None)
     if rec is None:
@@ -138,15 +210,7 @@ def main() -> int:
         print("dry-run — pass --write to stamp")
         return 0
     hard.update(stamped)
-    # A stamp is a PURE field addition: the doc keeps its own indentation
-    # (the arena auto-emitter writes indent=2; build_hybrid_doc writes 1 —
-    # a re-indented doc buries the three new lines in a whole-file diff).
-    raw = args.doc.read_text(encoding="utf-8")
-    second = next((l for l in raw.splitlines()[1:] if l.strip()), "")
-    indent = len(second) - len(second.lstrip()) if second else 1
-    # ensure_ascii=False: the auto-emitted docs are raw UTF-8 (—, ✗) — an
-    # ASCII-escaped rewrite buries the stamp in escape-diff noise.
-    args.doc.write_text(json.dumps(doc, indent=indent, ensure_ascii=False) + "\n", encoding="utf-8")
+    write_pure_addition(args.doc, doc)
     print(f"✓ stamped {args.doc} ({name})")
     return 0
 
