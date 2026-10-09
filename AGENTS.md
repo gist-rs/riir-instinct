@@ -261,8 +261,8 @@ stale-but-unrendered, disclosed in the bench record.
   receipt (blake3 build fingerprint + BLAKE3(input) + BLAKE3(canonical
   decision) + lane id); machine-readable refusal `code`s; CORS via
   `RIIR_INSTINCT_ALLOWED_ORIGIN`, closed by default. The `/decide`
-  envelope is the **v1 decision_wire contract** (the R7 freeze — reflex
-  issue 074): `contract_version` on the request (absent = 1, unknown →
+  envelope is the **v1 decision_wire contract** (the R7 freeze —
+  riir-reflex issue 074): `contract_version` on the request (absent = 1, unknown →
   400 fail-closed naming the supported set, echoed on every answer), the
   response field set frozen additive-only, and `<2` presentations refuse
   422 at the edge before any lane (a malformed body must never poison a
