@@ -1,7 +1,7 @@
 # The Instinct dev build flow
 
 How a specialist gets made and put on duty — the development counterpart
-of the [composition figure](../03_decision_flow/instinct_flow.md), which
+of the [composition figure](https://github.com/gist-rs/riir-instinct/blob/HEAD/.docs/03_decision_flow/instinct_flow.md), which
 shows what happens at answer time. One figure, rendered from the
 ` ```gfflow ` block below by reflex-site's `scripts/render_flows.py`
 (Plan 620; family design guide §8) into `instinct_dev_flow.svg` (desktop
