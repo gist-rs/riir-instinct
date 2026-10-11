@@ -4,7 +4,7 @@
 
 The last self-authored synthetic suite left the serving board: `code_fixtures` was generated from reflex's own fn spans (n=32 questions / 16 cases, gold programmatic, seat-marked `synthetic`) — the same class the six Issue-004 families were retired for on 2026-10-02, and the gap-table row it carried (−12.5 vs pplx, ECE 0.186 at n=32) was the noisiest cell on the public board. Removed: the `arsenal.toml` A0 row (teaching default, digest re-pinned `6e825019…`), the production `[[vessel]]` A1 row (rethink `arsenal.toml` + the inline byte-pin copy + digest `3473b3ad…`, one lockstep family per law 2), the `winner_bridge` MultiQuestion arm, the label_text passthrough, the arena SUITES entry, the serve parity gate (`code_fixtures_serves_the_frozen_a1_picks`), and both wave instruments (`examples/export_code_fixtures`, `examples/instinct_v2_gate` — the Issue-593/597 per-head machinery existed only for this suite). Its Bench 011/028 records stay in .benchmarks as history. Gates: serve_gates 23/23, lib 88/88, clippy `-D warnings` clean.
 
-## 2026-10-09 — Plan 010 LANDED: the Runetrace scene-loop composition (Proposal 005 Phase 4, first lane — Research 613 executed)
+## 2026-10-09 — Plan 010 LANDED: the Runetrace scene-loop composition (seal-remake Proposal 005 Phase 4, first lane — katgpt-rs Research 613 executed)
 
 `ffdc9a8` — the modelless scene-agent loop over shipped GOAT primitives,
 all consumed, none re-implemented (the substrate audit table is the plan's
@@ -16,10 +16,10 @@ digest-freezable). Stage homes: `katgpt_core::runetrace` wire-in ·
 `KarcForecaster<FourierBasis<8>, 8, 8, 4>` forecast shape · `katgpt_core::rating`
 · `LeoHead`/`DualLeoMixer` goal · the `gain_cost_halt`/`risk_control_exit`/
 `state_probe`/`ignition` refine quartet. T1–T6 complete, gates green (the
-record: `.plans/010_runetrace_scene_loop_composition.md`; Research 613
+record: `.plans/010_runetrace_scene_loop_composition.md`; katgpt-rs Research 613
 verdict AGREE 2026-10-09). Deferred as designed: the Ext-seat serve wiring
 (`/decide` + `arsenal.toml` row), the rethink trained escalation arm, the
-hosted-LLM leg (owner-gated per Research 613 §6.6).
+hosted-LLM leg (owner-gated per katgpt-rs Research 613 §6.6).
 
 ## 2026-10-06 — issue-file hygiene: 020 / 022 removed (both fully landed; the residue is by-design contract surface, not actionable leads)
 
