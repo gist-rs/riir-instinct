@@ -91,10 +91,3 @@ class   = "public_release"
 posture = { arm = "A0" }
 pin_keys = []
 budget  = { load = "eager", max_payload_mb = 16 }
-
-[[vessel]]
-suite   = "code_fixtures"
-class   = "public_release"
-posture = { arm = "A0" }
-pin_keys = []
-budget  = { load = "eager", max_payload_mb = 16 }

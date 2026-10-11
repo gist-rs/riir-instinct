@@ -207,16 +207,7 @@ posture = { arm = "H2", beta = 0.5, n_min = 2.0, tau_n = 2.0 }    # best measure
 pin_keys = []
 budget  = { load = "eager", max_payload_mb = 16 }
 
-[[vessel]]
-suite   = "code_fixtures"
-digest  = "blake3:264714b9e7518e33b7540b7ba7c60691651f8ec40f6eb0ec01c5af5b24ebec37"   # the Issue-008 T8 tie-break mint (riir-train instinct_v2_gate, the wave-1 per-head NBSVM shape)
-class   = "hosted_only"
-file    = "code_fixtures_nbsvm_v2.bin"   # presence-bag convention + the MultiQuestion contract, both pinned by winner_bridge (the 579 law)
-posture = { arm = "A1" }                                          # best measured AND T2-certified (Bench 028: 0.5625 vs A0 0.3750, +18.75 pt, paired LB95 +0.0021 > 0 at n=32 — thin, disclosed; G1 PASS platt 0.1519 vs floor 0.3430). Still trails the paw 0.6250 vs-best bar (−6.25 pt) — the tie with Reflex is broken, the suite stays unsold under the amended law
-pin_keys = []
-budget  = { load = "eager", max_payload_mb = 16 }
-
-# ── the six harness families — FULL-COVERAGE SERVING (owner call 2026-10-02) ──
+# ── the six harness families ── FULL-COVERAGE SERVING (owner call 2026-10-02) ──
 # "run Rethink.exe or api -> get the result": the binary serves EVERY
 # board suite. These six rows carry NO digest — the artifact-less A0
 # posture (ReflexOnly, the G0a first-class arm): the modelless tier IS
@@ -319,7 +310,7 @@ fn ag_news_esc_research_manifest() -> ArsenalManifest {
 /// law A6 demands). This is the TOML analogue of the compile-time posture
 /// table it replaced.
 const PINNED_MANIFEST_DIGEST: &str =
-    "blake3:1eb91da47976fc5ddecd92f70dd50d0d8af5ee0192e9472c262f5cc5be1dbd57";
+    "blake3:6e825019605cddce985b738bfa19fa0a8bc6147edb42eb97c626c44a22102999";
 
 #[test]
 fn arsenal_manifest_bytes_are_pinned_byte_for_byte() {
@@ -351,7 +342,7 @@ fn arsenal_manifest_bytes_are_pinned_byte_for_byte() {
 /// typed_decisions row's comment — zero data rows changed, no GOAT
 /// implication; the pin covers the bytes, comments included).
 const PINNED_PRODUCTION_MANIFEST_DIGEST: &str =
-    "blake3:47fcd95c1b0025562d4753bef14e9c859beef68a966ffdf1b6445a6559e15c3b";
+    "blake3:3473b3ad228f8fdd1a909477a215a2a09ba0d949d794f7d3741207f51cbccbf0";
 
 #[test]
 fn production_manifest_bytes_are_pinned_byte_for_byte() {
@@ -393,13 +384,7 @@ fn manifest_posture_rows_are_the_serving_law_verdict() {
     // (qid, option) tables via reflex's `oc()`) — and vs H1 (+1.4 pt,
     // LB95 +0.0034); G1 PASS (platt 0.0095 vs floor 0.1701) — its seat
     // corpus ships from the full-pool datasets dir (deploy.yaml).
-    // code_fixtures serves A1 0.5625 (the Issue-008 T8 tie-break, Bench
-    // 028): T2-certified vs A0 0.3750 (+18.75 pt, paired LB95 +0.0021 —
-    // thin at n=32, disclosed); it still trails the paw 0.6250 vs-best
-    // bar, so the suite stays unsold under the amended law — the manifest
-    // row exists because A1 IS the argmax (the serving law), and the
-    // Reflex tie is broken.
-    let expected: [(&str, Arm, &str); 5] = [
+    let expected: [(&str, Arm, &str); 4] = [
         (
             "massive_intent_en",
             Arm::H2 {
@@ -428,19 +413,20 @@ fn manifest_posture_rows_are_the_serving_law_verdict() {
             },
             "H2(β=0.5,nmin=2,τ=2)",
         ),
-        ("code_fixtures", Arm::A1, "A1"),
         // (The six harness families' artifact-less A0 rows were REMOVED
         // 2026-10-02 — owner call: the suites are retired from the reflex
         // harness itself. The emotion + xnli_en A0 rows were REMOVED
         // 2026-10-05 (issue 023 T2), sst5 + ag_news the same day (T3) —
-        // the licence ledger, pinned by the licence gate below.)
+        // the licence ledger, pinned by the licence gate below. The
+        // code_fixtures A1 row was REMOVED 2026-10-11 — owner call: the
+        // suite is retired from the reflex harness itself.)
     ];
     assert_eq!(
         m.rows().len(),
-        5,
-        "the manifest carries exactly the five permissive sellable rows (the \
-         licence-barred four and the six artifact-less A0 families left with \
-         their retirements)"
+        4,
+        "the manifest carries exactly the four permissive sellable rows (the \
+         licence-barred four, the six artifact-less A0 families, and the \
+         retired code_fixtures row left with their retirements)"
     );
     for (suite, arm, name) in expected {
         let row = m
@@ -1051,108 +1037,6 @@ fn winners_dir_for_tests() -> std::path::PathBuf {
     winners_dir()
 }
 
-/// The code_fixtures parity gate (Issue-008 T8, Bench 028): the SERVED
-/// arm is the certified A1 (0.5625 vs A0 0.3750, paired LB95 +0.0021 —
-/// thin at n=32, disclosed). Multi-question suite (which-module + is_pub
-/// per case) — the parity replays the 028 record's A1 picks question by
-/// question through `decide_multi`, exactly like typed_decisions' gate.
-#[test]
-fn code_fixtures_serves_the_frozen_a1_picks() {
-    let winner = winners_dir().join("code_fixtures_nbsvm_v2.bin");
-    if !winner.is_file() {
-        eprintln!("SKIP loud: the code_fixtures nbsvm v2 winner absent");
-        return;
-    }
-    let record = repo_root().join(".benchmarks/028_code_fixtures_tie_break/predictions.json");
-    let Some((picks, _abstained)) = frozen_picks_from(&record, "code_fixtures", "A1") else {
-        panic!(
-            "the 028 frozen record is absent or lacks the A1 arm — the serving posture's \
-             parity source; re-run the 028 read"
-        );
-    };
-    let datasets = datasets_dir();
-    let mut server = std::thread::Builder::new()
-        .stack_size(64 * 1024 * 1024)
-        .spawn(move || {
-            riir_instinct::server::AnySuiteServer::boot(
-                "code_fixtures",
-                &datasets,
-                &winners_dir_for_tests(),
-                &production_manifest(),
-            )
-        })
-        .expect("spawn boot thread")
-        .join()
-        .expect("boot thread panicked")
-        .expect("boot code_fixtures server");
-    assert_eq!(server.meta().arm.name(), "A1");
-
-    let seat = riir_reflex::harness::runner::seat::prepare_seat("code_fixtures", &datasets_dir())
-        .expect("prepare seat for the parity cases");
-    let mut qi = 0usize;
-    let n_cases = 8.min(seat.suite.cases.len());
-    assert!(n_cases >= 4, "parity sample too small: {n_cases}");
-    for (ci, case) in seat.suite.cases.iter().enumerate().take(n_cases) {
-        assert!(!case.questions.is_empty());
-        let options_per_question: Vec<Vec<String>> = case
-            .questions
-            .iter()
-            .map(|q| {
-                // Noul questions present NO options — the fixed [no, yes]
-                // rendering speaks them (the same law typed_decisions'
-                // parity gate runs under; code_fixtures' is_pub question is
-                // noul-kind).
-                if q.kind == QKind::Noul {
-                    Vec::new()
-                } else {
-                    match &q.criteria {
-                        serde_json::Value::Object(m) => m.keys().cloned().collect(),
-                        serde_json::Value::Array(a) => a
-                            .iter()
-                            .map(|v| match v {
-                                serde_json::Value::String(s) => s.clone(),
-                                other => other.to_string(),
-                            })
-                            .collect(),
-                        _ => panic!("case {}: criteria shape drift", case.id),
-                    }
-                }
-            })
-            .collect();
-        let served: Vec<riir_instinct::server::ServedQuestion<'_>> = case
-            .questions
-            .iter()
-            .zip(options_per_question.iter())
-            .map(|(q, options)| riir_instinct::server::ServedQuestion {
-                qid: q.qid.as_str(),
-                kind: q.kind,
-                instructions: q.instructions.as_str(),
-                options: options.as_slice(),
-            })
-            .collect();
-        let decisions = server
-            .decide_multi(&seat.state_strs[ci], &served)
-            .unwrap_or_else(|e| panic!("case {}: decide_multi failed: {e}", case.id));
-        assert_eq!(decisions.len(), case.questions.len());
-        for d in &decisions {
-            assert!(
-                qi < picks.len(),
-                "question {qi}: the parity sample outran the frozen record"
-            );
-            assert_eq!(
-                d.pick_index,
-                Some(picks[qi]),
-                "question {qi} (case {}): served pick drifted from the frozen 028 A1 pick",
-                case.id
-            );
-            assert!(!d.abstained, "question {qi}: A1 abstained");
-            assert!(d.us < 100_000, "question {qi}: outside the modelless tier");
-            qi += 1;
-        }
-    }
-    assert!(qi >= 8, "parity covered too few questions: {qi}");
-}
-
 // ── face 5: the ENC posture grammar (instinct issue 016 T2) ────────
 
 /// The ENC manifest row the gates exercise (the deployment shape: explicit
@@ -1293,14 +1177,13 @@ fn escalate_grammar_pins_the_zero_armed_production_state() {
         "the production manifest carries NO escalate row (issue 023 T2/T3) — \
          a re-arm rides a re-sourced suite's own GOAT, never a silent re-flag"
     );
-    // The five permissive rows each carry none, named — a suite-scoped
+    // The four permissive rows each carry none, named — a suite-scoped
     // refusal spelling that names its subject.
     for suite in [
         "massive_intent_en",
         "banking77",
         "prompt_injections",
         "typed_decisions",
-        "code_fixtures",
     ] {
         assert!(
             m.row(suite)

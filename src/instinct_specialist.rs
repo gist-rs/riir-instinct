@@ -158,12 +158,8 @@ pub struct SuiteRow {
 /// `no`/`yes` class rows for BOTH suites with one rule. (Reflex's own
 /// corpus convention for this suite is `"0"`/`"1"` — that is the
 /// the modelless lane's train-doc law, a different consumer.)
-/// Issue 593: `code_fixtures` joins the label_text passthrough — its
-/// train envelopes are EXPORTED by the consumer repo (riir-instinct
-/// `examples/export_code_fixtures`, the frozen fixture's cal+docs slices;
-/// riir-train gains no reflex dep) with the union label universe: the 8
-/// frozen module names + the unified NOUL pair (`no`/`yes`), one row per
-/// (span, question). Unknown suite → None (the loader fails loud on an
+/// (Issue 593's `code_fixtures` label_text passthrough LEFT 2026-10-11
+/// with the suite's retirement — owner call.) Unknown suite → None (the loader fails loud on an
 /// empty result).
 pub fn suite_row(suite: &str, row: &serde_json::Value) -> Option<SuiteRow> {
     // Plan 010 S1MB: one judgment per row (the converter's flatten). The
@@ -218,7 +214,7 @@ pub fn suite_row(suite: &str, row: &serde_json::Value) -> Option<SuiteRow> {
         });
     }
     let label = match suite {
-        "massive_intent_en" | "code_fixtures" => row.get("label_text")?.as_str()?.to_string(),
+        "massive_intent_en" => row.get("label_text")?.as_str()?.to_string(),
         "banking77" => match row.get("label_text").and_then(|v| v.as_str()) {
             Some(t) => t.replace('_', " "),
             None => row.get("label")?.as_i64()?.to_string(),

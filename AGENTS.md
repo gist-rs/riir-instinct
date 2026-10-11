@@ -195,20 +195,24 @@ per case).
 | banking77 | H2(β=2,nmin=8,τ=8) **0.8540** (nbsvm v2 PRESENCE bags, Bench 012; T2 uncertified — reads LB95 −0.0163 at the 0059 published posture) | DEAD (Bench 039 screen) |
 | typed_decisions | H2(β=0.5,nmin=2,τ=2) **0.6475** (Benches 019+020, T2-certified; re-certified 0058+0059 at the engine + posture moves — LB95 +0.0598) | v2 head **0.7550** (Bench 041) |
 | prompt_injections | A1 **0.8534** (Bench 013, T2-certified) | DEAD (Bench 039 screen) |
-| code_fixtures | A1 **0.5625** (Bench 028, T2 LB95 +0.0021; unsold vs paw 0.6250) | — |
 | sst5 | A1 **0.4217** | ENC **0.5267** (Bench 029, T2-certified) |
 | ag_news | H2 **0.8975** | ENC **0.9475** (Bench 037) |
 | xnli_en | A0 **0.5233** | ENC **0.8600** (Bench 036) |
 | emotion | A0 **0.8850** (the board's highest bar — every challenger measured out, Bench 038) | DEAD (Bench 032+035 screen) |
 
 The six home-made harness families are RETIRED (owner call 2026-10-02,
-reflex `31b11d2`) — board 15 → 9.
+reflex `31b11d2`) — board 15 → 9. `code_fixtures` is RETIRED too (owner
+call 2026-10-11, reflex-side same day): the last self-authored synthetic
+suite (generated from reflex's own fn spans, n=32, seat-marked
+`synthetic`) — board 9 → 8; its Bench 011/028 rows remain in
+.benchmarks as history.
 
 **Bench 0059 seat re-baseline (2026-10-08):** the arena/server seat = the
 CURRENT published posture — head-select RETIRED (the site's rows are head-off
 since the 10-01 full-pool re-basis, reflex issue 058; outcome-load-bearing only
 on banking77) + the issue-079 `per_byte` drafter lever armed (the `d3aeeae`
 site posture). The A0 identity pin is GREEN on all nine suites BOTH halves
+(board of its day — code_fixtures retired 2026-10-11 after this read)
 (arena == run() == the published site row) — the first full-pin run since the
 re-basis caught both drifts. Served cells digit-hold (registered == served,
 no manifest edit); sst5's T2 reads REFUSED at the canonical population

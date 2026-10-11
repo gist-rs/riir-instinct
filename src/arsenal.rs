@@ -767,7 +767,7 @@ mod tests {
     }
 
     #[test]
-    fn embedded_default_parses_with_the_nine_suites() {
+    fn embedded_default_parses_with_the_eight_suites() {
         let m = ArsenalManifest::embedded_default().expect("embedded manifest parses");
         let suites: Vec<&str> = m.suites().collect();
         assert_eq!(
@@ -780,15 +780,14 @@ mod tests {
                 "banking77",
                 "xnli_en",
                 "prompt_injections",
-                "typed_decisions",
-                "code_fixtures"
+                "typed_decisions"
             ]
         );
         // The six harness families' artifact-less A0 rows were REMOVED
-        // 2026-10-02 (owner call — the suites are retired from the reflex
-        // harness itself); the manifest carries exactly the nine measured
-        // suites.
-        assert_eq!(m.rows().len(), 9);
+        // 2026-10-02 and code_fixtures' A0 row 2026-10-11 (owner calls —
+        // the suites are retired from the reflex harness itself); the
+        // manifest carries exactly the eight measured suites.
+        assert_eq!(m.rows().len(), 8);
         // The INVARIANT direction survives the removal: a non-A0 row with
         // no digest is a validation refusal (posture-as-data, never a
         // defaulted artifact) — the assert the retired

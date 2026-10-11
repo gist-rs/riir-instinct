@@ -56,13 +56,11 @@ use riir_reflex::nb_scope::NbView;
 /// winners through Plan 003's noul bridge. Label-arity dispatch below must
 /// cover their train-derived label counts (4 workflows / 2 noul classes,
 /// measured 2026-09-28 — the plan's 3-workflow guess was stale).
-/// Issue 010 T6 (2026-09-28): `code_fixtures` joined — the reflex
-/// Issue-049 seat seam seats it (marked synthetic); no winner artifact
-/// exists, so it runs the A0/G0-only posture and publishes an
-/// `a0_stands` row. (The six harness families joined the same day and
-/// LEFT 2026-10-02 — owner call: the suites are retired from the reflex
-/// harness itself, at-chance on the modelless lane; their Bench 011/016
-/// rows remain in .benchmarks as history.)
+/// (The six harness families joined 2026-09-28 and LEFT 2026-10-02, and
+/// `code_fixtures` joined 2026-09-28 and LEFT 2026-10-11 — owner calls:
+/// the suites are retired from the reflex harness itself, home-made
+/// synthetic evals; their Bench 011/016/028 rows remain in .benchmarks
+/// as history.)
 const SUITES: &[&str] = &[
     "ag_news",
     "emotion",
@@ -72,7 +70,6 @@ const SUITES: &[&str] = &[
     "banking77",
     "typed_decisions",
     "prompt_injections",
-    "code_fixtures",
     // Plan 010 (reflex plan 010 T4): the S1MB lane's three named-only
     // protocol suites — the hybrid row of the three-lane bench. Labels:
     // noul = the fixed ["false","true"], choice/score = the presented

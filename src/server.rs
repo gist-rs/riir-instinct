@@ -972,11 +972,8 @@ impl<const N: usize> SuiteServer<N> {
                 if !self.perm.contains(&usize::MAX) {
                     // Named join. Name-first (the arena's fill_positions
                     // law, verbatim): NOUL_PAIR resolved through the key
-                    // map — which covers BOTH the pair-is-the-seat
-                    // suites (prompt_injections) and the pair-lives-in-
-                    // the-artifact suites (code_fixtures: the seat
-                    // offers the 8 module labels, the unified no/yes rows
-                    // join at the sentinel). The caller's presentation
+                    // map — which covers the pair-is-the-seat
+                    // suites (prompt_injections). The caller's presentation
                     // still VALIDATES against the answer space: pick_index
                     // speaks the CALLER's option list positionally over
                     // the fixed rendering, so a presentation wider or
