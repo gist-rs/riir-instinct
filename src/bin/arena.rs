@@ -2098,6 +2098,12 @@ fn pin_a0_identity(datasets_dir: &Path, runs: &[SuiteRun], suites: &[&str]) -> R
         // (the JDI 2026-10-07 #1); off: a comparison lane, never the A0
         // drift pin's subject. (Field landed by the sibling's lane add.)
         pplx: false,
+        // riir-train 629 T2 — the vLLM-SR d3 (27B) comparison lane (the
+        // JDI board's d3 entrant, reflex `46ddc75`, the pplx wire's
+        // sibling); off: a comparison lane, never the A0 drift pin's
+        // subject. (Field landed by the sibling's lane add — the 0060
+        // pplx class again.)
+        d3: false,
         // The Cloudflare Clef comparison lane (reflex plan 011 Phase A) —
         // off: a comparison lane, never the pin's subject.
         clef: false,
