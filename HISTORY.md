@@ -1,5 +1,22 @@
 # HISTORY.md — riir-instinct
 
+## 2026-10-16 — Issue 023 CLOSED: the RunOptions field-add break class closed at the root (`lanes_off()`)
+
+The pplx → d3 → jeva E0063 lineage (3rd occurrence live 1.5 h before a
+clippy sweep caught it) is structurally gone: reflex `a7ba797` landed
+`RunOptions::lanes_off(dir, suites)` — the single struct-literal home for
+the no-flags CLI posture, `harness_main` delegates to it — so a lane field
+add reds REFLEX's own build inside the adding commit instead of this
+repo's arena pin. The pin (`8e49915`) builds on the constructor + 5
+explicit posture deltas (skip_laya, drafter_fix PerByte, nb/ridge/oc
+select — the measured-evidence comments preserved at the override sites);
+84 lines of per-field enumeration deleted. Behavior-preserving: the two
+inert margin zeros ride the base's house values (cascade margin 0.16 under
+off cascade; genome margin 0.05 — the old 0.0 resolved to the same bar).
+First reflex lane add after this lands with zero instinct edits — the
+proof the class is closed. Option 2 (compile canary) declined: it detects
+sooner, the constructor removes.
+
 ## 2026-10-11 — code_fixtures RETIRED from the board (owner call; board 9 → 8)
 
 The last self-authored synthetic suite left the serving board: `code_fixtures` was generated from reflex's own fn spans (n=32 questions / 16 cases, gold programmatic, seat-marked `synthetic`) — the same class the six Issue-004 families were retired for on 2026-10-02, and the gap-table row it carried (−12.5 vs pplx, ECE 0.186 at n=32) was the noisiest cell on the public board. Removed: the `arsenal.toml` A0 row (teaching default, digest re-pinned `6e825019…`), the production `[[vessel]]` A1 row (rethink `arsenal.toml` + the inline byte-pin copy + digest `3473b3ad…`, one lockstep family per law 2), the `winner_bridge` MultiQuestion arm, the label_text passthrough, the arena SUITES entry, the serve parity gate (`code_fixtures_serves_the_frozen_a1_picks`), and both wave instruments (`examples/export_code_fixtures`, `examples/instinct_v2_gate` — the Issue-593/597 per-head machinery existed only for this suite). Its Bench 011/028 records stay in .benchmarks as history. Gates: serve_gates 23/23, lib 88/88, clippy `-D warnings` clean.
