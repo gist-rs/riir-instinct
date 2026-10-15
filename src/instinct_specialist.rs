@@ -435,6 +435,76 @@ pub fn stratified_holdout(rows: &[SuiteRow], budget: usize) -> (Vec<usize>, Vec<
 
 // ── the model + Arm A trainer ───────────────────────────────────────────
 
+/// The 464 §3 pick-level calibration readout (issue 623 T5): per evaluated
+/// holdout question, `conf` = the PICKED class's raw sigmoid (the consumer's
+/// exact probability — no normalization, no recalibration) and `hit` =
+/// pick==gold. Brier = mean `(conf − hit)²` (the GATE axis); NLL = mean
+/// `−[hit·ln conf + (1−hit)·ln(1−conf)]` (printed beside — a Brier-weighted
+/// loss can win Brier while losing NLL, the wrong-side damping cost); ECE is
+/// DISCLOSURE over 10 LEFT-OPEN bins — bin k = `(k/10, (k+1)/10]`, so a
+/// conf of exactly 0 falls in NO bin (the reflex xnli law: zero-confidence
+/// rows read n/a, never perfect).
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct PickCalibration {
+    pub n: usize,
+    pub brier: f64,
+    pub nll: f64,
+    pub ece: f64,
+    /// Rows that fell in a bin (the ECE denominator — `n` minus the
+    /// zero-conf rows; disclosed, never pooled into `n`).
+    pub binned: usize,
+}
+
+/// Compute [`PickCalibration`] over aligned per-row `(conf, hit)` vectors
+/// (NaN confs — skipped rows — are excluded, as are misaligned inputs via
+/// zip). Pure, known-answer-tested.
+#[must_use]
+pub fn pick_calibration(conf: &[f32], hit: &[u8]) -> PickCalibration {
+    let mut n = 0usize;
+    let mut brier_sum = 0.0f64;
+    let mut nll_sum = 0.0f64;
+    // Left-open bins: bin k covers (k/10, (k+1)/10].
+    let mut bin_n = [0usize; 10];
+    let mut bin_hit = [0.0f64; 10];
+    let mut bin_conf = [0.0f64; 10];
+    for (&c, &h) in conf.iter().zip(hit) {
+        if c.is_nan() {
+            continue;
+        }
+        let h = f64::from(h);
+        n += 1;
+        brier_sum += (f64::from(c) - h) * (f64::from(c) - h);
+        let c1 = f64::from(c.clamp(f32::MIN_POSITIVE, 1.0 - f32::MIN_POSITIVE));
+        nll_sum -= if h > 0.0 { c1.ln() } else { (1.0 - c1).ln() };
+        // Left-open bin index: ceil(c·10) − 1; c=0 → no bin.
+        let idx = (c * 10.0).ceil() as i64 - 1;
+        if (0..10).contains(&idx) {
+            let b = idx as usize;
+            bin_n[b] += 1;
+            bin_hit[b] += h;
+            bin_conf[b] += f64::from(c);
+        }
+    }
+    let binned: usize = bin_n.iter().sum();
+    let mut ece = 0.0f64;
+    if binned > 0 && n > 0 {
+        for b in 0..10 {
+            if bin_n[b] > 0 {
+                let acc = bin_hit[b] / bin_n[b] as f64;
+                let conf_bar = bin_conf[b] / bin_n[b] as f64;
+                ece += bin_n[b] as f64 / n as f64 * (acc - conf_bar).abs();
+            }
+        }
+    }
+    PickCalibration {
+        n,
+        brier: if n > 0 { brier_sum / n as f64 } else { f64::NAN },
+        nll: if n > 0 { nll_sum / n as f64 } else { f64::NAN },
+        ece,
+        binned,
+    }
+}
+
 /// Trainer knobs. Zero-init training: no seed, no RNG anywhere.
 #[derive(Debug, Clone, Copy)]
 pub struct ArmAConfig {
@@ -444,6 +514,14 @@ pub struct ArmAConfig {
     pub warmup_steps: u64,
     /// Cosine floor as a fraction of `lr`.
     pub min_lr_ratio: f32,
+    /// Issue 623 T5 rider (Research 464 §2.1): the Brier blend λ in
+    /// `(1−λ)·BCE + λ·Brier` over the per-class sigmoid. ADD ≡ MIX under
+    /// Adam — only the RELATIVE confidence weighting survives, the
+    /// [`brier_bracket`] shape; λ=1 is the pure-Brier replacement (the
+    /// extremes truly stop stepping). `0.0` = the incumbent BCE,
+    /// bit-identical (pinned by test). Valid range `[0, 1]` — refused loud
+    /// otherwise.
+    pub brier_lambda: f32,
 }
 
 impl Default for ArmAConfig {
@@ -454,8 +532,21 @@ impl Default for ArmAConfig {
             weight_decay: 0.01,
             warmup_steps: 500,
             min_lr_ratio: 0.05,
+            brier_lambda: 0.0,
         }
     }
+}
+
+/// The 464 §2.1 gradient bracket: `(1−λ) + 2λ·p(1−p)` — the blended
+/// loss's logit-space gradient RELATIVE to BCE's `(p−t)` at sigmoid
+/// output `p`. λ=0 → `1` (BCE); λ=1 → `2p(1−p)` (pure Brier — peaks at
+/// p=0.5, → 0 at the extremes); every λ>0 keeps the bracket strictly
+/// below 1 away from the peak, so mid-confidence gradients take a larger
+/// share of every Adam step. Pure; pinned by test.
+#[inline]
+#[must_use]
+pub fn brier_bracket(p: f32, lambda: f32) -> f32 {
+    (1.0 - lambda) + 2.0 * lambda * p * (1.0 - p)
 }
 
 /// The trained one-vs-all logistic: `score_c = b_c + w_c · x` over the
@@ -537,6 +628,15 @@ pub struct ArmARun {
     /// Rows skipped for zero events (pure punctuation / empty text) — loud,
     /// never silent.
     pub skipped_empty: usize,
+    /// Issue 623 T5 / Research 464 §3 — the pick-level calibration readout
+    /// at the consumer's exact probability (the PICKED class's raw
+    /// sigmoid; the serving readout reads the same value un-recalibrated).
+    pub calibration: PickCalibration,
+    /// Per holdout row, IN HOLDOUT ORDER: the picked class's raw sigmoid
+    /// (`NaN` = skipped empty-bag row) and the hit flag. Two arms' vectors
+    /// zip row-wise for the paired LB95 gates (accuracy + pick-Brier).
+    pub holdout_pick_conf: Vec<f32>,
+    pub holdout_pick_hit: Vec<u8>,
 }
 
 /// Train Arm A: supervised one-vs-all logistic BCE over `train` rows
@@ -612,6 +712,12 @@ fn train_core(
     cfg: &ArmAConfig,
     targets: Targets<'_>,
 ) -> Result<ArmARun, String> {
+    if !(0.0..=1.0).contains(&cfg.brier_lambda) {
+        return Err(format!(
+            "brier_lambda {} outside [0, 1] — the 464 §2.1 blend is a ratio, not a weight",
+            cfg.brier_lambda
+        ));
+    }
     let mut class_of: HashMap<&str, usize> = HashMap::with_capacity(labels.len());
     for (i, l) in labels.iter().enumerate() {
         class_of.insert(l.as_str(), i);
@@ -647,7 +753,9 @@ fn train_core(
     for _epoch in 0..cfg.epochs {
         for (r, bag) in bags.iter().enumerate() {
             let row = row_of[r];
-            // Forward: scores + the mean BCE over classes (for the summary).
+            // Forward: scores + the blended loss over classes (for the
+            // summary). λ=0 blends to the exact incumbent BCE (0·finite = 0).
+            let lam = cfg.brier_lambda;
             let mut loss = 0.0f32;
             for (c, o) in scores.iter_mut().enumerate() {
                 let mut s = model.b[c];
@@ -657,9 +765,11 @@ fn train_core(
                 *o = katgpt_core::exact_sigmoid(s);
                 let y = targets.at(row, c);
                 let p = *o;
-                loss -= (y * p.max(f32::MIN_POSITIVE)
+                let bce = -(y * p.max(f32::MIN_POSITIVE)
                     + (1.0 - y) * (1.0 - p).max(f32::MIN_POSITIVE))
                 .ln();
+                let brier = (p - y) * (p - y);
+                loss += (1.0 - lam) * bce + lam * brier;
             }
             final_loss = loss / l as f32;
             let lr = lr_at(cfg.lr, step, total_steps, cfg.warmup_steps, cfg.min_lr_ratio);
@@ -667,9 +777,12 @@ fn train_core(
             let bc1 = 1.0 - beta1.powf(step as f32);
             let bc2 = 1.0 - beta2.powf(step as f32);
             // Lazy AdamW per touched (class, bucket); decay decoupled on
-            // touched params only (documented lazy-Adam caveat).
+            // touched params only (documented lazy-Adam caveat). The 464
+            // §2.1 rider multiplies the BCE gradient `(p−t)` by the
+            // confidence bracket — λ=0 gives bracket 1.0, the bit-identical
+            // incumbent (× 1.0f32 is exact).
             for (c, &s) in scores.iter().enumerate() {
-                let ds = (s - targets.at(row, c)) / l as f32;
+                let ds = (s - targets.at(row, c)) * brier_bracket(s, lam) / l as f32;
                 for &(j, val) in bag {
                     let p = c * VOCAB + j as usize;
                     let g = ds * val;
@@ -682,9 +795,10 @@ fn train_core(
                     model.w[p] -= lr * (mhat / (vhat.sqrt() + eps) + decay);
                 }
             }
-            // Biases: dense Adam (every class touched every row).
+            // Biases: dense Adam (every class touched every row), same
+            // 464 §2.1 bracket as the weights.
             for (c, &s) in scores.iter().enumerate() {
-                let ds = (s - targets.at(row, c)) / l as f32;
+                let ds = (s - targets.at(row, c)) * brier_bracket(s, lam) / l as f32;
                 let st = &mut b_state[c];
                 st.0 = beta1 * st.0 + (1.0 - beta1) * ds;
                 st.1 = beta2 * st.1 + (1.0 - beta2) * ds * ds;
@@ -697,12 +811,30 @@ fn train_core(
     let mut bag = Vec::new();
     let mut scratch2 = Vec::new();
     let mut hit = 0usize;
+    // The 464 §3 readout: per holdout row, the picked class's raw sigmoid
+    // and the hit flag (NaN conf = skipped empty-bag row, excluded by
+    // [`pick_calibration`] and by paired tests via the same NaN law).
+    let mut pick_conf: Vec<f32> = Vec::with_capacity(holdout_idx.len());
+    let mut pick_hit: Vec<u8> = Vec::with_capacity(holdout_idx.len());
+    let mut scores_buf = vec![0.0f32; l];
     for &i in holdout_idx {
         bag_into(rows[i].text.as_bytes(), &mut bag, &mut scratch2);
-        if !bag.is_empty() && model.pick(&bag) == class_of[rows[i].label.as_str()] {
+        if bag.is_empty() {
+            pick_conf.push(f32::NAN);
+            pick_hit.push(0);
+            continue;
+        }
+        model.scores_into(&bag, &mut scores_buf);
+        let pick = argmax_lowest_tie(&scores_buf);
+        let gold = class_of[rows[i].label.as_str()];
+        let is_hit = u8::from(pick == gold);
+        if is_hit == 1 {
             hit += 1;
         }
+        pick_conf.push(scores_buf[pick]);
+        pick_hit.push(is_hit);
     }
+    let calibration = pick_calibration(&pick_conf, &pick_hit);
     let holdout_accuracy = hit as f64 / holdout_idx.len().max(1) as f64;
     let class0 = holdout_idx
         .iter()
@@ -716,6 +848,9 @@ fn train_core(
         holdout_accuracy,
         control_accuracy,
         skipped_empty,
+        calibration,
+        holdout_pick_conf: pick_conf,
+        holdout_pick_hit: pick_hit,
     })
 }
 
@@ -1390,5 +1525,186 @@ mod tests {
         assert!(decode_artifact(&corrupt).is_err());
         // Truncation is refused.
         assert!(decode_artifact(&bytes[..bytes.len() - 8]).is_err());
+    }
+
+    // ── Issue 623 T5 riders (Research 464 §2.1 / §3) ──────────────────────
+
+    #[test]
+    fn brier_bracket_pinned() {
+        // λ=0 → BCE (bracket exactly 1 everywhere).
+        for p in [0.0f32, 0.1, 0.5, 0.9, 1.0] {
+            assert_eq!(brier_bracket(p, 0.0), 1.0);
+        }
+        // λ=1 → pure Brier: 2p(1−p), zero at the extremes, peak at p=0.5.
+        assert_eq!(brier_bracket(0.0, 1.0), 0.0);
+        assert_eq!(brier_bracket(1.0, 1.0), 0.0);
+        assert!((brier_bracket(0.5, 1.0) - 0.5).abs() < 1e-6);
+        // Every λ>0 keeps the bracket strictly below 1 away from p=0.5
+        // (the 464 §2.1 law: the blend is never ≥ BCE-shaped anywhere).
+        for lam in [0.25f32, 0.5, 0.75, 1.0] {
+            for p in [0.05f32, 0.3, 0.7, 0.95] {
+                assert!(brier_bracket(p, lam) < 1.0);
+            }
+            // The peak at p=0.5 is 1 − λ/2 (below 1 for λ>0).
+            assert!((brier_bracket(0.5, lam) - (1.0 - lam / 2.0)).abs() < 1e-6);
+        }
+    }
+
+    #[test]
+    fn brier_lambda_zero_is_bit_identical_to_incumbent() {
+        let rows = toy_rows();
+        let labels = label_universe(&rows);
+        let (holdout, train) = stratified_holdout(&rows, 8);
+        let base = ArmAConfig { epochs: 2, ..ArmAConfig::default() };
+        let run = train_arm_a(&rows, &labels, &train, &holdout, &base).unwrap();
+        let lam0 = ArmAConfig { brier_lambda: 0.0, ..base };
+        let again = train_arm_a(&rows, &labels, &train, &holdout, &lam0).unwrap();
+        assert_eq!(run.model.w, again.model.w, "λ=0 must be the incumbent, exactly");
+        assert_eq!(run.model.b, again.model.b);
+        assert_eq!(run.final_loss, again.final_loss);
+        // The default IS λ=0 (the shipped posture unchanged).
+        assert_eq!(ArmAConfig::default().brier_lambda, 0.0);
+    }
+
+    #[test]
+    fn brier_lambda_moves_the_run_and_is_range_checked() {
+        let rows = toy_rows();
+        let labels = label_universe(&rows);
+        let (holdout, train) = stratified_holdout(&rows, 8);
+        let base = ArmAConfig { epochs: 2, ..ArmAConfig::default() };
+        let run = train_arm_a(&rows, &labels, &train, &holdout, &base).unwrap();
+        let rider = train_arm_a(
+            &rows,
+            &labels,
+            &train,
+            &holdout,
+            &ArmAConfig { brier_lambda: 1.0, ..base },
+        )
+        .unwrap();
+        // λ=1 is a materially different run (the pure-Brier replacement).
+        assert_ne!(run.model.w, rider.model.w);
+        // Out-of-range λ refuses loud, never trains.
+        for bad in [-0.01f32, 1.01, 2.0, f32::NAN] {
+            let e = train_arm_a(
+                &rows,
+                &labels,
+                &train,
+                &holdout,
+                &ArmAConfig { brier_lambda: bad, ..base },
+            )
+            .unwrap_err();
+            assert!(e.contains("brier_lambda"), "{e}");
+        }
+    }
+
+    #[test]
+    fn arm_b_gold_mix_one_with_brier_is_bit_identical_to_arm_a() {
+        let rows = toy_rows();
+        let labels = label_universe(&rows);
+        let (holdout, train) = stratified_holdout(&rows, 8);
+        let dir = std::env::temp_dir().join(format!("instinct_teacher_test_mix1_bl_{}", std::process::id()));
+        let path = dir.join("mix1_bl_teacher.bin");
+        write_teacher_dump(&path, &labels.iter().map(String::as_str).collect::<Vec<_>>(), &toy_teacher_rows(&rows));
+        let dump = load_teacher_dump(&path).unwrap();
+
+        let cfg = ArmAConfig { epochs: 2, brier_lambda: 0.5, ..ArmAConfig::default() };
+        let a = train_arm_a(&rows, &labels, &train, &holdout, &cfg).unwrap();
+        let b = train_arm_b(
+            &rows,
+            &labels,
+            &dump,
+            &train,
+            &holdout,
+            &ArmBConfig { base: cfg, gold_mix: 1.0 },
+        )
+        .unwrap();
+        assert_eq!(a.model.w, b.model.w, "gold_mix=1.0 + any λ stays bit-identical");
+        assert_eq!(a.model.b, b.model.b);
+    }
+
+    #[test]
+    fn pick_calibration_known_answers() {
+        // Perfectly calibrated confident hits: 10 rows at conf 0.9, all
+        // correct — Brier (0.9−1)², NLL −ln(0.9), ECE |1−0.9| = 0.1.
+        // (Expectations computed through the same f32→f64 widening the
+        // readout uses — 0.9f32 is not 0.9f64.)
+        let conf = vec![0.9f32; 10];
+        let hit = vec![1u8; 10];
+        let c = pick_calibration(&conf, &hit);
+        assert_eq!(c.n, 10);
+        assert_eq!(c.binned, 10);
+        let c90 = f64::from(0.9f32);
+        assert!((c.brier - (c90 - 1.0) * (c90 - 1.0)).abs() < 1e-12);
+        assert!((c.nll - -c90.ln()).abs() < 1e-12);
+        assert!((c.ece - (1.0 - c90)).abs() < 1e-12);
+
+        // Overconfident misses at 0.9: Brier (0.9−0)², NLL −ln(0.1).
+        let hit = vec![0u8; 10];
+        let c = pick_calibration(&conf, &hit);
+        assert!((c.brier - c90 * c90).abs() < 1e-12);
+        assert!((c.nll - -(1.0 - c90).ln()).abs() < 1e-12);
+        assert!((c.ece - c90).abs() < 1e-12);
+
+        // NaN confs (skipped rows) are excluded everywhere.
+        let conf = vec![f32::NAN, 0.9, 0.9];
+        let hit = vec![1, 1, 1];
+        let c = pick_calibration(&conf, &hit);
+        assert_eq!(c.n, 2);
+        assert_eq!(c.binned, 2);
+
+        // conf exactly 0 falls in NO bin (left-open bins — the reflex
+        // xnli law: zero-confidence rows read n/a, never perfect).
+        let conf = vec![0.0f32, 0.5];
+        let hit = vec![0, 0];
+        let c = pick_calibration(&conf, &hit);
+        assert_eq!(c.n, 2);
+        assert_eq!(c.binned, 1);
+        // conf 1.0 lands in the LAST bin (0.9, 1.0].
+        let conf = vec![1.0f32];
+        let c = pick_calibration(&conf, &[1]);
+        assert_eq!(c.binned, 1);
+
+        // Mixed bins, hand-computed ECE: 5 rows at 0.6 (3 hit), 5 at 0.4
+        // (1 hit). Bin (0.5,0.6]: acc .6, conf f64::from(0.6f32); bin
+        // (0.3,0.4]: acc .2, conf f64::from(0.4f32). ECE =
+        // (|acc−conf| terms weighted by 5/10 each) — expectations through
+        // the same f32→f64 widening.
+        let conf = vec![0.6f32; 5].into_iter().chain([0.4f32; 5]).collect::<Vec<_>>();
+        let hit = vec![1u8, 1, 1, 0, 0, 1, 0, 0, 0, 0];
+        let c = pick_calibration(&conf, &hit);
+        let c60 = f64::from(0.6f32);
+        let c40 = f64::from(0.4f32);
+        let expect = 0.5 * (0.6 - c60).abs() + 0.5 * (0.2 - c40).abs();
+        assert!((c.ece - expect).abs() < 1e-12, "ece {} expect {}", c.ece, expect);
+        assert_eq!(c.binned, 10);
+
+        // Empty input reads NaN metrics with n=0, never a confident 0.
+        let c = pick_calibration(&[], &[]);
+        assert_eq!(c.n, 0);
+        assert!(c.brier.is_nan());
+    }
+
+    #[test]
+    fn trainer_reports_pick_calibration_on_the_holdout() {
+        let rows = toy_rows();
+        let labels = label_universe(&rows);
+        let (holdout, train) = stratified_holdout(&rows, 8);
+        let run = train_arm_a(&rows, &labels, &train, &holdout, &ArmAConfig::default()).unwrap();
+        // The vectors are aligned to the holdout, one entry per row.
+        assert_eq!(run.holdout_pick_conf.len(), holdout.len());
+        assert_eq!(run.holdout_pick_hit.len(), holdout.len());
+        // Every toy row tokenizes (no NaNs) and the calibration matches a
+        // direct recomputation over the recorded pairs.
+        assert!(run.holdout_pick_conf.iter().all(|c| !c.is_nan()));
+        let recomputed = pick_calibration(&run.holdout_pick_conf, &run.holdout_pick_hit);
+        assert_eq!(recomputed, run.calibration);
+        // Hits agree with the headline accuracy.
+        let hits: usize = run.holdout_pick_hit.iter().map(|&h| h as usize).sum();
+        assert_eq!(hits as f64 / holdout.len() as f64, run.holdout_accuracy);
+        // A toy this separable must land every holdout pick correct with
+        // finite confidences (the magnitude is data-dependent — pinned by
+        // the recomputation, not a hand-picked number).
+        assert!(run.calibration.brier.is_finite());
+        assert_eq!(run.holdout_accuracy, 1.0);
     }
 }
