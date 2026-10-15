@@ -2043,126 +2043,42 @@ fn laya_face(_seat: &Seat, _test_arms: &[ArmOut]) -> Option<LayaFace> {
 /// posture must reproduce the arena's A0 test accuracy exactly (the same
 /// engine, the same questions — a divergence is a seat-path defect).
 fn pin_a0_identity(datasets_dir: &Path, runs: &[SuiteRun], suites: &[&str]) -> Result<(), String> {
-    let opts = riir_reflex::harness::runner::RunOptions {
-        datasets_dir: datasets_dir.to_path_buf(),
-        suites: suites.iter().map(|s| (*s).to_string()).collect(),
-        laya_max_questions: 0,
-        skip_laya: true,
-        // the cascade lane (sibling reflex Issue 038 T4′ / 042 lever 3) —
-        // off: the drift pin reproduces the plain modelless lane.
-        cascade: false,
-        cascade_worthiness: false,
-        cascade_worthiness_margin: 0.0,
-        // the LCB-armed worthiness probe (reflex issue 042 lever 3's
-        // support extension) — cascade-lane-only, None = off.
-        cascade_worthiness_lcb: None,
-        // Issue 042's gate rate-axis levers — off: the plain T1.6
-        // cal-slice fused fit is the posture the pin reproduces.
-        gate_fit_selection: false,
-        gate_distance_only: false,
-        // Reflex Issue 056 direction 0 — PROMOTED default-on 2026-09-30:
-        // fit the score-axis threshold on the calibrated scale the
-        // deployed gate applies (the fit-on-raw / apply-on-calibrated
-        // mismatch was a units bug). The reflex seat carries the fix as
-        // its default, so the pin mirrors it (`--no-gate-fit-calibrated`
-        // is the old measurement posture).
-        gate_fit_calibrated: true,
-        // Issue 079 (reflex `4ad25df`): `true` = the shipped default — the
-        // INDEX-ANCHORED route arm (the blind `k == N` fill became a NAME
-        // check; typed reads content-bound at this default, bench 131's
-        // 0.5630 row). `false` is the A/B instrument, not a posture.
-        kn_route: true,
-        // Issue 079 (reflex bench 131 + the `d3aeeae` site republish): the
-        // drafter-only correction mode — `per_byte` IS the published
-        // posture now (typed 0.5700, the board cell the site carries);
-        // `Off` was the 0.5630 pre-publish default. The seat knobs arm the
-        // same lever, so the pin's run() must too or the engine half
-        // reds (measured: run() 0.5630 vs arena 0.5700).
-        drafter_fix: riir_reflex::engine::DrafterFix::PerByte,
-        laya_python: false,
-        gliner: false,
-        // The bekko JSONL-oracle comparison lane (reflex Bench 103) — off:
-        // a comparison lane, never the A0 drift pin's subject.
-        bekko: false,
-        agentjev: false,
-        // The OpenThai comparison lane (reflex Plan 003 Phase 2) — off:
-        // their served model is a comparison lane, never the pin's
-        // subject.
-        openthai: false,
-        // Reflex Issues 073/078 — the Drex DLM and LiquidAI d1 comparison
-        // lanes, both default-off measurement-only upstream; never the
-        // pin's subject. (Fields landed by the sibling's engine change.)
-        drex: false,
-        d1: false,
-        // Reflex Issue 082 — the pplx-decider v1.1 (27B) comparison lane
-        // (the JDI 2026-10-07 #1); off: a comparison lane, never the A0
-        // drift pin's subject. (Field landed by the sibling's lane add.)
-        pplx: false,
-        // riir-train 629 T2 — the vLLM-SR d3 (27B) comparison lane (the
-        // JDI board's d3 entrant, reflex `46ddc75`, the pplx wire's
-        // sibling); off: a comparison lane, never the A0 drift pin's
-        // subject. (Field landed by the sibling's lane add — the 0060
-        // pplx class again.)
-        d3: false,
-        // riir-train 632 T2 — the Jeva-4B decision-native comparison lane
-        // (reflex `83031d2`, Issue 090 B1+B2; their served model is a
-        // comparison lane, never the pin's subject. Field landed by the
-        // sibling's lane add — the 0060 pplx class, third occurrence.)
-        jeva: false,
-        // The Cloudflare Clef comparison lane (reflex plan 011 Phase A) —
-        // off: a comparison lane, never the pin's subject.
-        clef: false,
-        paw: false,
-        corpus_cap_override: 0,
-        cal_select_caps: vec![],
-        pair_head_ab: false,
-        head_scale: 0.0,
-        // Head-select RETIRED from the published face: the site's rows are
-        // generated head-off since the 10-01 full-pool re-basis (reflex
-        // issue 058, site `d750175`) — head_selection is null on every
-        // published row, and the lever is outcome-load-bearing only on
-        // banking77 (head@1 reads 0.8260 vs the published 0.842; inert on
-        // every other suite — bench 0059's pin catch, the first full-pin
-        // run since the re-basis).
-        head_select: false,
-        nb_select: true,
-        clm: false,
-        paw_local: false,
-        // The Issue-008 T1 re-baseline posture: the cal-selected NBSVM
-        // ridge (reflex Bench 057) AND the cal-selected option-
-        // conditioned lane (reflex issue 038 T7b). Both selections run
-        // per suite and decline at the arming bar / on no gold events —
-        // ridge arms only on emotion, oc only on typed_decisions, each
-        // byte-identical to off elsewhere. (Measured 2026-09-27: with
-        // oc off the pin read typed_decisions 0.3300 vs the then-
-        // published 0.4655 — reflex Bench 078 moved that row to 0.5725
-        // at the Issue-052 corpus extension.)
-        ridge_select: true,
-        oc_select: true,
-        // Issue 038 T5's joint genome walk — off: reflex's published
-        // bench rows predate the genome lane (the site rows are the
-        // 052/057 postures); turning it on here would be a NEW posture
-        // no published row carries.
-        genome_select: false,
-        genome_accept_margin: 0.0,
-        // reflex's issue-044 probe arm — measurement-only upstream, and
-        // never part of the published posture the pin reproduces.
-        nli_feature_ab: false,
-        // Reflex Issue 072's `--dump-items` (rethink 028 T1's instrument)
-        // — off: the A0 drift pin asserts BYTE-IDENTITY with the arena's
-        // own A0 answers; `dump_items` is measurement-only (results.json
-        // unchanged) but writes nothing here because the pin persists no
-        // items directory of its own.
-        dump_items: false,
-        // reflex's Issue 047 M1 reopen lane (xnli pick/confidence
-        // separation) — measurement-only upstream, never the pin's
-        // posture. (Field landed by the sibling's in-flight tree.)
-        nli_m1: false,
-        // reflex's Issue 066 fused-abstain DENSITY-half A/B — report-only
-        // upstream (NOT CERTIFIED at Bench 124, stays opt-in there); off =
-        // the shipped fused gate, byte-identical. Never the pin's posture.
-        density_gate: false,
-    };
+    // The pin's posture = reflex's no-flags CLI base (`lanes_off`, reflex
+    // `a7ba797` — the single struct-literal home) + the published-seat
+    // deltas below. Every comparison lane / probe / selection lever is
+    // off-by-construction there, so a lane field added upstream lands OFF
+    // here with no edit — the pplx → d3 → jeva E0063 class (issue 023)
+    // closed at the root. Two inert knobs ride the base's house values
+    // instead of the old explicit zeros (cascade_worthiness_margin 0.16 —
+    // read only under cascade_worthiness, off here; genome_accept_margin
+    // 0.05 — read only under genome_select, off here, and 0.0 resolved to
+    // the 0.05 house bar anyway): no behavior change.
+    let mut opts = riir_reflex::harness::runner::RunOptions::lanes_off(
+        datasets_dir.to_path_buf(),
+        suites.iter().map(|s| (*s).to_string()).collect(),
+    );
+    // The drift pin reproduces the plain MODELLESS lane — skip the laya
+    // lane entirely (the base's skip_laya=false is the CLI posture).
+    opts.skip_laya = true;
+    // Issue 079 (reflex bench 131 + the `d3aeeae` site republish): the
+    // drafter-only correction mode — `per_byte` IS the published posture
+    // now (typed 0.5700, the board cell the site carries); `Off` was the
+    // 0.5630 pre-publish default and remains the no-flags base. The seat
+    // knobs arm the same lever, so the pin's run() must too or the engine
+    // half reds (measured: run() 0.5630 vs arena 0.5700).
+    opts.drafter_fix = riir_reflex::engine::DrafterFix::PerByte;
+    // The Issue-008 T1 re-baseline posture: the cal-selected NBSVM table
+    // lane, the cal-selected ridge (reflex Bench 057), AND the
+    // cal-selected option-conditioned lane (reflex issue 038 T7b). The
+    // selections run per suite and decline at the arming bar / on no gold
+    // events — ridge arms only on emotion, oc only on typed_decisions,
+    // each byte-identical to off elsewhere. (Measured 2026-09-27: with
+    // oc off the pin read typed_decisions 0.3300 vs the then-published
+    // 0.4655 — reflex Bench 078 moved that row to 0.5725 at the Issue-052
+    // corpus extension.)
+    opts.nb_select = true;
+    opts.ridge_select = true;
+    opts.oc_select = true;
     let (out, errors) = riir_reflex::harness::runner::run(&opts)?;
     if !errors.is_empty() {
         return Err(format!("reflex run() reported errors: {errors:?}"));
