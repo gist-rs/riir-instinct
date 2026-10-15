@@ -2104,6 +2104,11 @@ fn pin_a0_identity(datasets_dir: &Path, runs: &[SuiteRun], suites: &[&str]) -> R
         // subject. (Field landed by the sibling's lane add — the 0060
         // pplx class again.)
         d3: false,
+        // riir-train 632 T2 — the Jeva-4B decision-native comparison lane
+        // (reflex `83031d2`, Issue 090 B1+B2; their served model is a
+        // comparison lane, never the pin's subject. Field landed by the
+        // sibling's lane add — the 0060 pplx class, third occurrence.)
+        jeva: false,
         // The Cloudflare Clef comparison lane (reflex plan 011 Phase A) —
         // off: a comparison lane, never the pin's subject.
         clef: false,
