@@ -666,8 +666,9 @@ pub fn train_arm_a(
 
 /// The per-row training target. Both variants are looked up in ROW space
 /// (the original `rows` index) so the distilled rows read their teacher
-/// vector directly.
-enum Targets<'a> {
+/// vector directly. Crate-visible so the 632 T3 Eq-9 lane constructs the
+/// per-row-mix variant without a second trainer.
+pub(crate) enum Targets<'a> {
     /// One-hot gold (Arm A) — also `Distill` with `mix == 1.0` exactly.
     Gold(Vec<usize>),
     /// `t = mix·onehot(gold) + (1−mix)·q_row` (Arm B). `mix == 1.0` reduces
@@ -678,6 +679,17 @@ enum Targets<'a> {
         q: &'a TeacherDump,
         gold: Vec<usize>,
         mix: f32,
+    },
+    /// riir-train 632 T3: PER-ROW gold mix — `t = gold_mix[row]·onehot(gold)
+    /// + (1−gold_mix[row])·q_row`. The dual-shuffle acceptance gate decides
+    /// the mix per row (qualified → the 7:3 teacher:gold blend, i.e.
+    /// `gold_mix = 0.3`; rejected → pure gold, `gold_mix = 1.0`, which stays
+    /// bit-identical to `Gold` for that row by the same `0.0 · finite` law).
+    /// Same row-space lookup as [`Targets::Distill`].
+    DistillRowMix {
+        q: &'a TeacherDump,
+        gold: Vec<usize>,
+        gold_mix: Vec<f32>,
     },
 }
 
@@ -696,15 +708,22 @@ impl Targets<'_> {
                 let onehot = if c == gold[row] { 1.0 } else { 0.0 };
                 *mix * onehot + (1.0 - *mix) * q.row(row)[c]
             }
+            Targets::DistillRowMix { q, gold, gold_mix } => {
+                let onehot = if c == gold[row] { 1.0 } else { 0.0 };
+                let m = gold_mix[row];
+                m * onehot + (1.0 - m) * q.row(row)[c]
+            }
         }
     }
 }
 
 /// The shared trainer core (Arm A gold / Arm B distilled soft targets):
 /// lazy-AdamW one-vs-all logistic BCE, bit-deterministic (fixed row order,
-/// fixed op order, single thread, zero init).
+/// fixed op order, single thread, zero init). Crate-visible so the 632 T3
+/// Eq-9 typed lane (`instinct_typed_eq9`) shares the ONE trainer — never a
+/// second copy of the schedule/Adam laws.
 #[allow(clippy::too_many_arguments)]
-fn train_core(
+pub(crate) fn train_core(
     rows: &[SuiteRow],
     labels: &[String],
     train_idx: &[usize],

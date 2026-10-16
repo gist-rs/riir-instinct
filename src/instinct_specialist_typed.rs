@@ -147,7 +147,7 @@ impl TypedRow {
 /// Python `str()` for JSON values (the reflex `py_str` law): strings
 /// pass through; bools are short literals; numbers the serde rendering;
 /// null the Python `None`.
-fn py_str(v: &Value) -> String {
+pub(crate) fn py_str(v: &Value) -> String {
     match v {
         Value::String(s) => s.clone(),
         Value::Bool(b) => {
@@ -187,7 +187,7 @@ fn parse_json_string_or_value(v: &Value) -> Value {
 /// order; array → elements via the bridge's `Value → String` rendering
 /// (`String` verbatim, anything else the compact JSON form) — the
 /// reflex `choice_keys` + `fill_positions` laws.
-fn choice_keys(crit: &Value) -> Option<Vec<String>> {
+pub fn choice_keys(crit: &Value) -> Option<Vec<String>> {
     match crit {
         Value::Object(m) => Some(m.keys().cloned().collect()),
         Value::Array(a) => Some(
@@ -203,7 +203,7 @@ fn choice_keys(crit: &Value) -> Option<Vec<String>> {
 }
 
 /// Score-question levels: the criteria ARRAY via the same rendering.
-fn score_levels(crit: &Value) -> Option<Vec<String>> {
+pub fn score_levels(crit: &Value) -> Option<Vec<String>> {
     let a = crit.as_array()?;
     Some(
         a.iter()

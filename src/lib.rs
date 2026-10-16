@@ -29,6 +29,7 @@ pub mod specialist;
 pub mod instinct_specialist;
 pub mod instinct_nbsvm;
 pub mod instinct_specialist_typed;
+pub mod instinct_typed_eq9;
 pub mod instinct_bank77_cases;
 pub mod hybrid;
 pub mod stats;
