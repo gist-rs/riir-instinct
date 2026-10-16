@@ -4,7 +4,7 @@ The global `~/.agents/` rules apply; this file documents repo-local context.
 
 ## ⚠ THE SPLIT (riir-ai Proposal 052, 2026-10-03) — read before anything else
 
-**Instinct OPENS** as the public teaching lane — and is SINGLE-SOURCE-OF-TRUTH
+**Instinct OPENS** as the public teaching lane — SINGLE-SOURCE-OF-TRUTH
 since 2026-10-03: the owner retired the two-repo arrangement ("git history
 leak is fine… i dont want 2 confusing repo i want single source of truth");
 the FULL git history lives on the public repo, `gist-rs/riir-instinct-internal`
@@ -20,9 +20,8 @@ plug-in path Rethink uses; `../riir-rethink/bin_hunks/` archives what left
 the bins. The seam's RERANK contract (options in → pick-or-abstain out,
 options echoed exactly as presented) is gated by
 `tests/ext_seat_rerank_gates.rs` — refine Plan 202 R3a's first-customer
-traffic; the gate is its OWN test binary because the install is
-once-per-process and `serve_gates` pins the no-backend refusal of the
-same build.
+traffic; its own test binary because the install is once-per-process and
+`serve_gates` pins the same build's no-backend refusal.
 Split feature changes: `arena-laya` → **`laya-face`** (the G2 paired face vs
 public reflex's laya lane); `serve-encoder*` and `decstat` are GONE from
 this tree (Rethink-only). Winners default to `artifacts/cache` (env
@@ -201,11 +200,10 @@ per case).
 | emotion | A0 **0.8850** (the board's highest bar — every challenger measured out, Bench 038) | DEAD (Bench 032+035 screen) |
 
 The six home-made harness families are RETIRED (owner call 2026-10-02,
-reflex `31b11d2`) — board 15 → 9. `code_fixtures` is RETIRED too (owner
-call 2026-10-11, reflex-side same day): the last self-authored synthetic
-suite (generated from reflex's own fn spans, n=32, seat-marked
-`synthetic`) — board 9 → 8; its Bench 011/028 rows remain in
-.benchmarks as history.
+reflex `31b11d2`) — board 15 → 9. `code_fixtures` RETIRED too (owner call
+2026-10-11, reflex-side same day): the last self-authored synthetic suite
+(reflex's own fn spans, n=32, seat-marked `synthetic`) — board 9 → 8;
+Bench 011/028 rows remain in .benchmarks as history.
 
 **Bench 0059 seat re-baseline (2026-10-08):** the arena/server seat = the
 CURRENT published posture — head-select RETIRED (the site's rows are head-off

@@ -1,5 +1,7 @@
 # HISTORY.md — riir-instinct
 
+Compacted 2026-10-16: every `##` heading kept verbatim, one compact entry per record; the full pre-compaction text is in git history (pre-compaction HEAD 0d9263517632). Operational rules live in `AGENTS.md`; removed issue files: git history.
+
 ## 2026-10-16 — Issue 023 CLOSED: the RunOptions field-add break class closed at the root (`lanes_off()`)
 
 The pplx → d3 → jeva E0063 lineage (3rd occurrence live 1.5 h before a
