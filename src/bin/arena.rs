@@ -309,6 +309,17 @@ struct DisclosedPosture {
     /// "count" for the v1 winners, "presence" for the banking77 nbsvm
     /// v2 lane.
     bag_convention: &'static str,
+    /// True = this suite seated its winner through the READ-SCOPED raw-v1
+    /// resolution (`--winners-raw-v1`: the `<suite>_winner_v1.bin` name +
+    /// Count bags for EVERY suite, bypassing winner_bridge's serving pin).
+    /// The T4 frozen-read posture (riir-train Issue 623): the routed
+    /// distill winners carry the v1 convention names, and banking77's
+    /// routed artifact is Count-trained while its SERVING bridge pins the
+    /// Presence nbsvm_v2 lane. READ-ONLY disclosure — the serving bridges
+    /// (serve_edge raw loader, swap edge, server boot) are untouched and
+    /// keep the coupling law; a record carrying true must never be read
+    /// as a registered/served posture.
+    raw_v1_read: bool,
     /// The seated synth corpus (Plan 426 T6), None = the gold corpus.
     /// Disclosed as "rows=… extra_cap=… digest=…" — the corpus identity
     /// rides every published row that consumed it.
@@ -362,6 +373,7 @@ fn arena_main() {
     let mut top_k = 8usize;
     let mut pin_a0 = true;
     let mut only_suites: Vec<String> = Vec::new();
+    let mut winners_raw_v1 = false;
     // Plan 426 T6's seat posture: the seated synth corpus (blake3-verified
     // by the reflex seat loader). None = the gold corpus, byte-identical
     // to every published row.
@@ -391,6 +403,14 @@ fn arena_main() {
                 only_suites.push(args[i].clone());
             }
             "--skip-pin-a0" => pin_a0 = false,
+            // The T4 frozen-read posture (riir-train Issue 623): resolve
+            // EVERY suite's winner as `<suite>_winner_v1.bin` under Count
+            // bags, bypassing winner_bridge's serving pin. Without the
+            // flag the routed banking77 artifact is invisible to the
+            // bridge (its file pin names the nbsvm_v2 lane) and the seat
+            // silently degrades to A0-only — the trap the flag removes
+            // for the read and ONLY for the read.
+            "--winners-raw-v1" => winners_raw_v1 = true,
             "--synth-corpus" => {
                 i += 1;
                 synth_corpus = Some(PathBuf::from(&args[i]));
@@ -435,6 +455,13 @@ fn arena_main() {
         out_dir.display(),
         &REFLEX_BASELINE_SHA[..12.min(REFLEX_BASELINE_SHA.len())]
     );
+    if winners_raw_v1 {
+        eprintln!(
+            "  ⚠ WINNERS-RAW-V1 read posture: every suite resolves <suite>_winner_v1.bin \
+             under Count bags (winner_bridge serving pin BYPASSED — riir-train 623 T4 \
+             frozen read only; this record is NOT a registered/served posture)"
+        );
+    }
     let box_state = riir_reflex::harness::box_state::capture();
     let box_summary = format_box_state(&box_state);
     eprintln!("box: {box_summary}");
@@ -448,6 +475,7 @@ fn arena_main() {
             top_k,
             synth_corpus.as_deref(),
             synth_extra_cap,
+            winners_raw_v1,
         ) {
             Ok(run) => runs.push(run),
             Err(e) => die(&format!("{suite}: {e}")),
@@ -513,6 +541,7 @@ fn run_suite(
     top_k: usize,
     synth_corpus: Option<&Path>,
     synth_extra_cap: usize,
+    winners_raw_v1: bool,
 ) -> Result<SuiteRun, String> {
     eprintln!("--- {name} ---");
     let seat = match synth_corpus {
@@ -538,19 +567,19 @@ fn run_suite(
         seat.train.len()
     );
     match seat.labels.len() {
-        2 => run_suite_n::<2>(name, seat, winners_dir, top_k),
-        3 => run_suite_n::<3>(name, seat, winners_dir, top_k),
-        4 => run_suite_n::<4>(name, seat, winners_dir, top_k),
-        5 => run_suite_n::<5>(name, seat, winners_dir, top_k),
-        6 => run_suite_n::<6>(name, seat, winners_dir, top_k),
-        8 => run_suite_n::<8>(name, seat, winners_dir, top_k),
+        2 => run_suite_n::<2>(name, seat, winners_dir, top_k, winners_raw_v1),
+        3 => run_suite_n::<3>(name, seat, winners_dir, top_k, winners_raw_v1),
+        4 => run_suite_n::<4>(name, seat, winners_dir, top_k, winners_raw_v1),
+        5 => run_suite_n::<5>(name, seat, winners_dir, top_k, winners_raw_v1),
+        6 => run_suite_n::<6>(name, seat, winners_dir, top_k, winners_raw_v1),
+        8 => run_suite_n::<8>(name, seat, winners_dir, top_k, winners_raw_v1),
         // Plan 010: s1mb_score (the presented level-index union) and
         // s1mb_choice (the option-key union — the massive by-name posture
         // at breadth), mirroring reflex's own dispatch.
-        10 => run_suite_n::<10>(name, seat, winners_dir, top_k),
-        842 => run_suite_n::<842>(name, seat, winners_dir, top_k),
-        59 => run_suite_n::<59>(name, seat, winners_dir, top_k),
-        77 => run_suite_n::<77>(name, seat, winners_dir, top_k),
+        10 => run_suite_n::<10>(name, seat, winners_dir, top_k, winners_raw_v1),
+        842 => run_suite_n::<842>(name, seat, winners_dir, top_k, winners_raw_v1),
+        59 => run_suite_n::<59>(name, seat, winners_dir, top_k, winners_raw_v1),
+        77 => run_suite_n::<77>(name, seat, winners_dir, top_k, winners_raw_v1),
         n => Err(format!("no engine arity for {n} labels — extend the dispatch")),
     }
 }
@@ -1102,6 +1131,7 @@ fn run_suite_n<const N: usize>(
     seat: Seat,
     winners_dir: &Path,
     top_k: usize,
+    winners_raw_v1: bool,
 ) -> Result<SuiteRun, String> {
     // The CURRENT PUBLISHED reflex posture (Issue 008 T1's re-baseline,
     // amended twice since): nb-select + oc-select + ridge-select, registry
@@ -1177,11 +1207,22 @@ fn run_suite_n<const N: usize>(
     // `a0_stands` row. A PRESENT-but-broken artifact stays fatal (a
     // corrupt seal must never degrade into a quiet A0). The FILE and the
     // BAG CONVENTION both resolve through the winner bridge (Issue 579's
-    // one home for the 578 coupling).
+    // one home for the 578 coupling) — unless `--winners-raw-v1` is
+    // armed: the READ-SCOPED raw-v1 resolution (riir-train 623 T4) uses
+    // the `<suite>_winner_v1.bin` name + Count bags for every suite,
+    // because the routed distill winners carry the v1 convention names
+    // and banking77's routed artifact is Count-trained while its SERVING
+    // bridge pins the Presence nbsvm_v2 lane. The serving bridges
+    // (serve_edge / server boot) never see this path — no serving
+    // behavior changes.
     let bridge = riir_instinct::specialist::winner_bridge(name);
+    let (bridge_file, bridge_convention) = if winners_raw_v1 {
+        (None, riir_instinct::specialist::BagConvention::Count)
+    } else {
+        (bridge.file, bridge.convention)
+    };
     let winner_path = winners_dir.join(
-        bridge
-            .file
+        bridge_file
             .map(str::to_string)
             .unwrap_or_else(|| format!("{name}_winner_v1.bin")),
     );
@@ -1218,10 +1259,11 @@ fn run_suite_n<const N: usize>(
     }
     let artifact_labels: Vec<String> = spec.labels.clone();
     eprintln!(
-        "  winner: {} ({} labels, BLAKE3 seal verified, {}-bag convention)",
+        "  winner: {} ({} labels, BLAKE3 seal verified, {}-bag convention{})",
         winner_path.display(),
         spec.labels.len(),
-        bridge.convention.name()
+        bridge_convention.name(),
+        if winners_raw_v1 { " · RAW-V1 READ" } else { "" }
     );
     // The seat↔artifact join form (Plan 003's bridge), decided once: a
     // name-joinable suite or the positional noul pair joins Named; a
@@ -1333,7 +1375,7 @@ fn run_suite_n<const N: usize>(
     let mut ctx = SuiteCtx::<N> {
         engine,
         lane,
-        conv: bridge.convention,
+        conv: bridge_convention,
         nb_view: posture.cfg.nb_view,
         nb_armed,
         oc_armed,
@@ -1589,7 +1631,8 @@ fn run_suite_n<const N: usize>(
             },
             score_threshold: posture.score_threshold,
             distance_threshold: posture.distance_threshold,
-            bag_convention: bridge.convention.name(),
+            bag_convention: bridge_convention.name(),
+            raw_v1_read: winners_raw_v1,
             synth_corpus: seat.synth.as_ref().map(|s| {
                 format!(
                     "rows={} extra_cap={} digest={}",
@@ -1696,6 +1739,7 @@ fn run_suite_a0_only<const N: usize>(
             score_threshold: posture.score_threshold,
             distance_threshold: posture.distance_threshold,
             bag_convention: riir_instinct::specialist::BagConvention::Count.name(),
+            raw_v1_read: false,
             synth_corpus: seat.synth.as_ref().map(|s| {
                 format!(
                     "rows={} extra_cap={} digest={}",
@@ -2255,6 +2299,10 @@ fn write_predictions(out_dir: &Path, runs: &[SuiteRun]) {
             "specialist_present": run.specialist_present,
             "verdict": run.verdict,
             "a0_note": run.a0_note,
+            // The read-posture disclosure: true = this suite seated its
+            // winner through the --winners-raw-v1 read-scoped resolution
+            // (riir-train 623 T4). Never true on a board run.
+            "raw_v1_read": run.posture.raw_v1_read,
             "registered": run.registered.name(),
             "instrument_pick": run.superiority.as_ref().map(|s| s.pick.name()),
             "superiority": run.superiority.as_ref().map(|s| serde_json::json!({
@@ -2370,7 +2418,7 @@ archived references — `.raw/datasets_t20k` stays on disk to reproduce them).\n
                 .unwrap_or_default()
         ));
         md.push_str(&format!(
-            "Posture: cap {} · head {:.2} · nb {:.2} · ridge {:.2} ({}) · fused-gate thresholds \\n{:.3}/{:.3} · specialist bag {}. Questions: {} over {} cases.{}\n\n",
+            "Posture: cap {} · head {:.2} · nb {:.2} · ridge {:.2} ({}) · fused-gate thresholds \n{:.3}/{:.3} · specialist bag {}. Questions: {} over {} cases.{}{}\n\n",
             run.posture.effective_cap,
             run.posture.head_scale,
             run.posture.nb_scale,
@@ -2383,6 +2431,12 @@ archived references — `.raw/datasets_t20k` stays on disk to reproduce them).\n
             run.n_cases,
             if !run.specialist_present {
                 " A0/G0-only posture — no specialist artifact (Issue 010 T2)."
+            } else {
+                ""
+            },
+            if run.posture.raw_v1_read {
+                " **WINNERS-RAW-V1 read posture — the winner_bridge serving pin was bypassed \
+for this seat (riir-train 623 T4); NOT a registered/served posture.**"
             } else {
                 ""
             }
