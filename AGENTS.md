@@ -300,3 +300,4 @@ stale-but-unrendered, disclosed in the bench record.
   deploy exists; thai suites wait on the multilingual checkpoint
   (riir-train 603, 4090-queued).
 - Arena fake-quant probes: `--fake-quant` (Q8) / `--fake-quant-q4` (Q4).
+- Arena read-scoped seat posture: `--winners-raw-v1` resolves every suite as `<suite>_winner_v1.bin` with Count bags (the routed-distill v1 convention; riir-train 623 T4 frozen-read prep) — without it the arena seat silently degrades banking77 to A0-only; serving bridges byte-untouched, `raw_v1_read` rides predictions.json.
