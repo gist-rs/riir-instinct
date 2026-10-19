@@ -37,12 +37,6 @@ use riir_instinct::specialist::{self, Specialist};
 const SUITE: &str = "heal";
 const GOLD_LABEL: &str = "gold";
 
-/// The abstention thresholds the trainer froze on the case-level holdout
-/// (Bench 119 records them beside the read; env overrides exist for
-/// re-reads at a different posture, never for silent drift).
-const DEFAULT_TAU_PROB: f32 = 0.3;
-const DEFAULT_TAU_MARGIN: f32 = 0.0;
-
 /// The pair-composition law — MUST stay identical to the trainer's
 /// `pair_text` (riir-instinct `examples/instinct_heal_train.rs`): the
 /// edit-diff words (candidate adds / removes versus the buggy module),
@@ -243,6 +237,24 @@ fn main() {
         std::process::exit(2);
     });
     let bytes = std::fs::read(&head_path).unwrap_or_else(|e| panic!("head {head_path}: {e}"));
+    let head_blake3 = blake3::hash(&bytes).to_hex().to_string();
+    // The τ are READ FROM THE TRAINER'S SIDECAR, digest-checked against
+    // the head — no defaults, no env overrides. A server that guesses its
+    // abstention posture reads the bench wrong silently; that class is
+    // refused at boot.
+    let sidecar_path = format!("{head_path}.tau.json");
+    let sidecar: serde_json::Value = serde_json::from_str(
+        &std::fs::read_to_string(&sidecar_path)
+            .unwrap_or_else(|e| panic!("tau sidecar {sidecar_path}: {e} — run instinct_heal_train")),
+    )
+    .expect("tau sidecar parses");
+    assert_eq!(
+        sidecar["head_blake3"].as_str().unwrap_or_default(),
+        head_blake3,
+        "tau sidecar does not match the head digest — stale sidecar beside a new head"
+    );
+    let tau_prob = sidecar["tau_prob"].as_f64().expect("tau_prob") as f32;
+    let tau_margin = sidecar["tau_margin"].as_f64().expect("tau_margin") as f32;
     let spec = specialist::decode_artifact(&bytes).expect("head decodes (RISP)");
     assert_eq!(spec.suite, SUITE, "head suite is heal");
     let gold_idx = spec
@@ -250,14 +262,7 @@ fn main() {
         .iter()
         .position(|l| l == GOLD_LABEL)
         .expect("gold label present in the head");
-    let tau_prob = std::env::var("HEAL_TAU_PROB")
-        .ok()
-        .and_then(|v| v.parse().ok())
-        .unwrap_or(DEFAULT_TAU_PROB);
-    let tau_margin = std::env::var("HEAL_TAU_MARGIN")
-        .ok()
-        .and_then(|v| v.parse().ok())
-        .unwrap_or(DEFAULT_TAU_MARGIN);
+    let _ = gold_idx;
     let head_blake3 = blake3::hash(&bytes).to_hex().to_string();
     eprintln!(
         "[heal-seat] head={head_path} labels={:?} gold_idx={gold_idx} tau_prob={tau_prob} tau_margin={tau_margin} blake3={head_blake3}",

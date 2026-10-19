@@ -380,6 +380,22 @@ fn main() {
         fs::create_dir_all(parent).ok();
     }
     fs::write(out_path, &bytes).expect("head writes");
+    // The τ travels WITH the artifact as a digest-checked sidecar — the
+    // server refuses to serve without it (a hardcoded default is how a
+    // bench reads the wrong posture silently; that bug class dies here).
+    let sidecar = serde_json::json!({
+        "tau_prob": tau_p,
+        "tau_margin": tau_m,
+        "head_blake3": blake3::hash(&bytes).to_hex().to_string(),
+        "trainer": "instinct_heal_train (plan 225 T2)",
+        "holdout": {
+            "cases": holdout.len(),
+            "a1_correct": run.holdout_accuracy,
+        },
+    });
+    let sidecar_path = format!("{out_path}.tau.json");
+    fs::write(&sidecar_path, serde_json::to_vec_pretty(&sidecar).expect("sidecar serializes"))
+        .expect("sidecar writes");
     println!(
         "[heal-train] exported {out_path} bytes={} blake3={} labels={:?} tau_p={tau_p} tau_m={tau_m}",
         bytes.len(),
