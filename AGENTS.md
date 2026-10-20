@@ -161,6 +161,16 @@ curl -s -X POST localhost:8091/decide \
 RIIR_DEPLOY_STAGE_ONLY=1 \
   ../riir-deployer/target/debug/riir-deploy -m deploy.yaml deploy --dest local
 file .deploy/local/stage/decisions/app-bin   # → ELF 64-bit x86-64
+
+# The heal-seat lane (riir-refine Plan 225 T2/T4, Bench 119 — the A1 candidate:
+# trainer + Ext-seat server for the cargo-refine fixer's rerank; the served pick
+# names a candidate or abstains, options echoed exactly): the two examples are
+# the lane's whole surface here — the record (plan + bench) lives in riir-refine:
+#   cargo run --release --example instinct_heal_train -- \
+#     <cases.jsonl> <pool_texts.jsonl> <split.json> <out-head.bin>
+#   HEAL_HEAD_PATH=<out-head.bin> cargo run --release --example heal_specialist_server -- [bind=127.0.0.1:8092]
+# (τ travels in a digest-checked sidecar — the server carries no default;
+# HEAL_HEAD_PATH unset refuses loud — the trained head is load-bearing)
 ```
 
 ## Branch
