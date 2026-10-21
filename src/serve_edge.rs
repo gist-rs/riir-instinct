@@ -1058,6 +1058,40 @@ fn healthz(state: &SrvState) -> String {
                 "winner_blake3".into(),
                 serde_json::json!(meta.winner_blake3),
             );
+            // Phase-C remote think leg (rethink plan 010, additive-only):
+            // the facts a light client cannot derive without the local
+            // material — the centroid (hoarding-gate vector), the label
+            // STRINGS (the None-presentation universe; the COUNT above was
+            // already disclosed), the suite's question template. Absent on
+            // lanes that do not disclose them (the trait defaults) — the
+            // client refuses at boot naming the gap, never a fabricated
+            // value.
+            {
+                let centroid = server.centroid();
+                entry.insert(
+                    "centroid".into(),
+                    serde_json::Value::Array(centroid.iter().map(|v| serde_json::json!(v)).collect()),
+                );
+            }
+            let labels = server.labels();
+            if !labels.is_empty() {
+                entry.insert("label_names".into(), serde_json::json!(labels));
+            }
+            if let Some((qid, kind, instructions)) = server.template() {
+                let kind = match kind {
+                    QKind::Choice => "choice",
+                    QKind::Score => "score",
+                    QKind::Noul => "noul",
+                };
+                entry.insert(
+                    "template".into(),
+                    serde_json::json!({
+                        "qid": qid,
+                        "kind": kind,
+                        "instructions": instructions,
+                    }),
+                );
+            }
         }
         if let LaneState::Failed { error, .. } = &*st {
             entry.insert("error".into(), serde_json::Value::String(error.clone()));
@@ -1354,6 +1388,7 @@ fn decide_edge(stream: &mut TcpStream, srv: &Arc<SrvState>, body: &[u8], cors: O
                 "confidence": d.confidence,
                 "escalated": d.escalated,
                 "abstained": d.abstained,
+                "gate_abstained": d.gate_abstained,
                 "us": d.us,
                 "lane_load": lane_load,
                 "receipt": {
@@ -1391,6 +1426,7 @@ fn decide_edge(stream: &mut TcpStream, srv: &Arc<SrvState>, body: &[u8], cors: O
                         "confidence": d.confidence,
                         "escalated": d.escalated,
                         "abstained": d.abstained,
+                        "gate_abstained": d.gate_abstained,
                         "us": d.us,
                         "lane_load": lane_load,
                         "receipt": {

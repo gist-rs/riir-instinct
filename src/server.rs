@@ -840,6 +840,14 @@ impl<const N: usize> SuiteServer<N> {
         &self.labels
     }
 
+    /// The suite's DEFAULT question template — `(qid, kind,
+    /// instructions)`, the single-question shape every synthesized
+    /// per-request case carries (the rethink EncoderLane::template
+    /// mirror, for the Phase-C healthz disclosure).
+    pub fn template(&self) -> (&str, QKind, &str) {
+        (&self.qid, self.q_kind, &self.q_instructions)
+    }
+
     /// One decision under the suite's DEFAULT question template (the
     /// single-question contract's form; `options` = `None` presents the
     /// suite's canonical label universe in seat order, `Some` an explicit
@@ -1394,6 +1402,22 @@ pub trait LaneBackend: Send {
     fn meta(&self) -> &SuiteMeta;
     /// The suite's corpus centroid — the hoarding gate's vector.
     fn centroid(&self) -> [f32; crate::arsenal_ops::DIM];
+    /// The lane's canonical presented-option order (the None-presentation
+    /// universe). Phase-C remote think leg (rethink plan 010): a light
+    /// client cannot derive the STRINGS without the local material, so
+    /// the healthz disclosure carries them for lanes that answer.
+    /// Default: empty — the disclosure omits `label_names` for lanes
+    /// that do not override (an honest absence, never a fabricated list).
+    fn labels(&self) -> Vec<String> {
+        Vec::new()
+    }
+    /// The lane's DEFAULT question template — `(qid, kind, instructions)`,
+    /// the single-question shape the served question composes from.
+    /// Default: `None` — single-question-template lanes override; the
+    /// disclosure omits `template` for lanes that do not.
+    fn template(&self) -> Option<(&str, QKind, &str)> {
+        None
+    }
 }
 
 /// The bytes-boot half of the extension point: the lane artifact's raw
@@ -1925,6 +1949,38 @@ impl AnySuiteServer {
             AnySuiteServer::S59(s) => s.centroid(),
             AnySuiteServer::S77(s) => s.centroid(),
             AnySuiteServer::Ext(s) => s.centroid(),
+        }
+    }
+
+    /// The canonical presented-option order — the bag variants' seat
+    /// labels, the Ext variant's trait disclosure (rethink plan 010).
+    pub fn labels(&self) -> Vec<String> {
+        match self {
+            AnySuiteServer::S2(s) => s.labels().to_vec(),
+            AnySuiteServer::S3(s) => s.labels().to_vec(),
+            AnySuiteServer::S4(s) => s.labels().to_vec(),
+            AnySuiteServer::S5(s) => s.labels().to_vec(),
+            AnySuiteServer::S6(s) => s.labels().to_vec(),
+            AnySuiteServer::S8(s) => s.labels().to_vec(),
+            AnySuiteServer::S59(s) => s.labels().to_vec(),
+            AnySuiteServer::S77(s) => s.labels().to_vec(),
+            AnySuiteServer::Ext(s) => s.labels(),
+        }
+    }
+
+    /// The DEFAULT question template — `Some` on the single-question
+    /// shape, the Ext variant's trait disclosure (rethink plan 010).
+    pub fn template(&self) -> Option<(&str, QKind, &str)> {
+        match self {
+            AnySuiteServer::S2(s) => Some(s.template()),
+            AnySuiteServer::S3(s) => Some(s.template()),
+            AnySuiteServer::S4(s) => Some(s.template()),
+            AnySuiteServer::S5(s) => Some(s.template()),
+            AnySuiteServer::S6(s) => Some(s.template()),
+            AnySuiteServer::S8(s) => Some(s.template()),
+            AnySuiteServer::S59(s) => Some(s.template()),
+            AnySuiteServer::S77(s) => Some(s.template()),
+            AnySuiteServer::Ext(s) => s.template(),
         }
     }
 }
