@@ -272,9 +272,21 @@ $_rhits"
 	return 0
 }
 
+FENCE_GATE_COMPLETED=0
+_tmp=""
+fence_gate_cleanup() {
+	_st=$?
+	[ -n "$_tmp" ] && rm -rf "$_tmp"
+	if [ "$FENCE_GATE_COMPLETED" != "1" ] && [ "$_st" = "0" ]; then
+		printf '✗ fence_gate ABORTED mid-run while reporting success — forcing exit 1\n' >&2
+		exit 1
+	fi
+	exit "$_st"
+}
+
 self_test() {
 	_tmp=$(mktemp -d) || die "mktemp failed"
-	trap 'rm -rf "$_tmp"' EXIT
+	trap fence_gate_cleanup EXIT
 	mkdir -p "$_tmp/fx/src" "$_tmp/fx/examples" "$_tmp/fx/benches" "$_tmp/fx/tests"
 	cp "$ALLOWLIST" "$_tmp/fx-allowlist.txt" 2>/dev/null || : # fixture uses the real allowlist via env
 
@@ -356,3 +368,6 @@ main() {
 }
 
 main "$@"
+_fence_rc=$?
+FENCE_GATE_COMPLETED=1   # see fence_gate_cleanup above
+exit "$_fence_rc"
