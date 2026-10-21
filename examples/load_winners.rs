@@ -26,14 +26,24 @@ fn main() {
         .get(1)
         .map(|s| s.split(',').map(str::to_string).collect())
         .unwrap_or_else(|| {
-            ["ag_news", "emotion", "sst5", "massive_intent_en", "banking77", "xnli_en"]
-                .iter()
-                .map(|s| (*s).to_string())
-                .collect()
+            [
+                "ag_news",
+                "emotion",
+                "sst5",
+                "massive_intent_en",
+                "banking77",
+                "xnli_en",
+            ]
+            .iter()
+            .map(|s| (*s).to_string())
+            .collect()
         });
 
     let samples: [(&str, &str); 3] = [
-        ("ag_news", "Wall St. beats expectations as tech shares rally"),
+        (
+            "ag_news",
+            "Wall St. beats expectations as tech shares rally",
+        ),
         ("emotion", "i am so happy and grateful today"),
         ("banking77", "where is my card? it never arrived"),
     ];
@@ -50,7 +60,10 @@ fn main() {
                 .unwrap_or_else(|| format!("{suite}_winner_v1.bin")),
         );
         if !path.exists() {
-            eprintln!("  {suite}: no winner artifact at {} — export first (riir-train instinct_arm_b)", path.display());
+            eprintln!(
+                "  {suite}: no winner artifact at {} — export first (riir-train instinct_arm_b)",
+                path.display()
+            );
             failures += 1;
             continue;
         }

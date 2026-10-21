@@ -46,7 +46,11 @@ fn serve_side_replays_train_side_scores_bit_exactly() {
     let fixture: Vec<Value> =
         serde_json::from_str(&std::fs::read_to_string(&fixture_path).expect("read fixture"))
             .expect("parse fixture");
-    assert!(fixture.len() >= 32, "parity fixture too thin: {} rows", fixture.len());
+    assert!(
+        fixture.len() >= 32,
+        "parity fixture too thin: {} rows",
+        fixture.len()
+    );
 
     let mut scratch = vec![0.0f64; model.scratch_len()];
     let mut mismatches = 0usize;
@@ -62,7 +66,10 @@ fn serve_side_replays_train_side_scores_bit_exactly() {
         };
         let served = model.score(&raw_opt, &mut scratch);
         let want = u64::from_str_radix(
-            row["score_bits"].as_str().expect("score_bits").trim_start_matches("0x"),
+            row["score_bits"]
+                .as_str()
+                .expect("score_bits")
+                .trim_start_matches("0x"),
             16,
         )
         .expect("hex bits");
@@ -75,6 +82,15 @@ fn serve_side_replays_train_side_scores_bit_exactly() {
             );
         }
     }
-    assert_eq!(mismatches, 0, "parity: {mismatches} of {} rows diverge", fixture.len());
-    println!("PARITY: {} of {} rows bit-exact", fixture.len(), fixture.len());
+    assert_eq!(
+        mismatches,
+        0,
+        "parity: {mismatches} of {} rows diverge",
+        fixture.len()
+    );
+    println!(
+        "PARITY: {} of {} rows bit-exact",
+        fixture.len(),
+        fixture.len()
+    );
 }

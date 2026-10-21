@@ -3,8 +3,8 @@
 //! traffic: lib tests run multi-threaded and would pollute the counter.
 
 use riir_instinct::{
-    A0Answer, Cascade, HybridLane, MAX_TOP_K, PriorFusion, Specialist, SpecialistLane,
-    prior_fusion_pick,
+    prior_fusion_pick, A0Answer, Cascade, HybridLane, PriorFusion, Specialist, SpecialistLane,
+    MAX_TOP_K,
 };
 use std::alloc::{GlobalAlloc, Layout, System};
 use std::hint::black_box;

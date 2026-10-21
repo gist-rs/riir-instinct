@@ -78,7 +78,7 @@ use crate::tetris_lane::{start_board, GameStats, Regime, TeacherMove, TEACHER_RN
 use katgpt_core::chance_puct::{ChanceGame, ChancePuct, ChancePuctConfig, RootStat};
 use katgpt_tetris::lookahead::{apply, Bag, LINES_SCORE};
 use katgpt_tetris::rulebook::{Genome, Leaf, Mode};
-use katgpt_tetris::sim::{Board, DropRule, Piece, Placement, landing_options_with};
+use katgpt_tetris::sim::{landing_options_with, Board, DropRule, Piece, Placement};
 use std::time::Instant;
 
 /// The champion evaluator + the trained critic + the blend weight, shared by
@@ -151,7 +151,13 @@ impl<'e> BlendedState<'e> {
     /// to `TeacherState`'s seam.
     fn champ(&self, b: &Board, lines: u32, tetrises: u32) -> f64 {
         let scan = b.scan();
-        let leaf = Leaf { board: b, heights: scan.heights, lines, tetrises, held: None };
+        let leaf = Leaf {
+            board: b,
+            heights: scan.heights,
+            lines,
+            tetrises,
+            held: None,
+        };
         self.ctx.genome.eval_with(&leaf, self.mode, &scan)
     }
 
@@ -168,7 +174,12 @@ impl<'e> BlendedState<'e> {
         };
         let raw = raw_opt(
             &last.pre,
-            &Placement { rot: 0, col: 0, row: 0, cells: last.cells },
+            &Placement {
+                rot: 0,
+                col: 0,
+                row: 0,
+                cells: last.cells,
+            },
             last.piece,
             self.mode,
             &self.board,
@@ -202,19 +213,27 @@ impl ChanceGame for BlendedState<'_> {
             .enumerate()
         {
             let (b1, l1) = apply(&self.board, &p.cells);
-            let prior =
-                self.champ(&b1, self.lines + l1, self.tetrises + u32::from(l1 == 4)) as f32;
+            let prior = self.champ(&b1, self.lines + l1, self.tetrises + u32::from(l1 == 4)) as f32;
             let mut cells = [(0u8, 0u8); 4];
             for (dst, &(r, c)) in cells.iter_mut().zip(p.cells.iter()) {
                 *dst = (r as u8, c as u8);
             }
-            out.push((TeacherMove { idx: i as u16, cells }, prior));
+            out.push((
+                TeacherMove {
+                    idx: i as u16,
+                    cells,
+                },
+                prior,
+            ));
         }
     }
 
     fn apply(&self, m: Self::Action) -> Self {
-        let cells: Vec<(usize, usize)> =
-            m.cells.iter().map(|&(r, c)| (r as usize, c as usize)).collect();
+        let cells: Vec<(usize, usize)> = m
+            .cells
+            .iter()
+            .map(|&(r, c)| (r as usize, c as usize))
+            .collect();
         let (board, n) = apply(&self.board, &cells);
         let mut last_cells = [(0usize, 0usize); 4];
         for (dst, &(r, c)) in last_cells.iter_mut().zip(m.cells.iter()) {
@@ -243,7 +262,11 @@ impl ChanceGame for BlendedState<'_> {
     }
 
     fn resolve(&self, drawn: Self::Outcome) -> Self {
-        Self { cur: drawn, after: false, ..self.clone() }
+        Self {
+            cur: drawn,
+            after: false,
+            ..self.clone()
+        }
     }
 }
 
@@ -259,7 +282,13 @@ fn root_frame(board: &Board, cur: Piece, mode: Mode, ctx: &BlendCtx<'_>) -> (f64
     for p in &options {
         let (b1, l1) = apply(board, &p.cells);
         let scan = b1.scan();
-        let leaf = Leaf { board: &b1, heights: scan.heights, lines: l1, tetrises: u32::from(l1 == 4), held: None };
+        let leaf = Leaf {
+            board: &b1,
+            heights: scan.heights,
+            lines: l1,
+            tetrises: u32::from(l1 == 4),
+            held: None,
+        };
         cs.push(ctx.genome.eval_with(&leaf, mode, &scan));
         let raw = raw_opt(board, p, cur, mode, &b1, l1);
         ms.push(ctx.critic.score(&raw, &mut scratch));
@@ -288,15 +317,25 @@ pub fn play_blended(
     budget: u32,
     sink: &mut Vec<Sample>,
 ) -> GameStats {
-    let ctx = BlendCtx { genome, critic, weight };
+    let ctx = BlendCtx {
+        genome,
+        critic,
+        weight,
+    };
     let mut bag = Bag::new(seed);
     let mut board = start_board(seed, regime);
     let mut next = bag.draw();
     let mut rng = fastrand::Rng::with_seed(seed ^ TEACHER_RNG_SALT);
-    let mut st = GameStats { seed, ..GameStats::default() };
+    let mut st = GameStats {
+        seed,
+        ..GameStats::default()
+    };
     let mut decision_ms: Vec<f64> = Vec::with_capacity(cap.min(4096));
     let mut decision: u32 = 0;
-    let mut search = ChancePuct::new(ChancePuctConfig { budget, ..ChancePuctConfig::default() });
+    let mut search = ChancePuct::new(ChancePuctConfig {
+        budget,
+        ..ChancePuctConfig::default()
+    });
 
     while st.pieces < cap {
         let cur = next;
@@ -341,7 +380,10 @@ pub fn play_blended(
     }
 
     decision_ms.sort_by(f64::total_cmp);
-    st.p50_ms = decision_ms.get(decision_ms.len() / 2).copied().unwrap_or(0.0);
+    st.p50_ms = decision_ms
+        .get(decision_ms.len() / 2)
+        .copied()
+        .unwrap_or(0.0);
     st
 }
 
@@ -364,17 +406,19 @@ pub fn collect_blended(
         std::sync::Mutex::new(Vec::with_capacity(seeds.len()));
     std::thread::scope(|s| {
         for _ in 0..threads.max(1) {
-            s.spawn(|| {
-                loop {
-                    let k = next_seed.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
-                    if k >= seeds.len() {
-                        break;
-                    }
-                    let seed = seeds[k];
-                    let mut sink: Vec<Sample> = Vec::new();
-                    let stats = play_blended(genome, critic, weight, seed, regime, cap, budget, &mut sink);
-                    results.lock().expect("results lock").push((seed, stats, sink));
+            s.spawn(|| loop {
+                let k = next_seed.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+                if k >= seeds.len() {
+                    break;
                 }
+                let seed = seeds[k];
+                let mut sink: Vec<Sample> = Vec::new();
+                let stats =
+                    play_blended(genome, critic, weight, seed, regime, cap, budget, &mut sink);
+                results
+                    .lock()
+                    .expect("results lock")
+                    .push((seed, stats, sink));
             });
         }
     });
@@ -414,9 +458,9 @@ mod tests {
         buf.extend_from_slice(&1u32.to_le_bytes());
         buf.extend_from_slice(&1u32.to_le_bytes()); // tanh hidden
         zero_f64s(&mut buf, 33); // scale lo
-        // scale hi must differ from lo or every feature clips to the same
-        // half of the [-1,1] range — zeros/ones keep the forward trivial but
-        // VALID, which is all this fixture needs.
+                                 // scale hi must differ from lo or every feature clips to the same
+                                 // half of the [-1,1] range — zeros/ones keep the forward trivial but
+                                 // VALID, which is all this fixture needs.
         for _ in 0..33 {
             buf.extend_from_slice(&1.0f64.to_le_bytes());
         }
@@ -440,15 +484,33 @@ mod tests {
         for regime in [Regime::garbage(16, 75), Regime::garbage(18, 75)] {
             for seed in 301u64..=306 {
                 let mut plain: Vec<Sample> = Vec::new();
-                let mut policy = LanePolicy::Teacher { budget: 200, sink: &mut plain };
+                let mut policy = LanePolicy::Teacher {
+                    budget: 200,
+                    sink: &mut plain,
+                };
                 let a = crate::tetris_critic::play_lane(&genome, seed, regime, 150, &mut policy);
                 let mut blended: Vec<Sample> = Vec::new();
                 let b = play_blended(&genome, &critic, 0.0, seed, regime, 150, 200, &mut blended);
-                assert_eq!((a.pieces, a.lines, a.points, a.tetrises), (b.pieces, b.lines, b.points, b.tetrises), "regime {regime} seed {seed}: game diverged at weight 0");
-                assert_eq!(plain.len(), blended.len(), "regime {regime} seed {seed}: sample count");
+                assert_eq!(
+                    (a.pieces, a.lines, a.points, a.tetrises),
+                    (b.pieces, b.lines, b.points, b.tetrises),
+                    "regime {regime} seed {seed}: game diverged at weight 0"
+                );
+                assert_eq!(
+                    plain.len(),
+                    blended.len(),
+                    "regime {regime} seed {seed}: sample count"
+                );
                 for (p, q) in plain.iter().zip(&blended) {
-                    assert_eq!((p.seed, p.decision, p.is_pick), (q.seed, q.decision, q.is_pick));
-                    assert_eq!(p.q.to_bits(), q.q.to_bits(), "q bits diverged (regime {regime} seed {seed})");
+                    assert_eq!(
+                        (p.seed, p.decision, p.is_pick),
+                        (q.seed, q.decision, q.is_pick)
+                    );
+                    assert_eq!(
+                        p.q.to_bits(),
+                        q.q.to_bits(),
+                        "q bits diverged (regime {regime} seed {seed})"
+                    );
                     assert_eq!(p.raw.piece, q.raw.piece);
                     assert_eq!(p.raw.mode, q.raw.mode);
                 }
@@ -464,7 +526,16 @@ mod tests {
         let genome = Genome::champion_hybrid();
         let critic = toy_critic();
         let mut sink: Vec<Sample> = Vec::new();
-        let st = play_blended(&genome, &critic, 0.5, 301, Regime::garbage(16, 75), 120, 100, &mut sink);
+        let st = play_blended(
+            &genome,
+            &critic,
+            0.5,
+            301,
+            Regime::garbage(16, 75),
+            120,
+            100,
+            &mut sink,
+        );
         assert!(st.pieces > 0 && st.pieces <= 120);
         assert!(!sink.is_empty());
         assert!(sink.iter().all(|s| s.q > 0.0 && s.q < 1.0));
@@ -472,8 +543,20 @@ mod tests {
         // teacher must ALSO reproduce the plain teacher's game here (the
         // flat-critic degenerate arm of the module contract).
         let mut plain: Vec<Sample> = Vec::new();
-        let mut policy = LanePolicy::Teacher { budget: 100, sink: &mut plain };
-        let a = crate::tetris_critic::play_lane(&genome, 301, Regime::garbage(16, 75), 120, &mut policy);
-        assert_eq!((a.pieces, a.lines, a.points), (st.pieces, st.lines, st.points));
+        let mut policy = LanePolicy::Teacher {
+            budget: 100,
+            sink: &mut plain,
+        };
+        let a = crate::tetris_critic::play_lane(
+            &genome,
+            301,
+            Regime::garbage(16, 75),
+            120,
+            &mut policy,
+        );
+        assert_eq!(
+            (a.pieces, a.lines, a.points),
+            (st.pieces, st.lines, st.points)
+        );
     }
 }

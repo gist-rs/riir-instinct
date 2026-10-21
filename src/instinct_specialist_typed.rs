@@ -61,7 +61,7 @@ use std::path::Path;
 use serde_json::Value;
 
 use crate::instinct_specialist::{
-    argmax_lowest_tie, read_train_envelope, bag_into, stratified_holdout, Specialist, SuiteRow,
+    argmax_lowest_tie, bag_into, read_train_envelope, stratified_holdout, Specialist, SuiteRow,
 };
 
 // ── the parse laws ──────────────────────────────────────────────────────
@@ -248,18 +248,25 @@ pub fn typed_row(row: &Value) -> Option<TypedRow> {
     let state = row.get("state")?.as_str()?.to_string();
     let questions_v = row.get("questions").map(parse_json_string_or_value);
     let gold_v = row.get("gold").map(parse_json_string_or_value);
-    let (qmap, gmap) = match (questions_v.as_ref().and_then(Value::as_object), gold_v.as_ref().and_then(Value::as_object)) {
+    let (qmap, gmap) = match (
+        questions_v.as_ref().and_then(Value::as_object),
+        gold_v.as_ref().and_then(Value::as_object),
+    ) {
         (Some(q), Some(g)) => (q, g),
         _ => return None,
     };
     let mut events = Vec::new();
     for (qid, qdef) in qmap {
-        let Some(kind) = qdef.get("type").and_then(Value::as_str).and_then(|t| match t {
-            "choice" => Some(TypedKind::Choice),
-            "score" => Some(TypedKind::Score),
-            "noul" => Some(TypedKind::Noul),
-            _ => None,
-        }) else {
+        let Some(kind) = qdef
+            .get("type")
+            .and_then(Value::as_str)
+            .and_then(|t| match t {
+                "choice" => Some(TypedKind::Choice),
+                "score" => Some(TypedKind::Score),
+                "noul" => Some(TypedKind::Noul),
+                _ => None,
+            })
+        else {
             continue;
         };
         let Some(g) = gmap.get(qid) else {
@@ -549,12 +556,7 @@ mod tests {
     #[test]
     fn skip_laws() {
         // malformed questions string → whole row skipped
-        assert!(typed_row(&row_json(
-            r#"{"x": 1}"#,
-            "{not json",
-            r#"{}"#,
-        ))
-        .is_none());
+        assert!(typed_row(&row_json(r#"{"x": 1}"#, "{not json", r#"{}"#,)).is_none());
         // missing state → row skipped
         let v = serde_json::json!({"workflow": "wf", "questions": "{}", "gold": "{}"});
         assert!(typed_row(&v).is_none());
@@ -693,14 +695,9 @@ mod tests {
             epochs: 5,
             ..ArmAConfig::default()
         };
-        let run = crate::instinct_specialist::train_arm_a(
-            &all,
-            &labels,
-            &train_idx,
-            &holdout_idx,
-            &cfg,
-        )
-        .expect("trains");
+        let run =
+            crate::instinct_specialist::train_arm_a(&all, &labels, &train_idx, &holdout_idx, &cfg)
+                .expect("trains");
         assert!(run.holdout_accuracy > run.control_accuracy);
         let case = typed_case_eval(&run.model, &rows, &holdout_rows);
         assert!(case.accuracy() > 0.5, "case acc {}", case.accuracy());
@@ -746,14 +743,9 @@ mod tests {
             epochs: 4,
             ..ArmAConfig::default()
         };
-        let run = crate::instinct_specialist::train_arm_a(
-            &all,
-            &labels,
-            &train_idx,
-            &holdout_idx,
-            &cfg,
-        )
-        .expect("trains");
+        let run =
+            crate::instinct_specialist::train_arm_a(&all, &labels, &train_idx, &holdout_idx, &cfg)
+                .expect("trains");
         // The dead class trained negative: its bias sits below the gold
         // class's, so every holdout case answers "alpha" (the gold).
         let dead_idx = run.model.labels.iter().position(|l| l == "dead").unwrap();
@@ -794,7 +786,12 @@ mod tests {
         ];
         let ev = typed_case_majority_baseline(&rows, &[0, 1, 2], &[3]);
         assert_eq!((ev.total, ev.correct), (1, 1));
-        let rows2 = vec![mk("w0", "alpha"), mk("w0", "zeta"), mk("w0", "zeta"), mk("w0", "alpha")];
+        let rows2 = vec![
+            mk("w0", "alpha"),
+            mk("w0", "zeta"),
+            mk("w0", "zeta"),
+            mk("w0", "alpha"),
+        ];
         let ev2 = typed_case_majority_baseline(&rows2, &[0, 1, 2], &[3]);
         assert_eq!((ev2.total, ev2.correct), (1, 0));
     }

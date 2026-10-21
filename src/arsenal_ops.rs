@@ -33,7 +33,7 @@ use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::{Mutex, OnceLock};
 use std::time::Instant;
 
-use katgpt_core::set_admission::{CertificateReport, SetAdmissionConfig, certify_set};
+use katgpt_core::set_admission::{certify_set, CertificateReport, SetAdmissionConfig};
 
 pub use katgpt_core::set_admission::DIM;
 
@@ -576,8 +576,8 @@ impl<L> LaneSlot<L> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::sync::Arc;
     use std::sync::atomic::{AtomicBool, Ordering};
+    use std::sync::Arc;
 
     const CFG: SetAdmissionConfig = SetAdmissionConfig {
         alpha_align: 0.6,
@@ -604,8 +604,18 @@ mod tests {
 
     #[test]
     fn recency_stamps_are_monotonic_and_ordered() {
-        let a: LaneSlot<()> = LaneSlot::new("a", LaneState::Unloaded { applied: EpochTag::GENESIS });
-        let b: LaneSlot<()> = LaneSlot::new("b", LaneState::Unloaded { applied: EpochTag::GENESIS });
+        let a: LaneSlot<()> = LaneSlot::new(
+            "a",
+            LaneState::Unloaded {
+                applied: EpochTag::GENESIS,
+            },
+        );
+        let b: LaneSlot<()> = LaneSlot::new(
+            "b",
+            LaneState::Unloaded {
+                applied: EpochTag::GENESIS,
+            },
+        );
         assert_eq!(a.last_used_ms(), 0, "boot state = never used");
         let ta = a.touch();
         let tb = b.touch();
@@ -621,7 +631,12 @@ mod tests {
 
     #[test]
     fn lazy_trigger_touches_recency_exactly_once_per_load() {
-        let s: LaneSlot<()> = LaneSlot::new("s", LaneState::Unloaded { applied: EpochTag::GENESIS });
+        let s: LaneSlot<()> = LaneSlot::new(
+            "s",
+            LaneState::Unloaded {
+                applied: EpochTag::GENESIS,
+            },
+        );
         assert!(s.begin_lazy_load(), "the first trigger wins");
         let t = s.last_used_ms();
         assert!(t > 0, "a load IS a use — the win stamps recency");
@@ -636,10 +651,7 @@ mod tests {
         // Deterministic + order-stable.
         let b = corpus_centroid(docs.iter().copied());
         assert_eq!(a, b, "the centroid is deterministic");
-        assert!(
-            unit(&a).is_some(),
-            "non-empty corpora carry a direction"
-        );
+        assert!(unit(&a).is_some(), "non-empty corpora carry a direction");
         assert_eq!(
             corpus_centroid(std::iter::empty()),
             [0.0; DIM],
@@ -667,12 +679,15 @@ mod tests {
             .map(|i| {
                 let mut v = [0.0_f32; DIM];
                 v[i] = 1.0;
-                (match i {
-                    0 => "ag_news",
-                    1 => "emotion",
-                    2 => "sst5",
-                    _ => "banking77",
-                }, v)
+                (
+                    match i {
+                        0 => "ag_news",
+                        1 => "emotion",
+                        2 => "sst5",
+                        _ => "banking77",
+                    },
+                    v,
+                )
             })
             .collect();
         let mut cand = [0.0_f32; DIM];
@@ -680,7 +695,12 @@ mod tests {
         let rep = hoard_check("xnli_en", cand, &loaded, &CFG).expect("diverse set admits");
         assert!(rep.judged);
         assert_eq!(rep.k, 5);
-        assert!(rep.vendi >= rep.floor, "vendi {} ≥ floor {}", rep.vendi, rep.floor);
+        assert!(
+            rep.vendi >= rep.floor,
+            "vendi {} ≥ floor {}",
+            rep.vendi,
+            rep.floor
+        );
         // An orthogonal 5-set is MAXIMALLY diverse — it saturates the d=8
         // depth ceiling (vendi = K = 5 ≥ 0.95·5). The note, never a
         // refusal.
@@ -740,7 +760,13 @@ mod tests {
             };
             let rep = hoard_check(name, vec_of(i), &loaded, &CFG)
                 .unwrap_or_else(|e| panic!("member {i} must pass: {e}"));
-            assert!(rep.vendi >= rep.floor, "K={} vendi {} < floor {}", i + 2, rep.vendi, rep.floor);
+            assert!(
+                rep.vendi >= rep.floor,
+                "K={} vendi {} < floor {}",
+                i + 2,
+                rep.vendi,
+                rep.floor
+            );
             loaded.push((name, vec_of(i)));
         }
         // The seventh pushes the set past the certificate.
@@ -804,15 +830,13 @@ mod tests {
 
     #[test]
     fn lazy_lifecycle_triggers_once_and_reloads_after_release() {
-        let slot: LaneSlot<u64> = LaneSlot::new(
-            "ag_news",
-            LaneState::Unloaded {
-                applied: tag(0),
-            },
-        );
+        let slot: LaneSlot<u64> = LaneSlot::new("ag_news", LaneState::Unloaded { applied: tag(0) });
         // The first trigger wins; every other call is a no-op.
         assert!(slot.begin_lazy_load());
-        assert!(!slot.begin_lazy_load(), "a second trigger must not re-enter");
+        assert!(
+            !slot.begin_lazy_load(),
+            "a second trigger must not re-enter"
+        );
         assert!(!slot.begin_lazy_load());
         // The loader installs (same tag → the idempotent arm — the reload
         // after eviction installs through the same gate).
@@ -840,10 +864,7 @@ mod tests {
 
     #[test]
     fn release_refuses_in_flight_and_failed_states() {
-        let slot: LaneSlot<u64> = LaneSlot::new(
-            "x",
-            LaneState::Loading { applied: tag(0) },
-        );
+        let slot: LaneSlot<u64> = LaneSlot::new("x", LaneState::Loading { applied: tag(0) });
         assert_eq!(slot.release(), Err(ReleaseRefusal::InFlight));
         slot.fail("hoarding gate refused load: test".into());
         assert_eq!(slot.release(), Err(ReleaseRefusal::NotReady));
@@ -863,18 +884,31 @@ mod tests {
         );
         // Fork refused.
         assert!(matches!(
-            slot.install_ready(12, EpochTag { epoch: 3, digest: [9; 32] }, [1.0; DIM], false),
+            slot.install_ready(
+                12,
+                EpochTag {
+                    epoch: 3,
+                    digest: [9; 32]
+                },
+                [1.0; DIM],
+                false
+            ),
             Err(SwapRefusal::Fork { epoch: 3 })
         ));
         // Downgrade refused.
         assert!(matches!(
             slot.install_ready(12, tag(2), [1.0; DIM], false),
-            Err(SwapRefusal::Downgrade { applied: 3, offered: 2 })
+            Err(SwapRefusal::Downgrade {
+                applied: 3,
+                offered: 2
+            })
         ));
         // The old server is untouched by both refusals.
         let guard = slot.state.lock().unwrap();
         match &*guard {
-            LaneState::Ready { server, applied, .. } => {
+            LaneState::Ready {
+                server, applied, ..
+            } => {
                 assert_eq!(*server, 11);
                 assert_eq!(*applied, tag(3));
             }
@@ -907,7 +941,11 @@ mod tests {
         let refused = slot.install_ready(6, tag(1), [1.0; DIM], false);
         assert!(matches!(refused, Err(SwapRefusal::Downgrade { .. })));
         slot.fail("swap gate refused install: downgrade refused".into());
-        assert_eq!(slot.applied_epoch(), Some(4), "eviction + failed reload keep the epoch");
+        assert_eq!(
+            slot.applied_epoch(),
+            Some(4),
+            "eviction + failed reload keep the epoch"
+        );
     }
 
     // ── the atomicity hammer (A2: never a torn read, never a blend) ────
@@ -941,7 +979,10 @@ mod tests {
                         // epoch always agree — a torn swap would split
                         // them.
                         assert_eq!(epoch, payload, "torn read: payload must match its epoch");
-                        assert_eq!(applied.epoch, *epoch, "torn read: the applied tag rides the same snapshot");
+                        assert_eq!(
+                            applied.epoch, *epoch,
+                            "torn read: the applied tag rides the same snapshot"
+                        );
                         assert!(
                             *epoch >= last,
                             "the observed epoch went backwards ({last} → {epoch})"
@@ -1001,13 +1042,25 @@ mod vessel_identity_tests {
         // state varies. My adapter receives the same pair.
         let cases: [reflexer_vessel::ApplyState; 4] = [
             // strict advance
-            reflexer_vessel::ApplyState { artifact_version: 4, commitment: [9; 32] },
+            reflexer_vessel::ApplyState {
+                artifact_version: 4,
+                commitment: [9; 32],
+            },
             // idempotent re-apply
-            reflexer_vessel::ApplyState { artifact_version: 5, commitment: digest },
+            reflexer_vessel::ApplyState {
+                artifact_version: 5,
+                commitment: digest,
+            },
             // downgrade
-            reflexer_vessel::ApplyState { artifact_version: 6, commitment: [7; 32] },
+            reflexer_vessel::ApplyState {
+                artifact_version: 6,
+                commitment: [7; 32],
+            },
             // fork: same version, different commitment
-            reflexer_vessel::ApplyState { artifact_version: 5, commitment: [8; 32] },
+            reflexer_vessel::ApplyState {
+                artifact_version: 5,
+                commitment: [8; 32],
+            },
         ];
         for applied in cases {
             let mine = check_epoch_tag(
@@ -1026,9 +1079,19 @@ mod vessel_identity_tests {
                     } else {
                         EpochApply::Advance
                     };
-                    assert_eq!(a, want, "applied v{}: verdict drift", applied.artifact_version);
+                    assert_eq!(
+                        a, want,
+                        "applied v{}: verdict drift",
+                        applied.artifact_version
+                    );
                 }
-                (Err(SwapRefusal::Downgrade { applied: a, offered: o }), Err(e)) => {
+                (
+                    Err(SwapRefusal::Downgrade {
+                        applied: a,
+                        offered: o,
+                    }),
+                    Err(e),
+                ) => {
                     assert_eq!(
                         e,
                         reflexer_vessel::ApplyRefusal::OlderThanCurrent {

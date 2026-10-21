@@ -28,10 +28,10 @@ use std::sync::OnceLock;
 use std::time::Instant;
 
 use riir_instinct::arsenal::ArsenalManifest;
+use riir_instinct::serve_edge::{LoadCtx, LoadedLane, ServeConfig};
 use riir_instinct::server::{
     AnySuiteServer, Arm, LaneBackend, ServedDecision, ServedQuestion, SuiteMeta, WeightSource,
 };
-use riir_instinct::serve_edge::{LoadCtx, LoadedLane, ServeConfig};
 use riir_instinct::specialist::{self, Specialist};
 
 const SUITE: &str = "heal";
@@ -243,11 +243,11 @@ fn main() {
     // abstention posture reads the bench wrong silently; that class is
     // refused at boot.
     let sidecar_path = format!("{head_path}.tau.json");
-    let sidecar: serde_json::Value = serde_json::from_str(
-        &std::fs::read_to_string(&sidecar_path)
-            .unwrap_or_else(|e| panic!("tau sidecar {sidecar_path}: {e} — run instinct_heal_train")),
-    )
-    .expect("tau sidecar parses");
+    let sidecar: serde_json::Value =
+        serde_json::from_str(&std::fs::read_to_string(&sidecar_path).unwrap_or_else(|e| {
+            panic!("tau sidecar {sidecar_path}: {e} — run instinct_heal_train")
+        }))
+        .expect("tau sidecar parses");
     assert_eq!(
         sidecar["head_blake3"].as_str().unwrap_or_default(),
         head_blake3,
@@ -300,11 +300,7 @@ fn main() {
         synth_corpus_dir: None,
         arsenal_path: None,
         cors_origin: Some(vec![]),
-        prevalidated_manifest: Some((
-            manifest,
-            manifest_digest,
-            "plan 225 heal specialist".into(),
-        )),
+        prevalidated_manifest: Some((manifest, manifest_digest, "plan 225 heal specialist".into())),
         lane_loader: Some(heal_lane_loader),
     };
     eprintln!("[heal-seat] serving on {bind_display} — Ctrl-C to stop");

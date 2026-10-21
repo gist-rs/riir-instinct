@@ -77,8 +77,8 @@ impl ProbeSet {
     }
 
     pub fn load(path: &Path) -> Result<Self, String> {
-        let text = std::fs::read_to_string(path)
-            .map_err(|e| format!("read {}: {e}", path.display()))?;
+        let text =
+            std::fs::read_to_string(path).map_err(|e| format!("read {}: {e}", path.display()))?;
         let set: ProbeSet =
             serde_json::from_str(&text).map_err(|e| format!("parse {}: {e}", path.display()))?;
         Ok(set)
@@ -186,7 +186,11 @@ fn score_item(
 /// rule (the presented-key count equals the label count → the gold POSITION
 /// is the class row). Refuses loud when unresolvable — a silently wrong gold
 /// row would poison every gold delta downstream.
-fn resolve_gold(spec: &Specialist, item: &ProbeItem, presented: &[String]) -> Result<usize, String> {
+fn resolve_gold(
+    spec: &Specialist,
+    item: &ProbeItem,
+    presented: &[String],
+) -> Result<usize, String> {
     // Bound first — the two `.replace()` spellings are owned temporaries and
     // a slice literal borrowing them inside the loop head is E0716.
     let spaced_to_under = item.gold_key.replace(' ', "_");
@@ -417,8 +421,18 @@ mod tests {
         }
     }
 
-    fn side<'a>(spec: &'a Specialist, conv: BagConvention, name: &'a str, digest: &'a str) -> PairSide<'a> {
-        PairSide { spec, conv, name, digest }
+    fn side<'a>(
+        spec: &'a Specialist,
+        conv: BagConvention,
+        name: &'a str,
+        digest: &'a str,
+    ) -> PairSide<'a> {
+        PairSide {
+            spec,
+            conv,
+            name,
+            digest,
+        }
     }
 
     #[test]
@@ -452,9 +466,15 @@ mod tests {
             "fx",
         )
         .expect("compare");
-        assert!(r.mean_abs_gold_delta.abs() > 0.0, "a weight delta must move gold");
+        assert!(
+            r.mean_abs_gold_delta.abs() > 0.0,
+            "a weight delta must move gold"
+        );
         // The fire rule is pre-registered: flips OR mean |Δgold| ≥ 0.02.
-        assert_eq!(r.fired, r.flips > 0 || r.mean_abs_gold_delta >= FIRE_GOLD_DELTA);
+        assert_eq!(
+            r.fired,
+            r.flips > 0 || r.mean_abs_gold_delta >= FIRE_GOLD_DELTA
+        );
     }
 
     #[test]
@@ -486,6 +506,10 @@ mod tests {
         let d2 = back.digest_hex();
         assert_eq!(d1, d2, "digest must survive a serialize round trip");
         set.suites[0].items[0].text = "changed".into();
-        assert_ne!(set.digest_hex(), d1, "a content change must move the digest");
+        assert_ne!(
+            set.digest_hex(),
+            d1,
+            "a content change must move the digest"
+        );
     }
 }

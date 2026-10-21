@@ -79,10 +79,9 @@ pub fn banking77_teacher_cases(datasets_dir: &Path) -> (Vec<TeacherCase>, Vec<St
             continue;
         };
         let label = label_text.replace('_', " ");
-        let gold = keys
-            .iter()
-            .position(|k| *k == label)
-            .unwrap_or_else(|| panic!("banking77 mteb: row label_text {label_text:?} not in key set"));
+        let gold = keys.iter().position(|k| *k == label).unwrap_or_else(|| {
+            panic!("banking77 mteb: row label_text {label_text:?} not in key set")
+        });
         // The criteria object's INSERTION order is the option order.
         let mut crit = Map::new();
         for k in &keys {

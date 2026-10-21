@@ -307,7 +307,9 @@ pub fn decode_artifact(bytes: &[u8]) -> Result<Specialist, String> {
     let v = u32::from_le_bytes(payload[cur..cur + 4].try_into().map_err(|_| "vocab")?) as usize;
     cur += 4;
     if v != VOCAB {
-        return Err(format!("artifact vocab {v} != this build's {VOCAB} — lexicon fork"));
+        return Err(format!(
+            "artifact vocab {v} != this build's {VOCAB} — lexicon fork"
+        ));
     }
     if payload.len() < cur + l * 4 + l * (4 + v) {
         return Err("truncated weight block".into());
@@ -315,7 +317,9 @@ pub fn decode_artifact(bytes: &[u8]) -> Result<Specialist, String> {
     let mut b = Vec::with_capacity(l);
     for c in 0..l {
         b.push(f32::from_le_bytes(
-            payload[cur + c * 4..cur + c * 4 + 4].try_into().map_err(|_| "bias")?,
+            payload[cur + c * 4..cur + c * 4 + 4]
+                .try_into()
+                .map_err(|_| "bias")?,
         ));
     }
     cur += l * 4;
@@ -328,7 +332,12 @@ pub fn decode_artifact(bytes: &[u8]) -> Result<Specialist, String> {
         }
         cur += v;
     }
-    Ok(Specialist { suite, labels, w, b })
+    Ok(Specialist {
+        suite,
+        labels,
+        w,
+        b,
+    })
 }
 
 fn hex_of(bytes: &[u8]) -> String {
@@ -354,7 +363,11 @@ mod tests {
         }
         payload.extend_from_slice(&(VOCAB as u32).to_le_bytes());
         payload.extend_from_slice(&b.iter().flat_map(|f| f.to_le_bytes()).collect::<Vec<u8>>());
-        for (c, row) in std::iter::once(w_row0).chain(std::iter::repeat(w_rest)).take(l).enumerate() {
+        for (c, row) in std::iter::once(w_row0)
+            .chain(std::iter::repeat(w_rest))
+            .take(l)
+            .enumerate()
+        {
             let max_abs = row.iter().fold(0.0f32, |m, &x| m.max(x.abs()));
             let scale = if max_abs == 0.0 { 1.0 } else { max_abs / 127.0 };
             payload.extend_from_slice(&scale.to_le_bytes());
@@ -421,7 +434,11 @@ mod tests {
         // law) — its cardinality equals the count bag's.
         let mut probe = Vec::new();
         bag_into(b"alpha bravo alpha", &mut probe, &mut s);
-        assert_eq!(out.len(), probe.len(), "presence == the count bag's distinct buckets");
+        assert_eq!(
+            out.len(),
+            probe.len(),
+            "presence == the count bag's distinct buckets"
+        );
         let inv = 1.0 / (out.len() as f32).sqrt();
         assert!(out.iter().all(|(_, v)| (*v - inv).abs() < 1e-7));
         let norm: f32 = out.iter().map(|(_, v)| v * v).sum();
@@ -455,8 +472,16 @@ mod tests {
         ] {
             let w = winner_bridge(suite);
             assert_eq!(w.file, None, "{suite}: unexpected bridged file");
-            assert_eq!(w.convention, BagConvention::Count, "{suite}: unexpected convention");
-            assert_eq!(w.serves, ServeContract::SingleQuestion, "{suite}: unexpected contract");
+            assert_eq!(
+                w.convention,
+                BagConvention::Count,
+                "{suite}: unexpected convention"
+            );
+            assert_eq!(
+                w.serves,
+                ServeContract::SingleQuestion,
+                "{suite}: unexpected contract"
+            );
         }
         // The dispatch routes by convention.
         let mut a = Vec::new();
@@ -474,7 +499,10 @@ mod tests {
             .expect_err("the refused v1 artifact must not load under the v2 convention");
         assert!(err.contains("banking77_nbsvm_v2.bin"), "{err}");
         assert!(check_winner_file("ag_news", "ag_news_winner_v1.bin").is_ok());
-        assert!(check_winner_file("ag_news", "anything_else.bin").is_ok(), "unbridged suites are unconstrained");
+        assert!(
+            check_winner_file("ag_news", "anything_else.bin").is_ok(),
+            "unbridged suites are unconstrained"
+        );
     }
 
     #[test]

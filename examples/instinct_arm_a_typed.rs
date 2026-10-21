@@ -71,9 +71,7 @@ fn parse_args() -> Args {
                     .expect("--holdout-rows number")
             }
             "--lr" => a.lr = val(&mut i, "--lr").parse().expect("--lr number"),
-            "--wd" => {
-                a.weight_decay = val(&mut i, "--wd").parse().expect("--wd number")
-            }
+            "--wd" => a.weight_decay = val(&mut i, "--wd").parse().expect("--wd number"),
             "--out" => a.out = val(&mut i, "--out"),
             other => panic!("unknown flag {other}"),
         }
@@ -239,9 +237,7 @@ fn main() {
         );
         let better = match best {
             None => true,
-            Some((_, bc, be, _)) => {
-                (case.accuracy(), ev.accuracy()) > (bc, be)
-            }
+            Some((_, bc, be, _)) => (case.accuracy(), ev.accuracy()) > (bc, be),
         };
         if better {
             best = Some((epochs, case.accuracy(), ev.accuracy(), run.control_accuracy));

@@ -92,7 +92,12 @@ fn parse_args() -> Args {
                 .clone()
         };
         match args[i].as_str() {
-            "--suites" => a.suites = val(&mut i, "--suites").split(',').map(str::to_string).collect(),
+            "--suites" => {
+                a.suites = val(&mut i, "--suites")
+                    .split(',')
+                    .map(str::to_string)
+                    .collect()
+            }
             "--datasets" => a.datasets = val(&mut i, "--datasets"),
             "--teacher-dir" => a.teacher_dir = val(&mut i, "--teacher-dir"),
             "--epochs" => a.epochs = val(&mut i, "--epochs").parse().expect("--epochs number"),
@@ -108,7 +113,11 @@ fn parse_args() -> Args {
             "--brier-lambda" => {
                 a.brier_lambda = val(&mut i, "--brier-lambda")
                     .split(',')
-                    .map(|m| m.trim().parse::<f32>().expect("--brier-lambda floats in [0,1]"))
+                    .map(|m| {
+                        m.trim()
+                            .parse::<f32>()
+                            .expect("--brier-lambda floats in [0,1]")
+                    })
                     .collect();
                 if a.brier_lambda.iter().any(|&l| !(0.0..=1.0).contains(&l)) {
                     panic!("--brier-lambda values must lie in [0, 1]");
@@ -206,7 +215,10 @@ fn main() {
             }
         };
         let (holdout, train) = stratified_holdout(&rows, a.holdout);
-        let cfg = ArmAConfig { epochs: a.epochs, ..ArmAConfig::default() };
+        let cfg = ArmAConfig {
+            epochs: a.epochs,
+            ..ArmAConfig::default()
+        };
 
         if a.dedup_audit {
             // 471 item-5 (issue 623 T5): exact-duplicate (text,label) train
@@ -221,7 +233,7 @@ fn main() {
                 }
             }
             println!(
-              "  {suite}: dedup-audit train rows {} · exact-dup (text,label) rows {} · unique {}",
+                "  {suite}: dedup-audit train rows {} · exact-dup (text,label) rows {} · unique {}",
                 train.len(),
                 dups,
                 train.len() - dups
@@ -248,7 +260,10 @@ fn main() {
         });
         // The 623 T5 rider arms: Arm A at each λ (464 §2.1).
         for &lam in &a.brier_lambda {
-            let rcfg = ArmAConfig { brier_lambda: lam, ..cfg };
+            let rcfg = ArmAConfig {
+                brier_lambda: lam,
+                ..cfg
+            };
             let run = match train_arm_a(&rows, &labels, &train, &holdout, &rcfg) {
                 Ok(r) => r,
                 Err(e) => {
@@ -269,51 +284,60 @@ fn main() {
         }
         if let Some(dump) = &dump {
             for (mi, mix) in a.mixes.iter().enumerate() {
-            let run_b = match train_arm_b(
-                &rows,
-                &labels,
-                dump,
-                &train,
-                &holdout,
-                &ArmBConfig { base: cfg, gold_mix: *mix },
-            ) {
-                Ok(r) => r,
-                Err(e) => {
-                    eprintln!("  {suite}: ARM B[{mi}] TRAIN FAILED — {e}");
-                    failures += 1;
-                    continue;
-                }
-            };
-            arms.push(ArmRow {
-                name: format!("B(gold_mix={mix})"),
-                accuracy: run_b.holdout_accuracy,
-                control: run_b.control_accuracy,
-                model: run_b.model,
-                calibration: run_b.calibration,
-                pick_conf: run_b.holdout_pick_conf,
-                pick_hit: run_b.holdout_pick_hit,
-            });
-            // The 623 T5 rider arms: B(mix) at each λ (464 §2.1).
-            for &lam in &a.brier_lambda {
-                let rcfg = ArmBConfig { base: ArmAConfig { brier_lambda: lam, ..cfg }, gold_mix: *mix };
-                let run = match train_arm_b(&rows, &labels, dump, &train, &holdout, &rcfg) {
+                let run_b = match train_arm_b(
+                    &rows,
+                    &labels,
+                    dump,
+                    &train,
+                    &holdout,
+                    &ArmBConfig {
+                        base: cfg,
+                        gold_mix: *mix,
+                    },
+                ) {
                     Ok(r) => r,
                     Err(e) => {
-                        eprintln!("  {suite}: ARM B[{mi}](brier={lam}) TRAIN FAILED — {e}");
+                        eprintln!("  {suite}: ARM B[{mi}] TRAIN FAILED — {e}");
                         failures += 1;
                         continue;
                     }
                 };
                 arms.push(ArmRow {
-                    name: format!("B(gold_mix={mix}),brier={lam}"),
-                    accuracy: run.holdout_accuracy,
-                    control: run.control_accuracy,
-                    model: run.model,
-                    calibration: run.calibration,
-                    pick_conf: run.holdout_pick_conf,
-                    pick_hit: run.holdout_pick_hit,
+                    name: format!("B(gold_mix={mix})"),
+                    accuracy: run_b.holdout_accuracy,
+                    control: run_b.control_accuracy,
+                    model: run_b.model,
+                    calibration: run_b.calibration,
+                    pick_conf: run_b.holdout_pick_conf,
+                    pick_hit: run_b.holdout_pick_hit,
                 });
-            }
+                // The 623 T5 rider arms: B(mix) at each λ (464 §2.1).
+                for &lam in &a.brier_lambda {
+                    let rcfg = ArmBConfig {
+                        base: ArmAConfig {
+                            brier_lambda: lam,
+                            ..cfg
+                        },
+                        gold_mix: *mix,
+                    };
+                    let run = match train_arm_b(&rows, &labels, dump, &train, &holdout, &rcfg) {
+                        Ok(r) => r,
+                        Err(e) => {
+                            eprintln!("  {suite}: ARM B[{mi}](brier={lam}) TRAIN FAILED — {e}");
+                            failures += 1;
+                            continue;
+                        }
+                    };
+                    arms.push(ArmRow {
+                        name: format!("B(gold_mix={mix}),brier={lam}"),
+                        accuracy: run.holdout_accuracy,
+                        control: run.control_accuracy,
+                        model: run.model,
+                        calibration: run.calibration,
+                        pick_conf: run.holdout_pick_conf,
+                        pick_hit: run.holdout_pick_hit,
+                    });
+                }
             }
         }
 
@@ -333,7 +357,13 @@ fn main() {
         let winner = arms
             .iter()
             .enumerate()
-            .reduce(|best, cand| if cand.1.accuracy > best.1.accuracy { cand } else { best })
+            .reduce(|best, cand| {
+                if cand.1.accuracy > best.1.accuracy {
+                    cand
+                } else {
+                    best
+                }
+            })
             .map(|(_, r)| r)
             .expect("at least one arm");
         // Plan 010 T4: the presented-constrained holdout read — the
@@ -341,7 +371,8 @@ fn main() {
         // A1/H1/H2 pick space), not the whole class union. The union-argmax
         // number above drives the winner-vs-control gate; this is the
         // honest headline for the variable-option suites.
-        let presented_holdout = presented_constrained_holdout(&rows, &holdout, &labels, &winner.model);
+        let presented_holdout =
+            presented_constrained_holdout(&rows, &holdout, &labels, &winner.model);
         for arm in &arms {
             println!(
                 "  {suite}: {:>24} holdout acc {:.4} (control {:.4}) pick-Brier {:.4} · NLL {:.4} · ECE {:.4} [binned {}/{}] {}",

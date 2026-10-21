@@ -25,9 +25,8 @@ use riir_instinct::instinct_specialist::{
     encode_artifact, label_universe, train_arm_a, ArmAConfig, Specialist,
 };
 use riir_instinct::instinct_typed_eq9::{
-    coverage_holdout_auroc, hard_label_rows, load_choice_eq9, load_coverage_eq9,
-    paired_holdout, restricted_eval, row_holdout, score_aux_eval, train_choice_eq9,
-    GOLD_MIX_QUALIFIED,
+    coverage_holdout_auroc, hard_label_rows, load_choice_eq9, load_coverage_eq9, paired_holdout,
+    restricted_eval, row_holdout, score_aux_eval, train_choice_eq9, GOLD_MIX_QUALIFIED,
 };
 
 struct Args {
@@ -59,7 +58,9 @@ fn parse_args() -> Args {
     while i < args.len() {
         let val = |i: &mut usize, name: &str| -> String {
             *i += 1;
-            args.get(*i).unwrap_or_else(|| panic!("{name} needs a value")).clone()
+            args.get(*i)
+                .unwrap_or_else(|| panic!("{name} needs a value"))
+                .clone()
         };
         match args[i].as_str() {
             "--datasets" => a.datasets = val(&mut i, "--datasets"),
@@ -72,9 +73,7 @@ fn parse_args() -> Args {
                     .map(|s| s.trim().parse().expect("--epochs numbers"))
                     .collect();
             }
-            "--holdout" => {
-                a.holdout = val(&mut i, "--holdout").parse().expect("--holdout number")
-            }
+            "--holdout" => a.holdout = val(&mut i, "--holdout").parse().expect("--holdout number"),
             "--out" => a.out = val(&mut i, "--out"),
             other => panic!("unknown flag {other}"),
         }
@@ -123,10 +122,17 @@ fn main() {
     );
     let strata: Vec<String> = choice.meta.iter().map(|m| m.row_id.clone()).collect();
     let (holdout, train) = row_holdout(&strata, a.holdout);
-    println!("  choice holdout: {} rows · train: {} rows", holdout.len(), train.len());
+    println!(
+        "  choice holdout: {} rows · train: {} rows",
+        holdout.len(),
+        train.len()
+    );
     let mut grid: Vec<GridRow> = Vec::new();
     for &ep in &a.epochs {
-        let cfg = ArmAConfig { epochs: ep, ..ArmAConfig::default() };
+        let cfg = ArmAConfig {
+            epochs: ep,
+            ..ArmAConfig::default()
+        };
         let run = train_choice_eq9(&choice, &train, &holdout, &cfg)
             .unwrap_or_else(|e| panic!("choice epoch {ep}: {e}"));
         let (acc, unanswered) =
@@ -134,20 +140,34 @@ fn main() {
         println!(
             "    epochs {ep}: restricted holdout acc {acc:.4} (unanswered {unanswered}) · lr0-control-not-run-here",
         );
-        grid.push(GridRow { epochs: ep, metric: acc, aux: Some(unanswered as f64) });
+        grid.push(GridRow {
+            epochs: ep,
+            metric: acc,
+            aux: Some(unanswered as f64),
+        });
     }
     let best = grid
         .iter()
-        .max_by(|x, y| x.metric.partial_cmp(&y.metric).unwrap_or(std::cmp::Ordering::Equal))
+        .max_by(|x, y| {
+            x.metric
+                .partial_cmp(&y.metric)
+                .unwrap_or(std::cmp::Ordering::Equal)
+        })
         .expect("non-empty grid");
     let choice_epochs = best.epochs;
-    println!("  choice selected: {choice_epochs} epochs (holdout acc {:.4})", best.metric);
+    println!(
+        "  choice selected: {choice_epochs} epochs (holdout acc {:.4})",
+        best.metric
+    );
     // The lr=0 control: a zero model picks the first presented key.
     let zero = Specialist::zero(&choice.universe);
     let (control_acc, control_unanswered) =
         restricted_eval(&zero, &choice.rows, &choice.universe, &holdout);
     println!("  choice control (zero model): {control_acc:.4} (unanswered {control_unanswered})");
-    let cfg = ArmAConfig { epochs: choice_epochs, ..ArmAConfig::default() };
+    let cfg = ArmAConfig {
+        epochs: choice_epochs,
+        ..ArmAConfig::default()
+    };
     let all_choice: Vec<usize> = (0..choice.rows.len()).collect();
     let choice_final = train_choice_eq9(&choice, &all_choice, &[], &cfg)
         .unwrap_or_else(|e| panic!("choice refit: {e}"))
@@ -162,25 +182,50 @@ fn main() {
     let (noul_holdout, noul_train) = row_holdout(&heads.noul_strata, a.holdout);
     let mut noul_grid: Vec<GridRow> = Vec::new();
     for &ep in &a.epochs {
-        let cfg = ArmAConfig { epochs: ep, brier_lambda: 1.0, ..ArmAConfig::default() };
-        let run = train_arm_a(&heads.noul_rows, &noul_labels, &noul_train, &noul_holdout, &cfg)
-            .unwrap_or_else(|e| panic!("noul epoch {ep}: {e}"));
+        let cfg = ArmAConfig {
+            epochs: ep,
+            brier_lambda: 1.0,
+            ..ArmAConfig::default()
+        };
+        let run = train_arm_a(
+            &heads.noul_rows,
+            &noul_labels,
+            &noul_train,
+            &noul_holdout,
+            &cfg,
+        )
+        .unwrap_or_else(|e| panic!("noul epoch {ep}: {e}"));
         println!("    epochs {ep}: holdout acc {:.4}", run.holdout_accuracy);
-        noul_grid.push(GridRow { epochs: ep, metric: run.holdout_accuracy, aux: None });
+        noul_grid.push(GridRow {
+            epochs: ep,
+            metric: run.holdout_accuracy,
+            aux: None,
+        });
     }
     let best_noul = noul_grid
         .iter()
-        .max_by(|x, y| x.metric.partial_cmp(&y.metric).unwrap_or(std::cmp::Ordering::Equal))
+        .max_by(|x, y| {
+            x.metric
+                .partial_cmp(&y.metric)
+                .unwrap_or(std::cmp::Ordering::Equal)
+        })
         .expect("non-empty noul grid");
     let noul_epochs = best_noul.epochs;
-    println!("  noul selected: {noul_epochs} epochs (holdout acc {:.4})", best_noul.metric);
+    println!(
+        "  noul selected: {noul_epochs} epochs (holdout acc {:.4})",
+        best_noul.metric
+    );
     let all_noul: Vec<usize> = (0..heads.noul_rows.len()).collect();
     let noul_final = train_arm_a(
         &heads.noul_rows,
         &noul_labels,
         &all_noul,
         &[],
-        &ArmAConfig { epochs: noul_epochs, brier_lambda: 1.0, ..ArmAConfig::default() },
+        &ArmAConfig {
+            epochs: noul_epochs,
+            brier_lambda: 1.0,
+            ..ArmAConfig::default()
+        },
     )
     .unwrap_or_else(|e| panic!("noul refit: {e}"))
     .model;
@@ -192,14 +237,25 @@ fn main() {
         let (h, t) = row_holdout(&head.strata, a.holdout);
         let mut g: Vec<GridRow> = Vec::new();
         for &ep in &a.epochs {
-            let cfg = ArmAConfig { epochs: ep, ..ArmAConfig::default() };
+            let cfg = ArmAConfig {
+                epochs: ep,
+                ..ArmAConfig::default()
+            };
             let run = train_arm_a(&head.rows, &labels, &t, &h, &cfg)
                 .unwrap_or_else(|e| panic!("score {qid} epoch {ep}: {e}"));
-            g.push(GridRow { epochs: ep, metric: run.holdout_accuracy, aux: None });
+            g.push(GridRow {
+                epochs: ep,
+                metric: run.holdout_accuracy,
+                aux: None,
+            });
         }
         let best = g
             .iter()
-            .max_by(|x, y| x.metric.partial_cmp(&y.metric).unwrap_or(std::cmp::Ordering::Equal))
+            .max_by(|x, y| {
+                x.metric
+                    .partial_cmp(&y.metric)
+                    .unwrap_or(std::cmp::Ordering::Equal)
+            })
             .expect("non-empty score grid");
         let ep_sel = best.epochs;
         let all_rows: Vec<usize> = (0..head.rows.len()).collect();
@@ -208,7 +264,10 @@ fn main() {
             &labels,
             &all_rows,
             &[],
-            &ArmAConfig { epochs: ep_sel, ..ArmAConfig::default() },
+            &ArmAConfig {
+                epochs: ep_sel,
+                ..ArmAConfig::default()
+            },
         )
         .unwrap_or_else(|e| panic!("score {qid} refit: {e}"))
         .model;
@@ -217,10 +276,12 @@ fn main() {
         let art = encode_artifact(&art_name, &final_model);
         let art_digest = digest_of(&art);
         let art_path = out_path(&a.out, &format!("{art_name}.bin"));
-        std::fs::write(&art_path, &art)
-            .unwrap_or_else(|e| panic!("write score {qid}: {e}"));
-        std::fs::write(format!("{}.blake3", art_path.display()), format!("{art_digest}\n"))
-            .unwrap_or_else(|e| panic!("write score {qid} sidecar: {e}"));
+        std::fs::write(&art_path, &art).unwrap_or_else(|e| panic!("write score {qid}: {e}"));
+        std::fs::write(
+            format!("{}.blake3", art_path.display()),
+            format!("{art_digest}\n"),
+        )
+        .unwrap_or_else(|e| panic!("write score {qid} sidecar: {e}"));
         println!(
             "  score {qid}: {} events · {} levels · epochs {ep_sel} (holdout acc {:.4}) · aux MAE {mae:.4} CDM {cdm:.4}",
             head.rows.len(),
@@ -253,27 +314,44 @@ fn main() {
     let cov_labels = cov.labels.clone();
     let mut cov_grid: Vec<GridRow> = Vec::new();
     for &ep in &a.epochs {
-        let cfg = ArmAConfig { epochs: ep, ..ArmAConfig::default() };
+        let cfg = ArmAConfig {
+            epochs: ep,
+            ..ArmAConfig::default()
+        };
         let run = train_arm_a(&cov.rows, &cov_labels, &cov_train, &cov_holdout, &cfg)
             .unwrap_or_else(|e| panic!("coverage epoch {ep}: {e}"));
         let auc = coverage_holdout_auroc(&run.model, &cov, &cov_holdout)
             .unwrap_or_else(|| panic!("coverage epoch {ep}: holdout AUROC"));
         println!("    epochs {ep}: holdout AUROC {auc:.4}");
-        cov_grid.push(GridRow { epochs: ep, metric: auc, aux: None });
+        cov_grid.push(GridRow {
+            epochs: ep,
+            metric: auc,
+            aux: None,
+        });
     }
     let best_cov = cov_grid
         .iter()
-        .max_by(|x, y| x.metric.partial_cmp(&y.metric).unwrap_or(std::cmp::Ordering::Equal))
+        .max_by(|x, y| {
+            x.metric
+                .partial_cmp(&y.metric)
+                .unwrap_or(std::cmp::Ordering::Equal)
+        })
         .expect("non-empty coverage grid");
     let cov_epochs = best_cov.epochs;
-    println!("  coverage selected: {cov_epochs} epochs (holdout AUROC {:.4})", best_cov.metric);
+    println!(
+        "  coverage selected: {cov_epochs} epochs (holdout AUROC {:.4})",
+        best_cov.metric
+    );
     let all_cov: Vec<usize> = (0..cov.rows.len()).collect();
     let cov_final = train_arm_a(
         &cov.rows,
         &cov_labels,
         &all_cov,
         &[],
-        &ArmAConfig { epochs: cov_epochs, ..ArmAConfig::default() },
+        &ArmAConfig {
+            epochs: cov_epochs,
+            ..ArmAConfig::default()
+        },
     )
     .unwrap_or_else(|e| panic!("coverage refit: {e}"))
     .model;

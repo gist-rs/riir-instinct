@@ -37,14 +37,14 @@
 
 use std::hint::black_box;
 use std::path::Path;
-use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
+use std::sync::Arc;
 use std::time::{Duration, Instant};
 
 use katgpt_core::set_admission::SetAdmissionConfig;
 use riir_instinct::arsenal::ArsenalManifest;
 use riir_instinct::arsenal_ops::{
-    EpochTag, HoardReport, InstallOutcome, LaneSlot, LaneState, hoard_check, hoard_gate_armed_for,
+    hoard_check, hoard_gate_armed_for, EpochTag, HoardReport, InstallOutcome, LaneSlot, LaneState,
 };
 use riir_instinct::server::AnySuiteServer;
 
@@ -78,8 +78,10 @@ type Centroids = Vec<(&'static str, [f32; riir_instinct::arsenal_ops::DIM])>;
 
 fn main() {
     provenance();
-    let datasets =
-        std::path::PathBuf::from(env_or_default("INSTINCT_DATASETS_DIR", "../riir-reflex/.raw/datasets_t20k"));
+    let datasets = std::path::PathBuf::from(env_or_default(
+        "INSTINCT_DATASETS_DIR",
+        "../riir-reflex/.raw/datasets_t20k",
+    ));
     let winners =
         std::path::PathBuf::from(env_or_default("INSTINCT_WINNERS_DIR", "artifacts/cache"));
     if !datasets.is_dir() {
@@ -137,7 +139,15 @@ fn main() {
         let slots: Vec<LaneSlot<u64>> = suites
             .iter()
             .map(|s| {
-                LaneSlot::new(s, LaneState::Unloaded { applied: EpochTag { epoch: 0, digest: digest0 } })
+                LaneSlot::new(
+                    s,
+                    LaneState::Unloaded {
+                        applied: EpochTag {
+                            epoch: 0,
+                            digest: digest0,
+                        },
+                    },
+                )
             })
             .collect();
         black_box(&slots);
@@ -175,7 +185,10 @@ fn main() {
     );
 
     // Real centroids (the hoarding gate's production vectors).
-    let centroids: Centroids = servers.iter().map(|(s, srv)| (*s, srv.centroid())).collect();
+    let centroids: Centroids = servers
+        .iter()
+        .map(|(s, srv)| (*s, srv.centroid()))
+        .collect();
 
     // ── G-B: routing ns–µs ──────────────────────────────────────────────
     let cfg = SetAdmissionConfig::default();
@@ -242,7 +255,10 @@ fn main() {
         "read",
         LaneState::Ready {
             server: 1,
-            applied: EpochTag { epoch: 1, digest: [1; 32] },
+            applied: EpochTag {
+                epoch: 1,
+                digest: [1; 32],
+            },
             centroid: [1.0; riir_instinct::arsenal_ops::DIM],
         },
     ));
@@ -288,7 +304,9 @@ fn main() {
         let mut durs = Vec::with_capacity(QUIESCENT_ITERS);
         for _ in 0..QUIESCENT_ITERS {
             let t = Instant::now();
-            let d = b77.decide(&state, None).unwrap_or_else(|e| fail(&format!("b77 decide: {e}")));
+            let d = b77
+                .decide(&state, None)
+                .unwrap_or_else(|e| fail(&format!("b77 decide: {e}")));
             black_box(&d);
             durs.push(t.elapsed().as_nanos());
         }
@@ -329,7 +347,9 @@ fn main() {
     let admitted1 = pass1.iter().filter(|r| r.is_ok()).count();
     if admitted1 != 6 {
         g_identity = false;
-        id_notes.push(format!("armed gate admitted {admitted1}/6 — the default set must pass"));
+        id_notes.push(format!(
+            "armed gate admitted {admitted1}/6 — the default set must pass"
+        ));
     }
     // Per-suite verdicts with the gate's own numbers — the diagnostic
     // record when a suite refuses (the Bench-003 finding surfaced here).
@@ -365,7 +385,11 @@ fn main() {
         "armed admits {admitted1}/6 real centroids (bit-identical verdicts ×2); disarmed admits \
          unconditionally — the serving outcome set (all six up) is identical either way"
     ));
-    println!("G-D identity: {} — {}", verdict_word(g_identity), id_notes.join("; "));
+    println!(
+        "G-D identity: {} — {}",
+        verdict_word(g_identity),
+        id_notes.join("; ")
+    );
     gates.push(("armed_off_identity", g_identity, id_notes.join("; ")));
 
     // ── verdict ─────────────────────────────────────────────────────────
@@ -389,11 +413,7 @@ fn main() {
 
 /// The swap hammer: REAL servers under the slot lock. Returns
 /// (no-torn-reads gate, report line).
-fn swap_hammer(
-    datasets: &Path,
-    winners: &Path,
-    manifest: Arc<ArsenalManifest>,
-) -> (bool, String) {
+fn swap_hammer(datasets: &Path, winners: &Path, manifest: Arc<ArsenalManifest>) -> (bool, String) {
     let suite: &'static str = "ag_news";
     // The seat is consumed by the boot; extract a real state string first,
     // and install the booted server as the epoch-0 artifact (the boot
@@ -413,11 +433,22 @@ fn swap_hammer(
     let slot: Arc<LaneSlot<AnySuiteServer>> = Arc::new(LaneSlot::new(
         suite,
         LaneState::Unloaded {
-            applied: EpochTag { epoch: 0, digest: digest0 },
+            applied: EpochTag {
+                epoch: 0,
+                digest: digest0,
+            },
         },
     ));
-    slot.install_ready(srv0, EpochTag { epoch: 0, digest: digest0 }, centroid0, false)
-        .unwrap_or_else(|e| fail(&format!("initial install: {e}")));
+    slot.install_ready(
+        srv0,
+        EpochTag {
+            epoch: 0,
+            digest: digest0,
+        },
+        centroid0,
+        false,
+    )
+    .unwrap_or_else(|e| fail(&format!("initial install: {e}")));
 
     let stop = Arc::new(AtomicBool::new(false));
     let errors: Arc<AtomicUsize> = Arc::new(AtomicUsize::new(0));
@@ -438,7 +469,10 @@ fn swap_hammer(
                 // — a swap serializes against it, a decision observes one
                 // whole server.
                 let mut st = slot.state.lock().expect("slot lock");
-                if let LaneState::Ready { server, applied, .. } = &mut *st {
+                if let LaneState::Ready {
+                    server, applied, ..
+                } = &mut *st
+                {
                     let epoch = applied.epoch;
                     if epoch < last_epoch {
                         torn.fetch_add(1, Ordering::Relaxed);
@@ -537,7 +571,11 @@ fn env_or_default(key: &str, default: &str) -> String {
 }
 
 fn verdict_word(ok: bool) -> &'static str {
-    if ok { "PASS" } else { "FAIL" }
+    if ok {
+        "PASS"
+    } else {
+        "FAIL"
+    }
 }
 
 /// Nearest-rank percentiles over a sorted-ascending ns table.
@@ -616,9 +654,16 @@ fn blake3_bytes(path: &Path) -> [u8; 32] {
 fn provenance() {
     println!("PROVENANCE: host m3 (Apple M3 Max, 16 cores)");
     if let Ok(out) = std::process::Command::new("uptime").output() {
-        println!("PROVENANCE: {}", String::from_utf8_lossy(&out.stdout).trim());
+        println!(
+            "PROVENANCE: {}",
+            String::from_utf8_lossy(&out.stdout).trim()
+        );
     }
-    if let Ok(out) = std::process::Command::new("pmset").arg("-g").arg("batt").output() {
+    if let Ok(out) = std::process::Command::new("pmset")
+        .arg("-g")
+        .arg("batt")
+        .output()
+    {
         let s = String::from_utf8_lossy(&out.stdout);
         for line in s.lines().take(2) {
             println!("PROVENANCE: power: {}", line.trim());

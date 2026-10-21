@@ -76,9 +76,13 @@ pub fn decision_blake3(d: &crate::server::ServedDecision) -> String {
         "escalated": d.escalated,
         "abstained": d.abstained,
     });
-    blake3::hash(serde_json::to_string(&canonical).unwrap_or_default().as_bytes())
-        .to_hex()
-        .to_string()
+    blake3::hash(
+        serde_json::to_string(&canonical)
+            .unwrap_or_default()
+            .as_bytes(),
+    )
+    .to_hex()
+    .to_string()
 }
 
 #[cfg(test)]

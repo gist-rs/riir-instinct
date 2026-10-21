@@ -557,11 +557,7 @@ pub fn prior_fusion_pick(
                 } else {
                     f32::NEG_INFINITY
                 };
-                let m = if rival.is_finite() {
-                    own - rival
-                } else {
-                    own
-                };
+                let m = if rival.is_finite() { own - rival } else { own };
                 m * inv
             }
         };
@@ -581,7 +577,7 @@ pub fn prior_fusion_pick(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::specialist::{ARTIFACT_MAGIC, ARTIFACT_VERSION, decode_artifact, VOCAB};
+    use crate::specialist::{decode_artifact, ARTIFACT_MAGIC, ARTIFACT_VERSION, VOCAB};
 
     /// Hand-build one RISP v1 artifact (the riir-train encoder's bytes;
     /// the format is the contract, the producer is over there).
@@ -664,14 +660,26 @@ mod tests {
             abstained: true,
         };
         let d = lane.h1_decide(a0, &[], &[0, 1], &mut survivors, &mut scores);
-        assert_eq!(d, HybridDecision { pick: 1, escalated: false });
+        assert_eq!(
+            d,
+            HybridDecision {
+                pick: 1,
+                escalated: false
+            }
+        );
         let a0 = A0Answer {
             probs: &[0.9, 0.1],
             pick: 0,
             abstained: false,
         };
         let d = lane.h1_decide(a0, &[], &[0, 1], &mut survivors, &mut scores);
-        assert_eq!(d, HybridDecision { pick: 0, escalated: false });
+        assert_eq!(
+            d,
+            HybridDecision {
+                pick: 0,
+                escalated: false
+            }
+        );
     }
 
     /// The join is a name permutation, and the scores follow it:
@@ -699,8 +707,10 @@ mod tests {
             &[vec![0.0; VOCAB], vec![0.0; VOCAB]],
         ))
         .unwrap();
-        assert!(SpecialistLane::join(spec, "toy", &["s0".into(), "s1".into()], Cascade::default())
-            .is_err());
+        assert!(
+            SpecialistLane::join(spec, "toy", &["s0".into(), "s1".into()], Cascade::default())
+                .is_err()
+        );
         let spec = decode_artifact(&encode(
             "toy",
             &["zeta", "eta", "extra"],
@@ -708,17 +718,15 @@ mod tests {
             &[vec![0.0; VOCAB], vec![0.0; VOCAB], vec![0.0; VOCAB]],
         ))
         .unwrap();
-        assert!(SpecialistLane::join(spec, "toy", &["s0".into(), "s1".into()], Cascade::default())
-            .is_err());
-        let spec = decode_artifact(&encode(
-            "toy",
-            &["zeta"],
-            &[0.0],
-            &[vec![0.0; VOCAB]],
-        ))
-        .unwrap();
-        assert!(SpecialistLane::join(spec, "toy", &["s0".into(), "s1".into()], Cascade::default())
-            .is_err());
+        assert!(
+            SpecialistLane::join(spec, "toy", &["s0".into(), "s1".into()], Cascade::default())
+                .is_err()
+        );
+        let spec = decode_artifact(&encode("toy", &["zeta"], &[0.0], &[vec![0.0; VOCAB]])).unwrap();
+        assert!(
+            SpecialistLane::join(spec, "toy", &["s0".into(), "s1".into()], Cascade::default())
+                .is_err()
+        );
     }
 
     /// The seat join forms (Plan 003): named passthrough; the positional
@@ -729,7 +737,12 @@ mod tests {
     fn seat_join_named_positional_context_and_refusal() {
         // Named passthrough: labels all present in the artifact.
         let seat = vec!["wf_a".to_string(), "wf_b".to_string()];
-        let artifact = vec!["no".to_string(), "wf_a".to_string(), "yes".to_string(), "wf_b".to_string()];
+        let artifact = vec![
+            "no".to_string(),
+            "wf_a".to_string(),
+            "yes".to_string(),
+            "wf_b".to_string(),
+        ];
         assert_eq!(seat_join(&seat, &artifact), SeatJoin::Named(seat.clone()));
         // Positional: prompt_injections' int spelling over the pair.
         let seat = vec!["0".to_string(), "1".to_string()];
@@ -741,7 +754,11 @@ mod tests {
         // Context: typed_decisions' workflow seat — fully disjoint from
         // the option-key artifact.
         let seat = vec!["wf_a".to_string(), "wf_b".to_string()];
-        let artifact = vec!["no".to_string(), "execute_refund".to_string(), "yes".to_string()];
+        let artifact = vec![
+            "no".to_string(),
+            "execute_refund".to_string(),
+            "yes".to_string(),
+        ];
         assert_eq!(seat_join(&seat, &artifact), SeatJoin::Context);
         // Partial overlap → unchanged (join refuses with drift context).
         let seat = vec!["wf_a".to_string(), "no".to_string()];
@@ -769,7 +786,10 @@ mod tests {
         let mut scores = [0.0f32; MAX_TOP_K];
         let d = lane.h1_decide(a0, &bag, &[0, 1], &mut survivors, &mut scores);
         assert!(d.escalated);
-        assert_eq!(d.pick, 1, "top-1 prune confines the specialist to A0's argmax");
+        assert_eq!(
+            d.pick, 1,
+            "top-1 prune confines the specialist to A0's argmax"
+        );
     }
 
     /// The prune: descending order, ties keep the lower index, the cap
@@ -780,7 +800,11 @@ mod tests {
         let mut survivors = [(0usize, 0.0f64); MAX_TOP_K];
         let kept = cas.prune(&[0.1, 0.5, 0.5, 0.9, 0.2], &mut survivors);
         let idx: Vec<usize> = kept.iter().map(|&(i, _)| i).collect();
-        assert_eq!(idx, vec![3, 1, 2], "desc prob; the 0.5 tie keeps 1 before 2");
+        assert_eq!(
+            idx,
+            vec![3, 1, 2],
+            "desc prob; the 0.5 tie keeps 1 before 2"
+        );
         let cas = Cascade { top_k: 8 };
         let kept = cas.prune(&[0.1, 0.2], &mut survivors);
         assert_eq!(kept.len(), 2);
@@ -813,10 +837,8 @@ mod tests {
                 let probs: Vec<f64> = (0..n)
                     .map(|i| ((i as f64 * 0.618_033_988_7).sin() * 1e4).fract().abs())
                     .collect();
-                let mut ranked: Vec<(usize, f64)> =
-                    probs.iter().copied().enumerate().collect();
-                ranked
-                    .sort_unstable_by(|a, b| b.1.partial_cmp(&a.1).unwrap().then(a.0.cmp(&b.0)));
+                let mut ranked: Vec<(usize, f64)> = probs.iter().copied().enumerate().collect();
+                ranked.sort_unstable_by(|a, b| b.1.partial_cmp(&a.1).unwrap().then(a.0.cmp(&b.0)));
                 let want: Vec<usize> = ranked[..top_k.min(n)].iter().map(|&(i, _)| i).collect();
 
                 let cas = Cascade { top_k };
@@ -884,7 +906,10 @@ mod tests {
         let bag = bag_of("alpha");
         let mut spec_scores = [0.0f32; 2];
         lane.scores_label_into(&bag, &mut spec_scores);
-        assert!(spec_scores[0] > spec_scores[1], "the toy prior favors s0 on alpha");
+        assert!(
+            spec_scores[0] > spec_scores[1],
+            "the toy prior favors s0 on alpha"
+        );
         let fusion = PriorFusion {
             beta: 0.5,
             n_min: 4.0,
@@ -894,9 +919,15 @@ mod tests {
         let open = prior_fusion_pick(&fusion, &spec_scores, &s1_dominant, 99, 5);
         assert_eq!(open.pick, 1, "a dominant s1 margin, gate open, flips to s1");
         let thin = prior_fusion_pick(&fusion, &spec_scores, &s1_dominant, 0, 5);
-        assert_eq!(thin.pick, 0, "the same margin at n < n_min stays at the prior");
+        assert_eq!(
+            thin.pick, 0,
+            "the same margin at n < n_min stays at the prior"
+        );
         let beta0 = prior_fusion_pick(
-            &PriorFusion { beta: 0.0, ..fusion },
+            &PriorFusion {
+                beta: 0.0,
+                ..fusion
+            },
             &spec_scores,
             &s1_dominant,
             99,
@@ -937,12 +968,18 @@ mod tests {
         let rival = prior_fusion_pick(&fusion, &spec, &[9.0, 1000.0, 5.0], 99, 1);
         assert_eq!(rival.pick, 1, "sanity: a real dominant rival does flip");
         let masked = prior_fusion_pick(&fusion, &spec, &[9.0, f32::NAN, 5.0], 99, 1);
-        assert_eq!(masked.pick, 0, "a NaN slot is never a rival — the pick stands");
+        assert_eq!(
+            masked.pick, 0,
+            "a NaN slot is never a rival — the pick stands"
+        );
         // (c) NaN never anchors the max: an all-NaN vector is the
         // no-evidence case (A1 stands, finite confidence).
         let all_nan = prior_fusion_pick(&fusion, &spec, &[f32::NAN, f32::NAN, f32::NAN], 99, 1);
         assert_eq!(all_nan.pick, 0, "all-NaN ⇒ no margins ⇒ A1");
-        assert!(all_nan.conf.is_finite(), "no NaN may leak into the confidence");
+        assert!(
+            all_nan.conf.is_finite(),
+            "no NaN may leak into the confidence"
+        );
     }
 
     /// H2's readout confidence is a proper [0,1] normalization of the

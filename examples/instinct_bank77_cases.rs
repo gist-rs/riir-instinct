@@ -76,12 +76,19 @@ fn main() {
         if dump.gold[i] as usize != c.gold {
             mismatches += 1;
             if mismatches <= 5 {
-                eprintln!("gold mismatch at row {i}: dump {} vs rebuilt {}", dump.gold[i], c.gold);
+                eprintln!(
+                    "gold mismatch at row {i}: dump {} vs rebuilt {}",
+                    dump.gold[i], c.gold
+                );
             }
         }
     }
     assert_eq!(mismatches, 0, "gold join broken at {mismatches} row(s)");
-    println!("gold join: {}/{} EXACT vs the existing dump", cases.len(), cases.len());
+    println!(
+        "gold join: {}/{} EXACT vs the existing dump",
+        cases.len(),
+        cases.len()
+    );
 
     // Write cases.jsonl for the extraction bin.
     let path = PathBuf::from(&args.out);

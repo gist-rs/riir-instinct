@@ -22,10 +22,8 @@
 //! (cap 300, reflex + champion + b400).
 
 use riir_instinct::stats::paired_upper_bound_f64;
-use riir_instinct::tetris_lane::{
-    ArmKind, CHAMPION_ID, Fixtures, Regime, Runner, T5Sink,
-};
-use serde_json::{Value, json};
+use riir_instinct::tetris_lane::{ArmKind, Fixtures, Regime, Runner, T5Sink, CHAMPION_ID};
+use serde_json::{json, Value};
 use std::path::PathBuf;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::time::{Instant, SystemTime, UNIX_EPOCH};
@@ -60,7 +58,11 @@ fn parse_args() -> Args {
     {
         argv.pop();
     }
-    let start = argv.iter().rposition(|a| a == "--").map(|p| p + 1).unwrap_or(1);
+    let start = argv
+        .iter()
+        .rposition(|a| a == "--")
+        .map(|p| p + 1)
+        .unwrap_or(1);
     let argv: Vec<String> = argv[start..].to_vec();
     let mut i = 0;
     while i < argv.len() {
@@ -80,10 +82,7 @@ fn parse_args() -> Args {
                     .collect();
             }
             "--budgets" => {
-                a.budgets = val()
-                    .split(',')
-                    .filter_map(|s| s.parse().ok())
-                    .collect();
+                a.budgets = val().split(',').filter_map(|s| s.parse().ok()).collect();
             }
             other => panic!("unknown arg {other:?}"),
         }
@@ -148,11 +147,8 @@ fn load_fixtures() -> Fixtures {
     };
     // The fixture pins are the contract — a drifted copy is not the head
     // the arena serves.
-    let pins = riir_reflex::game_heads::fixture_pins(
-        &fixtures.tetris,
-        &fixtures.lanes,
-        &fixtures.flappy,
-    );
+    let pins =
+        riir_reflex::game_heads::fixture_pins(&fixtures.tetris, &fixtures.lanes, &fixtures.flappy);
     for (name, got, pin) in pins {
         assert_eq!(got, pin, "{name}: fixture blake3 != pinned blake3");
     }
@@ -177,10 +173,18 @@ fn run_cell(
     threads: usize,
     fixtures: &Fixtures,
     collect_t5: bool,
-) -> Vec<(u64, riir_instinct::tetris_lane::GameStats, Option<riir_instinct::tetris_lane::T5Aggregate>)> {
+) -> Vec<(
+    u64,
+    riir_instinct::tetris_lane::GameStats,
+    Option<riir_instinct::tetris_lane::T5Aggregate>,
+)> {
     let next_seed = AtomicUsize::new(0);
     let results: std::sync::Mutex<
-        Vec<(u64, riir_instinct::tetris_lane::GameStats, Option<riir_instinct::tetris_lane::T5Aggregate>)>,
+        Vec<(
+            u64,
+            riir_instinct::tetris_lane::GameStats,
+            Option<riir_instinct::tetris_lane::T5Aggregate>,
+        )>,
     > = std::sync::Mutex::new(Vec::with_capacity(seeds.len()));
     let fixture_ref = fixtures;
     std::thread::scope(|s| {
@@ -203,7 +207,10 @@ fn run_cell(
                         let stats = runner.play(seed, regime, cap, None);
                         (stats, None)
                     };
-                    results.lock().expect("results lock").push((seed, stats, agg));
+                    results
+                        .lock()
+                        .expect("results lock")
+                        .push((seed, stats, agg));
                 }
             });
         }
@@ -218,7 +225,11 @@ fn main() {
     let started = Instant::now();
 
     let genome = katgpt_tetris::rulebook::Genome::champion_hybrid();
-    assert_eq!(genome.id(), CHAMPION_ID, "champion genome drifted from the pinned digest");
+    assert_eq!(
+        genome.id(),
+        CHAMPION_ID,
+        "champion genome drifted from the pinned digest"
+    );
 
     let fixtures = load_fixtures();
     // The served head's determinism anchor, from one runner.
@@ -267,8 +278,16 @@ fn main() {
     for &regime in &a.regimes {
         let seeds = all_seeds();
         let games = a.paired_seeds; // summary columns are paired-seeds only
-        // Baseline first: the reflex head's per-seed pieces.
-        let base = run_cell(ArmKind::ReflexHead, regime, &seeds, a.cap, a.threads, &fixtures, true);
+                                    // Baseline first: the reflex head's per-seed pieces.
+        let base = run_cell(
+            ArmKind::ReflexHead,
+            regime,
+            &seeds,
+            a.cap,
+            a.threads,
+            &fixtures,
+            true,
+        );
         let base_pieces: Vec<f64> = base.iter().map(|(_, s, _)| s.pieces as f64).collect();
 
         // T5 from the reflex source.
@@ -306,11 +325,19 @@ fn main() {
             // Every summary column is PAIRED-SEEDS ONLY (1..=N); the
             // context seed 607 rides in the JSON's per_seed rows and the
             // separate context cells, never inside a gate column.
-            let paired: Vec<&(u64, riir_instinct::tetris_lane::GameStats, Option<riir_instinct::tetris_lane::T5Aggregate>)> =
-                res.iter().filter(|(s, _, _)| (*s as usize) <= a.paired_seeds).collect();
+            let paired: Vec<&(
+                u64,
+                riir_instinct::tetris_lane::GameStats,
+                Option<riir_instinct::tetris_lane::T5Aggregate>,
+            )> = res
+                .iter()
+                .filter(|(s, _, _)| (*s as usize) <= a.paired_seeds)
+                .collect();
             let pieces: Vec<f64> = paired.iter().map(|(_, s, _)| s.pieces as f64).collect();
-            let lines: f64 = paired.iter().map(|(_, s, _)| s.lines as f64).sum::<f64>() / paired.len() as f64;
-            let points: f64 = paired.iter().map(|(_, s, _)| s.points as f64).sum::<f64>() / paired.len() as f64;
+            let lines: f64 =
+                paired.iter().map(|(_, s, _)| s.lines as f64).sum::<f64>() / paired.len() as f64;
+            let points: f64 =
+                paired.iter().map(|(_, s, _)| s.points as f64).sum::<f64>() / paired.len() as f64;
             let survived = paired.iter().filter(|(_, s, _)| s.pieces == a.cap).count();
             let mut durs: Vec<f64> = paired.iter().map(|(_, s, _)| s.p50_ms).collect();
             durs.sort_by(f64::total_cmp);
@@ -340,9 +367,7 @@ fn main() {
                 kind,
                 per_seed: res
                     .iter()
-                    .map(|(seed, s, _)| {
-                        (*seed, serde_json::to_value(s).expect("stats json"))
-                    })
+                    .map(|(seed, s, _)| (*seed, serde_json::to_value(s).expect("stats json")))
                     .collect(),
                 mean_pieces: pieces.iter().sum::<f64>() / pieces.len() as f64,
                 mean_lines: lines,
@@ -357,12 +382,32 @@ fn main() {
 
         // The baseline row itself, for the record (paired seeds only,
         // like every gate column above).
-        let paired_base: Vec<&(u64, riir_instinct::tetris_lane::GameStats, Option<riir_instinct::tetris_lane::T5Aggregate>)> =
-            base.iter().filter(|(s, _, _)| (*s as usize) <= a.paired_seeds).collect();
-        let pieces: Vec<f64> = paired_base.iter().map(|(_, s, _)| s.pieces as f64).collect();
-        let lines: f64 = paired_base.iter().map(|(_, s, _)| s.lines as f64).sum::<f64>() / paired_base.len() as f64;
-        let points: f64 = paired_base.iter().map(|(_, s, _)| s.points as f64).sum::<f64>() / paired_base.len() as f64;
-        let survived = paired_base.iter().filter(|(_, s, _)| s.pieces == a.cap).count();
+        let paired_base: Vec<&(
+            u64,
+            riir_instinct::tetris_lane::GameStats,
+            Option<riir_instinct::tetris_lane::T5Aggregate>,
+        )> = base
+            .iter()
+            .filter(|(s, _, _)| (*s as usize) <= a.paired_seeds)
+            .collect();
+        let pieces: Vec<f64> = paired_base
+            .iter()
+            .map(|(_, s, _)| s.pieces as f64)
+            .collect();
+        let lines: f64 = paired_base
+            .iter()
+            .map(|(_, s, _)| s.lines as f64)
+            .sum::<f64>()
+            / paired_base.len() as f64;
+        let points: f64 = paired_base
+            .iter()
+            .map(|(_, s, _)| s.points as f64)
+            .sum::<f64>()
+            / paired_base.len() as f64;
+        let survived = paired_base
+            .iter()
+            .filter(|(_, s, _)| s.pieces == a.cap)
+            .count();
         let mut durs: Vec<f64> = paired_base.iter().map(|(_, s, _)| s.p50_ms).collect();
         durs.sort_by(f64::total_cmp);
         println!(
@@ -454,8 +499,11 @@ fn main() {
 
     std::fs::create_dir_all(&a.out).expect("create out dir");
     let path = a.out.join("tetris_teacher_check.json");
-    std::fs::write(&path, serde_json::to_string_pretty(&doc).expect("serialize"))
-        .expect("write results");
+    std::fs::write(
+        &path,
+        serde_json::to_string_pretty(&doc).expect("serialize"),
+    )
+    .expect("write results");
     println!("wrote {}", path.display());
 
     // The T6 verdict line.

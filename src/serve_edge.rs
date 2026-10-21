@@ -203,9 +203,8 @@ pub fn run(cfg: ServeConfig) -> Result<(), String> {
                 };
                 let m = Arc::new(m);
                 let vctx = crate::arsenal::ValidateCtx::raw(Path::new(&winners_dir));
-                m.validate(&vctx).map_err(|e| {
-                    format!("arsenal manifest ({desc}): validation refused: {e}")
-                })?;
+                m.validate(&vctx)
+                    .map_err(|e| format!("arsenal manifest ({desc}): validation refused: {e}"))?;
                 (m, digest, desc)
             }
         };
@@ -232,9 +231,7 @@ pub fn run(cfg: ServeConfig) -> Result<(), String> {
                     .copied()
                     .find(|r| *r == s.as_str())
                     .ok_or_else(|| {
-                        format!(
-                            "--suites: {s:?} is not in the arsenal manifest ({arsenal_desc})"
-                        )
+                        format!("--suites: {s:?} is not in the arsenal manifest ({arsenal_desc})")
                     })
             })
             .collect::<Result<Vec<&'static str>, String>>()?,
@@ -639,15 +636,17 @@ fn lru_make_room(state: &SrvState, incoming: &str, capacity: usize) -> usize {
                         .row(s.suite)
                         .map(|r| r.budget.load.as_str() == "lazy")
                         .unwrap_or(false)
-                    && matches!(&*s.state.lock().expect("slot lock"), LaneState::Ready { .. })
+                    && matches!(
+                        &*s.state.lock().expect("slot lock"),
+                        LaneState::Ready { .. }
+                    )
             })
             .map(|(i, s)| (s.last_used_ms(), i))
             .collect();
         if candidates.len() < capacity {
             return evicted;
         }
-        let Some((_, victim_idx)) = candidates.iter().copied().min_by_key(|(t, i)| (*t, *i))
-        else {
+        let Some((_, victim_idx)) = candidates.iter().copied().min_by_key(|(t, i)| (*t, *i)) else {
             return evicted;
         };
         let victim = &state.slots[victim_idx];
@@ -1070,7 +1069,9 @@ fn healthz(state: &SrvState) -> String {
                 let centroid = server.centroid();
                 entry.insert(
                     "centroid".into(),
-                    serde_json::Value::Array(centroid.iter().map(|v| serde_json::json!(v)).collect()),
+                    serde_json::Value::Array(
+                        centroid.iter().map(|v| serde_json::json!(v)).collect(),
+                    ),
                 );
             }
             let labels = server.labels();

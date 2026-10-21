@@ -115,7 +115,12 @@ fn main() {
     let t0 = std::time::Instant::now();
     println!(
         "instinct_emotion_v2: suite {} · datasets {} · λ {} · k {} · holdout {} · front {}/label",
-        a.suite, dir.display(), a.lambda, a.k, a.holdout, a.front_per_label
+        a.suite,
+        dir.display(),
+        a.lambda,
+        a.k,
+        a.holdout,
+        a.front_per_label
     );
     let train = load_suite_rows(&dir, &a.suite).expect("load train");
     let labels = label_universe(&train);
@@ -136,8 +141,7 @@ fn main() {
     let (front, pool) = probe_front_split(&train, &labels, a.front_per_label);
     let pool_rows: Vec<SuiteRow> = pool.iter().map(|&i| train[i].clone()).collect();
     let t_fit = std::time::Instant::now();
-    let ridge_probe =
-        NbsvmRidge::fit(&pool_rows, &labels, a.lambda, a.k).expect("fit probe ridge");
+    let ridge_probe = NbsvmRidge::fit(&pool_rows, &labels, a.lambda, a.k).expect("fit probe ridge");
     println!(
         "probe pool {} (front {}) · ridge fit k={} · {}",
         pool_rows.len(),
@@ -271,8 +275,7 @@ fn main() {
                 &mut bag,
                 &mut bag_scratch,
             );
-            let ok = !bag.is_empty()
-                && run.model.pick(&bag) == class_of[train[i].label.as_str()];
+            let ok = !bag.is_empty() && run.model.pick(&bag) == class_of[train[i].label.as_str()];
             correct.push(ok);
         }
         (correct, run.holdout_accuracy)
@@ -312,9 +315,7 @@ fn main() {
                 weight_decay: wd,
                 ..NbsvmConfig::default()
             };
-            let name = format!(
-                "v2 scale={sa_scale} lr={sa_lr} norm k=all e={epochs} wd={wd}"
-            );
+            let name = format!("v2 scale={sa_scale} lr={sa_lr} norm k=all e={epochs} wd={wd}");
             let t_run = std::time::Instant::now();
             let (correct, acc) = score(&cfg);
             println!(
@@ -330,8 +331,8 @@ fn main() {
     let (best_name, best_cfg, best_correct, best_acc) = best.expect("grid produced a run");
 
     // Determinism: rerun the winner, assert bit-identical picks.
-    let rerun = train_nbsvm(&train, &labels, &rest_idx, &holdout_idx, &best_cfg)
-        .expect("rerun best");
+    let rerun =
+        train_nbsvm(&train, &labels, &rest_idx, &holdout_idx, &best_cfg).expect("rerun best");
     let mut rerun_correct = Vec::with_capacity(holdout_idx.len());
     for &i in &holdout_idx {
         presence_bag_into(
@@ -370,7 +371,11 @@ fn main() {
     println!(
         "GATE {best_name}: acc {best_acc:.4} vs {} {:.4} · paired mean {:+.5} \
          (se {:.5}) · LB95 {:+.5} {} 0",
-        if gate_vs_v1(&a.suite) { "v1 arm A" } else { "baseline ridge" },
+        if gate_vs_v1(&a.suite) {
+            "v1 arm A"
+        } else {
+            "baseline ridge"
+        },
         gate_acc,
         vs_gate.mean,
         vs_gate.se,
@@ -413,7 +418,11 @@ fn main() {
             "HOLDOUT GATE: PASS — v2 strictly above the {} on the train holdout; \
              the arena's single frozen test read (T3, the instinct bridge) decides \
              registration",
-            if gate_vs_v1(&a.suite) { "v1 specialist" } else { "ridge baseline" }
+            if gate_vs_v1(&a.suite) {
+                "v1 specialist"
+            } else {
+                "ridge baseline"
+            }
         );
     } else {
         println!(

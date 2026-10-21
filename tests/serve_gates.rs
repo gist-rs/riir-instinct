@@ -239,7 +239,8 @@ fn production_manifest() -> ArsenalManifest {
 /// that served). The FULL production bytes stay pinned by the digest
 /// gate above; this derivative never ships anywhere.
 fn production_manifest_file() -> String {
-    let path = std::env::temp_dir().join(format!("instinct_arsenal_prod_{}.toml", std::process::id()));
+    let path =
+        std::env::temp_dir().join(format!("instinct_arsenal_prod_{}.toml", std::process::id()));
     std::fs::write(&path, replay_manifest_toml()).expect("write open-replay manifest");
     path.to_string_lossy().into_owned()
 }
@@ -346,7 +347,10 @@ const PINNED_PRODUCTION_MANIFEST_DIGEST: &str =
 
 #[test]
 fn production_manifest_bytes_are_pinned_byte_for_byte() {
-    let actual = format!("blake3:{}", ArsenalManifest::digest_of(PRODUCTION_MANIFEST_TOML));
+    let actual = format!(
+        "blake3:{}",
+        ArsenalManifest::digest_of(PRODUCTION_MANIFEST_TOML)
+    );
     assert_eq!(
         actual, PINNED_PRODUCTION_MANIFEST_DIGEST,
         "the inline production manifest drifted — re-pin \
@@ -538,10 +542,7 @@ fn boot_suite_synth(
             // for a row without an escalate table this is byte-identical
             // to boot_from_seat.
             riir_instinct::server::AnySuiteServer::boot_cheap_from_seat(
-                suite,
-                seat,
-                &winners,
-                &manifest,
+                suite, seat, &winners, &manifest,
             )
         })
         .expect("spawn boot thread")
@@ -685,7 +686,6 @@ fn served_decisions_are_the_frozen_goat_picks() {
         );
     }
 }
-
 
 /// The massive sentinel face: the seat's t20k test split lacks
 /// `cooking_query` (the artifact carries 60 intents, the seat offers 59);
@@ -1224,12 +1224,18 @@ fn escalate_grammar_and_validator_rules() {
     let enc_m = ArsenalManifest::parse(&enc).expect("parses");
     let err = enc_m.validate(&ctx).unwrap_err();
     assert!(err.contains("cannot escalate"), "{err}");
-    assert!(err.contains("\"ag_news\""), "the refusal names the row: {err}");
+    assert!(
+        err.contains("\"ag_news\""),
+        "the refusal names the row: {err}"
+    );
 
     // An unknown escalate field refuses at PARSE (deny_unknown_fields).
     let unknown = good.replace("margin = 0.05", "margin = 0.05, bogus = 1.0");
     let err = ArsenalManifest::parse(&unknown).unwrap_err();
-    assert!(err.contains("unknown field") && err.contains("bogus"), "{err}");
+    assert!(
+        err.contains("unknown field") && err.contains("bogus"),
+        "{err}"
+    );
 
     // margin <= 0 refuses.
     let bad = good.replace("margin = 0.05", "margin = 0.0");
@@ -1240,7 +1246,10 @@ fn escalate_grammar_and_validator_rules() {
     assert!(err.contains("escalate.margin"), "{err}");
 
     // min_rate >= max_rate refuses.
-    let bad = good.replace("min_rate = 0.15, max_rate = 0.60", "min_rate = 0.60, max_rate = 0.15");
+    let bad = good.replace(
+        "min_rate = 0.15, max_rate = 0.60",
+        "min_rate = 0.60, max_rate = 0.15",
+    );
     let err = ArsenalManifest::parse(&bad)
         .expect("parses")
         .validate(&ctx)
@@ -1359,9 +1368,9 @@ fn escalate_row_refuses_loud_on_every_open_boot_path() {
     for (lane, out) in [("boot_from_seat", out.0), ("boot_bytes", out.1)] {
         let err = match out {
             Err(e) => e,
-            Ok(_) => panic!(
-                "{lane}: the escalate row must refuse on the open build — it booted instead"
-            ),
+            Ok(_) => {
+                panic!("{lane}: the escalate row must refuse on the open build — it booted instead")
+            }
         };
         assert!(
             err.contains("escalate") && err.contains("boot_cheap_from_seat"),
@@ -1525,8 +1534,7 @@ fn http_edge_refusal_and_healthz_faces() {
     // (not the 404 unknown_suite) means the contract check precedes the
     // suite lookup.
     for ver in ["2", r#""1""#, "0"] {
-        let req_body =
-            format!(r#"{{"suite":"nope","state":"x","contract_version":{ver}}}"#);
+        let req_body = format!(r#"{{"suite":"nope","state":"x","contract_version":{ver}}}"#);
         let (status, body) = http(srv.port, "POST /decide HTTP/1.1", Some(&req_body));
         assert_eq!(status, 400, "contract_version {ver}: {body}");
         assert!(
@@ -1703,8 +1711,14 @@ fn http_decide_happy_path_with_data() {
     }
     let receipt = &doc["receipt"];
     assert!(receipt["build"].as_str().unwrap().len() == 16, "{body}");
-    assert!(receipt["input_blake3"].as_str().unwrap().len() == 64, "{body}");
-    assert!(receipt["decision_blake3"].as_str().unwrap().len() == 64, "{body}");
+    assert!(
+        receipt["input_blake3"].as_str().unwrap().len() == 64,
+        "{body}"
+    );
+    assert!(
+        receipt["decision_blake3"].as_str().unwrap().len() == 64,
+        "{body}"
+    );
     assert!(doc["us"].as_u64().is_some(), "{body}");
 }
 
@@ -1816,10 +1830,7 @@ fn arsenal_release_refuses_the_eager_posture() {
     // box needs a row that seats one.
     let srv = spawn_server_cfg(
         &["--suites", "ag_news"],
-        &[(
-            "INSTINCT_ARSENAL",
-            production_manifest_file().as_str(),
-        )],
+        &[("INSTINCT_ARSENAL", production_manifest_file().as_str())],
     );
     assert!(wait_bind(srv.port), "the server never bound");
     let (status, body) = http_to(
@@ -1930,10 +1941,10 @@ fn arsenal_swap_monotonic_gate_over_http() {
         eprintln!("SKIP loud: datasets/winner artifacts absent");
         return;
     }
-    let srv = spawn_server_cfg(&["--suites", "ag_news"], &[(
-        "INSTINCT_ARSENAL",
-        production_manifest_file().as_str(),
-    )]);
+    let srv = spawn_server_cfg(
+        &["--suites", "ag_news"],
+        &[("INSTINCT_ARSENAL", production_manifest_file().as_str())],
+    );
     assert!(wait_bind(srv.port), "the server never bound");
     wait_suite_state(srv.port, "ag_news", "ready", 420)
         .unwrap_or_else(|b| panic!("the ag_news lane never reached ready; last healthz: {b}"));

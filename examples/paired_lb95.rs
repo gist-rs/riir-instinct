@@ -19,10 +19,9 @@
 use std::io::Write;
 
 fn read_bools(path: &str) -> Result<Vec<bool>, String> {
-    let text = std::fs::read_to_string(path)
-        .map_err(|e| format!("read {path}: {e}"))?;
-    let v: Vec<bool> = serde_json::from_str(&text)
-        .map_err(|e| format!("parse {path} as [bool]: {e}"))?;
+    let text = std::fs::read_to_string(path).map_err(|e| format!("read {path}: {e}"))?;
+    let v: Vec<bool> =
+        serde_json::from_str(&text).map_err(|e| format!("parse {path} as [bool]: {e}"))?;
     Ok(v)
 }
 

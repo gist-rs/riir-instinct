@@ -36,16 +36,16 @@ use std::hint::black_box;
 use std::path::{Path, PathBuf};
 
 use riir_instinct::{
-    A0Answer, ArmStat, Cascade, HybridLane, MAX_TOP_K, NOUL_PAIR, PairedDiff, PriorFusion,
-    SpecialistLane, delta_suite, paired_upper_bound, pareto_rank0, prior_fusion_pick, select_arm,
-    wilson_lb,
+    delta_suite, paired_upper_bound, pareto_rank0, prior_fusion_pick, select_arm, wilson_lb,
+    A0Answer, ArmStat, Cascade, HybridLane, PairedDiff, PriorFusion, SpecialistLane, MAX_TOP_K,
+    NOUL_PAIR,
 };
 use riir_reflex::embed::EMBED_DIM;
 use riir_reflex::engine::DecisionEngine;
-use riir_reflex::harness::metrics::{CalibrationPair, conformal_naive_floor, ece_of};
+use riir_reflex::harness::metrics::{conformal_naive_floor, ece_of, CalibrationPair};
 use riir_reflex::harness::runner::seat::{
-    PostureKnobs, Seat, SeatEval, SeatPosture, build_seat_engine, eval_seat, fit_posture,
-    prepare_seat, prepare_seat_with_synth,
+    build_seat_engine, eval_seat, fit_posture, prepare_seat, prepare_seat_with_synth, PostureKnobs,
+    Seat, SeatEval, SeatPosture,
 };
 use riir_reflex::harness::suites::{QKind, SuiteCase, SuiteQuestion};
 use riir_reflex::nb_scope::NbView;
@@ -338,7 +338,10 @@ fn main() {
         .name("arena-main".into())
         .stack_size(ARENA_STACK)
         .spawn(arena_main)
-        .and_then(|h| h.join().map_err(|_| std::io::Error::other("arena thread panicked")))
+        .and_then(|h| {
+            h.join()
+                .map_err(|_| std::io::Error::other("arena thread panicked"))
+        })
         .inspect_err(|e| eprintln!("⛔ arena: {e}"))
         .map(|_| ())
         .map_or(1, |()| 0);
@@ -439,9 +442,7 @@ fn arena_main() {
                     .find(|x| **x == s.as_str())
                     .copied()
                     .unwrap_or_else(|| {
-                        die(&format!(
-                            "unknown suite {s} — the arena seats {SUITES:?}"
-                        ))
+                        die(&format!("unknown suite {s} — the arena seats {SUITES:?}"))
                     })
             })
             .collect()
@@ -516,8 +517,11 @@ fn write_box_state(out_dir: &Path, start: &riir_reflex::harness::box_state::BoxS
         end: riir_reflex::harness::box_state::capture(),
     };
     let path = out_dir.join("box_state.json");
-    std::fs::write(&path, serde_json::to_string_pretty(&span).expect("box state json"))
-        .expect("write box state");
+    std::fs::write(
+        &path,
+        serde_json::to_string_pretty(&span).expect("box state json"),
+    )
+    .expect("write box state");
     eprintln!("box state (structured): {}", path.display());
 }
 
@@ -580,7 +584,9 @@ fn run_suite(
         842 => run_suite_n::<842>(name, seat, winners_dir, top_k, winners_raw_v1),
         59 => run_suite_n::<59>(name, seat, winners_dir, top_k, winners_raw_v1),
         77 => run_suite_n::<77>(name, seat, winners_dir, top_k, winners_raw_v1),
-        n => Err(format!("no engine arity for {n} labels — extend the dispatch")),
+        n => Err(format!(
+            "no engine arity for {n} labels — extend the dispatch"
+        )),
     }
 }
 
@@ -748,7 +754,10 @@ impl<const N: usize> SuiteCtx<N> {
             );
         }
         self.pos_keys = keys;
-        let all_named = self.pos_keys.iter().all(|key| self.key_map.contains_key(key));
+        let all_named = self
+            .pos_keys
+            .iter()
+            .all(|key| self.key_map.contains_key(key));
         if all_named {
             for key in &self.pos_keys {
                 let (li, cls) = self.key_map[key];
@@ -920,10 +929,12 @@ impl<const N: usize> SuiteCtx<N> {
             self.bag_text.push('\n');
             self.bag_text.push_str(instructions);
             let text = std::mem::take(&mut self.bag_text);
-            self.conv.bag_into(text.as_bytes(), &mut self.bag, &mut self.tok);
+            self.conv
+                .bag_into(text.as_bytes(), &mut self.bag, &mut self.tok);
             self.bag_text = text;
         } else {
-            self.conv.bag_into(state.as_bytes(), &mut self.bag, &mut self.tok);
+            self.conv
+                .bag_into(state.as_bytes(), &mut self.bag, &mut self.tok);
         }
     }
 
@@ -934,12 +945,7 @@ impl<const N: usize> SuiteCtx<N> {
     /// re-bagged, the per-question positions/gold come from that question's
     /// own criteria; for the one-question suites this is byte-identical to
     /// the old per-case loop).
-    fn eval_h1(
-        &mut self,
-        se: &SeatEval,
-        cases: &[SuiteCase],
-        strs: &[String],
-    ) -> ArmOut {
+    fn eval_h1(&mut self, se: &SeatEval, cases: &[SuiteCase], strs: &[String]) -> ArmOut {
         let n_q: usize = cases.iter().map(|c| c.questions.len()).sum();
         let mut h1 = ArmOut {
             name: "H1".into(),
@@ -1017,13 +1023,13 @@ impl<const N: usize> SuiteCtx<N> {
         let mut grid: Vec<GridRow> = BETA_GRID
             .iter()
             .flat_map(|&b| {
-                N_MIN_GRID
-                    .iter()
-                    .flat_map(move |&nm| TAU_GRID.iter().map(move |&t| Cand::H2 {
+                N_MIN_GRID.iter().flat_map(move |&nm| {
+                    TAU_GRID.iter().map(move |&t| Cand::H2 {
                         beta: b,
                         n_min: nm,
                         tau_n: t,
-                    }))
+                    })
+                })
             })
             .map(|c| {
                 (
@@ -1238,7 +1244,13 @@ fn run_suite_n<const N: usize>(
         Err(e) => return Err(e),
     };
     let Some(spec) = spec else {
-        return run_suite_a0_only(name, seat, engine, posture, "no specialist artifact (Issue 010 T2)");
+        return run_suite_a0_only(
+            name,
+            seat,
+            engine,
+            posture,
+            "no specialist artifact (Issue 010 T2)",
+        );
     };
 
     // The specialist bridge's shape law (Plan 003, relaxed from
@@ -1263,7 +1275,11 @@ fn run_suite_n<const N: usize>(
         winner_path.display(),
         spec.labels.len(),
         bridge_convention.name(),
-        if winners_raw_v1 { " · RAW-V1 READ" } else { "" }
+        if winners_raw_v1 {
+            " · RAW-V1 READ"
+        } else {
+            ""
+        }
     );
     // The seat↔artifact join form (Plan 003's bridge), decided once: a
     // name-joinable suite or the positional noul pair joins Named; a
@@ -1399,7 +1415,8 @@ fn run_suite_n<const N: usize>(
     };
 
     // ── CAL phase (train-side): the instrument's readings ────────────
-    let (a0_cal, cal_se) = SuiteCtx::<N>::eval_a0(&mut ctx.engine, &seat.cal_cases, &seat.cal_state_strs)?;
+    let (a0_cal, cal_se) =
+        SuiteCtx::<N>::eval_a0(&mut ctx.engine, &seat.cal_cases, &seat.cal_state_strs)?;
     let h1_cal = ctx.eval_h1(&cal_se, &seat.cal_cases, &seat.cal_state_strs);
     let (a1_cal, h2s_cal) = ctx.eval_a1_h2(&seat.cal_cases, &seat.cal_state_strs);
     let mut cal_arms: Vec<ArmOut> = Vec::with_capacity(3 + h2s_cal.len());
@@ -1417,13 +1434,13 @@ fn run_suite_n<const N: usize>(
             BETA_GRID
                 .iter()
                 .flat_map(|&b| {
-                    N_MIN_GRID
-                        .iter()
-                        .flat_map(move |&nm| TAU_GRID.iter().map(move |&t| Cand::H2 {
+                    N_MIN_GRID.iter().flat_map(move |&nm| {
+                        TAU_GRID.iter().map(move |&t| Cand::H2 {
                             beta: b,
                             n_min: nm,
                             tau_n: t,
-                        }))
+                        })
+                    })
                 })
                 .collect::<Vec<_>>(),
         );
@@ -1431,7 +1448,11 @@ fn run_suite_n<const N: usize>(
     };
     let mut registration: Vec<RegRow> = Vec::with_capacity(cands.len());
     for (cand, arm) in cands.iter().zip(cal_arms.iter()) {
-        let lcb = katgpt_core::best_belief_score(arm.n_correct(), (arm.correct.len() as u32) - arm.n_correct(), 0.05);
+        let lcb = katgpt_core::best_belief_score(
+            arm.n_correct(),
+            (arm.correct.len() as u32) - arm.n_correct(),
+            0.05,
+        );
         registration.push(RegRow {
             cand: cand.clone(),
             arm: arm.name.clone(),
@@ -1454,10 +1475,7 @@ fn run_suite_n<const N: usize>(
     for (i, r) in registration.iter_mut().enumerate() {
         r.rank0 = rank0.contains(&i);
     }
-    let successes: Vec<u32> = rank0
-        .iter()
-        .map(|&i| cal_arms[i].n_correct())
-        .collect();
+    let successes: Vec<u32> = rank0.iter().map(|&i| cal_arms[i].n_correct()).collect();
     let failures: Vec<u32> = rank0
         .iter()
         .map(|&i| (cal_arms[i].correct.len() as u32) - cal_arms[i].n_correct())
@@ -1481,7 +1499,8 @@ fn run_suite_n<const N: usize>(
     // ── THE TEST READ (once; predictions frozen below) ─────────────
     let mut test_arms: Vec<ArmOut> = Vec::new();
     {
-        let (a0, test_se) = SuiteCtx::<N>::eval_a0(&mut ctx.engine, &seat.suite.cases, &seat.state_strs)?;
+        let (a0, test_se) =
+            SuiteCtx::<N>::eval_a0(&mut ctx.engine, &seat.suite.cases, &seat.state_strs)?;
         let h1 = ctx.eval_h1(&test_se, &seat.suite.cases, &seat.state_strs);
         let (a1, h2s) = ctx.eval_a1_h2(&seat.suite.cases, &seat.state_strs);
         test_arms.push(a0);
@@ -1513,7 +1532,9 @@ fn run_suite_n<const N: usize>(
     let mut registered = instrument_pick.clone();
     let superiority = if instrument_pick != Cand::A0 {
         let face = (|| {
-            let reg = test_arms.iter().find(|a| a.name == instrument_pick.name())?;
+            let reg = test_arms
+                .iter()
+                .find(|a| a.name == instrument_pick.name())?;
             let a0 = test_arms.iter().find(|a| a.name == "A0")?;
             paired_upper_bound(&reg.correct, &a0.correct)
         })();
@@ -1530,7 +1551,11 @@ fn run_suite_n<const N: usize>(
             instrument_pick.name(),
             pd.mean,
             pd.lb95,
-            if passed { "PASS" } else { "REFUSED → A0 serves" }
+            if passed {
+                "PASS"
+            } else {
+                "REFUSED → A0 serves"
+            }
         );
         if !passed {
             registered = Cand::A0;
@@ -1607,7 +1632,11 @@ fn run_suite_n<const N: usize>(
             .flat_map(|c| c.gold.iter().map(|g| g.idx))
             .collect(),
         specialist_present: true,
-        verdict: if registered != Cand::A0 { "hybrid_arm" } else { "a0_stands" },
+        verdict: if registered != Cand::A0 {
+            "hybrid_arm"
+        } else {
+            "a0_stands"
+        },
         a0_note: if registered == Cand::A0 {
             Some(match &superiority {
                 Some(s) => format!(
@@ -1769,10 +1798,7 @@ fn run_suite_a0_only<const N: usize>(
 /// H1 = gate + prune + specialist-on-survivors per QUESTION; H2 = the
 /// fusion arithmetic per QUESTION (divided by the option count for the
 /// per-option bar).
-fn fusion_overhead_micro<const N: usize>(
-    ctx: &mut SuiteCtx<N>,
-    n: usize,
-) -> (f64, f64, f64) {
+fn fusion_overhead_micro<const N: usize>(ctx: &mut SuiteCtx<N>, n: usize) -> (f64, f64, f64) {
     /// (h1 full decision, h1 fusion-only, h2 fusion per option)
     const ITERS: usize = 20_000;
     let probs: Vec<f64> = (0..n).map(|i| (i as f64 * 0.61).cos().abs()).collect();
@@ -1851,8 +1877,7 @@ fn fusion_overhead_micro<const N: usize>(
         tau_n: 4.0,
     };
     let mut spec_scores = vec![0.0f32; n];
-    ctx.lane
-        .scores_label_into(&ctx.bag, &mut spec_scores);
+    ctx.lane.scores_label_into(&ctx.bag, &mut spec_scores);
     // H2's per-question cost = the fusion arithmetic over the scores
     // (the specialist forward + nb read are measured separately in the
     // arm latencies; the BAR in the gate is the fusion term).
@@ -1935,7 +1960,11 @@ fn g1_face(cal: &[ArmOut], test: &[ArmOut], registered: &Cand) -> Option<G1Face>
 /// G3 — paired non-inferiority on a reflex-won suite: A0 − registered,
 /// δ pre-declared from the CAL discordant rate at the TEST n
 /// (δ = max(1.0 pp, 2.5·SE)).
-fn g3_face(cal: &[ArmOut], test: &[ArmOut], registered: &Cand) -> (Option<PairedDiff>, Option<f64>) {
+fn g3_face(
+    cal: &[ArmOut],
+    test: &[ArmOut],
+    registered: &Cand,
+) -> (Option<PairedDiff>, Option<f64>) {
     let name = registered.name();
     let Some(cal_reg) = cal.iter().find(|a| a.name == name) else {
         return (None, None);
@@ -1972,9 +2001,7 @@ fn g5_face(test: &[ArmOut], registered: &Cand) -> (bool, String) {
     if matches!(registered, Cand::A0 | Cand::A1) {
         return (
             false,
-            format!(
-                "no hybrid arm registered ({name} stands) — the gate is refused, never a pass"
-            ),
+            format!("no hybrid arm registered ({name} stands) — the gate is refused, never a pass"),
         );
     }
     let Some(reg) = test.iter().find(|a| a.name == name) else {
@@ -1992,9 +2019,7 @@ fn g5_face(test: &[ArmOut], registered: &Cand) -> (bool, String) {
     if lb > best_other {
         return (
             true,
-            format!(
-                "quality face: Wilson LB {lb:.4} > max(A0, A1) {best_other:.4}"
-            ),
+            format!("quality face: Wilson LB {lb:.4} > max(A0, A1) {best_other:.4}"),
         );
     }
     // The budget face: A1 − arm (the latency the hybrid saves over the
@@ -2053,7 +2078,10 @@ fn laya_face(seat: &Seat, test_arms: &[ArmOut]) -> Option<LayaFace> {
     if escalated.is_empty() {
         return None;
     }
-    let cases: Vec<SuiteCase> = escalated.iter().map(|&i| seat.suite.cases[i].clone()).collect();
+    let cases: Vec<SuiteCase> = escalated
+        .iter()
+        .map(|&i| seat.suite.cases[i].clone())
+        .collect();
     let durs = riir_reflex::harness::runner::seat::laya_escalation_latency_us(&cases).ok()?;
     let lane_durs: Vec<f64> = escalated.iter().map(|&i| h1.own_durs_us[i]).collect();
     let laya_durs: Vec<f64> = durs.iter().map(|&d| d as f64).collect();
@@ -2200,9 +2228,11 @@ fn site_published_rows(
     datasets_dir: &Path,
     wanted: &[&str],
 ) -> Result<Option<std::collections::HashMap<String, f64>>, String> {
-    let Some(root) = datasets_dir.canonicalize().ok().and_then(|p| {
-        p.ancestors().nth(3).map(|a| a.to_path_buf())
-    }) else {
+    let Some(root) = datasets_dir
+        .canonicalize()
+        .ok()
+        .and_then(|p| p.ancestors().nth(3).map(|a| a.to_path_buf()))
+    else {
         eprintln!(
             "  A0 pin · site check skipped loud: the datasets dir does not resolve \
              to a workspace root"
@@ -2371,9 +2401,11 @@ fn write_results(out_dir: &Path, runs: &[SuiteRun], box_state: &str, datasets_di
     md.push_str(&format!(
         "# {bench_tag} — the Reflex · instinct hybrid GOAT run\n\n"
     ));
-    md.push_str("**Status:** MEASURED — the single frozen test read (Issue 005 T5 / \
+    md.push_str(
+        "**Status:** MEASURED — the single frozen test read (Issue 005 T5 / \
 Issue 003 T4); arms pre-registered on the cal front by the Pareto rank-0 + \
-argmax Beta-LCB instrument; predictions frozen in `predictions.json`.\n\n");
+argmax Beta-LCB instrument; predictions frozen in `predictions.json`.\n\n",
+    );
     md.push_str(&format!(
         "Protocol: the seat posture = the CURRENT PUBLISHED reflex posture (Issue 008 T1's \
 re-baseline, amended: `--nb-select --oc-select --ridge-select`, registry caps, genome \
@@ -2602,15 +2634,21 @@ lane−laya UB95 {:+.0} µs ≤ 0 → {}\n",
                 if l.pass { "PASS" } else { "FAIL" }
             ));
         }
-        md.push_str("- **G4 alloc-free:** `tests/g4_alloc.rs` — a counting global allocator \
-over 10k H1 + H2 + prune decisions: 0 allocations (its own binary; no concurrent test traffic).\n");
-        md.push_str("- **G0 identity:** the kill switch (`HybridLane::ReflexOnly`) is \
+        md.push_str(
+            "- **G4 alloc-free:** `tests/g4_alloc.rs` — a counting global allocator \
+over 10k H1 + H2 + prune decisions: 0 allocations (its own binary; no concurrent test traffic).\n",
+        );
+        md.push_str(
+            "- **G0 identity:** the kill switch (`HybridLane::ReflexOnly`) is \
 byte-identical to A0 incl. the abstain passthrough, and the H2 `g ≡ 0` collapse lands on the \
 A1 ordering — both pinned by unit tests; the A0 drift pin above holds the seat path to \
-reflex's own run().\n");
-        md.push_str("- **G6 purity:** the reflex half is the frozen count tables (built \
+reflex's own run().\n",
+        );
+        md.push_str(
+            "- **G6 purity:** the reflex half is the frozen count tables (built \
 once, read-only) and the instinct half a BLAKE3-sealed RISP artifact verified at load. The \
-HOSTED-ONLY vessel wrapper is P4 (Issue 001) — disclosed, not claimed here.\n\n");
+HOSTED-ONLY vessel wrapper is P4 (Issue 001) — disclosed, not claimed here.\n\n",
+        );
     }
 
     let path = out_dir.join("RESULTS.md");

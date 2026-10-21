@@ -8,15 +8,11 @@
 //! cargo run --release --example prune_bench
 //! ```
 
-use std::hint::black_box;
 use riir_instinct::{Cascade, MAX_TOP_K};
+use std::hint::black_box;
 
 /// The pre-remedy shape: full insertion walk for every option.
-fn prune_old(
-    top_k: usize,
-    probs: &[f64],
-    survivors: &mut [(usize, f64); MAX_TOP_K],
-) -> usize {
+fn prune_old(top_k: usize, probs: &[f64], survivors: &mut [(usize, f64); MAX_TOP_K]) -> usize {
     let mut n = 0usize;
     for (i, &p) in probs.iter().enumerate() {
         let mut pos = n.min(top_k);
@@ -42,7 +38,14 @@ fn prune_old(
 
 fn main() {
     let iters = 200_000;
-    for (n, k) in [(4usize, 4usize), (6, 6), (20, 8), (59, 8), (77, 8), (400, 8)] {
+    for (n, k) in [
+        (4usize, 4usize),
+        (6, 6),
+        (20, 8),
+        (59, 8),
+        (77, 8),
+        (400, 8),
+    ] {
         let probs: Vec<f64> = (0..n)
             .map(|i| ((i as f64 * 0.618_033_988_7).sin() * 1e4).fract().abs())
             .collect();

@@ -14,7 +14,11 @@
 //! riir-reflex tokenizer law — both measured here; the reflexer-vessel
 //! row is the PUBLIC-RELEASE reader only).
 
-pub mod specialist;
+pub mod arsenal;
+pub mod arsenal_ops;
+pub mod hybrid;
+pub mod instinct_bank77_cases;
+pub mod instinct_nbsvm;
 /// The L1 training lane (Plan 008 B4 — lifted from `../riir-train`, where
 /// it landed as the Issue-576+ trainer family): the Arm-A one-vs-all
 /// logistic specialist + its trainer, the NBSVM ridge mirror, the typed
@@ -27,47 +31,13 @@ pub mod specialist;
 /// encoder lane) live in `../riir-rethink`; GPU training + distill stay
 /// in `../riir-train`.
 pub mod instinct_specialist;
-pub mod instinct_nbsvm;
 pub mod instinct_specialist_typed;
 pub mod instinct_typed_eq9;
-pub mod instinct_bank77_cases;
-pub mod hybrid;
-pub mod stats;
-pub mod arsenal;
-pub mod arsenal_ops;
-pub mod server;
-/// The shared hosted-serving HTTP edge (plan 009 T1 — the serve-edge
-/// lift): the listener loop, routing, the lane registry + loading
-/// machinery and every refusal shape, parameterized by
-/// [`serve_edge::ServeConfig`]. The `serve` bin is a thin env/arg shell
-/// over [`serve_edge::run`]; the Rethink lane consumes the SAME edge
-/// over the extension point — re-shared, never forked (riir-ai
-/// Proposal 052).
-pub mod serve_edge;
 /// The serve lane's receipt primitives (Plan 043 C0 — the
 /// one-definition law): the build fingerprint + the input/decision
 /// BLAKE3 halves + the manifest fingerprint, ONE home for the serve
 /// binary's receipt surfaces.
 pub mod receipt;
-/// The frozen-artifact staleness probe (Issue 012 / Plan 005): the soft
-/// early-warning readout beside the hard pick-parity gate. Report-only —
-/// nothing here serves, swaps, or writes state.
-pub mod staleness;
-/// The Tetris lane (Issue 009 T5+T6): the serving-matched teacher check +
-/// the serving-input-contract measurement, over the katgpt-rs tetris
-/// substrate (the shared engine; never a fourth one).
-#[cfg(feature = "tetris")]
-pub mod tetris_lane;
-/// The Tetris value-critic arm (Issue 009 T8's modelless second arm + T7's
-/// substrate): the Plan-308 KARC basis-ridge readout over the teacher's
-/// search-root Q, plus the sample-collection lane loop.
-#[cfg(feature = "tetris")]
-pub mod tetris_critic;
-/// The round-5 blended teacher (Issue 009 T7 round 5): chance_puct over the
-/// champion evaluator + the trained critic's afterstate values blended at
-/// the search's value seam. weight 0 is the plain teacher, bit-exact.
-#[cfg(feature = "tetris")]
-pub mod tetris_blend;
 /// The Runetrace scene-loop composition (Plan 010 — seal-remake Proposal
 /// 005 Phase 4, Research 613): the MODELLESS scene-agent loop over shipped
 /// katgpt-core GOAT primitives — RunetraceDoc in, decision_wire out with
@@ -76,20 +46,52 @@ pub mod tetris_blend;
 /// the /decide path is byte-identical without it.
 #[cfg(feature = "runetrace_loop")]
 pub mod scene_loop;
+/// The shared hosted-serving HTTP edge (plan 009 T1 — the serve-edge
+/// lift): the listener loop, routing, the lane registry + loading
+/// machinery and every refusal shape, parameterized by
+/// [`serve_edge::ServeConfig`]. The `serve` bin is a thin env/arg shell
+/// over [`serve_edge::run`]; the Rethink lane consumes the SAME edge
+/// over the extension point — re-shared, never forked (riir-ai
+/// Proposal 052).
+pub mod serve_edge;
+pub mod server;
+pub mod specialist;
+/// The frozen-artifact staleness probe (Issue 012 / Plan 005): the soft
+/// early-warning readout beside the hard pick-parity gate. Report-only —
+/// nothing here serves, swaps, or writes state.
+pub mod staleness;
+pub mod stats;
+/// The round-5 blended teacher (Issue 009 T7 round 5): chance_puct over the
+/// champion evaluator + the trained critic's afterstate values blended at
+/// the search's value seam. weight 0 is the plain teacher, bit-exact.
+#[cfg(feature = "tetris")]
+pub mod tetris_blend;
+/// The Tetris value-critic arm (Issue 009 T8's modelless second arm + T7's
+/// substrate): the Plan-308 KARC basis-ridge readout over the teacher's
+/// search-root Q, plus the sample-collection lane loop.
+#[cfg(feature = "tetris")]
+pub mod tetris_critic;
+/// The Tetris lane (Issue 009 T5+T6): the serving-matched teacher check +
+/// the serving-input-contract measurement, over the katgpt-rs tetris
+/// substrate (the shared engine; never a fourth one).
+#[cfg(feature = "tetris")]
+pub mod tetris_lane;
 
-pub use hybrid::{
-    A0Answer, Cascade, FusedPick, HybridDecision, HybridLane, MAX_TOP_K, NOUL_PAIR, PriorFusion,
-    SeatJoin, SpecialistLane, prior_fusion_pick, seat_join,
-};
-pub use specialist::Specialist;
-pub use receipt::{decision_blake3, fingerprint, input_blake3};
-pub use staleness::{PairReport, PairSide, ProbeItem, ProbeSet, SuiteProbe, FIRE_GOLD_DELTA, compare_pair};
 pub use arsenal_ops::{
+    check_epoch_tag, corpus_centroid, fold8, hoard_check, hoard_gate_armed, hoard_gate_armed_for,
     EpochApply, EpochTag, HoardRefusal, HoardReport, InstallOutcome, LaneSlot, LaneState,
-    ReleaseOutcome, ReleaseRefusal, SwapRefusal, check_epoch_tag, corpus_centroid, fold8,
-    hoard_check, hoard_gate_armed, hoard_gate_armed_for,
+    ReleaseOutcome, ReleaseRefusal, SwapRefusal,
+};
+pub use hybrid::{
+    prior_fusion_pick, seat_join, A0Answer, Cascade, FusedPick, HybridDecision, HybridLane,
+    PriorFusion, SeatJoin, SpecialistLane, MAX_TOP_K, NOUL_PAIR,
+};
+pub use receipt::{decision_blake3, fingerprint, input_blake3};
+pub use specialist::Specialist;
+pub use staleness::{
+    compare_pair, PairReport, PairSide, ProbeItem, ProbeSet, SuiteProbe, FIRE_GOLD_DELTA,
 };
 pub use stats::{
-    ArmStat, PairedDiff, delta_suite, paired_upper_bound, paired_upper_bound_f64, pareto_rank0,
-    select_arm, wilson_bound, wilson_lb,
+    delta_suite, paired_upper_bound, paired_upper_bound_f64, pareto_rank0, select_arm,
+    wilson_bound, wilson_lb, ArmStat, PairedDiff,
 };

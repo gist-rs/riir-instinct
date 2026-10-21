@@ -114,8 +114,7 @@ fn main() {
         );
         std::process::exit(2);
     }
-    let (cases_path, pools_path, split_path, out_path) =
-        (&args[1], &args[2], &args[3], &args[4]);
+    let (cases_path, pools_path, split_path, out_path) = (&args[1], &args[2], &args[3], &args[4]);
 
     let cases_bytes = fs::read_to_string(cases_path).expect("cases.jsonl reads");
     let pools_bytes = fs::read_to_string(pools_path).expect("pool_texts.jsonl reads");
@@ -129,7 +128,11 @@ fn main() {
         let id = row["case_id"].as_str().unwrap_or_default().to_string();
         let texts: Vec<String> = row["texts"]
             .as_array()
-            .map(|a| a.iter().map(|t| t.as_str().unwrap_or_default().to_string()).collect())
+            .map(|a| {
+                a.iter()
+                    .map(|t| t.as_str().unwrap_or_default().to_string())
+                    .collect()
+            })
             .unwrap_or_default();
         let ok = row["blake_ok"].as_bool().unwrap_or(false)
             && row["served_ok"].as_bool().unwrap_or(false);
@@ -193,7 +196,9 @@ fn main() {
         cases.push(Case {
             stratum,
             texts: (first..rows.len()).map(|i| rows[i].text.clone()).collect(),
-            gold: (first..rows.len()).map(|i| rows[i].label == GOLD_LABEL).collect(),
+            gold: (first..rows.len())
+                .map(|i| rows[i].label == GOLD_LABEL)
+                .collect(),
             a0_score: a0,
         });
     }
@@ -213,7 +218,9 @@ fn main() {
             start..start + cases[ci].texts.len()
         })
         .collect();
-    let rest: Vec<usize> = (0..rows.len()).filter(|i| !holdout_row_set.contains(i)).collect();
+    let rest: Vec<usize> = (0..rows.len())
+        .filter(|i| !holdout_row_set.contains(i))
+        .collect();
 
     let (mut dec_tr, mut none_tr) = (0usize, 0usize);
     for (i, c) in cases.iter().enumerate() {
@@ -234,7 +241,10 @@ fn main() {
     );
 
     let labels = vec![NOGOLD_LABEL.to_string(), GOLD_LABEL.to_string()];
-    let cfg = NbsvmConfig { presence_norm: true, ..NbsvmConfig::default() };
+    let cfg = NbsvmConfig {
+        presence_norm: true,
+        ..NbsvmConfig::default()
+    };
     let run = train_nbsvm(
         &rows,
         &labels,
@@ -282,7 +292,11 @@ fn main() {
             for (k, &ci) in holdout.iter().enumerate() {
                 let c = &cases[ci];
                 let ps = &holdout_p[k];
-                if std::env::var("HEAL_DEBUG").map(|v| v == "1").unwrap_or(false) && k < 5 {
+                if std::env::var("HEAL_DEBUG")
+                    .map(|v| v == "1")
+                    .unwrap_or(false)
+                    && k < 5
+                {
                     eprintln!(
                         "[debug] case {ci} stratum={} gold={:?} ps={:?} text_lens={:?}",
                         c.stratum,
@@ -300,7 +314,11 @@ fn main() {
                         top2 = i;
                     }
                 }
-                let margin = if c.texts.len() > 1 { ps[top1] - ps[top2] } else { ps[top1] };
+                let margin = if c.texts.len() > 1 {
+                    ps[top1] - ps[top2]
+                } else {
+                    ps[top1]
+                };
                 let abstain = ps[top1] < tau_p || margin < tau_m;
                 let a1 = if abstain {
                     abstained += 1;
@@ -394,8 +412,11 @@ fn main() {
         },
     });
     let sidecar_path = format!("{out_path}.tau.json");
-    fs::write(&sidecar_path, serde_json::to_vec_pretty(&sidecar).expect("sidecar serializes"))
-        .expect("sidecar writes");
+    fs::write(
+        &sidecar_path,
+        serde_json::to_vec_pretty(&sidecar).expect("sidecar serializes"),
+    )
+    .expect("sidecar writes");
     println!(
         "[heal-train] exported {out_path} bytes={} blake3={} labels={:?} tau_p={tau_p} tau_m={tau_m}",
         bytes.len(),

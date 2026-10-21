@@ -110,12 +110,8 @@ pub struct ArmStat {
 /// (the `dominates` shape — riir-refine `ruliology_search.rs`, Bench 572
 /// lineage; the same seam Proposal 042 prescribes).
 pub fn dominates(a: &ArmStat, b: &ArmStat) -> bool {
-    let le = a.neg_acc_lcb <= b.neg_acc_lcb
-        && a.cost_rate <= b.cost_rate
-        && a.p99_us <= b.p99_us;
-    let lt = a.neg_acc_lcb < b.neg_acc_lcb
-        || a.cost_rate < b.cost_rate
-        || a.p99_us < b.p99_us;
+    let le = a.neg_acc_lcb <= b.neg_acc_lcb && a.cost_rate <= b.cost_rate && a.p99_us <= b.p99_us;
+    let lt = a.neg_acc_lcb < b.neg_acc_lcb || a.cost_rate < b.cost_rate || a.p99_us < b.p99_us;
     le && lt
 }
 
@@ -143,7 +139,10 @@ pub fn pareto_rank0(arms: &[ArmStat]) -> Vec<usize> {
 pub fn select_arm(rank0: &[usize], successes: &[u32], failures: &[u32]) -> usize {
     assert_eq!(rank0.len(), successes.len());
     assert_eq!(rank0.len(), failures.len());
-    assert!(!rank0.is_empty(), "empty rank-0 set — the instrument refused");
+    assert!(
+        !rank0.is_empty(),
+        "empty rank-0 set — the instrument refused"
+    );
     let mut best_pos = 0usize;
     let mut best_lcb = f32::NEG_INFINITY;
     for (pos, (&s, &f)) in successes.iter().zip(failures).enumerate() {
@@ -169,7 +168,11 @@ mod tests {
     /// 100/100 reads [0.963, 1]).
     #[test]
     fn wilson_known_answers() {
-        assert!(close(wilson_lb(95, 100), 0.8882, 5e-4), "{}", wilson_lb(95, 100));
+        assert!(
+            close(wilson_lb(95, 100), 0.8882, 5e-4),
+            "{}",
+            wilson_lb(95, 100)
+        );
         assert!(
             close(wilson_bound(95, 100, Z95, true), 0.9785, 5e-4),
             "{}",
@@ -178,7 +181,11 @@ mod tests {
         // Degenerate counts stay inside [0,1] and keep their side; the
         // zero-count lower bound is a rounding residue above 0.
         assert!(wilson_lb(0, 100) < 1e-12, "{}", wilson_lb(0, 100));
-        assert!(close(wilson_lb(100, 100), 0.9630, 5e-4), "{}", wilson_lb(100, 100));
+        assert!(
+            close(wilson_lb(100, 100), 0.9630, 5e-4),
+            "{}",
+            wilson_lb(100, 100)
+        );
         assert_eq!(wilson_lb(5, 0), 0.0, "no evidence, no bound");
     }
 
@@ -200,9 +207,18 @@ mod tests {
         let se = var.sqrt() / n.sqrt();
         assert!(close(pd.ub95, pd.mean + Z95 * se, 1e-12));
         assert!(close(pd.lb95, pd.mean - Z95 * se, 1e-12));
-        assert!(pd.ub95 > 0.0, "a regressing hybrid's bound must admit the regression");
-        assert!(pd.lb95 < 0.0, "the same regression's lower bound must refuse superiority");
-        assert!(paired_upper_bound(&a[..3], &b).is_none(), "length mismatch refuses");
+        assert!(
+            pd.ub95 > 0.0,
+            "a regressing hybrid's bound must admit the regression"
+        );
+        assert!(
+            pd.lb95 < 0.0,
+            "the same regression's lower bound must refuse superiority"
+        );
+        assert!(
+            paired_upper_bound(&a[..3], &b).is_none(),
+            "length mismatch refuses"
+        );
     }
 
     /// The Issue-008 T2 product gate's known answer: a WINNING hybrid
@@ -217,7 +233,11 @@ mod tests {
         let arm: Vec<bool> = (0..100).map(|i| !(10..12).contains(&i)).collect();
         let pd = paired_upper_bound(&arm, &a0).expect("pairs");
         assert!(close(pd.mean, 0.08, 1e-12));
-        assert!(pd.lb95 > 0.0, "lb95 {} must certify the strict win", pd.lb95);
+        assert!(
+            pd.lb95 > 0.0,
+            "lb95 {} must certify the strict win",
+            pd.lb95
+        );
 
         // A narrower net over more discordance (30 wins, 22 losses over
         // 400): mean +0.02 but the lower bound dips under zero — a narrow
@@ -226,7 +246,11 @@ mod tests {
         let arm: Vec<bool> = (0..400).map(|i| !(30..52).contains(&i)).collect();
         let pd = paired_upper_bound(&arm, &a0).expect("pairs");
         assert!(close(pd.mean, 0.02, 1e-12));
-        assert!(pd.lb95 < 0.0, "lb95 {} must refuse the narrow edge", pd.lb95);
+        assert!(
+            pd.lb95 < 0.0,
+            "lb95 {} must refuse the narrow edge",
+            pd.lb95
+        );
     }
 
     /// δ = max(1.0 pp, 2.5·SE) — the floor and the scaling both pinned.
@@ -245,18 +269,46 @@ mod tests {
     #[test]
     fn pareto_filter() {
         let arms = [
-            ArmStat { neg_acc_lcb: 0.10, cost_rate: 0.0, p99_us: 10.0 }, // best acc
-            ArmStat { neg_acc_lcb: 0.12, cost_rate: 0.3, p99_us: 12.0 }, // dominated by 0
-            ArmStat { neg_acc_lcb: 0.15, cost_rate: 0.0, p99_us: 5.0 },  // fastest — rank-0
+            ArmStat {
+                neg_acc_lcb: 0.10,
+                cost_rate: 0.0,
+                p99_us: 10.0,
+            }, // best acc
+            ArmStat {
+                neg_acc_lcb: 0.12,
+                cost_rate: 0.3,
+                p99_us: 12.0,
+            }, // dominated by 0
+            ArmStat {
+                neg_acc_lcb: 0.15,
+                cost_rate: 0.0,
+                p99_us: 5.0,
+            }, // fastest — rank-0
         ];
         let mut r0 = pareto_rank0(&arms);
         r0.sort_unstable();
-        assert_eq!(r0, vec![0, 2], "the all-worse arm leaves; the frontier stays");
+        assert_eq!(
+            r0,
+            vec![0, 2],
+            "the all-worse arm leaves; the frontier stays"
+        );
         let tied = [
-            ArmStat { neg_acc_lcb: 0.1, cost_rate: 0.2, p99_us: 9.0 },
-            ArmStat { neg_acc_lcb: 0.1, cost_rate: 0.2, p99_us: 9.0 },
+            ArmStat {
+                neg_acc_lcb: 0.1,
+                cost_rate: 0.2,
+                p99_us: 9.0,
+            },
+            ArmStat {
+                neg_acc_lcb: 0.1,
+                cost_rate: 0.2,
+                p99_us: 9.0,
+            },
         ];
-        assert_eq!(pareto_rank0(&tied).len(), 2, "mutual non-domination keeps ties");
+        assert_eq!(
+            pareto_rank0(&tied).len(),
+            2,
+            "mutual non-domination keeps ties"
+        );
     }
 
     /// The selector: argmax Beta-LCB among rank-0 — ordering-monotone

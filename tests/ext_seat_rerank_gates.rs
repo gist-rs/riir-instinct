@@ -36,8 +36,10 @@ use std::sync::OnceLock;
 use std::time::{Duration, Instant};
 
 use riir_instinct::arsenal::ArsenalManifest;
-use riir_instinct::server::{Arm, ExtBoots, LaneBackend, ServedDecision, ServedQuestion, SuiteMeta};
 use riir_instinct::serve_edge::{LoadCtx, LoadedLane, ServeConfig};
+use riir_instinct::server::{
+    Arm, ExtBoots, LaneBackend, ServedDecision, ServedQuestion, SuiteMeta,
+};
 
 /// The datasets the seats load from (the serve_gates convention — a bare
 /// clone skips loud).
@@ -90,8 +92,11 @@ impl StubRerank {
         let fixed = ["false".to_string(), "true".to_string()];
         let presented: &[String] = if noul_fixed { &fixed } else { opts };
         let abstained = state.starts_with("ABSTAIN");
-        let pick_index =
-            if abstained { None } else { Some(1.min(presented.len() - 1)) };
+        let pick_index = if abstained {
+            None
+        } else {
+            Some(1.min(presented.len() - 1))
+        };
         Ok(ServedDecision {
             suite: self.suite,
             arm: "ENC".to_string(),
@@ -171,9 +176,7 @@ fn install_stub_once() {
     static INSTALLED: OnceLock<()> = OnceLock::new();
     INSTALLED.get_or_init(|| {
         riir_instinct::server::install_ext_boots(ExtBoots {
-            bytes: |suite, _seat, _artifact_bytes, _arm| {
-                Ok(Box::new(StubRerank { suite }))
-            },
+            bytes: |suite, _seat, _artifact_bytes, _arm| Ok(Box::new(StubRerank { suite })),
         })
         .expect("the stub installs exactly once per process");
     });
@@ -320,7 +323,11 @@ fn rerank_options_reach_the_backend_exactly_presented() {
         return;
     }
     let port = shared_edge_port();
-    let candidates = ["fix A: inline format args", "fix B: collapsible if", "fix C: map flatter"];
+    let candidates = [
+        "fix A: inline format args",
+        "fix B: collapsible if",
+        "fix C: map flatter",
+    ];
     let body = format!(
         "{{\"suite\":\"sst5\",\"state\":\"the buggy span\",\"options\":[{}]}}",
         candidates
@@ -354,7 +361,10 @@ fn rerank_options_reach_the_backend_exactly_presented() {
         .iter()
         .map(|o| o.as_str().expect("string option"))
         .collect();
-    assert_eq!(echo, candidates, "the reply must echo the presented options");
+    assert_eq!(
+        echo, candidates,
+        "the reply must echo the presented options"
+    );
 
     // The pick maps back into the presentation order.
     assert_eq!(v["pick_index"].as_u64(), Some(1), "the stub picks index 1");
@@ -392,11 +402,19 @@ fn rerank_options_reach_the_backend_exactly_presented() {
         );
     }
     assert!(
-        v["receipt"]["decision_blake3"].as_str().unwrap_or_default().len() == 64,
+        v["receipt"]["decision_blake3"]
+            .as_str()
+            .unwrap_or_default()
+            .len()
+            == 64,
         "the decision commitment rides the receipt (blake3 spelling): {v}"
     );
     assert!(
-        v["receipt"]["input_blake3"].as_str().unwrap_or_default().len() == 64,
+        v["receipt"]["input_blake3"]
+            .as_str()
+            .unwrap_or_default()
+            .len()
+            == 64,
         "the input commitment rides the receipt (blake3 spelling): {v}"
     );
 }
@@ -422,7 +440,10 @@ fn rerank_abstain_is_first_class_over_the_edge() {
     let v = json(body_of(&raw));
     assert_eq!(v["abstained"].as_bool(), Some(true));
     assert!(v["pick"].is_null(), "an abstain carries no pick: {v}");
-    assert!(v["pick_index"].is_null(), "an abstain carries no index: {v}");
+    assert!(
+        v["pick_index"].is_null(),
+        "an abstain carries no index: {v}"
+    );
 }
 
 /// The seat's contract is pick-or-abstain over PRESENTED options: an
@@ -435,8 +456,7 @@ fn a_rerank_lane_answers_only_presented_options() {
         return;
     }
     let port = shared_edge_port();
-    let raw =
-        post_decide_until_ready(port, "{\"suite\":\"sst5\",\"state\":\"no options here\"}");
+    let raw = post_decide_until_ready(port, "{\"suite\":\"sst5\",\"state\":\"no options here\"}");
     assert!(
         raw.starts_with("HTTP/1.1 422"),
         "an options-less body must refuse 422: {raw}"
@@ -527,7 +547,10 @@ fn a_sub2_presentation_refuses_at_the_edge() {
         let v = json(body_of(&raw));
         assert_eq!(v["code"].as_str(), Some("bad_field"), "{v}");
         assert!(
-            v["error"].as_str().unwrap_or_default().contains("presented options"),
+            v["error"]
+                .as_str()
+                .unwrap_or_default()
+                .contains("presented options"),
             "the refusal names the presentation law: {v}"
         );
     }
@@ -616,7 +639,11 @@ fn lru_edge_port() -> (u16, &'static str) {
                 b"rerank-stub-head-bytes",
                 lctx.manifest,
             )?;
-            Ok(LoadedLane { server, artifact_digest: digest, on_install: None })
+            Ok(LoadedLane {
+                server,
+                artifact_digest: digest,
+                on_install: None,
+            })
         }
         let cfg = ServeConfig {
             bind: format!("127.0.0.1:{port}"),
@@ -640,7 +667,10 @@ fn lru_edge_port() -> (u16, &'static str) {
             if TcpStream::connect(("127.0.0.1", port)).is_ok() {
                 break;
             }
-            assert!(Instant::now() < deadline, "the lru edge never opened port {port}");
+            assert!(
+                Instant::now() < deadline,
+                "the lru edge never opened port {port}"
+            );
             std::thread::sleep(Duration::from_millis(50));
         }
         (port, "INSTINCT_LRU_CAPACITY")
@@ -687,7 +717,10 @@ fn lru_capacity_evicts_the_least_recently_used_lane() {
         port,
         r#"{"suite":"lru-a","state":"a warm","options":["x","y"]}"#,
     );
-    assert!(raw.starts_with("HTTP/1.1 200"), "a must load and answer: {raw}");
+    assert!(
+        raw.starts_with("HTTP/1.1 200"),
+        "a must load and answer: {raw}"
+    );
     assert_eq!(healthz_state(port, "lru-a"), "ready");
 
     // b's first decision evicts a (the only resident, a is LRU) then
@@ -696,7 +729,10 @@ fn lru_capacity_evicts_the_least_recently_used_lane() {
         port,
         r#"{"suite":"lru-b","state":"b arrives","options":["x","y"]}"#,
     );
-    assert!(raw.starts_with("HTTP/1.1 200"), "b must load and answer: {raw}");
+    assert!(
+        raw.starts_with("HTTP/1.1 200"),
+        "b must load and answer: {raw}"
+    );
     assert_eq!(
         healthz_state(port, "lru-a"),
         "unloaded",
@@ -762,7 +798,11 @@ fn the_lazy_load_window_stays_observable() {
     let raw = post_decide(port, body);
     if raw.starts_with("HTTP/1.1 503") {
         let v = json(body_of(&raw));
-        assert_eq!(v["code"].as_str(), Some("loading"), "the load window's code: {v}");
+        assert_eq!(
+            v["code"].as_str(),
+            Some("loading"),
+            "the load window's code: {v}"
+        );
     } else {
         assert!(
             raw.starts_with("HTTP/1.1 200"),
@@ -770,5 +810,8 @@ fn the_lazy_load_window_stays_observable() {
         );
     }
     let raw = post_decide_until_ready(port, body);
-    assert!(raw.starts_with("HTTP/1.1 200"), "the lane must end ready: {raw}");
+    assert!(
+        raw.starts_with("HTTP/1.1 200"),
+        "the lane must end ready: {raw}"
+    );
 }

@@ -14,10 +14,10 @@
 //!
 //! REPORT-ONLY: nothing here serves, swaps, or writes any serving state.
 
-use riir_instinct::staleness::{
-    self, PairSide, ProbeItem, ProbeSet, SuiteProbe, artifact_digest, compare_pair,
-};
 use riir_instinct::specialist::{load_artifact, winner_bridge, BagConvention};
+use riir_instinct::staleness::{
+    self, artifact_digest, compare_pair, PairSide, ProbeItem, ProbeSet, SuiteProbe,
+};
 use std::path::{Path, PathBuf};
 
 const FIXTURE_PATH: &str = "tests/fixtures/staleness_probe_set.json";
@@ -114,7 +114,7 @@ fn build_suite_probe(
                     .iter()
                     .position(|k| k == label)
                     .unwrap_or(items.len().min(presented_keys.len().saturating_sub(1))),
-                });
+            });
             if items.len() >= ITEMS_PER_SUITE {
                 break 'outer;
             }
@@ -168,10 +168,7 @@ fn presented_keys_for(suite: &str, datasets: &Path) -> Result<Vec<String>, Strin
                 }
             }
             labels.sort();
-            Ok(labels
-                .into_iter()
-                .map(|l| l.replace('_', " "))
-                .collect())
+            Ok(labels.into_iter().map(|l| l.replace('_', " ")).collect())
         }
         "prompt_injections" => Ok(vec!["0".into(), "1".into()]),
         "massive_intent_en" => {
@@ -193,7 +190,10 @@ fn presented_keys_for(suite: &str, datasets: &Path) -> Result<Vec<String>, Strin
                     serde_json::from_str(&text).map_err(|e| format!("parse {name}: {e}"))?;
                 if let Some(rs) = v.get("rows").and_then(|r| r.as_array()) {
                     for r in rs {
-                        if let Some(t) = r.get("row").and_then(|r| r.get("label")).and_then(|t| t.as_str())
+                        if let Some(t) = r
+                            .get("row")
+                            .and_then(|r| r.get("label"))
+                            .and_then(|t| t.as_str())
                         {
                             if !labels.iter().any(|l| l == t) {
                                 labels.push(t.to_string());
@@ -396,11 +396,7 @@ fn box_state() -> serde_json::Value {
 
 fn main() {
     let build = std::env::args().any(|a| a == "--build-probe");
-    let result = if build {
-        build_probe()
-    } else {
-        run_report()
-    };
+    let result = if build { build_probe() } else { run_report() };
     if let Err(e) = result {
         eprintln!("staleness_probe: {e}");
         std::process::exit(1);

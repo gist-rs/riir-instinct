@@ -26,10 +26,12 @@ use std::sync::OnceLock;
 use std::time::Instant;
 
 use riir_instinct::arsenal::ArsenalManifest;
+use riir_instinct::serve_edge::{
+    lane_tag_digest, prepare_lane_seat, LoadCtx, LoadedLane, ServeConfig,
+};
 use riir_instinct::server::{
     Arm, ExtBoots, LaneBackend, ServedDecision, ServedQuestion, SuiteMeta, WeightSource,
 };
-use riir_instinct::serve_edge::{lane_tag_digest, prepare_lane_seat, LoadCtx, LoadedLane, ServeConfig};
 
 const SUITE: &str = "heal";
 
@@ -68,7 +70,11 @@ impl LoggingRerank {
         let t0 = Instant::now();
         let sizes: Vec<usize> = opts.iter().map(String::len).collect();
         let abstained = state.starts_with("ABSTAIN");
-        let pick_index = if abstained { None } else { Some(1.min(opts.len() - 1)) };
+        let pick_index = if abstained {
+            None
+        } else {
+            Some(1.min(opts.len() - 1))
+        };
         eprintln!(
             "[seat-call] state_bytes={} options={} option_sizes={:?} abstained={} pick_index={:?} us={}",
             state.len(),

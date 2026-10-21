@@ -47,17 +47,17 @@
 //! WIRE-MUST-WIDEN stands.
 
 use katgpt_core::chance_puct::{ChanceGame, ChancePuct, ChancePuctConfig, RootStat};
-use katgpt_tetris::lookahead::{Bag, LINES_SCORE, apply, garbage_board};
-use katgpt_tetris::rulebook::{Genome, Leaf, Mode, View, decide};
+use katgpt_tetris::lookahead::{apply, garbage_board, Bag, LINES_SCORE};
+use katgpt_tetris::rulebook::{decide, Genome, Leaf, Mode, View};
 use katgpt_tetris::sim::{
-    Board, DropRule, Piece, Placement, landing_options_with, outcome_features, render_spot_sentence,
+    landing_options_with, outcome_features, render_spot_sentence, Board, DropRule, Piece, Placement,
 };
 use riir_reflex::game_heads::GameHeads;
 use std::collections::HashMap;
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::time::Instant;
 
-use crate::tetris_critic::{RawOpt, TrainedMlp, raw_opt};
+use crate::tetris_critic::{raw_opt, RawOpt, TrainedMlp};
 
 /// The rulebook-champion genome the whole lane measures against (Bench 892).
 pub const CHAMPION_ID: &str = "68cae9d382014662";
@@ -128,12 +128,10 @@ impl ArmKind {
     pub fn name(self) -> String {
         match self {
             Self::ReflexHead => "reflex-head (Bench 881 decoded arm)".into(),
-            Self::TeacherPuct { budget } => format!(
-                "teacher-puct b{budget} (champion eval, no preview, fresh bag)"
-            ),
-            Self::ChampionSearch => {
-                "champion-search d3 (served posture, preview + bag)".into()
+            Self::TeacherPuct { budget } => {
+                format!("teacher-puct b{budget} (champion eval, no preview, fresh bag)")
             }
+            Self::ChampionSearch => "champion-search d3 (served posture, preview + bag)".into(),
         }
     }
 
@@ -173,9 +171,18 @@ impl Runner {
     /// contract; a head that misses them is not the served head.
     pub fn new(kind: ArmKind, fixtures: &Fixtures, genome: Genome) -> Self {
         let heads = GameHeads::build(&fixtures.tetris, &fixtures.lanes, &fixtures.flappy);
-        assert_eq!(heads.lambda(), 1.0, "tetris head λ drifted (Bench 881 anchor)");
+        assert_eq!(
+            heads.lambda(),
+            1.0,
+            "tetris head λ drifted (Bench 881 anchor)"
+        );
         assert_eq!(heads.n_options(), 2660, "tetris corpus size drifted");
-        Self { kind, genome, heads, decode_misses: 0 }
+        Self {
+            kind,
+            genome,
+            heads,
+            decode_misses: 0,
+        }
     }
 
     /// The fitted tetris head's digest (the determinism anchor, recorded).
@@ -197,7 +204,10 @@ impl Runner {
         let mut board = start_board(seed, regime);
         let mut next = bag.draw();
         let mut rng = fastrand::Rng::with_seed(seed ^ TEACHER_RNG_SALT);
-        let mut st = GameStats { seed, ..GameStats::default() };
+        let mut st = GameStats {
+            seed,
+            ..GameStats::default()
+        };
         let mut decision_ms: Vec<f64> = Vec::with_capacity(cap.min(4096));
 
         while st.pieces < cap {
@@ -238,9 +248,17 @@ impl Runner {
                 let rows: Vec<OptRow> = options
                     .iter()
                     .enumerate()
-                    .map(|(i, p)| self.opt_row(&board, p, root_mode, policy_v.get(i).copied().flatten()))
+                    .map(|(i, p)| {
+                        self.opt_row(&board, p, root_mode, policy_v.get(i).copied().flatten())
+                    })
                     .collect();
-                sink.observe(DecisionRecord { seed, regime, piece: st.pieces, picked, rows });
+                sink.observe(DecisionRecord {
+                    seed,
+                    regime,
+                    piece: st.pieces,
+                    picked,
+                    rows,
+                });
             }
 
             let (nb, l1) = apply(&board, &options[picked].cells);
@@ -252,7 +270,10 @@ impl Runner {
         }
 
         decision_ms.sort_by(f64::total_cmp);
-        st.p50_ms = decision_ms.get(decision_ms.len() / 2).copied().unwrap_or(0.0);
+        st.p50_ms = decision_ms
+            .get(decision_ms.len() / 2)
+            .copied()
+            .unwrap_or(0.0);
         st.head_decode_misses = self.decode_misses;
         st
     }
@@ -302,10 +323,19 @@ impl Runner {
         let g = &self.genome;
         let eval = move |b: &Board, lines: u32, tetrises: u32| -> f64 {
             let scan = b.scan();
-            let leaf = Leaf { board: b, heights: scan.heights, lines, tetrises, held: None };
+            let leaf = Leaf {
+                board: b,
+                heights: scan.heights,
+                lines,
+                tetrises,
+                held: None,
+            };
             g.eval_with(&leaf, mode, &scan)
         };
-        let cfg = ChancePuctConfig { budget, ..ChancePuctConfig::default() };
+        let cfg = ChancePuctConfig {
+            budget,
+            ..ChancePuctConfig::default()
+        };
         let root = TeacherState::root(board, cur, &eval);
         let mut search = ChancePuct::new(cfg);
         let picked = match search.search(&root, rng) {
@@ -325,7 +355,13 @@ impl Runner {
     /// One option's T5 row: the 5-class signature decoded through the
     /// served grammar, the champion 1-ply eval of the afterstate (mode at
     /// the decision root), and this arm's per-option policy value.
-    fn opt_row(&self, board: &Board, p: &Placement, root_mode: Mode, policy_v: Option<f64>) -> OptRow {
+    fn opt_row(
+        &self,
+        board: &Board,
+        p: &Placement,
+        root_mode: Mode,
+        policy_v: Option<f64>,
+    ) -> OptRow {
         let f = outcome_features(board, p);
         let sentence = render_spot_sentence(board, p, &f);
         // The sentence is grammar-closed by construction (the sim's
@@ -413,16 +449,29 @@ impl<'m> TeacherBlend<'m> {
         // the z term is 0 for every option and the blend degrades to the
         // other channel — never a NaN.
         let std_of = |mean: f64, col: usize| {
-            let var =
-                rows.iter().map(|r| match col { 2 => (r.2 - mean) * (r.2 - mean), _ => (r.3 - mean) * (r.3 - mean) }).sum::<f64>()
-                    / n;
+            let var = rows
+                .iter()
+                .map(|r| match col {
+                    2 => (r.2 - mean) * (r.2 - mean),
+                    _ => (r.3 - mean) * (r.3 - mean),
+                })
+                .sum::<f64>()
+                / n;
             if var > 1e-18 {
                 var.sqrt()
             } else {
                 1.0
             }
         };
-        Self { mlp, w, mode, mean_e, std_e: std_of(mean_e, 2), mean_c, std_c: std_of(mean_c, 3) }
+        Self {
+            mlp,
+            w,
+            mode,
+            mean_e,
+            std_e: std_of(mean_e, 2),
+            mean_c,
+            std_c: std_of(mean_c, 3),
+        }
     }
 }
 
@@ -475,7 +524,16 @@ pub struct TeacherState<'e> {
 
 impl<'e> TeacherState<'e> {
     pub fn root(board: &Board, cur: Piece, eval: &'e dyn Fn(&Board, u32, u32) -> f64) -> Self {
-        Self { board: board.clone(), cur, lines: 0, tetrises: 0, after: false, eval, blend: None, transition: None }
+        Self {
+            board: board.clone(),
+            cur,
+            lines: 0,
+            tetrises: 0,
+            after: false,
+            eval,
+            blend: None,
+            transition: None,
+        }
     }
 
     /// The round-5 blended root (issue 009): identical game model, the
@@ -514,8 +572,7 @@ impl ChanceGame for TeacherState<'_> {
                 BLEND_VALUE_CALLS.fetch_add(1, Ordering::Relaxed);
                 let mut scratch = vec![0.0f64; b.mlp.scratch_len()];
                 let c = b.mlp.score_logit(raw, &mut scratch);
-                let z =
-                    (1.0 - b.w) * (e - b.mean_e) / b.std_e + b.w * (c - b.mean_c) / b.std_c;
+                let z = (1.0 - b.w) * (e - b.mean_e) / b.std_e + b.w * (c - b.mean_c) / b.std_c;
                 (b.mean_e + z * b.std_e) as f32
             }
             // Plain teacher (and w = 0): the champion eval, bit-exact.
@@ -538,13 +595,22 @@ impl ChanceGame for TeacherState<'_> {
             for (dst, &(r, c)) in cells.iter_mut().zip(p.cells.iter()) {
                 *dst = (r as u8, c as u8);
             }
-            out.push((TeacherMove { idx: i as u16, cells }, prior));
+            out.push((
+                TeacherMove {
+                    idx: i as u16,
+                    cells,
+                },
+                prior,
+            ));
         }
     }
 
     fn apply(&self, m: Self::Action) -> Self {
-        let cells: Vec<(usize, usize)> =
-            m.cells.iter().map(|&(r, c)| (r as usize, c as usize)).collect();
+        let cells: Vec<(usize, usize)> = m
+            .cells
+            .iter()
+            .map(|&(r, c)| (r as usize, c as usize))
+            .collect();
         let (board, n) = apply(&self.board, &cells);
         // The transition's raw critic features, computed HERE where the
         // placement is in hand (verdict R2: actions() would compute ~4x
@@ -581,7 +647,11 @@ impl ChanceGame for TeacherState<'_> {
         // `..self.clone()` carries the transition through: the resolved
         // decision state keeps the post-placement board AND the raw
         // features of the placement that produced it — the blend seam.
-        Self { cur: drawn, after: false, ..self.clone() }
+        Self {
+            cur: drawn,
+            after: false,
+            ..self.clone()
+        }
     }
 }
 
@@ -843,7 +913,10 @@ impl T5Sink {
     /// `policy_is_search_q`: the arm's policy column carries teacher search
     /// q (gated ceiling analysis) rather than per-option head scores.
     pub fn new(policy_is_search_q: bool) -> Self {
-        Self { agg: T5Aggregate::default(), policy_is_search_q }
+        Self {
+            agg: T5Aggregate::default(),
+            policy_is_search_q,
+        }
     }
 
     pub fn into_agg(self) -> T5Aggregate {

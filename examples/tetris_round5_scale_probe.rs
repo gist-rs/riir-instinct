@@ -77,8 +77,7 @@ fn main() {
     let genome = katgpt_tetris::rulebook::Genome::champion_hybrid();
     let critic = critic_path.map(|p| {
         let raw = std::fs::read(&p).unwrap_or_else(|e| panic!("read {}: {e}", p.display()));
-        TrainedMlp::from_bytes(&raw)
-            .unwrap_or_else(|e| panic!("--critic {}: {e}", p.display()))
+        TrainedMlp::from_bytes(&raw).unwrap_or_else(|e| panic!("--critic {}: {e}", p.display()))
     });
     std::fs::create_dir_all(&out).expect("create out");
     println!(
@@ -116,16 +115,27 @@ fn main() {
                                 _ => 6400,
                             };
                             let mut sink: Vec<Sample> = Vec::new();
-                            let mut policy = LanePolicy::Teacher { budget, sink: &mut sink };
+                            let mut policy = LanePolicy::Teacher {
+                                budget,
+                                sink: &mut sink,
+                            };
                             riir_instinct::tetris_critic::play_lane(
-                                &genome, seed, regime, cap, &mut policy,
+                                &genome,
+                                seed,
+                                regime,
+                                cap,
+                                &mut policy,
                             )
                         }
                         "mlp1ply" => {
                             let m = critic.as_ref().expect("checked");
                             let mut policy = LanePolicy::Mlp { model: m };
                             riir_instinct::tetris_critic::play_lane(
-                                &genome, seed, regime, cap, &mut policy,
+                                &genome,
+                                seed,
+                                regime,
+                                cap,
+                                &mut policy,
                             )
                         }
                         _ if arm.starts_with("blend") => {

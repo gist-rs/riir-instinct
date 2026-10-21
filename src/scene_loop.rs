@@ -50,14 +50,14 @@
 
 use std::collections::HashMap;
 
-use katgpt_core::decision_wire::{Answer, Question};
 use katgpt_core::contrast_combine::affine_combine;
+use katgpt_core::decision_wire::{Answer, Question};
 use katgpt_core::entropic_tilt;
 use katgpt_core::gain_cost_halt::{GainCostLoopHalter, HaltDecision};
 use katgpt_core::ignition::ignition_time;
 use katgpt_core::karc::{FourierBasis, KarcForecaster};
 use katgpt_core::rating;
-use katgpt_core::risk_control_exit::{DualExitPolicy, ExitVerdict, squeezed_sigmoid};
+use katgpt_core::risk_control_exit::{squeezed_sigmoid, DualExitPolicy, ExitVerdict};
 use katgpt_core::runetrace::{
     ConditionRow, DagRow, DagStage, EntityBlock, EntityKind, RunetraceDoc, Vital,
 };
@@ -65,7 +65,7 @@ use katgpt_core::saddle_escape::FlipDetector;
 use katgpt_core::sigmoid_bounded_q;
 use katgpt_core::state_probe::{self, ProbeInput};
 use katgpt_core::traits::{DualLeoMixer, LeoHead};
-use riir_reflex::embed::{EMBED_DIM, Embedder};
+use riir_reflex::embed::{Embedder, EMBED_DIM};
 
 /// Drive-channel width — the HLA belief precedent (`BELIEF_DIM = 8`, the
 /// deployed `HlaKarcForecaster` shape).
@@ -321,8 +321,8 @@ impl SceneLoopConfig {
         if self.refine_max_steps == 0 {
             return Err("refine_max_steps must be >= 1".into());
         }
-        let omega_ok = (0.0..1.0).contains(&self.refine_omega)
-            && self.refine_omega < self.refine_omega_cap;
+        let omega_ok =
+            (0.0..1.0).contains(&self.refine_omega) && self.refine_omega < self.refine_omega_cap;
         if !omega_ok {
             return Err("refine_omega must be in [0,1) and < refine_omega_cap".into());
         }
@@ -565,8 +565,10 @@ impl SceneLoop {
             mem.last_vitals.clear();
             for v in &e.vitals {
                 if v.max > 0.0 {
-                    mem.last_vitals
-                        .insert(fnv1a(v.name.as_bytes(), 0x33), (v.value / v.max).clamp(0.0, 1.0));
+                    mem.last_vitals.insert(
+                        fnv1a(v.name.as_bytes(), 0x33),
+                        (v.value / v.max).clamp(0.0, 1.0),
+                    );
                 }
             }
 
@@ -626,10 +628,9 @@ impl SceneLoop {
         // (forecast_now is &mut on the forecaster — disjoint-field borrow:
         // `memory` and `forecast_buf` never alias through `self`.)
         let forecast: Option<[f32; DRIVE_DIM]> = {
-            let mem = self
-                .memory
-                .get_mut(&question.id)
-                .ok_or_else(|| "scene_loop: subject has no memory (observe_belt first)".to_string())?;
+            let mem = self.memory.get_mut(&question.id).ok_or_else(|| {
+                "scene_loop: subject has no memory (observe_belt first)".to_string()
+            })?;
             if mem.forecaster.is_fitted() && mem.forecaster.forecast_now(&mut self.forecast_buf) {
                 Some(self.forecast_buf)
             } else {
@@ -747,7 +748,12 @@ impl SceneLoop {
                     }
                     best
                 };
-                scene_fields_into(doc, &question.id, Some(&question.options[pick]), &mut self.fields);
+                scene_fields_into(
+                    doc,
+                    &question.id,
+                    Some(&question.options[pick]),
+                    &mut self.fields,
+                );
                 self.embedder.embed_into(&self.fields, &mut self.z_k);
                 // LoopCD (Research 613 §1): z + ω(z − z_k) — the affine_combine
                 // kernel at lam = 1 + ω (z is `out`, z_k the contrast `ref`).
@@ -770,7 +776,11 @@ impl SceneLoop {
                 let cost = dz_len(&self.z, &self.z_k);
                 let mut cos_theta = 1.0f32;
                 if let Some(dzp) = &dz_prev {
-                    let a = dzp.iter().zip(self.z.iter()).map(|(&x, &y)| x * y).sum::<f32>();
+                    let a = dzp
+                        .iter()
+                        .zip(self.z.iter())
+                        .map(|(&x, &y)| x * y)
+                        .sum::<f32>();
                     let b = dzp.iter().map(|x| x * x).sum::<f32>().sqrt();
                     let c = self.z.iter().map(|x| x * x).sum::<f32>().sqrt();
                     if b > 0.0 && c > 0.0 {
@@ -863,7 +873,11 @@ impl SceneLoop {
             .filter(|&(a, _)| a != pick)
             .map(|(_, m)| *m)
             .fold(f32::NEG_INFINITY, f32::max);
-        let margin = if second.is_finite() { best - second } else { best };
+        let margin = if second.is_finite() {
+            best - second
+        } else {
+            best
+        };
         let cold = forecast.is_none() && elo_known == 0;
         let floor = self.cfg.abstain_margin
             * if cold {
@@ -1118,20 +1132,19 @@ mod tests {
                 id: format!("mob_{i:02}"),
                 kind: EntityKind::Monster,
                 glyph: "☠".into(),
-                pos: Some([
-                    (rng.unit() - 0.5) * 40.0,
-                    (rng.unit() - 0.5) * 40.0,
-                    0.0,
-                ]),
-                vitals: vec![
-                    Vital {
-                        name: "hp".into(),
-                        value: (55.0 + 35.0 * (tick as f32 * 0.13 + phase).sin()).clamp(1.0, 100.0),
-                        max: 100.0,
-                    },
-                ],
+                pos: Some([(rng.unit() - 0.5) * 40.0, (rng.unit() - 0.5) * 40.0, 0.0]),
+                vitals: vec![Vital {
+                    name: "hp".into(),
+                    value: (55.0 + 35.0 * (tick as f32 * 0.13 + phase).sin()).clamp(1.0, 100.0),
+                    max: 100.0,
+                }],
                 think: vec![ConditionRow {
-                    condition: if i % 2 == 0 { "pack_aggro" } else { "lone_wander" }.into(),
+                    condition: if i % 2 == 0 {
+                        "pack_aggro"
+                    } else {
+                        "lone_wander"
+                    }
+                    .into(),
                     action: if i % 2 == 0 { "chase" } else { "mill" }.into(),
                     drive: Some(0.5 + 0.2 * (tick as f32 * 0.06 + phase).cos()),
                 }],
@@ -1162,7 +1175,11 @@ mod tests {
         let mut loop_ = SceneLoop::new(SceneLoopConfig::default()).expect("config");
         for t in 0..belts {
             let doc = synth_doc(t, entities, &mut doc_rng);
-            let acted = if t % 4 == 0 { Some(("hero", "attack01")) } else { None };
+            let acted = if t % 4 == 0 {
+                Some(("hero", "attack01"))
+            } else {
+                None
+            };
             loop_.observe_belt(&doc, acted);
         }
         loop_.fit_all(belts);
@@ -1254,7 +1271,10 @@ mod tests {
         }
         // the forecast is warm at 300 belts (>= 256 samples) — honesty row
         assert!(
-            block.think.iter().any(|c| c.condition.starts_with("karc fitted")),
+            block
+                .think
+                .iter()
+                .any(|c| c.condition.starts_with("karc fitted")),
             "at 300 belts the forecast must be warm"
         );
         // the render is deterministic + non-empty
@@ -1279,7 +1299,10 @@ mod tests {
         d.trace.validate().unwrap();
         let block = &d.trace.entities[0];
         assert!(
-            block.think.iter().any(|c| c.condition.contains("forecast cold")),
+            block
+                .think
+                .iter()
+                .any(|c| c.condition.contains("forecast cold")),
             "cold forecast must be said"
         );
     }

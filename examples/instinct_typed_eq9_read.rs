@@ -65,7 +65,9 @@ fn parse_args() -> Args {
     while i < args.len() {
         let val = |i: &mut usize, name: &str| -> String {
             *i += 1;
-            args.get(*i).unwrap_or_else(|| panic!("{name} needs a value")).clone()
+            args.get(*i)
+                .unwrap_or_else(|| panic!("{name} needs a value"))
+                .clone()
         };
         match args[i].as_str() {
             "--heads" => a.heads = val(&mut i, "--heads"),
@@ -103,7 +105,10 @@ fn decode_sealed(dir: &std::path::Path, name: &str) -> (Specialist, String) {
     let (suite, model) =
         decode_artifact(&bytes).unwrap_or_else(|e| die(&format!("{}: {e}", p.display())));
     if suite != name {
-        die(&format!("{}: artifact names {suite:?}, expected {name:?}", p.display()));
+        die(&format!(
+            "{}: artifact names {suite:?}, expected {name:?}",
+            p.display()
+        ));
     }
     (model, got)
 }
@@ -132,34 +137,45 @@ fn load_heads(dir: &std::path::Path) -> Heads {
         .to_string();
     let got = blake3::hash(text.as_bytes()).to_hex().to_string();
     if got != expected {
-        die(&format!("manifest seal mismatch ({got} != {expected}) — refuse"));
+        die(&format!(
+            "manifest seal mismatch ({got} != {expected}) — refuse"
+        ));
     }
     let m: serde_json::Value =
         serde_json::from_str(&text).unwrap_or_else(|e| die(&format!("manifest: {e}")));
     let (choice, choice_digest) = decode_sealed(dir, "typed_eq9_choice");
     let (noul, _) = decode_sealed(dir, "typed_eq9_noul");
-    let choice_universe: Vec<String> =
-        serde_json::from_value(m["choice"]["universe"].clone())
-            .unwrap_or_else(|e| die(&format!("manifest choice.universe: {e}")));
+    let choice_universe: Vec<String> = serde_json::from_value(m["choice"]["universe"].clone())
+        .unwrap_or_else(|e| die(&format!("manifest choice.universe: {e}")));
     let noul_labels: Vec<String> = serde_json::from_value(m["noul"]["labels"].clone())
         .unwrap_or_else(|e| die(&format!("manifest noul.labels: {e}")));
     let mut score = HashMap::new();
     if let Some(map) = m["score"].as_object() {
         for qid in map.keys() {
-            let labels: Vec<String> =
-                serde_json::from_value(map[qid]["labels"].clone())
-                    .unwrap_or_else(|e| die(&format!("manifest score {qid} labels: {e}")));
+            let labels: Vec<String> = serde_json::from_value(map[qid]["labels"].clone())
+                .unwrap_or_else(|e| die(&format!("manifest score {qid} labels: {e}")));
             let (model, _) = decode_sealed(dir, &format!("typed_eq9_score_{qid}"));
             score.insert(qid.clone(), (model, labels));
         }
     }
-    let posture = m["inputs"]["posture"].as_str().unwrap_or("unknown").to_string();
+    let posture = m["inputs"]["posture"]
+        .as_str()
+        .unwrap_or("unknown")
+        .to_string();
     if !posture.contains("dual-shuffle") {
         eprintln!(
             "WARNING: the head bundle's posture is {posture:?} — the frozen read expects the dual-shuffle lane"
         );
     }
-    Heads { choice, choice_universe, noul, noul_labels, score, posture, choice_digest }
+    Heads {
+        choice,
+        choice_universe,
+        noul,
+        noul_labels,
+        score,
+        posture,
+        choice_digest,
+    }
 }
 
 /// A deterministic u64 from a question's identity (the perm-probe seed
@@ -184,9 +200,15 @@ fn main() {
     let seat_digest = seat.cases_digest();
     let cases = &seat.suite.cases;
     let strs = &seat.state_strs;
-    let gold: Vec<usize> =
-        cases.iter().flat_map(|c| c.gold.iter().map(|g| g.idx)).collect();
-    println!("seat: {seat_digest} · {} cases / {} questions", cases.len(), gold.len());
+    let gold: Vec<usize> = cases
+        .iter()
+        .flat_map(|c| c.gold.iter().map(|g| g.idx))
+        .collect();
+    println!(
+        "seat: {seat_digest} · {} cases / {} questions",
+        cases.len(),
+        gold.len()
+    );
 
     // ── the encoder pick dump: join key + population assert ─────────────
     let enc_text = std::fs::read_to_string(&a.encoder_picks).unwrap_or_else(|e| {
@@ -206,8 +228,9 @@ fn main() {
             enc["seat_digest"].as_str().unwrap_or("?")
         ));
     }
-    let enc_rows =
-        enc["rows"].as_array().unwrap_or_else(|| die("encoder picks: no rows"));
+    let enc_rows = enc["rows"]
+        .as_array()
+        .unwrap_or_else(|| die("encoder picks: no rows"));
     if enc_rows.len() != gold.len() {
         die(&format!(
             "encoder picks: {} rows vs our seat's {} questions",
@@ -221,8 +244,9 @@ fn main() {
             r["case_id"].as_str().unwrap_or_default().to_string(),
             r["qid"].as_str().unwrap_or_default().to_string(),
         );
-        let correct =
-            r["correct"].as_bool().unwrap_or_else(|| die("encoder pick row: no correct"));
+        let correct = r["correct"]
+            .as_bool()
+            .unwrap_or_else(|| die("encoder pick row: no correct"));
         if enc_by_key.insert(key, correct).is_some() {
             die("encoder picks: duplicate (case_id, qid)");
         }
@@ -251,10 +275,15 @@ fn main() {
             die(&format!("case {}: questions/gold lockstep broken", case.id));
         }
         for (qi, (qid, qdef)) in qs.iter().enumerate() {
-            let kind = qdef.get("type").and_then(serde_json::Value::as_str).unwrap_or("");
-            let crit = qdef.get("criteria").cloned().unwrap_or(serde_json::Value::Null);
-            let (presented, model, universe): (Vec<String>, &Specialist, &[String]) = match kind
-            {
+            let kind = qdef
+                .get("type")
+                .and_then(serde_json::Value::as_str)
+                .unwrap_or("");
+            let crit = qdef
+                .get("criteria")
+                .cloned()
+                .unwrap_or(serde_json::Value::Null);
+            let (presented, model, universe): (Vec<String>, &Specialist, &[String]) = match kind {
                 "choice" => (
                     choice_keys(&crit).unwrap_or_default(),
                     &heads.choice,
@@ -269,7 +298,11 @@ fn main() {
                     Some((m, uni)) => (score_levels(&crit).unwrap_or_default(), m, uni),
                     None => {
                         // An untrained score qid — unanswered, counted.
-                        picks.push(Pick { pos: None, conf: 0.0, p_gold: 0.0 });
+                        picks.push(Pick {
+                            pos: None,
+                            conf: 0.0,
+                            p_gold: 0.0,
+                        });
                         walk_keys.push((case.id.clone(), qid.clone()));
                         continue;
                     }
@@ -291,7 +324,10 @@ fn main() {
             let pick = picked.map(|(cls, _conf)| {
                 // class index → presented position (the gold space)
                 let picked_key: &String = &universe[cls];
-                presented.iter().position(|k| k == picked_key).unwrap_or(usize::MAX)
+                presented
+                    .iter()
+                    .position(|k| k == picked_key)
+                    .unwrap_or(usize::MAX)
             });
             picks.push(Pick {
                 pos: pick,
@@ -330,7 +366,10 @@ fn main() {
                     // presented-position space the gold speaks).
                     let flipped_pos = flipped.map(|(cls, _)| {
                         let key: &String = &universe[cls];
-                        presented.iter().position(|k| k == key).unwrap_or(usize::MAX)
+                        presented
+                            .iter()
+                            .position(|k| k == key)
+                            .unwrap_or(usize::MAX)
                     });
                     if flipped_pos != picks.last().and_then(|p| p.pos) {
                         perm_flips += 1;
@@ -343,7 +382,10 @@ fn main() {
     // ── the pairing + the gate ──────────────────────────────────────────
     let n = picks.len();
     if n != gold.len() {
-        die(&format!("walk produced {n} picks for {} gold rows", gold.len()));
+        die(&format!(
+            "walk produced {n} picks for {} gold rows",
+            gold.len()
+        ));
     }
     let mut ours_correct: Vec<bool> = Vec::with_capacity(n);
     let mut enc_correct: Vec<bool> = Vec::with_capacity(n);
@@ -375,17 +417,27 @@ fn main() {
         .unwrap_or_else(|| die("paired stats: empty"));
     let wilson = riir_instinct::stats::wilson_lb(ours_hits, n);
     println!();
-    println!("OURS: {ours_acc:.4} ({ours_hits}/{n} · answered {answered}) · Wilson LB95 {wilson:.4}");
+    println!(
+        "OURS: {ours_acc:.4} ({ours_hits}/{n} · answered {answered}) · Wilson LB95 {wilson:.4}"
+    );
     println!(
         "ENCODER: {enc_acc:.4} — the published cell reads 0.7550; consistency {}",
-        if (enc_acc - 0.7550).abs() < 0.005 { "OK (±0.5 pt)" } else { "MATERIAL DRIFT — read before quoting" }
+        if (enc_acc - 0.7550).abs() < 0.005 {
+            "OK (±0.5 pt)"
+        } else {
+            "MATERIAL DRIFT — read before quoting"
+        }
     );
     println!(
         "PAIRED (ours − encoder): mean {:+.4} · LB95 {:+.4} · UB95 {:+.4} — GATE {}",
         pd.mean,
         pd.lb95,
         pd.ub95,
-        if pd.lb95 > 0.0 { "PASS (LB95 > 0)" } else { "FAIL" },
+        if pd.lb95 > 0.0 {
+            "PASS (LB95 > 0)"
+        } else {
+            "FAIL"
+        },
     );
     println!(
         "PERM-PROBE: {perm_flips} flips / {perm_reads} reads (K = {}) — structural 0 expected",
@@ -393,8 +445,11 @@ fn main() {
     );
 
     // ── Report-the-Floor: calibration + chance + split-half conformal ──
-    let cal_pairs: Vec<(f64, bool)> =
-        confs.iter().copied().zip(ours_correct.iter().copied()).collect();
+    let cal_pairs: Vec<(f64, bool)> = confs
+        .iter()
+        .copied()
+        .zip(ours_correct.iter().copied())
+        .collect();
     let brier = riir_reflex::harness::metrics::brier_of(&cal_pairs);
     let ece = riir_reflex::harness::metrics::ece_of(&cal_pairs);
     let chance = riir_reflex::harness::metrics::chance_majority(&gold);
@@ -403,8 +458,9 @@ fn main() {
     // ordered value τ; a test pick is IN the singleton set iff
     // 1 − p(pick) ≤ τ. Coverage = gold-in-set (correct AND confident).
     let half = n / 2;
-    let mut cal_nc: Vec<f64> =
-        (0..half).map(|i| (1.0 - p_golds[i]).clamp(0.0, 1.0)).collect();
+    let mut cal_nc: Vec<f64> = (0..half)
+        .map(|i| (1.0 - p_golds[i]).clamp(0.0, 1.0))
+        .collect();
     cal_nc.sort_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal));
     let q_idx = ((cal_nc.len() as f64) * 0.9).ceil() as usize;
     let tau = cal_nc.get(q_idx.saturating_sub(1)).copied().unwrap_or(1.0);
@@ -486,8 +542,7 @@ fn main() {
         Some(p) => {
             if let Some(dir) = std::path::Path::new(p).parent() {
                 if !dir.as_os_str().is_empty() {
-                    std::fs::create_dir_all(dir)
-                        .unwrap_or_else(|e| die(&format!("create: {e}")));
+                    std::fs::create_dir_all(dir).unwrap_or_else(|e| die(&format!("create: {e}")));
                 }
             }
             std::fs::write(p, &text).unwrap_or_else(|e| die(&format!("write {p}: {e}")));

@@ -29,11 +29,11 @@
 
 use riir_instinct::stats::paired_upper_bound_f64;
 use riir_instinct::tetris_critic::{
-    AgreeStats, CriticModel, FeatureScale, FitAccumulator, LanePolicy, Sample, TrainedMlp,
-    agreement_stats, collect_teacher, decision_groups, lane_context, play_lane,
+    agreement_stats, collect_teacher, decision_groups, lane_context, play_lane, AgreeStats,
+    CriticModel, FeatureScale, FitAccumulator, LanePolicy, Sample, TrainedMlp,
 };
-use riir_instinct::tetris_lane::{ArmKind, CHAMPION_ID, Fixtures, GameStats, Regime, Runner};
-use serde_json::{Value, json};
+use riir_instinct::tetris_lane::{ArmKind, Fixtures, GameStats, Regime, Runner, CHAMPION_ID};
+use serde_json::{json, Value};
 use std::path::PathBuf;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::time::{Instant, SystemTime, UNIX_EPOCH};
@@ -80,7 +80,11 @@ fn parse_args() -> Args {
     {
         argv.pop();
     }
-    let start = argv.iter().rposition(|x| x == "--").map(|p| p + 1).unwrap_or(1);
+    let start = argv
+        .iter()
+        .rposition(|x| x == "--")
+        .map(|p| p + 1)
+        .unwrap_or(1);
     let argv: Vec<String> = argv[start..].to_vec();
     let mut i = 0;
     while i < argv.len() {
@@ -226,18 +230,16 @@ fn run_cell(arm: EvalArm, ctx: &EvalCtx<'_>, seeds: &[u64]) -> Vec<(u64, GameSta
     std::thread::scope(|s| {
         for _ in 0..ctx.threads.max(1) {
             s.spawn(|| match arm {
-                EvalArm::Critic => {
-                    loop {
-                        let k = next_seed.fetch_add(1, Ordering::Relaxed);
-                        if k >= seeds.len() {
-                            break;
-                        }
-                        let seed = seeds[k];
-                        let mut policy = LanePolicy::Argmax { model };
-                        let st = play_lane(ctx.genome, seed, regime, cap, &mut policy);
-                        results.lock().expect("results lock").push((seed, st));
+                EvalArm::Critic => loop {
+                    let k = next_seed.fetch_add(1, Ordering::Relaxed);
+                    if k >= seeds.len() {
+                        break;
                     }
-                }
+                    let seed = seeds[k];
+                    let mut policy = LanePolicy::Argmax { model };
+                    let st = play_lane(ctx.genome, seed, regime, cap, &mut policy);
+                    results.lock().expect("results lock").push((seed, st));
+                },
                 EvalArm::Trained => {
                     let trained = ctx.trained.expect("Trained arm without --model");
                     loop {
@@ -277,9 +279,11 @@ fn run_cell(arm: EvalArm, ctx: &EvalCtx<'_>, seeds: &[u64]) -> Vec<(u64, GameSta
 }
 
 fn summarize(res: &[(u64, GameStats)]) -> Value {
-    let pieces: f64 = res.iter().map(|(_, s)| s.pieces as f64).sum::<f64>() / res.len().max(1) as f64;
+    let pieces: f64 =
+        res.iter().map(|(_, s)| s.pieces as f64).sum::<f64>() / res.len().max(1) as f64;
     let lines: f64 = res.iter().map(|(_, s)| s.lines as f64).sum::<f64>() / res.len().max(1) as f64;
-    let points: f64 = res.iter().map(|(_, s)| s.points as f64).sum::<f64>() / res.len().max(1) as f64;
+    let points: f64 =
+        res.iter().map(|(_, s)| s.points as f64).sum::<f64>() / res.len().max(1) as f64;
     let survived = res.iter().filter(|(_, s)| !s.topped_out).count();
     let mut durs: Vec<f64> = res.iter().map(|(_, s)| s.p50_ms).collect();
     durs.sort_by(f64::total_cmp);
@@ -344,7 +348,11 @@ fn main() {
     let started = Instant::now();
 
     let genome = katgpt_tetris::rulebook::Genome::champion_hybrid();
-    assert_eq!(genome.id(), CHAMPION_ID, "champion genome drifted from the pinned digest");
+    assert_eq!(
+        genome.id(),
+        CHAMPION_ID,
+        "champion genome drifted from the pinned digest"
+    );
     let fixtures = load_fixtures();
 
     let train_seeds: Vec<u64> = (a.train.0..=a.train.1).collect();
@@ -370,10 +378,22 @@ fn main() {
     let mut teacher_pieces: Vec<f64> = Vec::new();
     for &regime in &a.regimes {
         let t0 = Instant::now();
-        let (ts, tstats) =
-            collect_teacher(&genome, regime, &train_seeds, a.teacher_budget, a.cap, a.threads);
-        let (vs, vstats) =
-            collect_teacher(&genome, regime, &val_seeds, a.teacher_budget, a.cap, a.threads);
+        let (ts, tstats) = collect_teacher(
+            &genome,
+            regime,
+            &train_seeds,
+            a.teacher_budget,
+            a.cap,
+            a.threads,
+        );
+        let (vs, vstats) = collect_teacher(
+            &genome,
+            regime,
+            &val_seeds,
+            a.teacher_budget,
+            a.cap,
+            a.threads,
+        );
         teacher_pieces.extend(tstats.iter().chain(vstats.iter()).map(|s| s.pieces as f64));
         collection.push(json!({
             "regime": regime.to_string(),
@@ -385,8 +405,14 @@ fn main() {
             },
             "wall_s": t0.elapsed().as_secs_f64(),
         }));
-        train_blocks.push(Block { groups: decision_groups(&ts), samples: ts });
-        val_blocks.push(Block { groups: decision_groups(&vs), samples: vs });
+        train_blocks.push(Block {
+            groups: decision_groups(&ts),
+            samples: ts,
+        });
+        val_blocks.push(Block {
+            groups: decision_groups(&vs),
+            samples: vs,
+        });
     }
     let n_train: usize = train_blocks.iter().map(|b| b.samples.len()).sum();
     let n_val: usize = val_blocks.iter().map(|b| b.samples.len()).sum();
@@ -419,7 +445,11 @@ fn main() {
     }
     let chosen = sweep
         .iter()
-        .max_by(|x, y| x.1.total_cmp(&y.1).then(x.2.total_cmp(&y.2)).then(y.0.total_cmp(&x.0)))
+        .max_by(|x, y| {
+            x.1.total_cmp(&y.1)
+                .then(x.2.total_cmp(&y.2))
+                .then(y.0.total_cmp(&x.0))
+        })
         .map(|x| x.0)
         .expect("λ grid non-empty");
     println!("chosen λ multiplier {chosen}");
@@ -445,10 +475,9 @@ fn main() {
     );
 
     // ── Issue 580 T7's trained head (the play-off arm) ──────────────────
-    let trained_model = a
-        .model
-        .as_ref()
-        .map(|p| TrainedMlp::from_path(p).unwrap_or_else(|e| panic!("--model {}: {e}", p.display())));
+    let trained_model = a.model.as_ref().map(|p| {
+        TrainedMlp::from_path(p).unwrap_or_else(|e| panic!("--model {}: {e}", p.display()))
+    });
     if let (Some(tm), Some(p)) = (&trained_model, &a.model) {
         let raw = std::fs::read(p).expect("read --model weights");
         let (h1, h2, tanh_hidden) = tm.dims();
@@ -478,7 +507,9 @@ fn main() {
         let base = run_cell(EvalArm::Reflex, &ctx, &eval_seeds);
         let b0 = run_cell(EvalArm::B0, &ctx, &eval_seeds);
         let crit = run_cell(EvalArm::Critic, &ctx, &eval_seeds);
-        let trained = trained_model.as_ref().map(|_| run_cell(EvalArm::Trained, &ctx, &eval_seeds));
+        let trained = trained_model
+            .as_ref()
+            .map(|_| run_cell(EvalArm::Trained, &ctx, &eval_seeds));
         let vs_reflex = paired_vs(&crit, &base);
         let vs_b0 = paired_vs(&crit, &b0);
         let b0_vs_reflex = paired_vs(&b0, &base);
@@ -508,7 +539,8 @@ fn main() {
             lb_crit_b0,
             vs_b0["wtl"].as_str().unwrap_or(""),
         );
-        if let (Some(sum), Some(vb0), Some(vr)) = (&trained_sum, &vs_trained_b0, &vs_trained_ridge) {
+        if let (Some(sum), Some(vb0), Some(vr)) = (&trained_sum, &vs_trained_b0, &vs_trained_ridge)
+        {
             println!(
                 "{:>14} trained {:.1} pcs · p50 {:.3}ms · vs b0 Δ{:+.1} lb95 {:+.1} ({}) · vs ridge Δ{:+.1} lb95 {:+.1} ({})",
                 "",
@@ -649,6 +681,10 @@ fn main() {
     });
     std::fs::create_dir_all(&a.out).expect("create out dir");
     let path = a.out.join("tetris_critic_arm.json");
-    std::fs::write(&path, serde_json::to_string_pretty(&doc).expect("serialize")).expect("write results");
+    std::fs::write(
+        &path,
+        serde_json::to_string_pretty(&doc).expect("serialize"),
+    )
+    .expect("write results");
     println!("wrote {}", path.display());
 }

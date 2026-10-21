@@ -51,7 +51,7 @@ use katgpt_core::karc::{ridge_solve_direct_f64, ChebyshevBasis, KarcBasis};
 use katgpt_tetris::lookahead::{apply, Bag, LINES_SCORE};
 use katgpt_tetris::rulebook::{Genome, Leaf, Mode};
 use katgpt_tetris::sim::{
-    Board, DropRule, OutcomeFeatures, Piece, Placement, landing_options_with, outcome_features,
+    landing_options_with, outcome_features, Board, DropRule, OutcomeFeatures, Piece, Placement,
 };
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::time::Instant;
@@ -142,7 +142,11 @@ pub fn raw_opt(
     let deep_well: usize = (0..10)
         .map(|c| {
             let d = well_depth(&heights, c);
-            if d > 2 { (d - 2) * (d - 2) } else { 0 }
+            if d > 2 {
+                (d - 2) * (d - 2)
+            } else {
+                0
+            }
         })
         .sum();
     let nine_one = well_depth(&heights, 9).min(4);
@@ -167,7 +171,10 @@ pub fn raw_opt(
     num[feat::COL_TRANS] = scan.col_trans as f64;
     num[feat::HOLES] = scan.holes as f64;
     num[feat::HOLE_COVER] = scan.hole_cover as f64;
-    for (dst, h) in num[feat::HEIGHTS..feat::HEIGHTS + 10].iter_mut().zip(heights) {
+    for (dst, h) in num[feat::HEIGHTS..feat::HEIGHTS + 10]
+        .iter_mut()
+        .zip(heights)
+    {
         *dst = h as f64;
     }
     num[feat::WELLS] = wells as f64;
@@ -179,7 +186,11 @@ pub fn raw_opt(
     num[feat::BUMPINESS] = bumpiness as f64;
     num[feat::TETRIS] = f64::from(lines_cleared == 4);
 
-    RawOpt { num, piece: piece.index() as u8, mode: mode as u8 }
+    RawOpt {
+        num,
+        piece: piece.index() as u8,
+        mode: mode as u8,
+    }
 }
 
 // ── Basis (KARC Plan-308, no delay ring) ─────────────────────────────────
@@ -235,8 +246,11 @@ const PAIRS: [(usize, usize); 8] = [
 
 /// Design dimension: bias + Chebyshev(4) × 33 numerics + mode×11 + piece×4
 /// one-hot interactions + 8 curated pairs = 202.
-pub const DESIGN_DIM: usize =
-    1 + feat::NUM * CHEB_M + N_MODES * MODE_FEATS.len() + N_PIECES * PIECE_FEATS.len() + PAIRS.len();
+pub const DESIGN_DIM: usize = 1
+    + feat::NUM * CHEB_M
+    + N_MODES * MODE_FEATS.len()
+    + N_PIECES * PIECE_FEATS.len()
+    + PAIRS.len();
 
 /// Per-coordinate train scaling: raw → clip((raw − lo)/(hi − lo), 0, 1) →
 /// 2x − 1 ∈ [−1, 1] (Chebyshev's domain; train min/max, eval clips).
@@ -345,10 +359,7 @@ pub fn decision_groups(samples: &[Sample]) -> Vec<(usize, usize)> {
     while i < samples.len() {
         let (seed, decision) = (samples[i].seed, samples[i].decision);
         let mut j = i + 1;
-        while j < samples.len()
-            && samples[j].seed == seed
-            && samples[j].decision == decision
-        {
+        while j < samples.len() && samples[j].seed == seed && samples[j].decision == decision {
             j += 1;
         }
         groups.push((i, j));
@@ -375,7 +386,11 @@ impl Default for FitAccumulator {
 
 impl FitAccumulator {
     pub fn new() -> Self {
-        Self { gram: vec![0.0; DESIGN_DIM * DESIGN_DIM], cov: vec![0.0; DESIGN_DIM], n: 0 }
+        Self {
+            gram: vec![0.0; DESIGN_DIM * DESIGN_DIM],
+            cov: vec![0.0; DESIGN_DIM],
+            n: 0,
+        }
     }
 
     /// Accumulate over grouped samples (contiguous, as
@@ -388,7 +403,12 @@ impl FitAccumulator {
     /// run: g[bias][bias] = one group's count instead of n). This local
     /// streaming outer product is its row loop, incremental across calls,
     /// upper triangle + mirror, same f64 accumulation order per entry.
-    pub fn accumulate(&mut self, samples: &[Sample], groups: &[(usize, usize)], scale: &FeatureScale) {
+    pub fn accumulate(
+        &mut self,
+        samples: &[Sample],
+        groups: &[(usize, usize)],
+        scale: &FeatureScale,
+    ) {
         let mut rows: Vec<f32> = vec![0.0; DESIGN_DIM];
         for &(start, end) in groups {
             for s in &samples[start..end] {
@@ -443,8 +463,21 @@ impl FitAccumulator {
         let mut w = vec![0.0f64; DESIGN_DIM];
         let mut l_scratch = vec![0.0f64; DESIGN_DIM * DESIGN_DIM];
         let mut z_scratch = vec![0.0f64; DESIGN_DIM];
-        ridge_solve_direct_f64(&mut w, &mut l_scratch, &mut z_scratch, &gram_reg, &self.cov, DESIGN_DIM, 1);
-        CriticModel { scale, w, lambda_mult, n: self.n }
+        ridge_solve_direct_f64(
+            &mut w,
+            &mut l_scratch,
+            &mut z_scratch,
+            &gram_reg,
+            &self.cov,
+            DESIGN_DIM,
+            1,
+        );
+        CriticModel {
+            scale,
+            w,
+            lambda_mult,
+            n: self.n,
+        }
     }
 }
 
@@ -476,7 +509,13 @@ impl CriticModel {
     /// the vessel payload's eventual commitment shape).
     pub fn digest_hex(&self) -> String {
         let mut hasher = blake3::Hasher::new();
-        for v in self.scale.lo.iter().chain(self.scale.hi.iter()).chain(self.w.iter()) {
+        for v in self
+            .scale
+            .lo
+            .iter()
+            .chain(self.scale.hi.iter())
+            .chain(self.w.iter())
+        {
             hasher.update(&v.to_le_bytes());
         }
         hasher.update(&self.lambda_mult.to_le_bytes());
@@ -525,12 +564,12 @@ impl TrainedMlp {
         if raw.len() < 28 || raw[0..8] != *TRAINED_MAGIC {
             return Err("bad magic".into());
         }
-        let u32_at = |o: usize| {
-            u32::from_le_bytes(raw[o..o + 4].try_into().expect("u32")) as usize
-        };
+        let u32_at = |o: usize| u32::from_le_bytes(raw[o..o + 4].try_into().expect("u32")) as usize;
         let (n_num, n_pieces, n_modes) = (u32_at(8), u32_at(12), u32_at(16));
         if (n_num, n_pieces, n_modes) != (33, 7, 3) {
-            return Err(format!("contract drift: {n_num}/{n_pieces}/{n_modes} != 33/7/3"));
+            return Err(format!(
+                "contract drift: {n_num}/{n_pieces}/{n_modes} != 33/7/3"
+            ));
         }
         let (h1, h2) = (u32_at(20), u32_at(24));
         let tanh_hidden = match u32_at(28) {
@@ -546,7 +585,11 @@ impl TrainedMlp {
             }
             let out = (0..n)
                 .map(|k| {
-                    f64::from_le_bytes(raw[*off + k * 8..*off + (k + 1) * 8].try_into().expect("f64"))
+                    f64::from_le_bytes(
+                        raw[*off + k * 8..*off + (k + 1) * 8]
+                            .try_into()
+                            .expect("f64"),
+                    )
                 })
                 .collect();
             *off = end;
@@ -568,7 +611,10 @@ impl TrainedMlp {
         }
         let b3 = f64::from_le_bytes(raw[off..off + 8].try_into().expect("f64"));
         Ok(Self {
-            scale: FeatureScale { lo: scale_lo, hi: scale_hi },
+            scale: FeatureScale {
+                lo: scale_lo,
+                hi: scale_hi,
+            },
             h1,
             h2,
             tanh_hidden,
@@ -672,7 +718,12 @@ pub struct AgreeStats {
     pub sst: f64,
 }
 
-pub fn agreement_stats(model: &CriticModel, samples: &[Sample], groups: &[(usize, usize)], mean_q: f64) -> AgreeStats {
+pub fn agreement_stats(
+    model: &CriticModel,
+    samples: &[Sample],
+    groups: &[(usize, usize)],
+    mean_q: f64,
+) -> AgreeStats {
     let mut h = vec![0.0f32; DESIGN_DIM];
     let mut st = AgreeStats::default();
     for &(start, end) in groups {
@@ -727,7 +778,11 @@ impl std::ops::Add for AgreeStats {
 
 /// Convenience single-corpus form of [`agreement_stats`]
 /// + [`AgreeStats::agreement`] / [`AgreeStats::r2`].
-pub fn agreement_and_r2(model: &CriticModel, samples: &[Sample], groups: &[(usize, usize)]) -> (f64, f64) {
+pub fn agreement_and_r2(
+    model: &CriticModel,
+    samples: &[Sample],
+    groups: &[(usize, usize)],
+) -> (f64, f64) {
     let mean_q = samples.iter().map(|s| s.q).sum::<f64>() / samples.len().max(1) as f64;
     let st = agreement_stats(model, samples, groups, mean_q);
     (st.agreement(), st.r2())
@@ -739,7 +794,10 @@ pub fn agreement_and_r2(model: &CriticModel, samples: &[Sample], groups: &[(usiz
 pub enum LanePolicy<'m> {
     /// Teacher collection: budget-`budget` chance_puct picks; every visited
     /// option's Q recorded through `sink`.
-    Teacher { budget: u32, sink: &'m mut Vec<Sample> },
+    Teacher {
+        budget: u32,
+        sink: &'m mut Vec<Sample>,
+    },
     /// The fitted closed-form critic: 1-ply argmax over per-option critic
     /// scores (first strict max — the site's argmax convention).
     Argmax { model: &'m CriticModel },
@@ -752,7 +810,12 @@ pub enum LanePolicy<'m> {
     /// w = 0 short-circuits to the plain teacher bit-exactly). Every
     /// visited option's Q recorded through `sink` (the same contract as
     /// [`LanePolicy::Teacher`]). Teacher only — never a serve posture.
-    TeacherBlended { budget: u32, model: &'m TrainedMlp, w: f64, sink: &'m mut Vec<Sample> },
+    TeacherBlended {
+        budget: u32,
+        model: &'m TrainedMlp,
+        w: f64,
+        sink: &'m mut Vec<Sample>,
+    },
 }
 
 /// One seed, one game, one policy — the T6 game-loop shape (same bag, same
@@ -760,12 +823,21 @@ pub enum LanePolicy<'m> {
 /// the lane policy. Lives here rather than in `tetris_lane` so the frozen
 /// T5/T6 harness stays byte-stable while the critic arm lands; the T9
 /// adapter promotion consolidates the loops.
-pub fn play_lane(genome: &Genome, seed: u64, regime: Regime, cap: usize, policy: &mut LanePolicy<'_>) -> GameStats {
+pub fn play_lane(
+    genome: &Genome,
+    seed: u64,
+    regime: Regime,
+    cap: usize,
+    policy: &mut LanePolicy<'_>,
+) -> GameStats {
     let mut bag = Bag::new(seed);
     let mut board = start_board(seed, regime);
     let mut next = bag.draw();
     let mut rng = fastrand::Rng::with_seed(seed ^ TEACHER_RNG_SALT);
-    let mut st = GameStats { seed, ..GameStats::default() };
+    let mut st = GameStats {
+        seed,
+        ..GameStats::default()
+    };
     let mut decision_ms: Vec<f64> = Vec::with_capacity(cap.min(4096));
     let mut decision: u32 = 0;
     let mut h_buf: Vec<f32> = vec![0.0; DESIGN_DIM];
@@ -785,11 +857,20 @@ pub fn play_lane(genome: &Genome, seed: u64, regime: Regime, cap: usize, policy:
                 let mode = genome.mode_of(&board);
                 let eval = |b: &Board, lines: u32, tetrises: u32| -> f64 {
                     let scan = b.scan();
-                    let leaf = Leaf { board: b, heights: scan.heights, lines, tetrises, held: None };
+                    let leaf = Leaf {
+                        board: b,
+                        heights: scan.heights,
+                        lines,
+                        tetrises,
+                        held: None,
+                    };
                     genome.eval_with(&leaf, mode, &scan)
                 };
                 let root = TeacherState::root(&board, cur, &eval);
-                let cfg = ChancePuctConfig { budget: *budget, ..ChancePuctConfig::default() };
+                let cfg = ChancePuctConfig {
+                    budget: *budget,
+                    ..ChancePuctConfig::default()
+                };
                 let mut search = ChancePuct::new(cfg);
                 let picked = match search.search(&root, &mut rng) {
                     Some(p) => p.index,
@@ -826,18 +907,32 @@ pub fn play_lane(genome: &Genome, seed: u64, regime: Regime, cap: usize, policy:
                 }
                 best
             }
-            LanePolicy::TeacherBlended { budget, model, w, sink } => {
+            LanePolicy::TeacherBlended {
+                budget,
+                model,
+                w,
+                sink,
+            } => {
                 let mode = genome.mode_of(&board);
                 let eval = |b: &Board, lines: u32, tetrises: u32| -> f64 {
                     let scan = b.scan();
-                    let leaf = Leaf { board: b, heights: scan.heights, lines, tetrises, held: None };
+                    let leaf = Leaf {
+                        board: b,
+                        heights: scan.heights,
+                        lines,
+                        tetrises,
+                        held: None,
+                    };
                     genome.eval_with(&leaf, mode, &scan)
                 };
                 // Root z-fit over the SAME option list the search enumerates
                 // (the kept set the searcher's value_scale calibrates on).
                 let blend = TeacherBlend::fit(&eval, model, *w, &board, cur, mode, &options);
                 let root = TeacherState::root_blended(&board, cur, &eval, &blend);
-                let cfg = ChancePuctConfig { budget: *budget, ..ChancePuctConfig::default() };
+                let cfg = ChancePuctConfig {
+                    budget: *budget,
+                    ..ChancePuctConfig::default()
+                };
                 let mut search = ChancePuct::new(cfg);
                 let picked = match search.search(&root, &mut rng) {
                     Some(p) => p.index,
@@ -867,11 +962,14 @@ pub fn play_lane(genome: &Genome, seed: u64, regime: Regime, cap: usize, policy:
                 // per-spot latency (verdict R2).
                 let probe_t0 = Instant::now();
                 let mut probe_rng = fastrand::Rng::with_seed(
-                    seed ^ TEACHER_PROBE_SALT ^ (u64::from(decision)).wrapping_mul(0x9E37_79B9_7F4A_7C15),
+                    seed ^ TEACHER_PROBE_SALT
+                        ^ (u64::from(decision)).wrapping_mul(0x9E37_79B9_7F4A_7C15),
                 );
                 let probe_root = TeacherState::root(&board, cur, &eval);
-                let mut probe_search =
-                    ChancePuct::new(ChancePuctConfig { budget: *budget, ..ChancePuctConfig::default() });
+                let mut probe_search = ChancePuct::new(ChancePuctConfig {
+                    budget: *budget,
+                    ..ChancePuctConfig::default()
+                });
                 PROBE_PICKS.fetch_add(1, Ordering::Relaxed);
                 if let Some(p) = probe_search.search(&probe_root, &mut probe_rng) {
                     if p.index != picked {
@@ -918,7 +1016,10 @@ pub fn play_lane(genome: &Genome, seed: u64, regime: Regime, cap: usize, policy:
     }
 
     decision_ms.sort_by(f64::total_cmp);
-    st.p50_ms = decision_ms.get(decision_ms.len() / 2).copied().unwrap_or(0.0);
+    st.p50_ms = decision_ms
+        .get(decision_ms.len() / 2)
+        .copied()
+        .unwrap_or(0.0);
     st
 }
 
@@ -945,18 +1046,22 @@ pub fn collect_teacher(
         std::sync::Mutex::new(Vec::with_capacity(seeds.len()));
     std::thread::scope(|s| {
         for _ in 0..threads.max(1) {
-            s.spawn(|| {
-                loop {
-                    let k = next_seed.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
-                    if k >= seeds.len() {
-                        break;
-                    }
-                    let seed = seeds[k];
-                    let mut sink: Vec<Sample> = Vec::new();
-                    let mut policy = LanePolicy::Teacher { budget, sink: &mut sink };
-                    let stats = play_lane(genome, seed, regime, cap, &mut policy);
-                    results.lock().expect("results lock").push((seed, stats, sink));
+            s.spawn(|| loop {
+                let k = next_seed.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+                if k >= seeds.len() {
+                    break;
                 }
+                let seed = seeds[k];
+                let mut sink: Vec<Sample> = Vec::new();
+                let mut policy = LanePolicy::Teacher {
+                    budget,
+                    sink: &mut sink,
+                };
+                let stats = play_lane(genome, seed, regime, cap, &mut policy);
+                results
+                    .lock()
+                    .expect("results lock")
+                    .push((seed, stats, sink));
             });
         }
     });
@@ -1016,18 +1121,24 @@ pub fn collect_teacher_blended(
         std::sync::Mutex::new(Vec::with_capacity(seeds.len()));
     std::thread::scope(|s| {
         for _ in 0..threads.max(1) {
-            s.spawn(|| {
-                loop {
-                    let k = next_seed.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
-                    if k >= seeds.len() {
-                        break;
-                    }
-                    let seed = seeds[k];
-                    let mut sink: Vec<Sample> = Vec::new();
-                    let mut policy = LanePolicy::TeacherBlended { budget, model, w, sink: &mut sink };
-                    let stats = play_lane(genome, seed, regime, cap, &mut policy);
-                    results.lock().expect("results lock").push((seed, stats, sink));
+            s.spawn(|| loop {
+                let k = next_seed.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+                if k >= seeds.len() {
+                    break;
                 }
+                let seed = seeds[k];
+                let mut sink: Vec<Sample> = Vec::new();
+                let mut policy = LanePolicy::TeacherBlended {
+                    budget,
+                    model,
+                    w,
+                    sink: &mut sink,
+                };
+                let stats = play_lane(genome, seed, regime, cap, &mut policy);
+                results
+                    .lock()
+                    .expect("results lock")
+                    .push((seed, stats, sink));
             });
         }
     });
@@ -1056,10 +1167,20 @@ mod tests {
             let mut num = [0.0; feat::NUM];
             num[feat::LANDING_HEIGHT] = ((i % 17) as f64 / 8.0 - 1.0).clamp(-1.0, 1.0);
             num[feat::ERODED_CELLS] = ((i % 5) as f64 / 2.0 - 1.0).clamp(-1.0, 1.0);
-            let raw = RawOpt { num, piece: (i % 7) as u8, mode: (i % 3) as u8 };
+            let raw = RawOpt {
+                num,
+                piece: (i % 7) as u8,
+                mode: (i % 3) as u8,
+            };
             let q = 2.0 * raw.num[feat::LANDING_HEIGHT] - raw.num[feat::ERODED_CELLS];
             // Groups of 4 consecutive samples share (seed, decision).
-            Sample { seed: ((i / 4) % 4) as u64, decision: (i / 4) as u32, raw, q, is_pick: i.is_multiple_of(4) }
+            Sample {
+                seed: ((i / 4) % 4) as u64,
+                decision: (i / 4) as u32,
+                raw,
+                q,
+                is_pick: i.is_multiple_of(4),
+            }
         };
         let samples: Vec<Sample> = (0..400).map(mk).collect();
         let groups = decision_groups(&samples);
@@ -1069,7 +1190,10 @@ mod tests {
         acc.accumulate(&samples, &groups, &scale);
         let model = acc.solve(scale, 0.01);
         let (_, r2) = agreement_and_r2(&model, &samples, &groups);
-        assert!(r2 > 0.99, "linear target must fit near-exactly, got R2={r2:.4}");
+        assert!(
+            r2 > 0.99,
+            "linear target must fit near-exactly, got R2={r2:.4}"
+        );
     }
 
     /// Same input → same design vector; bias first; declared dimension.
@@ -1078,8 +1202,15 @@ mod tests {
         let mut num = [0.0; feat::NUM];
         num[feat::HOLES] = 3.0;
         num[feat::HEIGHTS + 4] = 9.0;
-        let raw = RawOpt { num, piece: 2, mode: 1 };
-        let scale = FeatureScale { lo: [-2.0; feat::NUM], hi: [2.0; feat::NUM] };
+        let raw = RawOpt {
+            num,
+            piece: 2,
+            mode: 1,
+        };
+        let scale = FeatureScale {
+            lo: [-2.0; feat::NUM],
+            hi: [2.0; feat::NUM],
+        };
         let mut a = vec![0.0f32; DESIGN_DIM];
         let mut b = vec![0.0f32; DESIGN_DIM];
         expand_into(&raw, &scale, &mut a);
@@ -1097,11 +1228,16 @@ mod tests {
     #[test]
     fn score_logit_sigmoid_is_score_bit_exactly() {
         let model = TrainedMlp {
-            scale: FeatureScale { lo: [-1.0; feat::NUM], hi: [2.0; feat::NUM] },
+            scale: FeatureScale {
+                lo: [-1.0; feat::NUM],
+                hi: [2.0; feat::NUM],
+            },
             h1: 4,
             h2: 3,
             tanh_hidden: true,
-            w1: (0..4 * 43).map(|i| ((i % 13) as f64 - 6.0) / 24.0).collect(),
+            w1: (0..4 * 43)
+                .map(|i| ((i % 13) as f64 - 6.0) / 24.0)
+                .collect(),
             b1: (0..4).map(|i| (i as f64 - 1.5) / 8.0).collect(),
             w2: (0..3 * 4).map(|i| ((i % 11) as f64 - 5.0) / 20.0).collect(),
             b2: [0.1, -0.2, 0.05].to_vec(),
@@ -1113,7 +1249,11 @@ mod tests {
             for (k, v) in num.iter_mut().enumerate() {
                 *v = ((i * (k + 3)) % 19) as f64 / 9.0 - 1.0;
             }
-            let raw = RawOpt { num, piece: (i % 7) as u8, mode: (i % 3) as u8 };
+            let raw = RawOpt {
+                num,
+                piece: (i % 7) as u8,
+                mode: (i % 3) as u8,
+            };
             let mut scratch = vec![0.0f64; model.scratch_len()];
             let s = model.score(&raw, &mut scratch);
             let z = model.score_logit(&raw, &mut scratch);
@@ -1130,7 +1270,10 @@ mod tests {
     #[test]
     fn blended_w0_plays_the_plain_teacher_game_bit_exactly() {
         let model = TrainedMlp {
-            scale: FeatureScale { lo: [-1.0; feat::NUM], hi: [2.0; feat::NUM] },
+            scale: FeatureScale {
+                lo: [-1.0; feat::NUM],
+                hi: [2.0; feat::NUM],
+            },
             h1: 4,
             h2: 3,
             tanh_hidden: true,
@@ -1145,7 +1288,10 @@ mod tests {
         let regime = Regime::garbage(16, 75);
         for seed in [9u64, 421] {
             let mut sink_plain = Vec::new();
-            let mut p = LanePolicy::Teacher { budget: 64, sink: &mut sink_plain };
+            let mut p = LanePolicy::Teacher {
+                budget: 64,
+                sink: &mut sink_plain,
+            };
             let plain = play_lane(&genome, seed, regime, 60, &mut p);
             let mut sink_blend = Vec::new();
             let mut q = LanePolicy::TeacherBlended {
@@ -1155,7 +1301,10 @@ mod tests {
                 sink: &mut sink_blend,
             };
             let blended = play_lane(&genome, seed, regime, 60, &mut q);
-            assert_eq!(plain.pieces, blended.pieces, "seed {seed}: w=0 must be the plain game");
+            assert_eq!(
+                plain.pieces, blended.pieces,
+                "seed {seed}: w=0 must be the plain game"
+            );
             assert_eq!(plain.lines, blended.lines);
             assert_eq!(plain.points, blended.points);
             assert_eq!(plain.decisions, blended.decisions);

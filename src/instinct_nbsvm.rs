@@ -256,11 +256,8 @@ impl NbsvmRidge {
         // truncate to top_k, then RE-INDEX ascending (the eval path
         // binary-searches — the reflex measured 0.29-class bug when this
         // sort was missing).
-        let mut order: Vec<u32> =
-            (0..VOCAB as u32).filter(|&w| df[w as usize] > 0).collect();
-        order.sort_unstable_by(|&a, &b| {
-            df[b as usize].cmp(&df[a as usize]).then(a.cmp(&b))
-        });
+        let mut order: Vec<u32> = (0..VOCAB as u32).filter(|&w| df[w as usize] > 0).collect();
+        order.sort_unstable_by(|&a, &b| df[b as usize].cmp(&df[a as usize]).then(a.cmp(&b)));
         order.truncate(top_k);
         order.sort_unstable();
         let k = order.len();
@@ -277,8 +274,7 @@ impl NbsvmRidge {
         for j in 0..n_dom {
             for (i, &w) in order.iter().enumerate() {
                 let cin = tok_cnt[j * VOCAB + w as usize] as f32 + ALPHA;
-                let cout =
-                    (glob_cnt[w as usize] - tok_cnt[j * VOCAB + w as usize]) as f32 + ALPHA;
+                let cout = (glob_cnt[w as usize] - tok_cnt[j * VOCAB + w as usize]) as f32 + ALPHA;
                 let r = (cin / nin).ln() - (cout / nout).ln();
                 assert!(
                     r.is_finite(),
@@ -491,12 +487,9 @@ pub fn train_nbsvm(
 
     // Feature set: the ridge's own selection law (df desc, bucket asc),
     // ascending for the fold walk.
-    let mut touched: Vec<u32> =
-        (0..VOCAB as u32).filter(|&b| df[b as usize] > 0).collect();
+    let mut touched: Vec<u32> = (0..VOCAB as u32).filter(|&b| df[b as usize] > 0).collect();
     if let Some(k) = cfg.top_k {
-        touched.sort_unstable_by(|&a, &b| {
-            df[b as usize].cmp(&df[a as usize]).then(a.cmp(&b))
-        });
+        touched.sort_unstable_by(|&a, &b| df[b as usize].cmp(&df[a as usize]).then(a.cmp(&b)));
         touched.truncate(k);
     }
     touched.sort_unstable();
@@ -510,8 +503,7 @@ pub fn train_nbsvm(
     for (c, rrow) in ratios.as_chunks_mut::<VOCAB>().0.iter_mut().enumerate() {
         for &b in &touched {
             let cin = tok_cnt[c * VOCAB + b as usize] as f32 + ALPHA;
-            let cout = (glob_cnt[b as usize] - tok_cnt[c * VOCAB + b as usize]) as f32
-                + ALPHA;
+            let cout = (glob_cnt[b as usize] - tok_cnt[c * VOCAB + b as usize]) as f32 + ALPHA;
             let r = (cin / nin).ln() - (cout / nout).ln();
             assert!(
                 r.is_finite(),
@@ -530,7 +522,12 @@ pub fn train_nbsvm(
     let mut bag = Vec::new();
     let mut skipped_empty = 0usize;
     for &i in train_idx {
-        presence_bag_into(rows[i].text.as_bytes(), cfg.presence_norm, &mut bag, &mut scratch);
+        presence_bag_into(
+            rows[i].text.as_bytes(),
+            cfg.presence_norm,
+            &mut bag,
+            &mut scratch,
+        );
         if bag.is_empty() {
             skipped_empty += 1;
             continue;
@@ -577,7 +574,13 @@ pub fn train_nbsvm(
                 .ln();
             }
             final_loss = loss / n as f32;
-            let lr = lr_at(cfg.lr, step, total_steps, cfg.warmup_steps, cfg.min_lr_ratio);
+            let lr = lr_at(
+                cfg.lr,
+                step,
+                total_steps,
+                cfg.warmup_steps,
+                cfg.min_lr_ratio,
+            );
             step += 1;
             let bc1 = 1.0 - beta1.powf(step as f32);
             let bc2 = 1.0 - beta2.powf(step as f32);
@@ -634,7 +637,12 @@ pub fn train_nbsvm(
     let mut scratch2 = Vec::new();
     let mut hit = 0usize;
     for &i in holdout_idx {
-        presence_bag_into(rows[i].text.as_bytes(), cfg.presence_norm, &mut bag, &mut scratch2);
+        presence_bag_into(
+            rows[i].text.as_bytes(),
+            cfg.presence_norm,
+            &mut bag,
+            &mut scratch2,
+        );
         if !bag.is_empty() && model.pick(&bag) == class_of[rows[i].label.as_str()] {
             hit += 1;
         }
@@ -681,8 +689,7 @@ pub fn probe_front_split(
             front.extend(idxs.iter().take(per_label).copied());
         }
     }
-    let front_texts: HashSet<&str> =
-        front.iter().map(|&i| rows[i].text.as_str()).collect();
+    let front_texts: HashSet<&str> = front.iter().map(|&i| rows[i].text.as_str()).collect();
     let pool: Vec<usize> = (0..rows.len())
         .filter(|&i| !front_texts.contains(rows[i].text.as_str()))
         .collect();
@@ -695,11 +702,7 @@ pub fn probe_front_split(
 /// Issue 579 T1 reads the TEST split through this exactly once (the
 /// sanctioned baseline-validation read); every v2 decision stays on the
 /// train side.
-pub fn load_suite_split(
-    dir: &Path,
-    suite: &str,
-    split: &str,
-) -> Result<Vec<SuiteRow>, String> {
+pub fn load_suite_split(dir: &Path, suite: &str, split: &str) -> Result<Vec<SuiteRow>, String> {
     let raw = read_split_envelope(dir, suite, split)?;
     let mut rows = Vec::new();
     for row in &raw {
@@ -759,8 +762,8 @@ mod tests {
         let ndocs = rows.len() as f64;
         let got = m.ratio_at(0, alpha_b).expect("alpha selected") as f64;
         // QUIRK: nin = αV, nout = ndocs + αV (class-a totals never enter).
-        let quirk = ((cin + 1.0) / VOCAB as f64).ln()
-            - ((glob - cin + 1.0) / (ndocs + VOCAB as f64)).ln();
+        let quirk =
+            ((cin + 1.0) / VOCAB as f64).ln() - ((glob - cin + 1.0) / (ndocs + VOCAB as f64)).ln();
         assert!(
             (got - quirk).abs() < 1e-4,
             "ratio {got} vs quirk expectation {quirk}"
@@ -890,9 +893,14 @@ mod tests {
         let labels = vec!["a".to_string(), "b".to_string()];
         let train_idx: Vec<usize> = (0..16).collect();
         let holdout_idx = vec![16, 17];
-        let run =
-            train_nbsvm(&rows, &labels, &train_idx, &holdout_idx, &NbsvmConfig::default())
-                .expect("train");
+        let run = train_nbsvm(
+            &rows,
+            &labels,
+            &train_idx,
+            &holdout_idx,
+            &NbsvmConfig::default(),
+        )
+        .expect("train");
         assert!(run.holdout_accuracy > run.control_accuracy);
         assert_eq!(run.holdout_accuracy, 1.0);
         assert_eq!(run.control_accuracy, 0.5);

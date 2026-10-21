@@ -30,11 +30,11 @@
 //! ```
 
 use riir_instinct::stats::paired_upper_bound_f64;
-use riir_instinct::tetris_critic::{LanePolicy, TrainedMlp, play_lane, teacher_probe_telemetry, teacher_probe_telemetry_reset};
-use riir_instinct::tetris_lane::{
-    CHAMPION_ID, Regime, blend_telemetry, blend_telemetry_reset,
+use riir_instinct::tetris_critic::{
+    play_lane, teacher_probe_telemetry, teacher_probe_telemetry_reset, LanePolicy, TrainedMlp,
 };
-use serde_json::{Value, json};
+use riir_instinct::tetris_lane::{blend_telemetry, blend_telemetry_reset, Regime, CHAMPION_ID};
+use serde_json::{json, Value};
 use std::path::PathBuf;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::Mutex;
@@ -59,10 +59,17 @@ fn parse_args() -> Args {
         out: PathBuf::from(".benchmarks/025_tetris_round5_teacher_ab"),
     };
     let mut argv: Vec<String> = std::env::args().collect();
-    while argv.last().is_some_and(|x| x == "--bench" || x == "tetris_round5_teacher_ab") {
+    while argv
+        .last()
+        .is_some_and(|x| x == "--bench" || x == "tetris_round5_teacher_ab")
+    {
         argv.pop();
     }
-    let start = argv.iter().rposition(|x| x == "--").map(|p| p + 1).unwrap_or(1);
+    let start = argv
+        .iter()
+        .rposition(|x| x == "--")
+        .map(|p| p + 1)
+        .unwrap_or(1);
     let argv: Vec<String> = argv[start..].to_vec();
     let mut i = 0;
     while i < argv.len() {
@@ -125,13 +132,20 @@ fn run_cell(
                 let st = match arm {
                     Arm::Plain => {
                         let mut sink = Vec::new();
-                        let mut policy = LanePolicy::Teacher { budget, sink: &mut sink };
+                        let mut policy = LanePolicy::Teacher {
+                            budget,
+                            sink: &mut sink,
+                        };
                         play_lane(genome, seed, regime, cap, &mut policy)
                     }
                     Arm::Blended => {
                         let mut sink = Vec::new();
-                        let mut policy =
-                            LanePolicy::TeacherBlended { budget, model, w, sink: &mut sink };
+                        let mut policy = LanePolicy::TeacherBlended {
+                            budget,
+                            model,
+                            w,
+                            sink: &mut sink,
+                        };
                         play_lane(genome, seed, regime, cap, &mut policy)
                     }
                 };
@@ -165,7 +179,10 @@ fn summarize(res: &[(u64, riir_instinct::tetris_lane::GameStats)], cap: usize) -
 }
 
 /// Paired (blended − plain) pieces over same-seed games.
-fn paired(res: &[(u64, riir_instinct::tetris_lane::GameStats)], base: &[(u64, riir_instinct::tetris_lane::GameStats)]) -> Value {
+fn paired(
+    res: &[(u64, riir_instinct::tetris_lane::GameStats)],
+    base: &[(u64, riir_instinct::tetris_lane::GameStats)],
+) -> Value {
     let diffs: Vec<f64> = res
         .iter()
         .zip(base)
@@ -213,22 +230,39 @@ fn iso_now() -> String {
         (y, m, d)
     };
     let tod = secs % 86400;
-    format!("{y:04}-{m:02}-{dd:02}T{:02}:{:02}:{:02}Z", tod / 3600, (tod % 3600) / 60, tod % 60)
+    format!(
+        "{y:04}-{m:02}-{dd:02}T{:02}:{:02}:{:02}Z",
+        tod / 3600,
+        (tod % 3600) / 60,
+        tod % 60
+    )
 }
 
 fn main() {
     let args = parse_args();
-    let model_path = args.model.clone().expect("--model <r4-weights.bin> is required (the blend component)");
+    let model_path = args
+        .model
+        .clone()
+        .expect("--model <r4-weights.bin> is required (the blend component)");
     let raw = std::fs::read(&model_path).expect("read --model weights file");
     let model = TrainedMlp::from_bytes(&raw)
         .unwrap_or_else(|e| panic!("parse {}: {e}", model_path.display()));
     let model_digest = TrainedMlp::digest_hex(&raw);
     let genome = katgpt_tetris::rulebook::Genome::champion_hybrid();
-    assert_eq!(genome.id(), CHAMPION_ID, "champion genome drifted from the pinned digest");
+    assert_eq!(
+        genome.id(),
+        CHAMPION_ID,
+        "champion genome drifted from the pinned digest"
+    );
     let seeds: Vec<u64> = (args.seeds.0..=args.seeds.1).collect();
-    assert!(!seeds.iter().any(|s| (1..=40).contains(s) || (101..=140).contains(s)
-        || (201..=300).contains(s) || *s == 607 || (1..=20).contains(s)),
-        "A/B seeds must stay disjoint from the training and eval blocks (pre-registration)");
+    assert!(
+        !seeds.iter().any(|s| (1..=40).contains(s)
+            || (101..=140).contains(s)
+            || (201..=300).contains(s)
+            || *s == 607
+            || (1..=20).contains(s)),
+        "A/B seeds must stay disjoint from the training and eval blocks (pre-registration)"
+    );
 
     println!(
         "== tetris_round5_teacher_ab — plain b{b} vs critic z-blend (w={w}, model {d}) b{b} ==",
@@ -251,8 +285,28 @@ fn main() {
     let (mut go_cells, mut harm_cells, mut nonsep_cells) = (0usize, 0usize, 0usize);
     for &(regime, cap) in &CELLS {
         let t0 = Instant::now();
-        let plain = run_cell(&genome, Arm::Plain, &model, args.w, args.budget, regime, cap, &seeds, args.threads);
-        let blended = run_cell(&genome, Arm::Blended, &model, args.w, args.budget, regime, cap, &seeds, args.threads);
+        let plain = run_cell(
+            &genome,
+            Arm::Plain,
+            &model,
+            args.w,
+            args.budget,
+            regime,
+            cap,
+            &seeds,
+            args.threads,
+        );
+        let blended = run_cell(
+            &genome,
+            Arm::Blended,
+            &model,
+            args.w,
+            args.budget,
+            regime,
+            cap,
+            &seeds,
+            args.threads,
+        );
         let cell_s = t0.elapsed().as_secs_f64();
         let ps = summarize(&plain, cap);
         let bs = summarize(&blended, cap);
@@ -279,7 +333,11 @@ fn main() {
         let wtl = paired["wtl"].as_str().unwrap_or("?");
         let plain_caps = &ps["cap_hits"];
         let blended_caps = &bs["cap_hits"];
-        let nonsep_note = if both_all_cap { " · NON-SEPARATING (both all-cap)" } else { "" };
+        let nonsep_note = if both_all_cap {
+            " · NON-SEPARATING (both all-cap)"
+        } else {
+            ""
+        };
         println!(
             "{regime} cap {cap}: plain {pp:.1} pieces (cap {plain_caps}) · blended {bp:.1} (cap {blended_caps}) · Δmean {dm:+.1} lb95 {lb:+.1} ub95 {ub:+.1} wtl {wtl} · {cell_s:.1}s{nonsep_note}"
         );
@@ -298,9 +356,15 @@ fn main() {
     let blend_calls = blend_telemetry();
     let (picks, diffs, probe_micros) = teacher_probe_telemetry();
     let (guards_ok, guard_note) = if blend_calls == 0 {
-        (false, "blend path NEVER executed — every cell is void (build/no-op defect)")
+        (
+            false,
+            "blend path NEVER executed — every cell is void (build/no-op defect)",
+        )
     } else if picks == 0 || diffs == 0 {
-        (false, "blend never moved a root pick — the A/B would measure nothing")
+        (
+            false,
+            "blend never moved a root pick — the A/B would measure nothing",
+        )
     } else {
         (true, "blend executed and moved picks — guards pass")
     };
@@ -355,8 +419,11 @@ fn main() {
     });
     std::fs::create_dir_all(&args.out).expect("create out dir");
     let path = args.out.join("teacher_ab.json");
-    std::fs::write(&path, serde_json::to_string_pretty(&record).expect("serialize"))
-        .expect("write record");
+    std::fs::write(
+        &path,
+        serde_json::to_string_pretty(&record).expect("serialize"),
+    )
+    .expect("write record");
     println!("wrote {}", path.display());
     if !guards_ok {
         std::process::exit(2);

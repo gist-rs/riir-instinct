@@ -3,10 +3,10 @@
 //! decision, never a silent loosening. Skips LOUD without the on-disk
 //! material (the serve_gates convention): fixture + winners dir.
 
-use riir_instinct::staleness::{
-    self, PairSide, ProbeSet, SuiteProbe, artifact_digest, compare_pair,
-};
 use riir_instinct::specialist::{load_artifact, winner_bridge, BagConvention};
+use riir_instinct::staleness::{
+    self, artifact_digest, compare_pair, PairSide, ProbeSet, SuiteProbe,
+};
 use std::path::{Path, PathBuf};
 
 const FIXTURE_PATH: &str = "tests/fixtures/staleness_probe_set.json";
@@ -37,13 +37,20 @@ fn side<'a>(
     name: &'a str,
     digest: &'a str,
 ) -> PairSide<'a> {
-    PairSide { spec, conv, name, digest }
+    PairSide {
+        spec,
+        conv,
+        name,
+        digest,
+    }
 }
 
 fn fixture() -> Option<ProbeSet> {
     let path = Path::new(FIXTURE_PATH);
     if !path.exists() {
-        eprintln!("SKIP (loud): no probe fixture at {FIXTURE_PATH} — run the example's --build-probe");
+        eprintln!(
+            "SKIP (loud): no probe fixture at {FIXTURE_PATH} — run the example's --build-probe"
+        );
         return None;
     }
     ProbeSet::load(path).ok()
@@ -60,7 +67,10 @@ fn slice<'a>(set: &'a ProbeSet, suite: &str) -> Option<&'a SuiteProbe> {
 fn artifact(dir: &Path, file: &str) -> Option<(riir_instinct::Specialist, String)> {
     let path = dir.join(file);
     if !path.exists() {
-        eprintln!("SKIP (loud): no artifact {} — set INSTINCT_WINNERS_DIR", path.display());
+        eprintln!(
+            "SKIP (loud): no artifact {} — set INSTINCT_WINNERS_DIR",
+            path.display()
+        );
         return None;
     }
     let digest = artifact_digest(&path).ok()?;
@@ -85,14 +95,21 @@ fn fixture_digest_matches_the_pinned_bench_022_record() {
 #[test]
 fn identical_pair_reads_exactly_zero() {
     let Some(set) = fixture() else { return };
-    let Some(probe) = slice(&set, "banking77") else { return };
+    let Some(probe) = slice(&set, "banking77") else {
+        return;
+    };
     let dir = winners_dir();
     let Some((spec, digest)) = artifact(&dir, "banking77_nbsvm_v2.bin") else {
         return;
     };
     let conv = winner_bridge("banking77").convention;
-    let r = compare_pair(probe, side(&spec, conv, "v2", &digest), side(&spec, conv, "v2", &digest), "fx")
-        .expect("canary compares");
+    let r = compare_pair(
+        probe,
+        side(&spec, conv, "v2", &digest),
+        side(&spec, conv, "v2", &digest),
+        "fx",
+    )
+    .expect("canary compares");
     assert_eq!(r.flips, 0);
     assert_eq!(r.mean_abs_gold_delta, 0.0, "canary must be EXACT zero");
     assert_eq!(r.max_abs_gold_delta, 0.0);
@@ -109,7 +126,9 @@ fn identical_pair_reads_exactly_zero() {
 #[test]
 fn banking77_v1_to_v2_bridge_drift_fires_as_measured() {
     let Some(set) = fixture() else { return };
-    let Some(probe) = slice(&set, "banking77") else { return };
+    let Some(probe) = slice(&set, "banking77") else {
+        return;
+    };
     let dir = winners_dir();
     let Some((live, live_digest)) = artifact(&dir, "banking77_nbsvm_v2.bin") else {
         return;
@@ -119,21 +138,37 @@ fn banking77_v1_to_v2_bridge_drift_fires_as_measured() {
     };
     let r = compare_pair(
         probe,
-        side(&live, winner_bridge("banking77").convention, "v2 (bridged winner)", &live_digest),
-        side(&reference, BagConvention::Count, "v1 (pre-bridge)", &ref_digest),
+        side(
+            &live,
+            winner_bridge("banking77").convention,
+            "v2 (bridged winner)",
+            &live_digest,
+        ),
+        side(
+            &reference,
+            BagConvention::Count,
+            "v1 (pre-bridge)",
+            &ref_digest,
+        ),
         "fx",
     )
     .expect("drift row compares");
     assert!(r.fired, "the bridge drift must fire");
     assert_eq!(r.fire_reason, "pick flip");
-    assert_eq!(r.flips, PIN_DRIFT_FLIPS, "flip count moved — re-measure + re-pin");
+    assert_eq!(
+        r.flips, PIN_DRIFT_FLIPS,
+        "flip count moved — re-measure + re-pin"
+    );
     assert!(
         (r.mean_abs_gold_delta - PIN_DRIFT_MEAN_GOLD).abs() < 5e-6,
         "mean |Δgold| moved: {} vs pinned {} — re-measure + re-pin",
         r.mean_abs_gold_delta,
         PIN_DRIFT_MEAN_GOLD
     );
-    assert!(r.label_universe.identical, "v1/v2 universes were identical at the pin");
+    assert!(
+        r.label_universe.identical,
+        "v1/v2 universes were identical at the pin"
+    );
 }
 
 /// The candidate row: two same-generation massive_intent_en artifacts
@@ -144,7 +179,9 @@ fn banking77_v1_to_v2_bridge_drift_fires_as_measured() {
 #[test]
 fn massive_candidate_pair_fires_as_measured() {
     let Some(set) = fixture() else { return };
-    let Some(probe) = slice(&set, "massive_intent_en") else { return };
+    let Some(probe) = slice(&set, "massive_intent_en") else {
+        return;
+    };
     let dir = winners_dir();
     let Some((live, live_digest)) = artifact(&dir, "massive_intent_en_winner_v1.bin") else {
         return;
@@ -161,7 +198,10 @@ fn massive_candidate_pair_fires_as_measured() {
     )
     .expect("candidate row compares");
     assert!(r.fired);
-    assert_eq!(r.flips, PIN_CANDIDATE_FLIPS, "flip count moved — re-measure + re-pin");
+    assert_eq!(
+        r.flips, PIN_CANDIDATE_FLIPS,
+        "flip count moved — re-measure + re-pin"
+    );
 }
 
 /// Determinism: a second full run of the drift row is byte-identical (the
@@ -170,7 +210,9 @@ fn massive_candidate_pair_fires_as_measured() {
 #[test]
 fn drift_row_is_bit_identical_across_runs() {
     let Some(set) = fixture() else { return };
-    let Some(probe) = slice(&set, "banking77") else { return };
+    let Some(probe) = slice(&set, "banking77") else {
+        return;
+    };
     let dir = winners_dir();
     let Some((live, live_digest)) = artifact(&dir, "banking77_nbsvm_v2.bin") else {
         return;
@@ -181,7 +223,12 @@ fn drift_row_is_bit_identical_across_runs() {
     let run = || {
         compare_pair(
             probe,
-            side(&live, winner_bridge("banking77").convention, "v2", &live_digest),
+            side(
+                &live,
+                winner_bridge("banking77").convention,
+                "v2",
+                &live_digest,
+            ),
             side(&reference, BagConvention::Count, "v1", &ref_digest),
             "fx",
         )
@@ -200,7 +247,9 @@ fn drift_row_is_bit_identical_across_runs() {
 fn fire_rule_is_the_pre_registered_disjunction() {
     let Some(set) = fixture() else { return };
     let dir = winners_dir();
-    let Some(probe) = slice(&set, "massive_intent_en") else { return };
+    let Some(probe) = slice(&set, "massive_intent_en") else {
+        return;
+    };
     let Some((live, live_digest)) = artifact(&dir, "massive_intent_en_winner_v1.bin") else {
         return;
     };

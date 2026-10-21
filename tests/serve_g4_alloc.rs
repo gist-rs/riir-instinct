@@ -40,7 +40,7 @@ use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 
 use riir_instinct::arsenal::ArsenalManifest;
 use riir_instinct::server::{
-    AnySuiteServer, ServedQuestion, synth_served_case, synth_served_case_into,
+    synth_served_case, synth_served_case_into, AnySuiteServer, ServedQuestion,
 };
 use riir_reflex::harness::runner::seat::prepare_seat;
 
@@ -152,8 +152,7 @@ fn cheap_serve_path_allocation_pin() {
     // demotions, issue 023 T3 — test-local, the record's own digest; no
     // escalate table: the harness/gates posture, legal by design).
     let manifest_text = "[[vessel]]\nsuite   = \"sst5\"\ndigest  = \"blake3:430558d6210737a267249500e0c3df4a0534d344752a1b4dae9a0e6952d2c001\"\nclass   = \"hosted_only\"\nposture = { arm = \"A1\" }\npin_keys = []\nbudget  = { load = \"eager\", max_payload_mb = 16 }\n";
-    let manifest =
-        ArsenalManifest::parse(manifest_text).expect("the sst5 research posture parses");
+    let manifest = ArsenalManifest::parse(manifest_text).expect("the sst5 research posture parses");
 
     // Boot the CHEAP server only (no encoder lane — this pin is the bag
     // surface) on a big-stack thread: the seat boot's stack frames exceed

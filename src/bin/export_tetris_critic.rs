@@ -38,11 +38,9 @@
 //!   frame over ALL root options. Measured null-to-harmful — kept as the
 //!   instrument of record for that negative.
 
-use riir_instinct::tetris_critic::{
-    TrainedMlp, collect_teacher, collect_teacher_blended, feat,
-};
 use riir_instinct::tetris_blend::collect_blended;
-use riir_instinct::tetris_lane::{CHAMPION_ID, Regime, TEACHER_PROBE_SALT, TEACHER_RNG_SALT};
+use riir_instinct::tetris_critic::{collect_teacher, collect_teacher_blended, feat, TrainedMlp};
+use riir_instinct::tetris_lane::{Regime, CHAMPION_ID, TEACHER_PROBE_SALT, TEACHER_RNG_SALT};
 use serde_json::{json, Value};
 use std::path::PathBuf;
 use std::time::{Instant, SystemTime, UNIX_EPOCH};
@@ -77,7 +75,11 @@ fn parse_args() -> ExportArgs {
     while argv.last().is_some_and(|x| x == "export_tetris_critic") {
         argv.pop();
     }
-    let start = argv.iter().rposition(|x| x == "--").map(|p| p + 1).unwrap_or(1);
+    let start = argv
+        .iter()
+        .rposition(|x| x == "--")
+        .map(|p| p + 1)
+        .unwrap_or(1);
     let argv: Vec<String> = argv[start..].to_vec();
     let mut i = 0;
     while i < argv.len() {
@@ -113,7 +115,18 @@ fn parse_args() -> ExportArgs {
         }
         i += 2;
     }
-    (out, budget, train, val, regimes, cap, threads, blend, critic, blend_weight)
+    (
+        out,
+        budget,
+        train,
+        val,
+        regimes,
+        cap,
+        threads,
+        blend,
+        critic,
+        blend_weight,
+    )
 }
 
 const SAMPLE_BYTES: usize = 8 + 4 + 1 + 1 + 1 + 1 + 8 + feat::NUM * 8;
@@ -150,14 +163,20 @@ fn main() {
     );
     let started = Instant::now();
     let genome = katgpt_tetris::rulebook::Genome::champion_hybrid();
-    assert_eq!(genome.id(), CHAMPION_ID, "champion genome drifted from the pinned digest");
+    assert_eq!(
+        genome.id(),
+        CHAMPION_ID,
+        "champion genome drifted from the pinned digest"
+    );
 
     // The z-blend component (`--blend`): the trained critic whose logit the
     // teacher z-blends. The digest rides the manifest beside the teacher
     // block (the provenance law).
     let model_path = blend.as_ref().map(|(p, _)| p.clone());
     let blend_w = blend.as_ref().map(|(_, w)| *w).unwrap_or(0.0);
-    let model_bytes = model_path.as_ref().map(|p| std::fs::read(p).expect("read blend model"));
+    let model_bytes = model_path
+        .as_ref()
+        .map(|p| std::fs::read(p).expect("read blend model"));
     let model = model_bytes
         .as_deref()
         .map(|raw| TrainedMlp::from_bytes(raw).expect("parse blend model"));
@@ -201,12 +220,19 @@ fn main() {
         ] {
             let t0 = Instant::now();
             let (samples, stats) = match (&model, &critic) {
-                (Some(m), _) => {
-                    collect_teacher_blended(&genome, m, blend_w, regime, &seeds, budget, cap, threads)
-                }
-                (None, Some((m, _, _))) => {
-                    collect_blended(&genome, m, blend_weight, regime, &seeds, budget, cap, threads)
-                }
+                (Some(m), _) => collect_teacher_blended(
+                    &genome, m, blend_w, regime, &seeds, budget, cap, threads,
+                ),
+                (None, Some((m, _, _))) => collect_blended(
+                    &genome,
+                    m,
+                    blend_weight,
+                    regime,
+                    &seeds,
+                    budget,
+                    cap,
+                    threads,
+                ),
                 (None, None) => collect_teacher(&genome, regime, &seeds, budget, cap, threads),
             };
             let name = format!("{split}-{tag}.bin");
@@ -272,6 +298,10 @@ fn main() {
         "wall_s": started.elapsed().as_secs_f64(),
     });
     let mpath = out.join("manifest.json");
-    std::fs::write(&mpath, serde_json::to_string_pretty(&manifest).expect("serialize")).expect("write manifest");
+    std::fs::write(
+        &mpath,
+        serde_json::to_string_pretty(&manifest).expect("serialize"),
+    )
+    .expect("write manifest");
     println!("wrote {}", mpath.display());
 }

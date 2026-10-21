@@ -58,13 +58,14 @@ fn parse_args() -> Args {
         };
         match args[i].as_str() {
             "--suites" => {
-                a.suites = val(&mut i, "--suites").split(',').map(str::to_string).collect();
+                a.suites = val(&mut i, "--suites")
+                    .split(',')
+                    .map(str::to_string)
+                    .collect();
             }
             "--datasets" => a.datasets = val(&mut i, "--datasets"),
             "--epochs" => a.epochs = val(&mut i, "--epochs").parse().expect("--epochs number"),
-            "--holdout" => {
-                a.holdout = val(&mut i, "--holdout").parse().expect("--holdout number")
-            }
+            "--holdout" => a.holdout = val(&mut i, "--holdout").parse().expect("--holdout number"),
             "--out" => a.out = val(&mut i, "--out"),
             other => panic!("unknown flag {other}"),
         }
@@ -96,7 +97,10 @@ fn main() {
         };
         let labels = label_universe(&rows);
         let (holdout, train) = stratified_holdout(&rows, a.holdout);
-        let cfg = ArmAConfig { epochs: a.epochs, ..ArmAConfig::default() };
+        let cfg = ArmAConfig {
+            epochs: a.epochs,
+            ..ArmAConfig::default()
+        };
         let run = match train_arm_a(&rows, &labels, &train, &holdout, &cfg) {
             Ok(r) => r,
             Err(e) => {
@@ -122,7 +126,11 @@ fn main() {
             run.final_loss,
             run.holdout_accuracy,
             run.control_accuracy,
-            if ok { "OK" } else { "FAILED the lr0 control — LOUD" },
+            if ok {
+                "OK"
+            } else {
+                "FAILED the lr0 control — LOUD"
+            },
             run.skipped_empty,
         );
         // Export + verify (the producer's artifact must decode; weights are

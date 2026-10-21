@@ -192,11 +192,14 @@ pub fn suite_row(suite: &str, row: &serde_json::Value) -> Option<SuiteRow> {
             "s1mb_noul" => match keys.get(gold_idx)?.as_str()? {
                 "false" => "no".to_string(),
                 "true" => "yes".to_string(),
-                other => return Some(SuiteRow { // unreachable — loud skip
-                    label: format!("__bad_noul_key_{other}"),
-                    text: String::new(),
-                    presented: None,
-                }),
+                other => {
+                    return Some(SuiteRow {
+                        // unreachable — loud skip
+                        label: format!("__bad_noul_key_{other}"),
+                        text: String::new(),
+                        presented: None,
+                    })
+                }
             },
             _ => keys.get(gold_idx)?.as_str()?.to_string(),
         };
@@ -262,7 +265,10 @@ pub fn load_suite_rows(dir: &Path, suite: &str) -> Result<Vec<SuiteRow>, String>
 /// The raw `row` Values of a suite's `train-*.json` envelope files, in
 /// load order (sorted file names) — shared by [`load_suite_rows`] and the
 /// typed_decisions loader ([`instinct_specialist_typed`]).
-pub(crate) fn read_train_envelope(dir: &Path, suite: &str) -> Result<Vec<serde_json::Value>, String> {
+pub(crate) fn read_train_envelope(
+    dir: &Path,
+    suite: &str,
+) -> Result<Vec<serde_json::Value>, String> {
     read_split_envelope(dir, suite, "train")
 }
 
@@ -349,13 +355,21 @@ pub fn s1mb_presented_union(dir: &Path, suite: &str) -> Result<Vec<String>, Stri
             .collect();
         paths.sort();
         if paths.is_empty() {
-            return Err(format!("suite {suite}: no {split}-*.json under {}", sdir.display()));
+            return Err(format!(
+                "suite {suite}: no {split}-*.json under {}",
+                sdir.display()
+            ));
         }
         for p in paths {
             let bytes = std::fs::read(&p).map_err(|e| format!("read {}: {e}", p.display()))?;
             let v: serde_json::Value = serde_json::from_slice(&bytes)
                 .map_err(|e| format!("parse {}: {e}", p.display()))?;
-            for entry in v.get("rows").and_then(|r| r.as_array()).into_iter().flatten() {
+            for entry in v
+                .get("rows")
+                .and_then(|r| r.as_array())
+                .into_iter()
+                .flatten()
+            {
                 let Some(keys) = entry
                     .get("row")
                     .and_then(|r| r.get("question"))
@@ -498,7 +512,11 @@ pub fn pick_calibration(conf: &[f32], hit: &[u8]) -> PickCalibration {
     }
     PickCalibration {
         n,
-        brier: if n > 0 { brier_sum / n as f64 } else { f64::NAN },
+        brier: if n > 0 {
+            brier_sum / n as f64
+        } else {
+            f64::NAN
+        },
         nll: if n > 0 { nll_sum / n as f64 } else { f64::NAN },
         ece,
         binned,
@@ -661,7 +679,14 @@ pub fn train_arm_a(
             .ok_or_else(|| format!("row label {:?} outside the universe", rows[i].label))?;
         gold[i] = *c;
     }
-    train_core(rows, labels, train_idx, holdout_idx, cfg, Targets::Gold(gold))
+    train_core(
+        rows,
+        labels,
+        train_idx,
+        holdout_idx,
+        cfg,
+        Targets::Gold(gold),
+    )
 }
 
 /// The per-row training target. Both variants are looked up in ROW space
@@ -791,7 +816,13 @@ pub(crate) fn train_core(
                 loss += (1.0 - lam) * bce + lam * brier;
             }
             final_loss = loss / l as f32;
-            let lr = lr_at(cfg.lr, step, total_steps, cfg.warmup_steps, cfg.min_lr_ratio);
+            let lr = lr_at(
+                cfg.lr,
+                step,
+                total_steps,
+                cfg.warmup_steps,
+                cfg.min_lr_ratio,
+            );
             step += 1;
             let bc1 = 1.0 - beta1.powf(step as f32);
             let bc2 = 1.0 - beta2.powf(step as f32);
@@ -924,7 +955,12 @@ pub fn load_teacher_dump(path: &Path) -> Result<TeacherDump, String> {
     let bytes = std::fs::read(path).map_err(|e| format!("read {}: {e}", path.display()))?;
     let sidecar = std::path::PathBuf::from(format!("{}.blake3", path.display()));
     let expected = std::fs::read_to_string(&sidecar)
-        .map_err(|e| format!("read {}: {e} — run the teacher pass first", sidecar.display()))?
+        .map_err(|e| {
+            format!(
+                "read {}: {e} — run the teacher pass first",
+                sidecar.display()
+            )
+        })?
         .trim()
         .to_string();
     let actual = blake3::hash(&bytes).to_hex().to_string();
@@ -940,13 +976,17 @@ pub fn load_teacher_dump(path: &Path) -> Result<TeacherDump, String> {
         return Err(err(format!("bad magic (expected {TEACHER_MAGIC:?})")));
     }
     let version = u32::from_le_bytes(
-        bytes[4..8].try_into().map_err(|_| err("truncated version".into()))?,
+        bytes[4..8]
+            .try_into()
+            .map_err(|_| err("truncated version".into()))?,
     );
     if version != TEACHER_VERSION {
         return Err(err(format!("unsupported version {version}")));
     }
     let header_len = u32::from_le_bytes(
-        bytes[8..12].try_into().map_err(|_| err("truncated header len".into()))?,
+        bytes[8..12]
+            .try_into()
+            .map_err(|_| err("truncated header len".into()))?,
     ) as usize;
     let body_start = 12usize
         .checked_add(header_len)
@@ -957,7 +997,10 @@ pub fn load_teacher_dump(path: &Path) -> Result<TeacherDump, String> {
     let header: serde_json::Value = serde_json::from_slice(&bytes[12..body_start])
         .map_err(|e| err(format!("bad header json: {e}")))?;
     let classes: Vec<String> = serde_json::from_value(
-        header.get("classes").cloned().ok_or_else(|| err("header: no classes".into()))?,
+        header
+            .get("classes")
+            .cloned()
+            .ok_or_else(|| err("header: no classes".into()))?,
     )
     .map_err(|e| err(format!("header classes: {e}")))?;
     if classes.is_empty() {
@@ -991,7 +1034,9 @@ pub fn load_teacher_dump(path: &Path) -> Result<TeacherDump, String> {
     let mut off = body_start;
     for r in 0..n_rows {
         let g = u32::from_le_bytes(
-            bytes[off..off + 4].try_into().map_err(|_| err(format!("row {r}: truncated")))?,
+            bytes[off..off + 4]
+                .try_into()
+                .map_err(|_| err(format!("row {r}: truncated")))?,
         );
         let p = u32::from_le_bytes(
             bytes[off + 4..off + 8]
@@ -1020,7 +1065,12 @@ pub fn load_teacher_dump(path: &Path) -> Result<TeacherDump, String> {
         gold.push(g);
         picks.push(p);
     }
-    Ok(TeacherDump { classes, gold, picks, q })
+    Ok(TeacherDump {
+        classes,
+        gold,
+        picks,
+        q,
+    })
 }
 
 /// Arm B knobs: the [`ArmAConfig`] schedule + the gold mix. `gold_mix =
@@ -1034,7 +1084,10 @@ pub struct ArmBConfig {
 
 impl Default for ArmBConfig {
     fn default() -> Self {
-        Self { base: ArmAConfig::default(), gold_mix: 0.0 }
+        Self {
+            base: ArmAConfig::default(),
+            gold_mix: 0.0,
+        }
     }
 }
 
@@ -1051,7 +1104,9 @@ pub fn train_arm_b(
     holdout_idx: &[usize],
     cfg: &ArmBConfig,
 ) -> Result<ArmARun, String> {
-    if teacher.classes.len() != labels.len() || teacher.classes.iter().zip(labels).any(|(a, b)| a != b) {
+    if teacher.classes.len() != labels.len()
+        || teacher.classes.iter().zip(labels).any(|(a, b)| a != b)
+    {
         return Err(format!(
             "teacher/universe join failed: dump classes {:?} vs labels {:?} — order and \
              spelling must match exactly",
@@ -1082,7 +1137,11 @@ pub fn train_arm_b(
         train_idx,
         holdout_idx,
         &cfg.base,
-        Targets::Distill { q: teacher, gold, mix: cfg.gold_mix },
+        Targets::Distill {
+            q: teacher,
+            gold,
+            mix: cfg.gold_mix,
+        },
     )
 }
 
@@ -1118,7 +1177,13 @@ pub fn encode_artifact(suite: &str, model: &Specialist) -> Vec<u8> {
         payload.push(0);
     }
     payload.extend_from_slice(&(VOCAB as u32).to_le_bytes());
-    payload.extend_from_slice(&model.b.iter().flat_map(|f| f.to_le_bytes()).collect::<Vec<u8>>());
+    payload.extend_from_slice(
+        &model
+            .b
+            .iter()
+            .flat_map(|f| f.to_le_bytes())
+            .collect::<Vec<u8>>(),
+    );
     for c in 0..model.labels.len() {
         let (scale, q) = quantize_row(&model.w[c * VOCAB..(c + 1) * VOCAB]);
         payload.extend_from_slice(&scale.to_le_bytes());
@@ -1302,7 +1367,10 @@ mod tests {
         let labels = label_universe(&rows);
         assert_eq!(labels, vec!["neg", "pos"]);
         let (holdout, train) = stratified_holdout(&rows, 8);
-        let cfg = ArmAConfig { epochs: 3, ..ArmAConfig::default() };
+        let cfg = ArmAConfig {
+            epochs: 3,
+            ..ArmAConfig::default()
+        };
         let run = train_arm_a(&rows, &labels, &train, &holdout, &cfg).unwrap();
         assert!(
             run.holdout_accuracy > run.control_accuracy,
@@ -1310,7 +1378,11 @@ mod tests {
             run.holdout_accuracy,
             run.control_accuracy
         );
-        assert!(run.holdout_accuracy > 0.5, "toy must be learnable: {}", run.holdout_accuracy);
+        assert!(
+            run.holdout_accuracy > 0.5,
+            "toy must be learnable: {}",
+            run.holdout_accuracy
+        );
         // Determinism: a second identical run is bit-identical.
         let again = train_arm_a(&rows, &labels, &train, &holdout, &cfg).unwrap();
         assert_eq!(run.model.w, again.model.w, "bit-deterministic training");
@@ -1321,11 +1393,7 @@ mod tests {
 
     /// Hand-build one teacher-dump file + its BLAKE3 sidecar (the reflex
     /// writer's exact bytes; no shared encoder to drift).
-    fn write_teacher_dump(
-        path: &std::path::Path,
-        classes: &[&str],
-        rows: &[(u32, u32, Vec<f32>)],
-    ) {
+    fn write_teacher_dump(path: &std::path::Path, classes: &[&str], rows: &[(u32, u32, Vec<f32>)]) {
         let mut body = Vec::new();
         body.extend_from_slice(b"RIDT");
         body.extend_from_slice(&1u32.to_le_bytes());
@@ -1385,7 +1453,8 @@ mod tests {
 
     #[test]
     fn teacher_dump_round_trips_and_refuses_corruption() {
-        let dir = std::env::temp_dir().join(format!("instinct_teacher_test_rt_{}", std::process::id()));
+        let dir =
+            std::env::temp_dir().join(format!("instinct_teacher_test_rt_{}", std::process::id()));
         let path = dir.join("toy_teacher.bin");
         let rows = toy_teacher_rows(&toy_rows());
         write_teacher_dump(&path, &["neg", "pos"], &rows);
@@ -1434,12 +1503,20 @@ mod tests {
         let rows = toy_rows();
         let labels = label_universe(&rows);
         let (holdout, train) = stratified_holdout(&rows, 8);
-        let dir = std::env::temp_dir().join(format!("instinct_teacher_test_mix1_{}", std::process::id()));
+        let dir =
+            std::env::temp_dir().join(format!("instinct_teacher_test_mix1_{}", std::process::id()));
         let path = dir.join("mix1_teacher.bin");
-        write_teacher_dump(&path, &labels.iter().map(String::as_str).collect::<Vec<_>>(), &toy_teacher_rows(&rows));
+        write_teacher_dump(
+            &path,
+            &labels.iter().map(String::as_str).collect::<Vec<_>>(),
+            &toy_teacher_rows(&rows),
+        );
         let dump = load_teacher_dump(&path).unwrap();
 
-        let cfg = ArmAConfig { epochs: 3, ..ArmAConfig::default() };
+        let cfg = ArmAConfig {
+            epochs: 3,
+            ..ArmAConfig::default()
+        };
         let a = train_arm_a(&rows, &labels, &train, &holdout, &cfg).unwrap();
         let b = train_arm_b(
             &rows,
@@ -1447,10 +1524,16 @@ mod tests {
             &dump,
             &train,
             &holdout,
-            &ArmBConfig { base: cfg, gold_mix: 1.0 },
+            &ArmBConfig {
+                base: cfg,
+                gold_mix: 1.0,
+            },
         )
         .unwrap();
-        assert_eq!(a.model.w, b.model.w, "gold_mix 1.0 must reduce to Arm A bit-exactly");
+        assert_eq!(
+            a.model.w, b.model.w,
+            "gold_mix 1.0 must reduce to Arm A bit-exactly"
+        );
         assert_eq!(a.model.b, b.model.b);
         assert_eq!(a.final_loss, b.final_loss);
         assert_eq!(a.holdout_accuracy, b.holdout_accuracy);
@@ -1462,19 +1545,30 @@ mod tests {
         let rows = toy_rows();
         let labels = label_universe(&rows);
         let (holdout, train) = stratified_holdout(&rows, 8);
-        let dir = std::env::temp_dir().join(format!("instinct_teacher_test_pure_{}", std::process::id()));
+        let dir =
+            std::env::temp_dir().join(format!("instinct_teacher_test_pure_{}", std::process::id()));
         let path = dir.join("pure_teacher.bin");
-        write_teacher_dump(&path, &labels.iter().map(String::as_str).collect::<Vec<_>>(), &toy_teacher_rows(&rows));
+        write_teacher_dump(
+            &path,
+            &labels.iter().map(String::as_str).collect::<Vec<_>>(),
+            &toy_teacher_rows(&rows),
+        );
         let dump = load_teacher_dump(&path).unwrap();
 
-        let cfg = ArmAConfig { epochs: 3, ..ArmAConfig::default() };
+        let cfg = ArmAConfig {
+            epochs: 3,
+            ..ArmAConfig::default()
+        };
         let b = train_arm_b(
             &rows,
             &labels,
             &dump,
             &train,
             &holdout,
-            &ArmBConfig { base: cfg, gold_mix: 0.0 },
+            &ArmBConfig {
+                base: cfg,
+                gold_mix: 0.0,
+            },
         )
         .unwrap();
         assert!(
@@ -1483,7 +1577,10 @@ mod tests {
             b.holdout_accuracy,
             b.control_accuracy
         );
-        assert!(b.holdout_accuracy > 0.5, "smooth-teacher toy must be learnable");
+        assert!(
+            b.holdout_accuracy > 0.5,
+            "smooth-teacher toy must be learnable"
+        );
         let _ = std::fs::remove_dir_all(dir);
     }
 
@@ -1494,14 +1591,23 @@ mod tests {
         let (holdout, train) = stratified_holdout(&rows, 8);
         let dump_ok = TeacherDump {
             classes: labels.clone(),
-            gold: toy_teacher_rows(&rows).into_iter().map(|(g, _, _)| g).collect(),
+            gold: toy_teacher_rows(&rows)
+                .into_iter()
+                .map(|(g, _, _)| g)
+                .collect(),
             picks: vec![0; rows.len()],
-            q: toy_teacher_rows(&rows).into_iter().flat_map(|(_, _, q)| q).collect(),
+            q: toy_teacher_rows(&rows)
+                .into_iter()
+                .flat_map(|(_, _, q)| q)
+                .collect(),
         };
         let cfg = ArmBConfig::default();
 
         // Class order flipped = a different universe → refused.
-        let flipped = TeacherDump { classes: vec!["pos".into(), "neg".into()], ..dump_ok.clone() };
+        let flipped = TeacherDump {
+            classes: vec!["pos".into(), "neg".into()],
+            ..dump_ok.clone()
+        };
         assert!(train_arm_b(&rows, &labels, &flipped, &train, &holdout, &cfg).is_err());
 
         // A mislabeled row → refused (row 0 is "pos", claim "neg").
@@ -1574,11 +1680,20 @@ mod tests {
         let rows = toy_rows();
         let labels = label_universe(&rows);
         let (holdout, train) = stratified_holdout(&rows, 8);
-        let base = ArmAConfig { epochs: 2, ..ArmAConfig::default() };
+        let base = ArmAConfig {
+            epochs: 2,
+            ..ArmAConfig::default()
+        };
         let run = train_arm_a(&rows, &labels, &train, &holdout, &base).unwrap();
-        let lam0 = ArmAConfig { brier_lambda: 0.0, ..base };
+        let lam0 = ArmAConfig {
+            brier_lambda: 0.0,
+            ..base
+        };
         let again = train_arm_a(&rows, &labels, &train, &holdout, &lam0).unwrap();
-        assert_eq!(run.model.w, again.model.w, "λ=0 must be the incumbent, exactly");
+        assert_eq!(
+            run.model.w, again.model.w,
+            "λ=0 must be the incumbent, exactly"
+        );
         assert_eq!(run.model.b, again.model.b);
         assert_eq!(run.final_loss, again.final_loss);
         // The default IS λ=0 (the shipped posture unchanged).
@@ -1590,14 +1705,20 @@ mod tests {
         let rows = toy_rows();
         let labels = label_universe(&rows);
         let (holdout, train) = stratified_holdout(&rows, 8);
-        let base = ArmAConfig { epochs: 2, ..ArmAConfig::default() };
+        let base = ArmAConfig {
+            epochs: 2,
+            ..ArmAConfig::default()
+        };
         let run = train_arm_a(&rows, &labels, &train, &holdout, &base).unwrap();
         let rider = train_arm_a(
             &rows,
             &labels,
             &train,
             &holdout,
-            &ArmAConfig { brier_lambda: 1.0, ..base },
+            &ArmAConfig {
+                brier_lambda: 1.0,
+                ..base
+            },
         )
         .unwrap();
         // λ=1 is a materially different run (the pure-Brier replacement).
@@ -1609,7 +1730,10 @@ mod tests {
                 &labels,
                 &train,
                 &holdout,
-                &ArmAConfig { brier_lambda: bad, ..base },
+                &ArmAConfig {
+                    brier_lambda: bad,
+                    ..base
+                },
             )
             .unwrap_err();
             assert!(e.contains("brier_lambda"), "{e}");
@@ -1621,12 +1745,23 @@ mod tests {
         let rows = toy_rows();
         let labels = label_universe(&rows);
         let (holdout, train) = stratified_holdout(&rows, 8);
-        let dir = std::env::temp_dir().join(format!("instinct_teacher_test_mix1_bl_{}", std::process::id()));
+        let dir = std::env::temp_dir().join(format!(
+            "instinct_teacher_test_mix1_bl_{}",
+            std::process::id()
+        ));
         let path = dir.join("mix1_bl_teacher.bin");
-        write_teacher_dump(&path, &labels.iter().map(String::as_str).collect::<Vec<_>>(), &toy_teacher_rows(&rows));
+        write_teacher_dump(
+            &path,
+            &labels.iter().map(String::as_str).collect::<Vec<_>>(),
+            &toy_teacher_rows(&rows),
+        );
         let dump = load_teacher_dump(&path).unwrap();
 
-        let cfg = ArmAConfig { epochs: 2, brier_lambda: 0.5, ..ArmAConfig::default() };
+        let cfg = ArmAConfig {
+            epochs: 2,
+            brier_lambda: 0.5,
+            ..ArmAConfig::default()
+        };
         let a = train_arm_a(&rows, &labels, &train, &holdout, &cfg).unwrap();
         let b = train_arm_b(
             &rows,
@@ -1634,10 +1769,16 @@ mod tests {
             &dump,
             &train,
             &holdout,
-            &ArmBConfig { base: cfg, gold_mix: 1.0 },
+            &ArmBConfig {
+                base: cfg,
+                gold_mix: 1.0,
+            },
         )
         .unwrap();
-        assert_eq!(a.model.w, b.model.w, "gold_mix=1.0 + any λ stays bit-identical");
+        assert_eq!(
+            a.model.w, b.model.w,
+            "gold_mix=1.0 + any λ stays bit-identical"
+        );
         assert_eq!(a.model.b, b.model.b);
     }
 
@@ -1688,13 +1829,21 @@ mod tests {
         // (0.3,0.4]: acc .2, conf f64::from(0.4f32). ECE =
         // (|acc−conf| terms weighted by 5/10 each) — expectations through
         // the same f32→f64 widening.
-        let conf = vec![0.6f32; 5].into_iter().chain([0.4f32; 5]).collect::<Vec<_>>();
+        let conf = vec![0.6f32; 5]
+            .into_iter()
+            .chain([0.4f32; 5])
+            .collect::<Vec<_>>();
         let hit = vec![1u8, 1, 1, 0, 0, 1, 0, 0, 0, 0];
         let c = pick_calibration(&conf, &hit);
         let c60 = f64::from(0.6f32);
         let c40 = f64::from(0.4f32);
         let expect = 0.5 * (0.6 - c60).abs() + 0.5 * (0.2 - c40).abs();
-        assert!((c.ece - expect).abs() < 1e-12, "ece {} expect {}", c.ece, expect);
+        assert!(
+            (c.ece - expect).abs() < 1e-12,
+            "ece {} expect {}",
+            c.ece,
+            expect
+        );
         assert_eq!(c.binned, 10);
 
         // Empty input reads NaN metrics with n=0, never a confident 0.

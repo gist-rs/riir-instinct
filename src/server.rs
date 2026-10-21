@@ -28,16 +28,16 @@ use std::path::Path;
 use riir_reflex::embed::EMBED_DIM;
 use riir_reflex::engine::DecisionEngine;
 use riir_reflex::harness::runner::seat::{
-    CaseEvalScratch, PostureKnobs, Seat, build_seat_engine, eval_case_into, fit_posture,
-    prepare_seat,
+    build_seat_engine, eval_case_into, fit_posture, prepare_seat, CaseEvalScratch, PostureKnobs,
+    Seat,
 };
 use riir_reflex::harness::suites::{GoldAnswer, QKind, SuiteCase, SuiteQuestion};
 use riir_reflex::nb_scope::NbView;
 
 use crate::arsenal::ArsenalManifest;
 use crate::hybrid::{
-    A0Answer, Cascade, HybridLane, MAX_TOP_K, NOUL_PAIR, PriorFusion, SpecialistLane,
-    prior_fusion_pick,
+    prior_fusion_pick, A0Answer, Cascade, HybridLane, PriorFusion, SpecialistLane, MAX_TOP_K,
+    NOUL_PAIR,
 };
 use crate::specialist::decode_artifact;
 
@@ -90,11 +90,7 @@ pub fn synth_served_case(state: &str, questions: &[ServedQuestion<'_>]) -> Suite
 /// byte-identical to a fresh [`synth_served_case`] every call, by
 /// construction (keep-when-equal preserves the stored bytes; every
 /// other field is overwritten from the request).
-pub fn synth_served_case_into(
-    state: &str,
-    questions: &[ServedQuestion<'_>],
-    case: &mut SuiteCase,
-) {
+pub fn synth_served_case_into(state: &str, questions: &[ServedQuestion<'_>], case: &mut SuiteCase) {
     if case.id != "served" {
         case.id.clear();
         case.id.push_str("served");
@@ -172,11 +168,7 @@ fn rendered_options(q: &ServedQuestion<'_>) -> Vec<String> {
 /// rendered list IS the wire slice (issue 022 lead 1).
 fn set_choice_criteria(old: &mut serde_json::Value, options: &[String]) {
     if let serde_json::Value::Object(m) = old {
-        if m.len() == options.len()
-            && m.keys()
-                .zip(options.iter())
-                .all(|(k, o)| k == o)
-        {
+        if m.len() == options.len() && m.keys().zip(options.iter()).all(|(k, o)| k == o) {
             return;
         }
     }
@@ -223,11 +215,7 @@ pub enum Arm {
     H1 { top_k: usize },
     /// Prior fusion: `p'_i ∝ p_i · exp(g·β·m_i)` over the specialist's
     /// per-option scores, gated by the count tables' evidence.
-    H2 {
-        beta: f32,
-        n_min: f32,
-        tau_n: f32,
-    },
+    H2 { beta: f32, n_min: f32, tau_n: f32 },
     /// The encoder think-depth arm (instinct issue 016 T2): the sealed
     /// NLEH head over the live laya-english encode — the L3 deep-cognition
     /// op, spent on the salient few. Serves ONLY through a lane backend
@@ -247,11 +235,7 @@ impl Arm {
             Arm::A0 => "A0".into(),
             Arm::A1 => "A1".into(),
             Arm::H1 { top_k } => format!("H1(top_k={top_k})"),
-            Arm::H2 {
-                beta,
-                n_min,
-                tau_n,
-            } => format!("H2(β={beta},nmin={n_min},τ={tau_n})"),
+            Arm::H2 { beta, n_min, tau_n } => format!("H2(β={beta},nmin={n_min},τ={tau_n})"),
             Arm::Enc => "ENC".into(),
         }
     }
@@ -446,7 +430,14 @@ impl<const N: usize> SuiteServer<N> {
         let winner_blake3 = blake3::hash(&winner_bytes).to_hex()[..16].to_string();
         let spec = decode_artifact(&winner_bytes)
             .map_err(|e| format!("{}: {e}", winner_path.display()))?;
-        Self::from_parts(suite, seat, spec, winner_blake3, WeightSource::RawWinner, arm)
+        Self::from_parts(
+            suite,
+            seat,
+            spec,
+            winner_blake3,
+            WeightSource::RawWinner,
+            arm,
+        )
     }
 
     /// Boot one suite from ALREADY-READ artifact bytes (the swap path's
@@ -460,9 +451,15 @@ impl<const N: usize> SuiteServer<N> {
         arm: Arm,
     ) -> Result<Self, String> {
         let winner_blake3 = blake3::hash(winner_bytes).to_hex()[..16].to_string();
-        let spec =
-            decode_artifact(winner_bytes).map_err(|e| format!("winner artifact: {e}"))?;
-        Self::from_parts(suite, seat, spec, winner_blake3, WeightSource::RawWinner, arm)
+        let spec = decode_artifact(winner_bytes).map_err(|e| format!("winner artifact: {e}"))?;
+        Self::from_parts(
+            suite,
+            seat,
+            spec,
+            winner_blake3,
+            WeightSource::RawWinner,
+            arm,
+        )
     }
 
     /// Boot one suite from a minted PUBLIC-RELEASE vessel (the teaching
@@ -583,12 +580,7 @@ impl<const N: usize> SuiteServer<N> {
         let contract = crate::specialist::winner_bridge(suite).serves;
         match contract {
             crate::specialist::ServeContract::SingleQuestion => {
-                if seat
-                    .suite
-                    .cases
-                    .iter()
-                    .any(|c| c.questions.len() != 1)
-                {
+                if seat.suite.cases.iter().any(|c| c.questions.len() != 1) {
                     return Err(format!(
                         "suite {suite}: the serving shape is one question per case (the synthesized \
                          request carries the case[0] template — a multi-question set has no single \
@@ -607,12 +599,7 @@ impl<const N: usize> SuiteServer<N> {
                         "suite {suite}: a MultiQuestion case carries zero questions — no answer space"
                     ));
                 }
-                if !seat
-                    .suite
-                    .cases
-                    .iter()
-                    .any(|c| c.questions.len() > 1)
-                {
+                if !seat.suite.cases.iter().any(|c| c.questions.len() > 1) {
                     return Err(format!(
                         "suite {suite}: declared MultiQuestion but every case carries one question — \
                          fix the winner_bridge declaration, not the guard"
@@ -679,56 +666,55 @@ impl<const N: usize> SuiteServer<N> {
         let (engine, _fallbacks) =
             build_seat_engine::<N>(suite, &seat, posture.effective_cap, posture.cfg.clone())?;
 
-        let (artifact_labels_n, artifact_labels, joined_lane, perm, context_joined) =
-            match spec {
-                Some(spec) => {
-                    let artifact_labels_n = spec.labels.len();
-                    let artifact_labels = spec.labels.clone();
-                    let top_k = arm.join_top_k();
-                    // The seat↔artifact label join (Plan 003's bridge — the arena's
-                    // run_suite_n law verbatim): named (incl. the positional noul
-                    // pair) or the context join; a partial overlap refuses in the
-                    // join.
-                    let joined = match crate::hybrid::seat_join(&seat.labels, &spec.labels) {
-                        crate::hybrid::SeatJoin::Named(labels) => {
-                            SpecialistLane::join(spec, suite, &labels, Cascade { top_k })?
-                        }
-                        crate::hybrid::SeatJoin::Context => {
-                            SpecialistLane::join_context(spec, suite, &seat.labels, Cascade { top_k })?
-                        }
-                    };
-                    let context_joined = joined.perm.contains(&usize::MAX);
-                    let perm: Vec<usize> = joined.perm.clone();
-                    (
-                        artifact_labels_n,
-                        artifact_labels,
-                        HybridLane::Specialist(joined),
-                        perm,
-                        context_joined,
-                    )
-                }
-                None => {
-                    // The artifact-less A0 posture: ReflexOnly — the G0a
-                    // first-class arm, byte-identical to A0, never a
-                    // missing-file fallback. The join is the seat's own
-                    // identity (the specialist space IS the seat space);
-                    // the A0 decide path never consults it.
-                    if arm != Arm::A0 {
-                        return Err(format!(
-                            "suite {suite}: an artifact-less lane requires posture A0 (ReflexOnly), \
-                             got {}",
-                            arm.name()
-                        ));
+        let (artifact_labels_n, artifact_labels, joined_lane, perm, context_joined) = match spec {
+            Some(spec) => {
+                let artifact_labels_n = spec.labels.len();
+                let artifact_labels = spec.labels.clone();
+                let top_k = arm.join_top_k();
+                // The seat↔artifact label join (Plan 003's bridge — the arena's
+                // run_suite_n law verbatim): named (incl. the positional noul
+                // pair) or the context join; a partial overlap refuses in the
+                // join.
+                let joined = match crate::hybrid::seat_join(&seat.labels, &spec.labels) {
+                    crate::hybrid::SeatJoin::Named(labels) => {
+                        SpecialistLane::join(spec, suite, &labels, Cascade { top_k })?
                     }
-                    (
-                        0,
-                        Vec::new(),
-                        HybridLane::ReflexOnly,
-                        (0..N).collect(),
-                        false,
-                    )
+                    crate::hybrid::SeatJoin::Context => {
+                        SpecialistLane::join_context(spec, suite, &seat.labels, Cascade { top_k })?
+                    }
+                };
+                let context_joined = joined.perm.contains(&usize::MAX);
+                let perm: Vec<usize> = joined.perm.clone();
+                (
+                    artifact_labels_n,
+                    artifact_labels,
+                    HybridLane::Specialist(joined),
+                    perm,
+                    context_joined,
+                )
+            }
+            None => {
+                // The artifact-less A0 posture: ReflexOnly — the G0a
+                // first-class arm, byte-identical to A0, never a
+                // missing-file fallback. The join is the seat's own
+                // identity (the specialist space IS the seat space);
+                // the A0 decide path never consults it.
+                if arm != Arm::A0 {
+                    return Err(format!(
+                        "suite {suite}: an artifact-less lane requires posture A0 (ReflexOnly), \
+                             got {}",
+                        arm.name()
+                    ));
                 }
-            };
+                (
+                    0,
+                    Vec::new(),
+                    HybridLane::ReflexOnly,
+                    (0..N).collect(),
+                    false,
+                )
+            }
+        };
 
         // The presented-option bridge (the arena's SuiteCtx::key_map):
         // every JOINED seat label → (its own index, its artifact class
@@ -953,10 +939,7 @@ impl<const N: usize> SuiteServer<N> {
                 q.options.len()
             };
             if rendered_len < 2 {
-                return Err(format!(
-                    "question {:?}: need ≥2 presented options",
-                    q.qid
-                ));
+                return Err(format!("question {:?}: need ≥2 presented options", q.qid));
             }
             if !noul_fixed {
                 // O(k²) duplicate scan over the presented spellings (k ≤
@@ -1020,9 +1003,7 @@ impl<const N: usize> SuiteServer<N> {
                             "suite {}: a noul presentation carries {} options — the fixed \
                              [false, true] rendering has exactly {} (pick_index speaks that \
                              space whatever names are presented)",
-                            self.suite,
-                            rendered_len,
-                            self.labels_len
+                            self.suite, rendered_len, self.labels_len
                         ));
                     } else {
                         for (li, &cls) in self.perm.iter().enumerate() {
@@ -1064,15 +1045,14 @@ impl<const N: usize> SuiteServer<N> {
                         pos_label.push(li);
                         pos_class.push(cls);
                     }
-                } else if !self.perm.contains(&usize::MAX)
-                    && rendered_len == self.perm.len()
-                {
+                } else if !self.perm.contains(&usize::MAX) && rendered_len == self.perm.len() {
                     for (li, &cls) in self.perm.iter().enumerate() {
                         pos_label.push(li);
                         pos_class.push(cls);
                     }
                 } else {
-                    let unmatched: Vec<String> = q.options
+                    let unmatched: Vec<String> = q
+                        .options
                         .iter()
                         .filter(|k| !self.key_map.contains_key(*k))
                         .cloned()
@@ -1176,7 +1156,13 @@ impl<const N: usize> SuiteServer<N> {
                     }
                     Arm::H1 { .. } => {
                         let d = {
-                            let SuiteServer { lane, bag, survivors, h1_scores, .. } = self;
+                            let SuiteServer {
+                                lane,
+                                bag,
+                                survivors,
+                                h1_scores,
+                                ..
+                            } = self;
                             lane.h1_decide(a0_ans, bag, pos_class, survivors, h1_scores)
                         };
                         if d.escalated {
@@ -1200,11 +1186,7 @@ impl<const N: usize> SuiteServer<N> {
                             )
                         }
                     }
-                    Arm::H2 {
-                        beta,
-                        n_min,
-                        tau_n,
-                    } => {
+                    Arm::H2 { beta, n_min, tau_n } => {
                         let (n_seen, n_tok) = self.gather_evidence(state);
                         // The margin gather mirrors the arena's law: the
                         // oc-armed posture reads the (qid, option) tables
@@ -1227,9 +1209,9 @@ impl<const N: usize> SuiteServer<N> {
                                 // exact same spellings in the same order).
                                 self.pos_options
                                     .extend(["no".to_string(), "yes".to_string()]);
-                                } else {
-                                    self.pos_options.extend_from_slice(&options);
-                                }
+                            } else {
+                                self.pos_options.extend_from_slice(&options);
+                            }
                             self.gather_positions_oc(q.qid);
                             &self.pos_nb
                         } else if self.nb_armed {
@@ -1240,13 +1222,8 @@ impl<const N: usize> SuiteServer<N> {
                         } else {
                             &[]
                         };
-                        let fusion = PriorFusion {
-                            beta,
-                            n_min,
-                            tau_n,
-                        };
-                        let f =
-                            prior_fusion_pick(&fusion, &self.pos_spec, inscores, n_seen, n_tok);
+                        let fusion = PriorFusion { beta, n_min, tau_n };
+                        let f = prior_fusion_pick(&fusion, &self.pos_spec, inscores, n_seen, n_tok);
                         (
                             Some(f.pick),
                             true,
@@ -1385,11 +1362,8 @@ fn argmax_pos(scores: &[f32]) -> (usize, f32) {
 pub trait LaneBackend: Send {
     /// One decision under the suite's default question template (the
     /// bag server's decide signature — the serve edge calls it identically).
-    fn decide(
-        &mut self,
-        state: &str,
-        options: Option<&[String]>,
-    ) -> Result<ServedDecision, String>;
+    fn decide(&mut self, state: &str, options: Option<&[String]>)
+        -> Result<ServedDecision, String>;
     /// The multi-question contract (Issue 011): one state, ALL questions
     /// answered in one call, one [`ServedDecision`] per question in order.
     fn decide_multi(
@@ -1636,7 +1610,9 @@ impl AnySuiteServer {
             let head_path = winners_dir.join(&head_name);
             let bytes =
                 std::fs::read(&head_path).map_err(|e| format!("read head {head_name}: {e}"))?;
-            return Ok(AnySuiteServer::Ext((boots.bytes)(suite, seat, &bytes, arm)?));
+            return Ok(AnySuiteServer::Ext((boots.bytes)(
+                suite, seat, &bytes, arm,
+            )?));
         }
         let winner_name = row.artifact_file(format!("{suite}_winner_v1.bin"));
         // The raw-mode convention coupling (Issue 579): a bridged suite
@@ -1696,7 +1672,10 @@ impl AnySuiteServer {
                 ));
             };
             return Ok(AnySuiteServer::Ext((boots.bytes)(
-                suite, seat, artifact_bytes, arm,
+                suite,
+                seat,
+                artifact_bytes,
+                arm,
             )?));
         }
         macro_rules! seat_arm {
@@ -1757,14 +1736,8 @@ impl AnySuiteServer {
         let vessel_path = vessels_dir.join(row.artifact_file(format!("{suite}_v1.vessel")));
         macro_rules! vessel_arm {
             ($variant:ident, $n:literal) => {{
-                let (server, facts) = SuiteServer::<$n>::from_vessel(
-                    suite,
-                    seat,
-                    &vessel_path,
-                    pins,
-                    applied,
-                    arm,
-                )?;
+                let (server, facts) =
+                    SuiteServer::<$n>::from_vessel(suite, seat, &vessel_path, pins, applied, arm)?;
                 Ok((AnySuiteServer::$variant(Box::new(server)), facts))
             }};
         }
@@ -2056,40 +2029,94 @@ mod served_case_tests {
         // Unsorted on purpose — the keep-check is order-sensitive by law
         // (preserve_order holds the presented order).
         let ab = ["zebra".to_string(), "apple".to_string()];
-        let cd = ["cherry".to_string(), "date".to_string(), "apple".to_string()];
+        let cd = [
+            "cherry".to_string(),
+            "date".to_string(),
+            "apple".to_string(),
+        ];
         let one = ["only".to_string()];
 
         let shapes: Vec<(String, Vec<ServedQuestion<'_>>)> = vec![
             (
                 "state one".into(),
                 vec![
-                    ServedQuestion { qid: "c", kind: QKind::Choice, instructions: "i", options: &ab },
-                    ServedQuestion { qid: "s", kind: QKind::Score, instructions: "j", options: &cd },
-                    ServedQuestion { qid: "n", kind: QKind::Noul, instructions: "k", options: &[] },
+                    ServedQuestion {
+                        qid: "c",
+                        kind: QKind::Choice,
+                        instructions: "i",
+                        options: &ab,
+                    },
+                    ServedQuestion {
+                        qid: "s",
+                        kind: QKind::Score,
+                        instructions: "j",
+                        options: &cd,
+                    },
+                    ServedQuestion {
+                        qid: "n",
+                        kind: QKind::Noul,
+                        instructions: "k",
+                        options: &[],
+                    },
                 ],
             ),
             // Steady state: identical inputs (the keep path).
             (
                 "state one".into(),
                 vec![
-                    ServedQuestion { qid: "c", kind: QKind::Choice, instructions: "i", options: &ab },
-                    ServedQuestion { qid: "s", kind: QKind::Score, instructions: "j", options: &cd },
-                    ServedQuestion { qid: "n", kind: QKind::Noul, instructions: "k", options: &[] },
+                    ServedQuestion {
+                        qid: "c",
+                        kind: QKind::Choice,
+                        instructions: "i",
+                        options: &ab,
+                    },
+                    ServedQuestion {
+                        qid: "s",
+                        kind: QKind::Score,
+                        instructions: "j",
+                        options: &cd,
+                    },
+                    ServedQuestion {
+                        qid: "n",
+                        kind: QKind::Noul,
+                        instructions: "k",
+                        options: &[],
+                    },
                 ],
             ),
             // Set change + kind flip on the same slots + a different state.
             (
                 "state two".into(),
                 vec![
-                    ServedQuestion { qid: "c", kind: QKind::Score, instructions: "i2", options: &one },
-                    ServedQuestion { qid: "s", kind: QKind::Choice, instructions: "j2", options: &ab },
-                    ServedQuestion { qid: "n", kind: QKind::Noul, instructions: "k", options: &[] },
+                    ServedQuestion {
+                        qid: "c",
+                        kind: QKind::Score,
+                        instructions: "i2",
+                        options: &one,
+                    },
+                    ServedQuestion {
+                        qid: "s",
+                        kind: QKind::Choice,
+                        instructions: "j2",
+                        options: &ab,
+                    },
+                    ServedQuestion {
+                        qid: "n",
+                        kind: QKind::Noul,
+                        instructions: "k",
+                        options: &[],
+                    },
                 ],
             ),
             // Fewer questions (the questions vec shrinks-grows path).
             (
                 "state three".into(),
-                vec![ServedQuestion { qid: "c", kind: QKind::Choice, instructions: "i", options: &cd }],
+                vec![ServedQuestion {
+                    qid: "c",
+                    kind: QKind::Choice,
+                    instructions: "i",
+                    options: &cd,
+                }],
             ),
         ];
 

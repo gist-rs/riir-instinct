@@ -38,8 +38,8 @@ use std::path::Path;
 use serde_json::Value;
 
 use crate::instinct_specialist::{
-    bag_into, read_train_envelope, stratified_holdout, train_core, ArmAConfig, ArmARun,
-    Specialist, SuiteRow, TeacherDump, Targets,
+    bag_into, read_train_envelope, stratified_holdout, train_core, ArmAConfig, ArmARun, Specialist,
+    SuiteRow, Targets, TeacherDump,
 };
 use crate::instinct_specialist_typed::{choice_keys, py_str, typed_row, TypedKind, TypedRow};
 
@@ -159,8 +159,14 @@ pub fn load_choice_eq9(
             continue;
         }
         let key = (
-            r.get("row_id").and_then(Value::as_str).ok_or("corpus row: no row_id")?.to_string(),
-            r.get("qid").and_then(Value::as_str).ok_or("corpus row: no qid")?.to_string(),
+            r.get("row_id")
+                .and_then(Value::as_str)
+                .ok_or("corpus row: no row_id")?
+                .to_string(),
+            r.get("qid")
+                .and_then(Value::as_str)
+                .ok_or("corpus row: no qid")?
+                .to_string(),
         );
         if corpus.insert(key.clone(), r).is_some() {
             return Err(format!("coverage corpus: duplicate present row {key:?}"));
@@ -191,14 +197,19 @@ pub fn load_choice_eq9(
         if r.get("arm").and_then(Value::as_str) != Some("present") {
             continue;
         }
-        let id = r.get("id").and_then(Value::as_str).ok_or("rho row: no id")?;
+        let id = r
+            .get("id")
+            .and_then(Value::as_str)
+            .ok_or("rho row: no id")?;
         let cond = r
             .get("conditional_probabilities")
             .and_then(Value::as_object)
             .ok_or_else(|| format!("rho row {id}: no conditional_probabilities"))?;
         let mut m = BTreeMap::new();
         for (k, v) in cond {
-            let v = v.as_f64().ok_or_else(|| format!("rho row {id}: non-numeric p({k})"))?;
+            let v = v
+                .as_f64()
+                .ok_or_else(|| format!("rho row {id}: non-numeric p({k})"))?;
             m.insert(k.clone(), v);
         }
         if rho_by_id.insert(id.to_string(), m).is_some() {
@@ -217,7 +228,9 @@ pub fn load_choice_eq9(
     let mut qualified_by_id: Option<HashMap<String, bool>> = None;
     if let Some(ds) = dual_shuffle {
         let (ds_doc, _) = read_sealed_json(ds)?;
-        let s = ds_doc.get("summary").ok_or("dual-shuffle artifact: no summary")?;
+        let s = ds_doc
+            .get("summary")
+            .ok_or("dual-shuffle artifact: no summary")?;
         let pinned = s
             .get("inputs")
             .and_then(|i| i.get("coverage_rows_blake3"))
@@ -246,8 +259,10 @@ pub fn load_choice_eq9(
             .ok_or("dual-shuffle artifact: no rows array")?
         {
             let id = r.get("id").and_then(Value::as_str).ok_or("ds row: no id")?;
-            let is_q =
-                r.get("qualified").and_then(Value::as_bool).ok_or("ds row: no qualified")?;
+            let is_q = r
+                .get("qualified")
+                .and_then(Value::as_bool)
+                .ok_or("ds row: no qualified")?;
             if q.insert(id.to_string(), is_q).is_some() {
                 return Err(format!("dual-shuffle artifact: duplicate row {id}"));
             }
@@ -302,11 +317,17 @@ pub fn load_choice_eq9(
         let mut mix = 1.0f32;
         let mut corpus_id = None;
         if let Some(cr) = corpus.get(&(row_id.clone(), qid.clone())) {
-            let id = cr.get("id").and_then(Value::as_str).ok_or("corpus row: no id")?.to_string();
+            let id = cr
+                .get("id")
+                .and_then(Value::as_str)
+                .ok_or("corpus row: no id")?
+                .to_string();
             // The corpus gold must equal the pool's own parse — a drift is
             // a generation bug, never a silent relabel.
-            let corpus_gold =
-                cr.get("gold_label").and_then(Value::as_str).ok_or_else(|| format!("corpus row {id}: no gold_label"))?;
+            let corpus_gold = cr
+                .get("gold_label")
+                .and_then(Value::as_str)
+                .ok_or_else(|| format!("corpus row {id}: no gold_label"))?;
             if corpus_gold != gold_label {
                 return Err(format!(
                     "corpus row {id}: gold {corpus_gold:?} != the pool's {gold_label:?}"
@@ -315,23 +336,29 @@ pub fn load_choice_eq9(
             // Corpus presented keys must equal the pool's — the corpus was
             // synthesized FROM this pool; a divergence is a regeneration.
             let corpus_keys = choice_keys(
-                cr.get("criteria").ok_or_else(|| format!("corpus row {id}: no criteria"))?,
+                cr.get("criteria")
+                    .ok_or_else(|| format!("corpus row {id}: no criteria"))?,
             )
             .ok_or_else(|| format!("corpus row {id}: bad criteria"))?;
             if corpus_keys != *presented {
-                return Err(format!("corpus row {id}: presented keys drifted from the pool row"));
+                return Err(format!(
+                    "corpus row {id}: presented keys drifted from the pool row"
+                ));
             }
-            let cond =
-                rho_by_id.get(&id).ok_or_else(|| format!("corpus row {id}: no teacher conditionals"))?;
+            let cond = rho_by_id
+                .get(&id)
+                .ok_or_else(|| format!("corpus row {id}: no teacher conditionals"))?;
             let mut prow: Vec<f32> = vec![0.0f32; n_classes];
             let mut mass = 0.0f32;
             for k in presented {
                 let Some(&c) = class_of.get(k.as_str()) else {
-                    return Err(format!("corpus row {id}: presented key {k:?} outside the universe"));
+                    return Err(format!(
+                        "corpus row {id}: presented key {k:?} outside the universe"
+                    ));
                 };
-                let v = *cond
-                    .get(k)
-                    .ok_or_else(|| format!("corpus row {id}: teacher missing presented key {k:?}"))?;
+                let v = *cond.get(k).ok_or_else(|| {
+                    format!("corpus row {id}: teacher missing presented key {k:?}")
+                })?;
                 let v = v as f32;
                 mass += v;
                 prow[c] = v;
@@ -350,7 +377,10 @@ pub fn load_choice_eq9(
             picks.push(best as u32);
             q_mat.extend_from_slice(&prow);
             if let Some(qmap) = &qualified_by_id {
-                if *qmap.get(&id).ok_or_else(|| format!("corpus row {id}: no qualification"))? {
+                if *qmap
+                    .get(&id)
+                    .ok_or_else(|| format!("corpus row {id}: no qualification"))?
+                {
                     mix = GOLD_MIX_QUALIFIED;
                     n_qualified += 1;
                 }
@@ -361,9 +391,9 @@ pub fn load_choice_eq9(
             picks.push(0);
             q_mat.extend(std::iter::repeat_n(0.0f32, n_classes));
         }
-        let c = *class_of
-            .get(gold_label.as_str())
-            .ok_or_else(|| format!("row {row_id}/{qid}: gold {gold_label:?} outside the universe"))?;
+        let c = *class_of.get(gold_label.as_str()).ok_or_else(|| {
+            format!("row {row_id}/{qid}: gold {gold_label:?} outside the universe")
+        })?;
         rows.push(SuiteRow {
             label: gold_label.clone(),
             text: state.clone(),
@@ -475,9 +505,12 @@ pub fn restricted_eval(
     for &i in idxs {
         bag.clear();
         bag_into(rows[i].text.as_bytes(), &mut bag, &mut scratch);
-        let Some((ci, _)) =
-            pick_restricted(model, &bag, universe, rows[i].presented.as_deref().unwrap_or(&[]))
-        else {
+        let Some((ci, _)) = pick_restricted(
+            model,
+            &bag,
+            universe,
+            rows[i].presented.as_deref().unwrap_or(&[]),
+        ) else {
             unanswered += 1;
             continue;
         };
@@ -514,17 +547,28 @@ pub fn load_coverage_eq9(coverage: &Path) -> Result<CoverageData, String> {
     let mut gold = Vec::with_capacity(arr.len());
     let mut meta = Vec::with_capacity(arr.len());
     for r in arr {
-        let id = r.get("id").and_then(Value::as_str).ok_or("corpus row: no id")?;
-        let c_y = r.get("c_y").and_then(Value::as_u64).ok_or_else(|| format!("row {id}: no c_y"))?;
+        let id = r
+            .get("id")
+            .and_then(Value::as_str)
+            .ok_or("corpus row: no id")?;
+        let c_y = r
+            .get("c_y")
+            .and_then(Value::as_u64)
+            .ok_or_else(|| format!("row {id}: no c_y"))?;
         if c_y > 1 {
             return Err(format!("row {id}: c_y {c_y} not binary"));
         }
-        let state = r.get("state").and_then(Value::as_str).ok_or_else(|| format!("row {id}: no state"))?;
+        let state = r
+            .get("state")
+            .and_then(Value::as_str)
+            .ok_or_else(|| format!("row {id}: no state"))?;
         let instructions = r
             .get("instructions")
             .and_then(Value::as_str)
             .ok_or_else(|| format!("row {id}: no instructions"))?;
-        let crit = r.get("criteria").ok_or_else(|| format!("row {id}: no criteria"))?;
+        let crit = r
+            .get("criteria")
+            .ok_or_else(|| format!("row {id}: no criteria"))?;
         let keys = choice_keys(crit).ok_or_else(|| format!("row {id}: criteria not keyable"))?;
         let mut text = String::with_capacity(state.len() + instructions.len() + 64 * keys.len());
         text.push_str(state);
@@ -581,7 +625,11 @@ pub fn auroc(pos: &[f32], neg: &[f32]) -> Option<f64> {
 
 /// The coverage head's holdout AUROC: score = the `covered` class's
 /// sigmoid (gold 1), label = the row's c_y.
-pub fn coverage_holdout_auroc(model: &Specialist, data: &CoverageData, idxs: &[usize]) -> Option<f64> {
+pub fn coverage_holdout_auroc(
+    model: &Specialist,
+    data: &CoverageData,
+    idxs: &[usize],
+) -> Option<f64> {
     let cov_ci = data
         .labels
         .iter()
@@ -728,7 +776,11 @@ pub fn score_aux_eval(
 pub fn row_holdout(strata: &[String], budget: usize) -> (Vec<usize>, Vec<usize>) {
     let buckets: Vec<SuiteRow> = strata
         .iter()
-        .map(|s| SuiteRow { label: s.clone(), text: String::new(), presented: None })
+        .map(|s| SuiteRow {
+            label: s.clone(),
+            text: String::new(),
+            presented: None,
+        })
         .collect();
     stratified_holdout(&buckets, budget)
 }
@@ -800,7 +852,12 @@ mod tests {
             q: vec![0.25f32; 4 * n], // garbage the mix must keep at weight 0
         };
         let gold_mix = vec![1.0f32; 4];
-        let cfg = ArmAConfig { epochs: 2, lr: 0.05, warmup_steps: 0, ..ArmAConfig::default() };
+        let cfg = ArmAConfig {
+            epochs: 2,
+            lr: 0.05,
+            warmup_steps: 0,
+            ..ArmAConfig::default()
+        };
         let all: Vec<usize> = (0..4).collect();
         let via_mix = train_core(
             &rows,
@@ -808,13 +865,23 @@ mod tests {
             &all,
             &[],
             &cfg,
-            Targets::DistillRowMix { q: &teacher, gold: gold.clone(), gold_mix: gold_mix.clone() },
+            Targets::DistillRowMix {
+                q: &teacher,
+                gold: gold.clone(),
+                gold_mix: gold_mix.clone(),
+            },
         )
         .expect("row-mix run trains");
         let via_gold = train_core(&rows, &universe, &all, &[], &cfg, Targets::Gold(gold))
             .expect("gold run trains");
-        assert_eq!(via_mix.model.w, via_gold.model.w, "weights must be bit-identical");
-        assert_eq!(via_mix.model.b, via_gold.model.b, "biases must be bit-identical");
+        assert_eq!(
+            via_mix.model.w, via_gold.model.w,
+            "weights must be bit-identical"
+        );
+        assert_eq!(
+            via_mix.model.b, via_gold.model.b,
+            "biases must be bit-identical"
+        );
     }
 
     /// The qualified 7:3 blend must actually move the model toward the
@@ -831,9 +898,18 @@ mod tests {
         for r in 0..4 {
             q[r * n + 2] = 1.0;
         }
-        let teacher =
-            TeacherDump { classes: universe.clone(), gold: vec![0; 4], picks: vec![2; 4], q };
-        let cfg = ArmAConfig { epochs: 2, lr: 0.05, warmup_steps: 0, ..ArmAConfig::default() };
+        let teacher = TeacherDump {
+            classes: universe.clone(),
+            gold: vec![0; 4],
+            picks: vec![2; 4],
+            q,
+        };
+        let cfg = ArmAConfig {
+            epochs: 2,
+            lr: 0.05,
+            warmup_steps: 0,
+            ..ArmAConfig::default()
+        };
         let all: Vec<usize> = (0..4).collect();
         let qualified = train_core(
             &rows,
@@ -876,10 +952,18 @@ mod tests {
         // (the tie law in pick space).
         let (ci, _) = pick_restricted(&model, &bag, &universe, &["c".to_string(), "a".to_string()])
             .expect("presented keys answer");
-        assert_eq!(universe[ci], "c", "tie must keep the first presented position");
+        assert_eq!(
+            universe[ci], "c",
+            "tie must keep the first presented position"
+        );
         // A presented key outside the universe is skipped, not fatal.
-        let (ci, _) = pick_restricted(&model, &bag, &universe, &["zz".to_string(), "b".to_string()])
-            .expect("the in-universe key answers");
+        let (ci, _) = pick_restricted(
+            &model,
+            &bag,
+            &universe,
+            &["zz".to_string(), "b".to_string()],
+        )
+        .expect("the in-universe key answers");
         assert_eq!(universe[ci], "b");
         // No presented key in the universe → unanswerable.
         assert!(pick_restricted(&model, &bag, &universe, &["zz".to_string()]).is_none());
@@ -891,11 +975,8 @@ mod tests {
     struct TempDir(std::path::PathBuf);
     impl TempDir {
         fn new(tag: &str) -> Self {
-            let p = std::env::temp_dir().join(format!(
-                "typed_eq9_test_{}_{}",
-                tag,
-                std::process::id()
-            ));
+            let p =
+                std::env::temp_dir().join(format!("typed_eq9_test_{}_{}", tag, std::process::id()));
             let _ = std::fs::remove_dir_all(&p);
             std::fs::create_dir_all(p.join("typed_decisions")).expect("temp dir");
             Self(p)
@@ -980,11 +1061,7 @@ mod tests {
         rho
     }
 
-    fn write_ds(
-        dir: &std::path::Path,
-        cov_digest: &str,
-        qualified: bool,
-    ) -> std::path::PathBuf {
+    fn write_ds(dir: &std::path::Path, cov_digest: &str, qualified: bool) -> std::path::PathBuf {
         let ds = dir.join("ds.json");
         let doc = serde_json::json!({
             "summary": {
@@ -998,7 +1075,9 @@ mod tests {
     }
 
     fn cov_digest_of(cov: &std::path::Path) -> String {
-        blake3::hash(&std::fs::read(cov).expect("read cov")).to_hex().to_string()
+        blake3::hash(&std::fs::read(cov).expect("read cov"))
+            .to_hex()
+            .to_string()
     }
 
     fn zero_score_model(labels: &[String]) -> Specialist {
@@ -1012,8 +1091,7 @@ mod tests {
         let cov = write_corpus(&t.0);
         let rho = write_rho(&t.0, &cov_digest_of(&cov));
         let ds = write_ds(&t.0, &cov_digest_of(&cov), true);
-        let data =
-            load_choice_eq9(&t.0, &cov, &rho, Some(&ds)).expect("the join assembles");
+        let data = load_choice_eq9(&t.0, &cov, &rho, Some(&ds)).expect("the join assembles");
         // Universe = the train pool's choice keys (row 1 presents beta+gamma).
         assert_eq!(data.universe, vec!["alpha", "beta", "gamma"]);
         assert_eq!(data.rows.len(), 2);
@@ -1027,8 +1105,7 @@ mod tests {
         assert_eq!(data.gold_mix, vec![GOLD_MIX_QUALIFIED, 1.0]);
         // The unqualified posture flips the mix, nothing else.
         let ds2 = write_ds(&t.0, &cov_digest_of(&cov), false);
-        let data2 =
-            load_choice_eq9(&t.0, &cov, &rho, Some(&ds2)).expect("rejected posture loads");
+        let data2 = load_choice_eq9(&t.0, &cov, &rho, Some(&ds2)).expect("rejected posture loads");
         assert_eq!(data2.gold_mix, vec![1.0, 1.0]);
         assert_eq!(data2.n_qualified, 0);
         // The dev posture (no qualification file) is pure gold everywhere.
@@ -1101,14 +1178,19 @@ mod tests {
         assert_eq!(data.rows[1].label, "absent");
         assert_eq!(data.gold, vec![1, 0]);
         assert!(
-            data.rows[0].text.starts_with("state one alpha\ni\nalpha: A d\nbeta: B d\ngamma: G d"),
+            data.rows[0]
+                .text
+                .starts_with("state one alpha\ni\nalpha: A d\nbeta: B d\ngamma: G d"),
             "text law: got {:?}",
             data.rows[0].text
         );
         // An unsealed artifact refuses.
         let unsealed = t.0.join("unsealed.json");
-        std::fs::write(&unsealed, serde_json::to_string(&serde_json::json!({"rows": []})).unwrap())
-            .unwrap();
+        std::fs::write(
+            &unsealed,
+            serde_json::to_string(&serde_json::json!({"rows": []})).unwrap(),
+        )
+        .unwrap();
         assert!(load_coverage_eq9(&unsealed).is_err());
     }
 
@@ -1121,9 +1203,12 @@ mod tests {
         let cov = write_corpus(&t.0);
         let rho = write_rho(&t.0, &cov_digest_of(&cov));
         let ds = write_ds(&t.0, &cov_digest_of(&cov), true);
-        let data =
-            load_choice_eq9(&t.0, &cov, &rho, Some(&ds)).expect("join assembles");
-        let cfg = ArmAConfig { epochs: 1, warmup_steps: 0, ..ArmAConfig::default() };
+        let data = load_choice_eq9(&t.0, &cov, &rho, Some(&ds)).expect("join assembles");
+        let cfg = ArmAConfig {
+            epochs: 1,
+            warmup_steps: 0,
+            ..ArmAConfig::default()
+        };
         let run = train_choice_eq9(&data, &[0, 1], &[], &cfg).expect("choice trains");
         let (acc, unanswered) = restricted_eval(&run.model, &data.rows, &data.universe, &[0]);
         assert_eq!(unanswered, 0);
@@ -1140,7 +1225,16 @@ mod tests {
         assert_eq!(score_rows.len(), 1);
         assert_eq!(score_rows[0].label, "high l");
         assert_eq!(heads.score["level"].strata, vec!["tr_wf_000001"]);
-        assert_eq!(score_rows[0].presented.as_deref(), Some(&["low l".to_string(), "mid l".to_string(), "high l".to_string()][..]));
+        assert_eq!(
+            score_rows[0].presented.as_deref(),
+            Some(
+                &[
+                    "low l".to_string(),
+                    "mid l".to_string(),
+                    "high l".to_string()
+                ][..]
+            )
+        );
         let uni = crate::instinct_specialist::label_universe(score_rows);
         let (mae, cdm) = score_aux_eval(&zero_score_model(&uni), score_rows, &uni, &[0]);
         assert!(!mae.is_nan() && !cdm.is_nan());
@@ -1159,10 +1253,12 @@ mod tests {
         let (h, t) = paired_holdout(&strata, 2);
         assert_eq!(h, vec![0, 1], "c1 crosses whole (both rows)");
         assert_eq!(t, vec![2, 3, 4, 5]);
-        let strata_single: Vec<String> = ["c1", "c2", "c3"].iter().map(|s| (*s).to_string()).collect();
+        let strata_single: Vec<String> = ["c1", "c2", "c3"]
+            .iter()
+            .map(|s| (*s).to_string())
+            .collect();
         let (h1, t1) = paired_holdout(&strata_single, 2);
         assert_eq!(h1, vec![0, 1]);
         assert_eq!(t1, vec![2]);
     }
-
 }
