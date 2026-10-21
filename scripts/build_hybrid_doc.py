@@ -837,7 +837,7 @@ def main() -> int:
     if git_sha is None:
         git_sha = subprocess.run(
             ["git", "rev-parse", "--short", "HEAD"],
-            capture_output=True, text=True, check=True,
+            capture_output=True, text=True, check=True, encoding="utf-8", errors="replace"
         ).stdout.strip()
     date_utc = args.date_utc or datetime.now(timezone.utc).strftime(
         "%Y-%m-%dT%H:%M:%SZ")
