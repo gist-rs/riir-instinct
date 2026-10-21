@@ -2,6 +2,9 @@
 
 Compacted 2026-10-16: every `##` heading kept verbatim, one compact entry per record; the full pre-compaction text is in git history (pre-compaction HEAD 0d9263517632). Operational rules live in `AGENTS.md`; removed issue files: git history.
 
+## 2026-10-21 — the Phase-C remote think leg disclosures (`3d7fc31`): additive healthz + gate_abstained on the wire (consumer: rethink `c3a73cd`)
+Rethink Issue 024 Phase C (plan 010) needed three facts a light client cannot derive without the local encoder material, plus one decision field its `ServedDecision` reconstruction cannot honestly fill: `/healthz` gains `centroid` (the DIM floats), `label_names` (the None-presentation STRINGS — the count was already disclosed), and `template` (`{qid, kind, instructions}`) per Ready suite, served through two DEFAULTED `LaneBackend` methods (`labels`/`template`) so the Ext seats disclose through the same trait — lanes that do not override omit the fields (an honest absence, never a fabricated value). `/decide` (both shapes) gains `gate_abstained` (the field list was deliberately wire-absent at T1; the remote reconstruction cannot invent it; `decision_blake3` hashes a fixed canonical object so receipts do not move). Additive-only — the R7 v1 freeze holds. Paired gates: instinct 144 tests green + clippy clean; the consumer's `tests/esc_remote_gates.rs` 10/10 at the material posture.
+
 ## 2026-10-16 — Issue 023 CLOSED: the RunOptions field-add break class closed at the root (`lanes_off()`)
 
 The pplx → d3 → jeva E0063 lineage (3rd occurrence live 1.5 h before a
