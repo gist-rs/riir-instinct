@@ -29,3 +29,8 @@ artifacts/**
 .refine/
 .export/
 __pycache__/
+
+# local secrets (template: .env.example, tracked)
+.env
+.env.local
+.dev.vars
