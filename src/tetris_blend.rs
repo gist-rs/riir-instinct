@@ -401,36 +401,9 @@ pub fn collect_blended(
     cap: usize,
     threads: usize,
 ) -> (Vec<Sample>, Vec<GameStats>) {
-    let next_seed = std::sync::atomic::AtomicUsize::new(0);
-    let results: std::sync::Mutex<Vec<(u64, GameStats, Vec<Sample>)>> =
-        std::sync::Mutex::new(Vec::with_capacity(seeds.len()));
-    std::thread::scope(|s| {
-        for _ in 0..threads.max(1) {
-            s.spawn(|| loop {
-                let k = next_seed.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
-                if k >= seeds.len() {
-                    break;
-                }
-                let seed = seeds[k];
-                let mut sink: Vec<Sample> = Vec::new();
-                let stats =
-                    play_blended(genome, critic, weight, seed, regime, cap, budget, &mut sink);
-                results
-                    .lock()
-                    .expect("results lock")
-                    .push((seed, stats, sink));
-            });
-        }
-    });
-    let mut out = results.into_inner().expect("results");
-    out.sort_by_key(|(seed, _, _)| *seed);
-    let mut samples = Vec::new();
-    let mut stats = Vec::new();
-    for (_, st, mut sink) in out {
-        stats.push(st);
-        samples.append(&mut sink);
-    }
-    (samples, stats)
+    crate::tetris_critic::collect_over_seeds(seeds, threads, |seed, sink| {
+        play_blended(genome, critic, weight, seed, regime, cap, budget, sink)
+    })
 }
 
 #[cfg(test)]

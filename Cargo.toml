@@ -144,6 +144,12 @@ required-features = ["tetris_goat"]
 name = "export_tetris_critic"
 required-features = ["tetris"]
 
+# The TETCRIT2 multi-continuation export (riir-train Plans 429 T1.1 / 460
+# T1.1b) — whole-target gated.
+[[bin]]
+name = "export_tetris_critic_cont"
+required-features = ["tetris"]
+
 # The round-5 per-seed scale probe (Issue 009 T7 round 5, Bench 025/026) —
 # imports the tetris-only surface (tetris_blend/tetris_critic/tetris_lane +
 # katgpt_tetris); without this row a plain --all-targets build at default

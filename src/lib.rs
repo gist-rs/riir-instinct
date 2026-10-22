@@ -66,6 +66,10 @@ pub mod stats;
 /// the search's value seam. weight 0 is the plain teacher, bit-exact.
 #[cfg(feature = "tetris")]
 pub mod tetris_blend;
+/// Multi-continuation teacher collection — the `TETCRIT2` dataset
+/// (riir-train Plans 429 T1.1 / 460 T1.1b).
+#[cfg(feature = "tetris")]
+pub mod tetris_cont;
 /// The Tetris value-critic arm (Issue 009 T8's modelless second arm + T7's
 /// substrate): the Plan-308 KARC basis-ridge readout over the teacher's
 /// search-root Q, plus the sample-collection lane loop.

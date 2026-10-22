@@ -39,7 +39,8 @@
 //!   instrument of record for that negative.
 
 use riir_instinct::tetris_blend::collect_blended;
-use riir_instinct::tetris_critic::{collect_teacher, collect_teacher_blended, feat, TrainedMlp};
+use riir_instinct::tetris_cont::{encode_sample_v1, MAGIC_V1, SAMPLE_V1_BYTES};
+use riir_instinct::tetris_critic::{collect_teacher, collect_teacher_blended, TrainedMlp};
 use riir_instinct::tetris_lane::{Regime, CHAMPION_ID, TEACHER_PROBE_SALT, TEACHER_RNG_SALT};
 use serde_json::{json, Value};
 use std::path::PathBuf;
@@ -129,26 +130,17 @@ fn parse_args() -> ExportArgs {
     )
 }
 
-const SAMPLE_BYTES: usize = 8 + 4 + 1 + 1 + 1 + 1 + 8 + feat::NUM * 8;
+const SAMPLE_BYTES: usize = SAMPLE_V1_BYTES;
 
 fn write_split(
     path: &PathBuf,
     samples: &[riir_instinct::tetris_critic::Sample],
 ) -> (String, usize) {
     let mut buf = Vec::with_capacity(12 + samples.len() * SAMPLE_BYTES);
-    buf.extend_from_slice(b"TETCRIT1");
+    buf.extend_from_slice(MAGIC_V1);
     buf.extend_from_slice(&(samples.len() as u32).to_le_bytes());
     for s in samples {
-        buf.extend_from_slice(&s.seed.to_le_bytes());
-        buf.extend_from_slice(&s.decision.to_le_bytes());
-        buf.push(s.raw.piece);
-        buf.push(s.raw.mode);
-        buf.push(u8::from(s.is_pick));
-        buf.push(0); // pad to the documented 299 B width
-        buf.extend_from_slice(&s.q.to_le_bytes());
-        for v in &s.raw.num {
-            buf.extend_from_slice(&v.to_le_bytes());
-        }
+        encode_sample_v1(s, &mut buf);
     }
     std::fs::write(path, &buf).expect("write split file");
     (blake3::hash(&buf).to_hex()[..16].to_string(), samples.len())

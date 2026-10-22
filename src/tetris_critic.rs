@@ -42,6 +42,7 @@
 //! option) order, so the fit is bit-deterministic for a fixed seed list.
 //! The weights' BLAKE3 digest is the model identity.
 
+use crate::tetris_cont::{champion_eval, rollouts_for, select_top_k, ContConfig, ContSample};
 use crate::tetris_lane::{
     start_board, GameStats, Regime, TeacherBlend, TeacherState, CHAMPION_ID, TEACHER_PROBE_SALT,
     TEACHER_RNG_SALT,
@@ -816,6 +817,39 @@ pub enum LanePolicy<'m> {
         w: f64,
         sink: &'m mut Vec<Sample>,
     },
+    /// Multi-continuation teacher collection (riir-train Plan 429 T1.1, the
+    /// `TETCRIT2` export): the [`LanePolicy::Teacher`] search and pick; at
+    /// decisions selected by `cont`, the top-k visited options each get
+    /// `cont.m` continuation rollouts ([`crate::tetris_cont`]).
+    TeacherCont {
+        budget: u32,
+        cont: &'m ContConfig,
+        sink: &'m mut Vec<ContSample>,
+    },
+}
+
+/// The plain teacher's root search over the champion evaluator at the
+/// root's `mode`: `(picked index, root stats)`. Shared by every arm whose
+/// pick is the plain teacher's.
+fn teacher_search(
+    genome: &Genome,
+    board: &Board,
+    cur: Piece,
+    mode: Mode,
+    budget: u32,
+    rng: &mut fastrand::Rng,
+) -> (usize, Vec<RootStat>) {
+    let eval = |b: &Board, lines: u32, tetrises: u32| -> f64 {
+        champion_eval(genome, mode, b, lines, tetrises)
+    };
+    let root = TeacherState::root(board, cur, &eval);
+    let mut search = ChancePuct::new(ChancePuctConfig {
+        budget,
+        ..ChancePuctConfig::default()
+    });
+    // `None` is unreachable: options non-empty ⇒ actions non-empty.
+    let picked = search.search(&root, rng).map_or(usize::MAX, |p| p.index);
+    (picked, search.root_stats().collect())
 }
 
 /// One seed, one game, one policy — the T6 game-loop shape (same bag, same
@@ -855,28 +889,7 @@ pub fn play_lane(
         let picked = match policy {
             LanePolicy::Teacher { budget, sink } => {
                 let mode = genome.mode_of(&board);
-                let eval = |b: &Board, lines: u32, tetrises: u32| -> f64 {
-                    let scan = b.scan();
-                    let leaf = Leaf {
-                        board: b,
-                        heights: scan.heights,
-                        lines,
-                        tetrises,
-                        held: None,
-                    };
-                    genome.eval_with(&leaf, mode, &scan)
-                };
-                let root = TeacherState::root(&board, cur, &eval);
-                let cfg = ChancePuctConfig {
-                    budget: *budget,
-                    ..ChancePuctConfig::default()
-                };
-                let mut search = ChancePuct::new(cfg);
-                let picked = match search.search(&root, &mut rng) {
-                    Some(p) => p.index,
-                    None => usize::MAX, // unreachable: options non-empty ⇒ actions non-empty
-                };
-                let stats: Vec<RootStat> = search.root_stats().collect();
+                let (picked, stats) = teacher_search(genome, &board, cur, mode, *budget, &mut rng);
                 for s in stats {
                     if s.index < options.len() && s.visits > 0 {
                         let (b1, l1) = apply(&board, &options[s.index].cells);
@@ -887,6 +900,39 @@ pub fn play_lane(
                             raw,
                             q: f64::from(s.q),
                             is_pick: s.index == picked,
+                        });
+                    }
+                }
+                picked
+            }
+            LanePolicy::TeacherCont { budget, cont, sink } => {
+                // The Teacher arm's search + sample law; continuations only at
+                // the selected decisions' top-k visited options.
+                let mode = genome.mode_of(&board);
+                let (picked, stats) = teacher_search(genome, &board, cur, mode, *budget, &mut rng);
+                if decision.is_multiple_of(cont.decision_stride) {
+                    let visited: Vec<(usize, u32)> = stats
+                        .iter()
+                        .filter(|s| s.index < options.len() && s.visits > 0)
+                        .map(|s| (s.index, s.visits))
+                        .collect();
+                    let chosen = select_top_k(&visited, cont.top_k);
+                    for s in stats
+                        .iter()
+                        .filter(|s| chosen.binary_search(&s.index).is_ok())
+                    {
+                        let (b1, l1) = apply(&board, &options[s.index].cells);
+                        let raw = raw_opt(&board, &options[s.index], cur, mode, &b1, l1);
+                        let rollouts = rollouts_for(genome, cont, seed, decision, s.index, &b1, l1);
+                        sink.push(ContSample {
+                            sample: Sample {
+                                seed,
+                                decision,
+                                raw,
+                                q: f64::from(s.q),
+                                is_pick: s.index == picked,
+                            },
+                            rollouts,
                         });
                     }
                 }
@@ -1028,21 +1074,17 @@ pub fn lane_context() -> String {
     format!("champion {CHAMPION_ID} · KARC chebyshev-{CHEB_M} basis-ridge (Plan 308, no delay ring) · design dim {DESIGN_DIM}")
 }
 
-/// Teacher collection over one (regime, seed list), threaded across seeds;
-/// per-seed sample blocks merge in seed order (the fit's determinism
-/// premise: the Gram then accumulates in (regime, seed, decision, option)
-/// order). Shared by the critic bench (fit) and the dataset export bin
-/// (riir-train Issue 580's contract).
-pub fn collect_teacher(
-    genome: &Genome,
-    regime: Regime,
+/// Threaded collection over a seed list: threads take seeds off a shared
+/// counter, `play(seed, sink)` fills that seed's block, and blocks merge in
+/// SEED order — the fit's determinism premise (the result is independent
+/// of `threads`). Shared by every teacher collector.
+pub fn collect_over_seeds<T: Send>(
     seeds: &[u64],
-    budget: u32,
-    cap: usize,
     threads: usize,
-) -> (Vec<Sample>, Vec<GameStats>) {
+    play: impl Fn(u64, &mut Vec<T>) -> GameStats + Sync,
+) -> (Vec<T>, Vec<GameStats>) {
     let next_seed = std::sync::atomic::AtomicUsize::new(0);
-    let results: std::sync::Mutex<Vec<(u64, GameStats, Vec<Sample>)>> =
+    let results: std::sync::Mutex<Vec<(u64, GameStats, Vec<T>)>> =
         std::sync::Mutex::new(Vec::with_capacity(seeds.len()));
     std::thread::scope(|s| {
         for _ in 0..threads.max(1) {
@@ -1052,12 +1094,8 @@ pub fn collect_teacher(
                     break;
                 }
                 let seed = seeds[k];
-                let mut sink: Vec<Sample> = Vec::new();
-                let mut policy = LanePolicy::Teacher {
-                    budget,
-                    sink: &mut sink,
-                };
-                let stats = play_lane(genome, seed, regime, cap, &mut policy);
+                let mut sink: Vec<T> = Vec::new();
+                let stats = play(seed, &mut sink);
                 results
                     .lock()
                     .expect("results lock")
@@ -1074,6 +1112,30 @@ pub fn collect_teacher(
         samples.append(&mut sink);
     }
     (samples, stats)
+}
+
+/// Teacher collection over one (regime, seed list), threaded across seeds;
+/// per-seed sample blocks merge in seed order (the fit's determinism
+/// premise: the Gram then accumulates in (regime, seed, decision, option)
+/// order). Shared by the critic bench (fit) and the dataset export bin
+/// (riir-train Issue 580's contract).
+pub fn collect_teacher(
+    genome: &Genome,
+    regime: Regime,
+    seeds: &[u64],
+    budget: u32,
+    cap: usize,
+    threads: usize,
+) -> (Vec<Sample>, Vec<GameStats>) {
+    collect_over_seeds(seeds, threads, |seed, sink| {
+        play_lane(
+            genome,
+            seed,
+            regime,
+            cap,
+            &mut LanePolicy::Teacher { budget, sink },
+        )
+    })
 }
 
 // ── Round-5 no-op probe telemetry (the verdict-R1 pins) ─────────────
@@ -1116,41 +1178,46 @@ pub fn collect_teacher_blended(
     cap: usize,
     threads: usize,
 ) -> (Vec<Sample>, Vec<GameStats>) {
-    let next_seed = std::sync::atomic::AtomicUsize::new(0);
-    let results: std::sync::Mutex<Vec<(u64, GameStats, Vec<Sample>)>> =
-        std::sync::Mutex::new(Vec::with_capacity(seeds.len()));
-    std::thread::scope(|s| {
-        for _ in 0..threads.max(1) {
-            s.spawn(|| loop {
-                let k = next_seed.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
-                if k >= seeds.len() {
-                    break;
-                }
-                let seed = seeds[k];
-                let mut sink: Vec<Sample> = Vec::new();
-                let mut policy = LanePolicy::TeacherBlended {
-                    budget,
-                    model,
-                    w,
-                    sink: &mut sink,
-                };
-                let stats = play_lane(genome, seed, regime, cap, &mut policy);
-                results
-                    .lock()
-                    .expect("results lock")
-                    .push((seed, stats, sink));
-            });
-        }
-    });
-    let mut out = results.into_inner().expect("results");
-    out.sort_by_key(|(seed, _, _)| *seed);
-    let mut samples = Vec::new();
-    let mut stats = Vec::new();
-    for (_, st, mut sink) in out {
-        stats.push(st);
-        samples.append(&mut sink);
-    }
-    (samples, stats)
+    collect_over_seeds(seeds, threads, |seed, sink| {
+        play_lane(
+            genome,
+            seed,
+            regime,
+            cap,
+            &mut LanePolicy::TeacherBlended {
+                budget,
+                model,
+                w,
+                sink,
+            },
+        )
+    })
+}
+
+/// Multi-continuation teacher collection (riir-train Plan 429 T1.1, the
+/// `TETCRIT2` export): the plain teacher's game loop and picks, plus `cont.m`
+/// continuation rollouts per selected sample ([`crate::tetris_cont`]). Same
+/// seed-ordered merge as [`collect_teacher`].
+#[allow(clippy::too_many_arguments)] // collect_teacher's signature + cont
+pub fn collect_teacher_cont(
+    genome: &Genome,
+    cont: &ContConfig,
+    regime: Regime,
+    seeds: &[u64],
+    budget: u32,
+    cap: usize,
+    threads: usize,
+) -> (Vec<ContSample>, Vec<GameStats>) {
+    cont.validate();
+    collect_over_seeds(seeds, threads, |seed, sink| {
+        play_lane(
+            genome,
+            seed,
+            regime,
+            cap,
+            &mut LanePolicy::TeacherCont { budget, cont, sink },
+        )
+    })
 }
 
 #[cfg(test)]
