@@ -249,6 +249,7 @@ fn shared_edge_port() -> u16 {
             cors_origin: Some(vec![]),
             prevalidated_manifest: Some((manifest, digest, "rerank gate".into())),
             lane_loader: Some(stub_lane_loader),
+            origin_gate: None,
         };
         std::thread::Builder::new()
             .name("rerank-edge".into())
@@ -655,6 +656,7 @@ fn lru_edge_port() -> (u16, &'static str) {
             cors_origin: Some(vec![]),
             prevalidated_manifest: Some((manifest, digest, "lru gate".into())),
             lane_loader: Some(vehicle_loader),
+            origin_gate: None,
         };
         std::thread::Builder::new()
             .name("lru-edge".into())

@@ -222,6 +222,7 @@ fn main() {
         cors_origin: Some(vec![]),
         prevalidated_manifest: Some((manifest, digest, "plan 202 dogfood spike".into())),
         lane_loader: Some(stub_lane_loader),
+        origin_gate: None,
     };
     eprintln!("[dogfood-seat] serving — Ctrl-C to stop");
     if let Err(e) = riir_instinct::serve_edge::run(cfg) {

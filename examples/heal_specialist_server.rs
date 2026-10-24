@@ -302,6 +302,7 @@ fn main() {
         cors_origin: Some(vec![]),
         prevalidated_manifest: Some((manifest, manifest_digest, "plan 225 heal specialist".into())),
         lane_loader: Some(heal_lane_loader),
+        origin_gate: None,
     };
     eprintln!("[heal-seat] serving on {bind_display} — Ctrl-C to stop");
     if let Err(e) = riir_instinct::serve_edge::run(cfg) {

@@ -151,7 +151,48 @@ pub struct ServeConfig {
     /// loader reads its own host config through its own process-global
     /// (the `install_ext_boots` precedent).
     pub lane_loader: Option<LaneLoader>,
+    /// The ORIGIN-GATE seam (rethink issue 037 — the access plane's
+    /// origin half): `None` = ungated (byte-identical boots, the
+    /// default posture). `Some(f)` consults `f` on EVERY request after
+    /// the head parses and BEFORE any route arm — the gate returns the
+    /// refusal (status line + stable code + display message) or `None`
+    /// to pass. A fn pointer like [`ServeConfig::lane_loader`] so the
+    /// config stays a plain struct; the gate fn reads its own host
+    /// secret through its own process-global (the `VESSEL_CFG`
+    /// precedent). The gate decides which method+path it covers — the
+    /// edge calls it on everything, so a gate that should not fire on
+    /// `OPTIONS` preflights or `/healthz` passes them itself.
+    pub origin_gate: Option<OriginGateFn>,
 }
+
+/// One gated request, as the origin gate sees it (rethink issue 037).
+pub struct GateReq<'a> {
+    pub method: &'a str,
+    pub path: &'a str,
+    /// The raw `Authorization` header value (`Bearer …` spellings are
+    /// the caller's business — the edge does not parse the scheme).
+    pub authorization: Option<&'a str>,
+    /// True when the connection is from the loopback interface — the
+    /// edge's recorded admin posture; a gate may pass loopback through.
+    pub local: bool,
+}
+
+/// The gate's refusal. The edge renders it through its standard error
+/// shape (drain + `json_error`), so `code` should follow the stable-code
+/// law (one code per terminal failure class, additive-only). The message
+/// must never echo the expected secret — a refusal that repeats what it
+/// wanted is the leak the gate exists to prevent.
+pub struct GateRefusal {
+    /// Full HTTP status line, e.g. `"401 Unauthorized"`.
+    pub status: &'static str,
+    pub code: &'static str,
+    pub message: String,
+}
+
+/// The origin-gate fn type — a plain fn pointer (never a closure) so
+/// [`ServeConfig`] stays structurally simple and `Copy`-carriable across
+/// the accept loop, exactly like [`LaneLoader`].
+pub type OriginGateFn = fn(&GateReq<'_>) -> Option<GateRefusal>;
 
 /// Boot the lane registry and serve it — the accept loop never returns
 /// in practice, so `Ok(())` is unreachable; every boot refusal
@@ -171,6 +212,7 @@ pub fn run(cfg: ServeConfig) -> Result<(), String> {
         cors_origin,
         prevalidated_manifest,
         lane_loader,
+        origin_gate,
     } = cfg;
 
     // The arsenal manifest (Proposal 001, law A5 — the ONE selection
@@ -306,7 +348,7 @@ pub fn run(cfg: ServeConfig) -> Result<(), String> {
                     .name("conn".into())
                     .stack_size(CONN_STACK)
                     .spawn(move || {
-                        if let Err(e) = handle_conn(s, &state, &allow) {
+                        if let Err(e) = handle_conn(s, &state, &allow, origin_gate) {
                             eprintln!("[riir-instinct] conn error: {e}");
                         }
                     });
@@ -775,6 +817,7 @@ struct Req {
     path: String,
     content_length: usize,
     origin: Option<String>,
+    authorization: Option<String>,
 }
 
 fn read_request(reader: &mut BufReader<TcpStream>) -> std::io::Result<Option<Req>> {
@@ -787,6 +830,7 @@ fn read_request(reader: &mut BufReader<TcpStream>) -> std::io::Result<Option<Req
     let path = parts.next().unwrap_or("/").to_string();
     let mut content_length = 0usize;
     let mut origin = None;
+    let mut authorization = None;
     loop {
         let mut h = String::new();
         if reader.read_line(&mut h)? == 0 {
@@ -802,6 +846,8 @@ fn read_request(reader: &mut BufReader<TcpStream>) -> std::io::Result<Option<Req
                 content_length = value.parse().unwrap_or(0);
             } else if name.eq_ignore_ascii_case("origin") {
                 origin = Some(value.to_string());
+            } else if name.eq_ignore_ascii_case("authorization") {
+                authorization = Some(value.to_string());
             }
         }
     }
@@ -810,6 +856,7 @@ fn read_request(reader: &mut BufReader<TcpStream>) -> std::io::Result<Option<Req
         path,
         content_length,
         origin,
+        authorization,
     }))
 }
 
@@ -868,7 +915,12 @@ fn json_error(stream: &mut TcpStream, status: &str, code: &str, text: &str, cors
     );
 }
 
-fn handle_conn(stream: TcpStream, state: &Arc<SrvState>, allow: &[String]) -> std::io::Result<()> {
+fn handle_conn(
+    stream: TcpStream,
+    state: &Arc<SrvState>,
+    allow: &[String],
+    origin_gate: Option<OriginGateFn>,
+) -> std::io::Result<()> {
     stream.set_read_timeout(Some(READ_TIMEOUT))?;
     // The arsenal admin endpoints' recorded auth posture: loopback only
     // (this server has no token surface; anything off the loopback
@@ -883,6 +935,25 @@ fn handle_conn(stream: TcpStream, state: &Arc<SrvState>, allow: &[String]) -> st
         return Ok(());
     };
     let cors = cors_echo(req.origin.as_deref(), allow);
+    // The origin gate (rethink issue 037) — after the head parses and
+    // before ANY route arm: the gate decides which method+path it
+    // covers, so a refusal here preempts everything including the 404
+    // arm (a gate that let unknown paths leak route existence would
+    // probe-answer for free). `None` config = this block compiles to a
+    // branch on `None` — byte-identical boots, the default posture.
+    if let Some(gate) = origin_gate {
+        let verdict = gate(&GateReq {
+            method: &req.method,
+            path: &req.path,
+            authorization: req.authorization.as_deref(),
+            local,
+        });
+        if let Some(r) = verdict {
+            drain_body(&mut reader, req.content_length);
+            json_error(&mut writer, r.status, r.code, &r.message, cors.as_deref());
+            return Ok(());
+        }
+    }
     match (req.method.as_str(), req.path.as_str()) {
         ("OPTIONS", _) => match cors {
             Some(o) => {

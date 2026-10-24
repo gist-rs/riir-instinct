@@ -43,6 +43,9 @@ katgpt-tetris = { path = "../katgpt-rs/crates/katgpt-tetris", optional = true }
 fastrand = { version = "2", optional = true }
 
 [dev-dependencies]
+# The origin-gate test's constant-time compare models the mint_token_matches
+# law with the same primitive the production gate uses (rethink issue 037).
+blake3 = "1"
 # Test-side vessel MINTING only (arsenal_ops's vessel_identity_tests +
 # teaching-bench fixtures): the public reader needs no signing stack; the
 # lib surface carries zero ed25519.

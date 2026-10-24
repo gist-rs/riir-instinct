@@ -88,6 +88,9 @@ fn main() {
         // loads lanes with its own raw loader (plan 009 T2's defaults).
         prevalidated_manifest: None,
         lane_loader: None,
+        // The open bin has no origin gate — the recorded posture (the
+        // teaching lane is loopback/local); Rethink's serve bin arms it.
+        origin_gate: None,
     };
     if let Err(e) = run(cfg) {
         die(&e);
