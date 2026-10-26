@@ -129,6 +129,7 @@ change; it refuses (exit 1) without the datasets/winners, never a green zero.
 ```sh
 cargo check
 cargo clippy --all-targets -- -D warnings
+scripts/deny_gate.sh                        # cargo-deny advisories gate (riir-refine plan 298 T2.4 fan-out): vulnerable CRATES at lockfile level, advisories-only scope — the deny.toml ignore list is a membership pin (reason + tracking ref per row); --scan is a workspace report-only sweep; a missing cargo-deny is a LOUD SKIP; standalone (CI wiring is plan-298 T2.7, owner-gated)
 cargo test                                   # the gate suite (serve gates skip loud without data)
 cargo run --release --bin arena              # the GOAT run (writes .benchmarks/<out>/)
 #   arena datasets default = reflex CANONICAL ../riir-reflex/.raw/datasets at the
