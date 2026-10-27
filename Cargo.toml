@@ -160,3 +160,11 @@ required-features = ["tetris"]
 [[example]]
 name = "tetris_round5_scale_probe"
 required-features = ["tetris"]
+
+# Vendored fork of `block` 0.1.6 (katgpt-rs issue 968): upstream is abandoned
+# and its `static of uninhabited type` is a future-incompat headed to a hard
+# error. `metal` (via riir-infer-laya's macOS-scoped dep, under
+# `laya-face-metal`) pulls block; [patch] does NOT propagate across workspace
+# boundaries, so this workspace re-declares the katgpt-rs patch locally.
+[patch.crates-io]
+block = { path = "vendor/block" }
