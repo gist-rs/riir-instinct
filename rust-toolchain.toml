@@ -1,8 +1,11 @@
 # Workspace-wide pin (the every-workspace-pins directive); matches the
 # katgpt-rs sibling so the path dep and this crate build on one toolchain.
+# Follows the anchor (katgpt-rs issue 963): the floored members this crate
+# can resolve (katgpt-tetris via the `tetris` feature) carry a 1.99.0
+# rust-version, so the pin must not lag the anchor.
 # components must be declared: without them rustup installs the pinned
 # toolchain bare and every CI clippy lane dies with "'cargo-clippy' is
 # not installed" (the riir-infer sibling's pin is the working shape).
 [toolchain]
-channel = "1.98.1"
+channel = "1.99.0"
 components = ["clippy", "rustfmt"]
