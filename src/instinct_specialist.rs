@@ -223,11 +223,22 @@ pub fn suite_row(suite: &str, row: &serde_json::Value) -> Option<SuiteRow> {
             None => row.get("label")?.as_i64()?.to_string(),
         },
         // emotion_syn + sst5_syn: the first-party synthetic suites (reflex
-        // plan 013 T1b) — int labels, same `text` law; rethink plan 015
-        // (the ESC GOAT prereg) names this arm the bag-class enabling change.
-        "ag_news" | "emotion" | "sst5" | "xnli_en" | "emotion_syn" | "sst5_syn" => {
-            row.get("label")?.as_i64()?.to_string()
-        }
+        // plan 013 T1b). emotion_syn's labels speak the reflex seat's NAME
+        // spelling — the reflex law (train_row_label → EMOTION_KEYS; the
+        // distill KeyMap::for_suite pins Name for this suite, test-pinned)
+        // — the arena seat's labels are those names, so the artifact must
+        // too or the seat joins Context (unseatable; measured: the
+        // int-spelling first fit fell back A0-only and rethink plan 015's
+        // identity clause fired). sst5_syn keeps the int-string spelling
+        // (the reflex FixedInt law).
+        "emotion_syn" => row.get("label")?.as_i64().and_then(|l| {
+            const EMOTION_SYN_KEYS: [&str; 6] = [
+                "sadness", "joy", "love", "anger", "fear", "surprise",
+            ];
+            EMOTION_SYN_KEYS.get(l as usize).map(|k| (*k).to_string())
+        })?,
+        "sst5_syn" => row.get("label")?.as_i64()?.to_string(),
+        "ag_news" | "emotion" | "sst5" | "xnli_en" => row.get("label")?.as_i64()?.to_string(),
         "prompt_injections" => match row.get("label")?.as_i64()? {
             1 => "yes".to_string(),
             _ => "no".to_string(),
