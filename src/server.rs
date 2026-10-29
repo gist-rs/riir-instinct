@@ -655,6 +655,10 @@ impl<const N: usize> SuiteServer<N> {
             // the rate levers (the serve parity gates pin this face).
             gate_fit_selection: false,
             gate_distance_only: false,
+            // The shipped ρ=30% (rethink plan 016's `gate_rho`) — the serve
+            // parity gates pin this face; the rate-targeted posture is the
+            // ESC lane's, not the arena seat's.
+            gate_rho: None,
             // The issue-079 published face: the per_byte drafter lever (reflex
             // Bench 131 cell 2 + the site republish `d3aeeae`), byte-identical
             // knobs to the arena's `run_suite_n` — the serve path stays the
