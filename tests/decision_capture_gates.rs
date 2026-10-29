@@ -151,7 +151,7 @@ fn install_stub_once() {
     static INSTALLED: OnceLock<()> = OnceLock::new();
     INSTALLED.get_or_init(|| {
         riir_instinct::server::install_ext_boots(ExtBoots {
-            bytes: |suite, _seat, _artifact_bytes, _arm| {
+            bytes: |_suite, _seat, _artifact_bytes, _arm| {
                 Ok(Box::new(StubBag { suite: "sst5" }))
             },
         })
