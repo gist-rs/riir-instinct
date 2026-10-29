@@ -1,8 +1,8 @@
 # Bench 0061 — emotion_syn arena GOAT read (the plan 015 bag half)
 
-**Status: MEASURED — the bag class does NOT clear ESC-G1 on emotion_syn (LB95 −0.0213); A0 serves, no bag seat. The ENCODER class is the suite's specialist (the ESC GOAT: rethink [Bench 077](../../riir-rethink/.benchmarks/077_emotion_syn_esc_goat/RESULTS.md), all gates PASS).**
+**Status: MEASURED — the bag class does NOT clear ESC-G1 on emotion_syn (LB95 −0.0213); A0 serves, no bag seat. The ENCODER class is the suite's specialist (the ESC GOAT: rethink [Bench 077](../../../riir-rethink/.benchmarks/077_emotion_syn_esc_goat/RESULTS.md), all gates PASS).**
 
-- **Lane:** reflex plan 013 T6 (claim `zed-amo-t6-emotionfit`, `59e2e93`) — the bag half of the emotion_syn re-fit, executed per rethink [plan 015](../../riir-rethink/.plans/015_emotion_syn_esc_goat_preregistration.md) §4a as amended (REVISE R1: the identity clause's premise corrected before any verdict).
+- **Lane:** reflex plan 013 T6 (claim `zed-amo-t6-emotionfit`, `59e2e93`) — the bag half of the emotion_syn re-fit, executed per rethink [plan 015](../../../riir-rethink/.plans/015_emotion_syn_esc_goat_preregistration.md) §4a as amended (REVISE R1: the identity clause's premise corrected before any verdict).
 - **Suite seat:** emotion_syn (the reflex NAME-label law — the first fit's int spelling joined Context unseatable, repaired `d0d7783`); the arena's A0 drift pin PASSED (arena == reflex `run()` at the published-posture knobs == 0.6925).
 
 ## The two postures of "modelless" (the R1 decomposition, both measured)
