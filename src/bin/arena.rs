@@ -1188,6 +1188,9 @@ fn run_suite_n<const N: usize>(
         // records publish).
         gate_fit_selection: false,
         gate_distance_only: false,
+        // The shipped ρ=30% (rethink plan 016's `gate_rho`) — the arena's
+        // published face is the T1.6 fit, never a rate-targeted posture.
+        gate_rho: None,
         drafter_fix: riir_reflex::engine::DrafterFix::PerByte,
     };
     let posture = fit_posture::<N>(name, &seat, &knobs)?;

@@ -203,7 +203,27 @@ budget  = { load = "eager", max_payload_mb = 16 }
 suite   = "typed_decisions"
 digest  = "blake3:7f7a39e1935f8665beaf61106a84a65a0066a73fe3eee4ad7638fda0f776f2f0"   # riir-train Issue 581 / Bench 614's re-mint over the FULL 1200-row train pool
 class   = "hosted_only"
-posture = { arm = "H2", beta = 0.5, n_min = 2.0, tau_n = 2.0 }    # best measured 0.6475 vs A0' 0.5725 (+7.5 pt, T2 LB95 +0.0580 PASS) AND vs the certified A1 0.6300 (+1.75 pt, paired LB95 +0.0062 PASS) AND vs H1 (+1.4 pt, LB95 +0.0034) — Bench 020's full-pool read; G1 PASS (platt 0.0095 vs floor 0.1701). The margin source is the option-conditioned (qid, option) tables (reflex issue 038 T7b + `oc()`, riir-instinct Issue 005's precondition — typed's options are state-field values the domain tables never speak). NO escalate row: the ESC GOAT CLEARED typed (Bench 0059: composed 0.6725 vs 0.6475, +2.50 pt, LB95 +0.0129) but the encoder SERVE lane answers the single-question contract only (the lane class's own boot guard; typed is 5 q/case) — the ESC cell stays the ARENA record until the per-question scoring shape exists (the T5 record's structural deferral, not a gate refusal).
+posture = { arm = "H2", beta = 0.5, n_min = 2.0, tau_n = 2.0 }    # best measured 0.6475 vs A0' 0.5725 (+7.5 pt, T2 LB95 +0.0580 PASS) AND vs the certified A1 0.6300 (+1.75 pt, paired LB95 +0.0062 PASS) AND vs H1 (+1.4 pt, LB95 +0.0034) — Bench 020's full-pool read; G1 PASS (platt 0.0095 vs floor 0.1701). The margin source is the option-conditioned (qid, option) tables (reflex issue 038 T7b + `oc()`, riir-instinct Issue 005's precondition — typed's options are state-field values the domain tables never speak). NO escalate row: the ESC GOAT CLEARED typed (Bench 0059: composed 0.6725 vs 0.6475, +2.50 pt, LB95 +0.0129) but the encoder SERVE lane answers the single-question contract only (EncoderLane::from_parts's own guard; typed is 5 q/case) — the ESC cell stays the ARENA record until the per-question scoring shape exists (the T5 record's structural deferral, not a gate refusal).
+pin_keys = []
+budget  = { load = "eager", max_payload_mb = 16 }
+
+# Issue 044's re-arm (rethink plan 016 / Bench 078, verdict AGREE 2026-10-30):
+# the first escalate row since 023 T2/T3. The ESC GOAT G1–G5 + the rate
+# confirmation at the pin — Arm A distance-only, gate rho 0.22 (the code
+# posture table ESC_GATE_RHOS owns the rho; the manifest owns the
+# worthiness record + the rate window): composed 0.7450 vs seated A0
+# 0.6925 (LB95 +0.0165, G1 PASS), rate 0.485 in-window with test
+# bootstrap p95 0.525 ≤ 0.60 and cal p95 0.300, worthiness armed at the
+# reflex prior m0.05 (probe delta +0.0600 on n=50 flagged cal rows; the
+# LCB leg NEGATIVE — lcb_floor none is EXPLICIT, the sst5 precedent's
+# disclosed-marginal-support shape). The think head is the plan-015
+# encoder fit (staged as emotion_syn_encoder_head_v1.bin, the preflight
+# convention name); the digest is the fit's blake3.
+[[vessel]]
+suite   = "emotion_syn"
+class   = "hosted_only"
+posture = { arm = "A0" }                                          # the seated incumbent cheap leg (plan 015 R1: the selected-posture modelless 0.6925 — Bench 061 measured the bag class OUT at the corrected floor)
+escalate = { think_file = "emotion_syn_encoder_head_v1.bin", think_digest = "blake3:4002c471f73f42b7b843fe18863ffbec7625f4f58aed2dcb961aa2db3da0d098", margin = 0.05, min_rate = 0.15, max_rate = 0.60 }
 pin_keys = []
 budget  = { load = "eager", max_payload_mb = 16 }
 
@@ -343,7 +363,7 @@ fn arsenal_manifest_bytes_are_pinned_byte_for_byte() {
 /// typed_decisions row's comment — zero data rows changed, no GOAT
 /// implication; the pin covers the bytes, comments included).
 const PINNED_PRODUCTION_MANIFEST_DIGEST: &str =
-    "blake3:3473b3ad228f8fdd1a909477a215a2a09ba0d949d794f7d3741207f51cbccbf0";
+    "blake3:733d93e6a31ada0a740a46cce5c07caddbbd6e31616cf6de54dfa31e049f32e9";
 
 #[test]
 fn production_manifest_bytes_are_pinned_byte_for_byte() {
@@ -388,7 +408,7 @@ fn manifest_posture_rows_are_the_serving_law_verdict() {
     // (qid, option) tables via reflex's `oc()`) — and vs H1 (+1.4 pt,
     // LB95 +0.0034); G1 PASS (platt 0.0095 vs floor 0.1701) — its seat
     // corpus ships from the full-pool datasets dir (deploy.yaml).
-    let expected: [(&str, Arm, &str); 4] = [
+    let expected: [(&str, Arm, &str); 5] = [
         (
             "massive_intent_en",
             Arm::H2 {
@@ -424,13 +444,19 @@ fn manifest_posture_rows_are_the_serving_law_verdict() {
         // the licence ledger, pinned by the licence gate below. The
         // code_fixtures A1 row was REMOVED 2026-10-11 — owner call: the
         // suite is retired from the reflex harness itself.)
+        // emotion_syn joined 2026-10-30 (issue 044's re-arm — rethink
+        // plan 016 / Bench 078, verdict AGREE): the artifact-less A0
+        // cheap leg + the first escalate row since 023 (the re-source
+        // law satisfied — first-party synthetic, its own GOAT).
+        ("emotion_syn", Arm::A0, "A0"),
     ];
     assert_eq!(
         m.rows().len(),
-        4,
-        "the manifest carries exactly the four permissive sellable rows (the \
-         licence-barred four, the six artifact-less A0 families, and the \
-         retired code_fixtures row left with their retirements)"
+        5,
+        "the manifest carries exactly the five rows (the four permissive \
+         sellable + the emotion_syn ESC re-arm; the licence-barred four, \
+         the six artifact-less A0 families, and the retired code_fixtures \
+         row left with their retirements)"
     );
     for (suite, arm, name) in expected {
         let row = m
@@ -1162,20 +1188,34 @@ fn escalate_manifest_text(posture: &str, escalate: &str) -> String {
     )
 }
 
-/// NO production escalate row exists since the licence demotions (issue
-/// 023 T2/T3 removed xnli_en's and ag_news's with their rows) — this gate
-/// pins that ZERO state beside the grammar: the parser + validator rules
-/// stay exercised by the mutation fixtures below, and the Bench-0057
-/// posture records + the G5 research replay live in the Rethink repo. A
-/// future escalate row re-arms ONLY with its own GOAT record AND, for a
-/// licence-barred suite, the ledger's re-source.
+/// The production escalate surface is EXACTLY the armed set: emotion_syn
+/// only, since issue 044's re-arm (rethink plan 016 / Bench 078, verdict
+/// AGREE 2026-10-30 — the re-source law satisfied: first-party synthetic,
+/// its own GOAT, the verdict's three lockstep conditions carried). Before
+/// that, the ZERO state held since the licence demotions (issue 023
+/// T2/T3 removed xnli_en's and ag_news's with their rows) — the parser +
+/// validator rules stay exercised by the mutation fixtures below, and
+/// the Bench-0057 posture records + the G5 research replay live in the
+/// Rethink repo. A FUTURE escalate row re-arms ONLY with its own GOAT
+/// record AND, for a licence-barred suite, the ledger's re-source.
 #[test]
-fn escalate_grammar_pins_the_zero_armed_production_state() {
+fn escalate_grammar_pins_the_armed_production_state() {
     let m = production_manifest();
-    assert!(
-        m.rows().iter().all(|r| r.escalate.is_none()),
-        "the production manifest carries NO escalate row (issue 023 T2/T3) — \
-         a re-arm rides a re-sourced suite's own GOAT, never a silent re-flag"
+    let armed: Vec<_> = m.rows().iter().filter(|r| r.escalate.is_some()).collect();
+    assert_eq!(
+        armed.len(),
+        1,
+        "the production manifest arms exactly one escalate row (emotion_syn) — \
+         a new armed row is its own re-source + GOAT, never a silent re-flag"
+    );
+    assert_eq!(armed[0].suite, "emotion_syn", "the armed row is emotion_syn");
+    let esc = armed[0].escalate.as_ref().expect("asserted above");
+    assert_eq!(esc.margin, 0.05, "the armed margin is the pinned record");
+    assert_eq!(esc.lcb_floor, None, "lcb_floor none is EXPLICIT (the LCB leg is negative)");
+    assert_eq!(
+        (esc.min_rate, esc.max_rate),
+        (0.15, 0.60),
+        "the rate window is the GOAT's"
     );
     // The four permissive rows each carry none, named — a suite-scoped
     // refusal spelling that names its subject.
