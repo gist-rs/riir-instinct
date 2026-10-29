@@ -222,7 +222,12 @@ pub fn suite_row(suite: &str, row: &serde_json::Value) -> Option<SuiteRow> {
             Some(t) => t.replace('_', " "),
             None => row.get("label")?.as_i64()?.to_string(),
         },
-        "ag_news" | "emotion" | "sst5" | "xnli_en" => row.get("label")?.as_i64()?.to_string(),
+        // emotion_syn + sst5_syn: the first-party synthetic suites (reflex
+        // plan 013 T1b) — int labels, same `text` law; rethink plan 015
+        // (the ESC GOAT prereg) names this arm the bag-class enabling change.
+        "ag_news" | "emotion" | "sst5" | "xnli_en" | "emotion_syn" | "sst5_syn" => {
+            row.get("label")?.as_i64()?.to_string()
+        }
         "prompt_injections" => match row.get("label")?.as_i64()? {
             1 => "yes".to_string(),
             _ => "no".to_string(),

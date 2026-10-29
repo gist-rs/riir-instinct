@@ -77,6 +77,11 @@ const SUITES: &[&str] = &[
     "s1mb_choice",
     "s1mb_noul",
     "s1mb_score",
+    // reflex plan 013 T1b: the first-party synthetic suites — emotion_syn
+    // seats for the plan 015 (rethink) ESC GOAT's bag half; sst5_syn joins
+    // when that leg opens (same lane, after emotion's verdict).
+    "emotion_syn",
+    "sst5_syn",
 ];
 // (The six harness families left this population 2026-10-02 — owner call:
 // the suites are retired from the reflex harness itself, at-chance on the
