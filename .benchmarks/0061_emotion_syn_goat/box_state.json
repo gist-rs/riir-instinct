@@ -1,0 +1,24 @@
+{
+  "start": {
+    "power": "AC Power",
+    "power_mode": null,
+    "load_1m": 2.9,
+    "swap_used_mb": 9.44,
+    "load_source": "loadavg1m",
+    "gpu_util_pct": null,
+    "gpu_mem_mib": null,
+    "latency_quotable": true,
+    "refusals": []
+  },
+  "end": {
+    "power": "AC Power",
+    "power_mode": null,
+    "load_1m": 2.68,
+    "swap_used_mb": 9.44,
+    "load_source": "loadavg1m",
+    "gpu_util_pct": null,
+    "gpu_mem_mib": null,
+    "latency_quotable": true,
+    "refusals": []
+  }
+}
