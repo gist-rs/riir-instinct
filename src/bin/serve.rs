@@ -91,6 +91,9 @@ fn main() {
         // The open bin has no origin gate — the recorded posture (the
         // teaching lane is loopback/local); Rethink's serve bin arms it.
         origin_gate: None,
+        // The open bin has no decision capture (rethink issue 045) — the
+        // teaching lane contributes nothing; Rethink's serve bin arms it.
+        on_decision: None,
     };
     if let Err(e) = run(cfg) {
         die(&e);

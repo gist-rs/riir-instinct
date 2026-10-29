@@ -82,6 +82,7 @@ fn boot_with_gate(gate: Option<OriginGateFn>) -> u16 {
         prevalidated_manifest: None,
         lane_loader: None,
         origin_gate: gate,
+        on_decision: None,
     };
     std::thread::Builder::new()
         .name("origin-gate-edge".into())

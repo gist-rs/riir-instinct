@@ -250,6 +250,7 @@ fn shared_edge_port() -> u16 {
             prevalidated_manifest: Some((manifest, digest, "rerank gate".into())),
             lane_loader: Some(stub_lane_loader),
             origin_gate: None,
+            on_decision: None,
         };
         std::thread::Builder::new()
             .name("rerank-edge".into())
@@ -657,6 +658,7 @@ fn lru_edge_port() -> (u16, &'static str) {
             prevalidated_manifest: Some((manifest, digest, "lru gate".into())),
             lane_loader: Some(vehicle_loader),
             origin_gate: None,
+            on_decision: None,
         };
         std::thread::Builder::new()
             .name("lru-edge".into())

@@ -151,6 +151,19 @@ pub struct ServeConfig {
     /// loader reads its own host config through its own process-global
     /// (the `install_ext_boots` precedent).
     pub lane_loader: Option<LaneLoader>,
+    /// The DECISION-CAPTURE seam (rethink issue 045 — the decstat
+    /// producer half's return): `None` = ungated (byte-identical boots,
+    /// the default posture). `Some(f)` consults `f` per SERVED decision
+    /// AFTER the response is written — the pre-split capture law verbatim
+    /// ("the decide path's latency never sees it, and a capture panic
+    /// (none expected; the sink is infallible) could not eat a reply").
+    /// A fn pointer like [`ServeConfig::lane_loader`] so the config stays
+    /// a plain struct; the capture fn reads its own host state through
+    /// its own process-global (the origin-gate precedent). Covers EVERY
+    /// served decision — every [`AnySuiteServer`] variant — at the one
+    /// site, never a per-lane wrap (a wrap would sample only the lanes
+    /// it can reach, biasing the host's corpus).
+    pub on_decision: Option<DecisionCaptureFn>,
     /// The ORIGIN-GATE seam (rethink issue 037 — the access plane's
     /// origin half): `None` = ungated (byte-identical boots, the
     /// default posture). `Some(f)` consults `f` on EVERY request after
@@ -194,6 +207,10 @@ pub struct GateRefusal {
 /// the accept loop, exactly like [`LaneLoader`].
 pub type OriginGateFn = fn(&GateReq<'_>) -> Option<GateRefusal>;
 
+/// The decision-capture fn pointer (rethink issue 045): called per served
+/// decision AFTER the response is written. See [`ServeConfig::on_decision`].
+pub type DecisionCaptureFn = fn(&crate::server::ServedDecision);
+
 /// Boot the lane registry and serve it — the accept loop never returns
 /// in practice, so `Ok(())` is unreachable; every boot refusal
 /// (manifest read/parse/validate, unknown `--suites` name, empty
@@ -212,6 +229,7 @@ pub fn run(cfg: ServeConfig) -> Result<(), String> {
         cors_origin,
         prevalidated_manifest,
         lane_loader,
+        on_decision,
         origin_gate,
     } = cfg;
 
@@ -348,7 +366,7 @@ pub fn run(cfg: ServeConfig) -> Result<(), String> {
                     .name("conn".into())
                     .stack_size(CONN_STACK)
                     .spawn(move || {
-                        if let Err(e) = handle_conn(s, &state, &allow, origin_gate) {
+                        if let Err(e) = handle_conn(s, &state, &allow, origin_gate, on_decision) {
                             eprintln!("[riir-instinct] conn error: {e}");
                         }
                     });
@@ -920,6 +938,7 @@ fn handle_conn(
     state: &Arc<SrvState>,
     allow: &[String],
     origin_gate: Option<OriginGateFn>,
+    on_decision: Option<DecisionCaptureFn>,
 ) -> std::io::Result<()> {
     stream.set_read_timeout(Some(READ_TIMEOUT))?;
     // The arsenal admin endpoints' recorded auth posture: loopback only
@@ -998,7 +1017,13 @@ fn handle_conn(
             }
             let mut body = vec![0u8; req.content_length];
             reader.read_exact(&mut body)?;
-            decide_edge(&mut writer, state, &body, cors.as_deref());
+            decide_edge(
+                &mut writer,
+                state,
+                &body,
+                cors.as_deref(),
+                on_decision,
+            );
         }
         ("POST", "/arsenal/release") | ("POST", "/arsenal/swap") if local => {
             if req.content_length > MAX_BODY {
@@ -1183,7 +1208,13 @@ fn healthz(state: &SrvState) -> String {
 }
 
 /// The /decide edge: parse → lane lookup → decide → receipt.
-fn decide_edge(stream: &mut TcpStream, srv: &Arc<SrvState>, body: &[u8], cors: Option<&str>) {
+fn decide_edge(
+    stream: &mut TcpStream,
+    srv: &Arc<SrvState>,
+    body: &[u8],
+    cors: Option<&str>,
+    on_decision: Option<DecisionCaptureFn>,
+) {
     #[derive(serde::Deserialize)]
     struct DecideReq {
         suite: String,
@@ -1477,6 +1508,14 @@ fn decide_edge(stream: &mut TcpStream, srv: &Arc<SrvState>, body: &[u8], cors: O
                 &serde_json::to_string(&doc).unwrap_or_else(|_| "{\"error\":\"serialize\"}".into()),
                 cors,
             );
+            // The decision-capture seam (rethink issue 045): AFTER the
+            // response is written — the pre-split law verbatim (the
+            // decide path's latency never sees it; a capture panic could
+            // not eat a reply). The capture fn is infallible-by-contract;
+            // a panic here is a host bug, never a wire one.
+            if let Some(cap) = on_decision {
+                cap(&d);
+            }
         }
         Ok(MultiDecision::Many(decisions)) => {
             let wire = wire_questions.as_deref().unwrap_or_default();
@@ -1524,6 +1563,12 @@ fn decide_edge(stream: &mut TcpStream, srv: &Arc<SrvState>, body: &[u8], cors: O
                 &serde_json::to_string(&doc).unwrap_or_else(|_| "{\"error\":\"serialize\"}".into()),
                 cors,
             );
+            // The capture (see the One arm): post-response, per decision.
+            if let Some(cap) = on_decision {
+                for d in &decisions {
+                    cap(d);
+                }
+            }
         }
         Err(e) => {
             // The bridge refusal + empty state + duplicate options — the
