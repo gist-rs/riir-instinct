@@ -4,44 +4,33 @@ The global `~/.agents/` rules apply; this file documents repo-local context.
 
 ## ⚠ THE SPLIT (riir-ai Proposal 052, 2026-10-03) — read before anything else
 
-**Instinct OPENS** as the public teaching lane — SINGLE-SOURCE-OF-TRUTH
-since 2026-10-03: the owner retired the two-repo arrangement ("git history
-leak is fine… i dont want 2 confusing repo i want single source of truth");
-the FULL git history lives on the public repo, `gist-rs/riir-instinct-internal`
-is DELETED-owner-side, and the 4090 box's remote must point at
-`gist-rs/riir-instinct.git`. Moat content in git HISTORY is owner-sanctioned;
-the moat law still binds the working TREE and the fence
-(`scripts/fence_gate.sh --post-split`) stays.
-**Rethink is the PRIVATE moat**: `../riir-rethink` (gist-rs/riir-rethink,
-born `e263686`, seeded verbatim from `moat/` at `4ffd08f`; fresh root — the
-whole git history stays HERE, `moat/README.md` is the pointer). The seam
-(`server::install_ext_boots` + `LaneBackend` + the `Ext` seat) is the
-plug-in path Rethink uses; `../riir-rethink/bin_hunks/` archives what left
-the bins. The seam's RERANK contract (options in → pick-or-abstain out,
-options echoed exactly as presented) is gated by
-`tests/ext_seat_rerank_gates.rs` — refine Plan 202 R3a's first-customer
-traffic; its own test binary because the install is once-per-process and
-`serve_gates` pins the same build's no-backend refusal.
-Split feature changes: `arena-laya` → **`laya-face`** (the G2 paired face vs
-public reflex's laya lane); `serve-encoder*` and `decstat` are GONE from
-this tree (Rethink-only). Winners default to `artifacts/cache` (env
-`INSTINCT_WINNERS_DIR` overrides): `scripts/fetch_artifacts.sh` pulls the
-public rows of `artifacts/manifest.toml` from the org HF lane and
-hash-verifies them (public rows only — a protected row is refused loud).
-The embedded manifest is the teaching default (`data/arsenal.toml`); the
+**Instinct OPENS** as the public teaching lane, SINGLE-SOURCE-OF-TRUTH: the
+full git history lives on the public repo (`gist-rs/riir-instinct-internal`
+is deleted; the 4090 remote must point at `gist-rs/riir-instinct.git`). Moat
+content in git HISTORY is owner-sanctioned; the moat law still binds the
+working TREE and the fence (`scripts/fence_gate.sh --post-split`) stays.
+**Rethink is the PRIVATE moat**: `../riir-rethink` (seeded from `moat/`;
+`moat/README.md` is the pointer; `../riir-rethink/bin_hunks/` archives what
+left the bins). The plug-in seam is `server::install_ext_boots` +
+`LaneBackend` + the `Ext` seat; its RERANK contract (options in →
+pick-or-abstain out, options echoed exactly) is gated by
+`tests/ext_seat_rerank_gates.rs` (own binary: the install is
+once-per-process and `serve_gates` pins the no-backend refusal).
+Feature changes: `arena-laya` → **`laya-face`**; `serve-encoder*` and
+`decstat` are GONE from this tree (Rethink-only). Winners default to
+`artifacts/cache` (env `INSTINCT_WINNERS_DIR` overrides), pulled +
+hash-verified by `scripts/fetch_artifacts.sh` (public rows only). The
+embedded manifest is the teaching default (`data/arsenal.toml`); the
 production verdict rides inline byte-pinned in `tests/serve_gates.rs`.
-Sections below that describe encoder/decstat/vessel work predate the split —
-those surfaces live in `moat/` now.
+Encoder/decstat/vessel surfaces described below live in Rethink now.
 
-## Naming law — SUPERSEDED by the split (kept for the record until C1)
+## Naming
 
-Decided 2026-09-30 (owner call), SUPERSEDED 2026-10-03 by riir-ai Proposal 052's
-split: Instinct does not retire as a brand; the repo does not rename. The
-disambiguation table's third axis lives in
+Instinct does not retire as a brand; the repo does not rename (riir-ai
+Proposal 052). The disambiguation table's third axis lives in
 `../riir-game-sdk/.docs/10_multiplayer_topology/tick_tier_model.md` §(a);
 the hero-strategy `rethinks` counter is game-side vocabulary — greps must
-not cross the streams. Site lanes: `hybrid → Instinct` (the open product),
-`encoder → Rethink` (the private moat).
+not cross the streams. Site lanes: `hybrid → Instinct`, `encoder → Rethink`.
 
 ## Boundary contract — read `BOUNDARY.md` first
 
@@ -210,40 +199,14 @@ per case).
 | xnli_en | A0 **0.5233** | ENC **0.8600** (Bench 036) |
 | emotion | A0 **0.8850** (the board's highest bar — every challenger measured out, Bench 038) | DEAD (Bench 032+035 screen) |
 
-The six home-made harness families are RETIRED (owner call 2026-10-02,
-reflex `31b11d2`) — board 15 → 9. `code_fixtures` RETIRED too (owner call
-2026-10-11, reflex-side same day): the last self-authored synthetic suite
-(reflex's own fn spans, n=32, seat-marked `synthetic`) — board 9 → 8;
-Bench 011/028 rows remain in .benchmarks as history.
-
-**Bench 0059 seat re-baseline (2026-10-08):** the arena/server seat = the
-CURRENT published posture — head-select RETIRED (the site's rows are head-off
-since the 10-01 full-pool re-basis, reflex issue 058; outcome-load-bearing only
-on banking77) + the issue-079 `per_byte` drafter lever armed (the `d3aeeae`
-site posture). The A0 identity pin is GREEN on all nine suites BOTH halves
-(board of its day — code_fixtures retired 2026-10-11 after this read)
-(arena == run() == the published site row) — the first full-pin run since the
-re-basis caught both drifts. Served cells digit-hold (registered == served,
-no manifest edit); sst5's T2 reads REFUSED at the canonical population
-disclosed in the bench record.
-
-**Bench 0060 s1mb A0-pin close (2026-10-09, `60f373c`):** the trio's dataset
-dirs wired into the canonical pool (`.raw/datasets_s1mb`, Plan 010's fetch —
-m3 symlinks + 4090 copies), closing 0059's standing disclosure. **A0 pin
-GREEN 3/3 both halves** — the first s1mb verification since the 650202c
-section. s1mb_score's site row was genuinely stale (`0.4967 → 0.4982`, the
-issue-079 `per_byte` vintage; +4 questions) — republished via the sanctioned
-`publish_bench.py` with BOTH hosts refreshed in one publish after the
-cross-host gate correctly REFUSED the m3-only update (4090 leg re-measured,
-bit-identity 3/3). choice/noul bit-stable. Two fixes rode the bench: the
-choice-pin red was a serde_json 1-ULP parse artifact (issue #505 class — the
-17-digit literal parses to `…d63f` vs computed `…d640`; `float_roundtrip`
-feature added; run-1's WIP attribution corrected), and the arena's
-`RunOptions` gained `pplx: false` (the reflex-082 field add broke this
-arena's build). Verdicts: choice a0_stands (A0 registered at the instrument),
-noul's A1 T2-refused (LB95 −0.0169), score no-winner (Issue 010 T2). The site
-rows' hybrid/encoder aux seat-readout fields remain b6425bf-era —
-stale-but-unrendered, disclosed in the bench record.
+Board = 8 suites (the six harness families and `code_fixtures` RETIRED —
+records in HISTORY.md). The arena/server seat = the CURRENT published posture
+(head-select retired; the issue-079 `per_byte` drafter lever armed); the A0
+identity pin (arena == `run()` == published site row) must be GREEN both
+halves on every suite, s1mb trio included (`.raw/datasets_s1mb`). Site rows
+republish only via `publish_bench.py`, both hosts in one publish (the
+cross-host gate refuses a one-host update). Pin parsing needs serde_json
+`float_roundtrip` (1-ULP literal artifacts otherwise).
 
 - Composition (`src/hybrid.rs`): H1 cascade (reflex fused-gate pass-through
   → top-k prune → specialist over survivors) + H2 prior fusion
@@ -288,27 +251,16 @@ stale-but-unrendered, disclosed in the bench record.
   representable WITHIN the 1 ms serve bar (`src/tetris_critic.rs`, feature
   `tetris_forecaster`, bench `--model`).
 
-### The encoder lane (pre-split records; the serving surfaces live in Rethink now)
+### The encoder lane (pre-split; serving surfaces live in Rethink now)
 
-- `posture ENC` served GPU hosts only (feature `serve-encoder`, which
-  implies `serve-encoder-shared` — ONE encode worker per checkpoint, RAM
-  2.5–3.1×, p99 0.37×; runtime demote switch
-  `RIIR_INSTINCT_ENCODER_SHARED=0`). CPU-only deploy shapes carry the
-  class-wide serve refusal (Issue 014) — every ENC cell publishes
-  `serve: ✗`.
-- **Q8 ADOPTED end-to-end** (Bench 0046: 14 paired reads, 5 PASS / 2
-  UNDECIDED / 0 FAIL, retention 0.956–1.000; Bench 0047 read-back bit-exact
-  — 842.6 → 447.7 MB = 53.1%): serve with `LAYA_WEIGHTS_VARIANT=q8`
-  (env-only, sidecar BLAKE3-verified, never auto-derived).
-- **Q4 FAILED** its probe (Bench 0055: banking77 Δacc −10.0pt UB95 −0.1410,
-  retention 0.568) — `LAYA_WEIGHTS_VARIANT=q4` may not serve ANYTHING;
-  measurement-only. Re-open bar: a head-class change (QAT/GPTQ-class, in
-  riir-train).
-- The DEFAULT teaching manifest is UNTOUCHED by the encoder arc (ENC rows
-  are a GPU-host deployment surface; a build without the feature refuses an
-  ENC row loud naming `--features serve-encoder`). D1 (an ENC cell
-  publishing as served) stays trigger-blocked until a real GPU serving
-  deploy exists; thai suites wait on the multilingual checkpoint
-  (riir-train 603, 4090-queued).
-- Arena fake-quant probes: `--fake-quant` (Q8) / `--fake-quant-q4` (Q4).
-- Arena read-scoped seat posture: `--winners-raw-v1` resolves every suite as `<suite>_winner_v1.bin` with Count bags (the routed-distill v1 convention; riir-train 623 T4 frozen-read prep) — without it the arena seat silently degrades banking77 to A0-only; serving bridges byte-untouched, `raw_v1_read` rides predictions.json.
+- ENC serves on GPU hosts only (feature `serve-encoder` ⇒
+  `serve-encoder-shared`, one encode worker per checkpoint; demote switch
+  `RIIR_INSTINCT_ENCODER_SHARED=0`); CPU-only deploys refuse class-wide
+  (Issue 014) — every ENC cell publishes `serve: ✗`. The default teaching
+  manifest carries no ENC rows; a build without the feature refuses one loud.
+- `LAYA_WEIGHTS_VARIANT=q8` is ADOPTED (Bench 0046/0047; env-only, sidecar
+  BLAKE3-verified); `q4` FAILED (Bench 0055) and may not serve anything —
+  re-open only on a head-class change (QAT/GPTQ-class, in riir-train).
+- Arena probes: `--fake-quant` (Q8) / `--fake-quant-q4` (Q4);
+  `--winners-raw-v1` resolves `<suite>_winner_v1.bin` with Count bags
+  (without it the arena seat silently degrades banking77 to A0-only).
