@@ -80,6 +80,87 @@ const DRAIN_CAP: usize = 4 * 1024 * 1024;
 const LOADER_STACK: usize = 64 * 1024 * 1024;
 const CONN_STACK: usize = 8 * 1024 * 1024;
 const READ_TIMEOUT: Duration = Duration::from_secs(10);
+
+/// The TOTAL wall-clock budget for one request read (issue 024: the
+/// per-read `READ_TIMEOUT` is `SO_RCVTIMEO` — it bounds ONE blocked
+/// read and any byte resets it, so a slow-drip peer pins the
+/// connection's slot forever under per-read timeouts alone). 10 s is
+/// far more than any legitimate `/decide` request needs. Enforced on
+/// BOTH axes (the impeccable-class fix, riir-refine Research 356):
+/// the socket read timeout is set to this deadline (the axis that
+/// works everywhere — on Windows a `recv` already parked in the kernel
+/// is NOT unblocked by another thread's `shutdown`), and a watchdog
+/// thread calls `shutdown(Both)` at expiry as the backstop for a peer
+/// that keeps trickling bytes without ever completing the request.
+const REQUEST_DEADLINE: Duration = Duration::from_secs(10);
+
+/// The armed deadline for one connection's request read. Drop disarms
+/// (sets the done flag) so the watchdog exits promptly after a fast,
+/// normal read instead of pinning a thread for the whole deadline.
+struct RequestDeadlineGuard {
+    done: std::sync::Arc<std::sync::atomic::AtomicBool>,
+}
+
+impl RequestDeadlineGuard {
+    /// Arm the deadline on `stream`: socket read timeout = the full
+    /// deadline (the always-works axis) + the shutdown(Both) watchdog
+    /// (the trickle backstop). The prior per-read timeout is restored
+    /// on `end` so the connection's later reads keep the coarse
+    /// backstop only.
+    fn arm(stream: &TcpStream) -> std::io::Result<Self> {
+        stream.set_read_timeout(Some(REQUEST_DEADLINE))?;
+        Self::arm_with(REQUEST_DEADLINE, stream)
+    }
+
+    /// The mechanism, parameterized (the test shrinks the deadline; the
+    /// served posture always arms the const).
+    fn arm_with(deadline: Duration, stream: &TcpStream) -> std::io::Result<Self> {
+        let done = std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false));
+        let Ok(watch_stream) = stream.try_clone() else {
+            return Err(std::io::Error::other("deadline watchdog: cannot clone stream"));
+        };
+        let watch_done = done.clone();
+        std::thread::Builder::new()
+            .name("request-deadline-watchdog".into())
+            .spawn(move || {
+                // Poll the done flag so a fast, normal read frees the
+                // watchdog promptly instead of pinning a thread for the
+                // whole deadline.
+                let step = Duration::from_millis(50);
+                let mut waited = Duration::ZERO;
+                while waited < deadline {
+                    if watch_done.load(std::sync::atomic::Ordering::SeqCst) {
+                        return;
+                    }
+                    std::thread::sleep(step);
+                    waited += step;
+                }
+                if !watch_done.load(std::sync::atomic::Ordering::SeqCst) {
+                    // Unblock any in-progress read so the request read
+                    // returns; the handler then drops its slot and the
+                    // connection closes.
+                    let _ = watch_stream.shutdown(std::net::Shutdown::Both);
+                }
+            })?;
+        Ok(Self { done })
+    }
+
+    /// Disarm the watchdog and restore the coarse per-read backstop.
+    fn end(self, stream: &TcpStream) {
+        self.done
+            .store(true, std::sync::atomic::Ordering::SeqCst);
+        let _ = stream.set_read_timeout(Some(READ_TIMEOUT));
+    }
+}
+
+impl Drop for RequestDeadlineGuard {
+    fn drop(&mut self) {
+        // Error paths that skip `end` still disarm the watchdog.
+        self.done
+            .store(true, std::sync::atomic::Ordering::SeqCst);
+    }
+}
+
 const VERSION: &str = env!("CARGO_PKG_VERSION");
 
 /// The decision_wire contract version — the R7 v1 freeze (reflex issue
@@ -940,7 +1021,15 @@ fn handle_conn(
     origin_gate: Option<OriginGateFn>,
     on_decision: Option<DecisionCaptureFn>,
 ) -> std::io::Result<()> {
-    stream.set_read_timeout(Some(READ_TIMEOUT))?;
+    // Issue 024: the request read (head + body) runs under a TOTAL
+    // wall-clock deadline, not just the per-read backstop — a slow-drip
+    // peer must not pin the connection slot past the deadline. The guard
+    // arms the socket timeout at the deadline + the shutdown(Both)
+    // watchdog; `end` restores the coarse per-read backstop for any
+    // later read on this connection.
+    let deadline = RequestDeadlineGuard::arm(&stream)?;
+    // (the coarse per-read backstop is (re)armed by `deadline.end` —
+    // arming it here would overwrite the deadline on the socket axis)
     // The arsenal admin endpoints' recorded auth posture: loopback only
     // (this server has no token surface; anything off the loopback
     // interface is refused before its body is read).
@@ -950,7 +1039,13 @@ fn handle_conn(
         .unwrap_or(false);
     let mut writer = stream.try_clone()?;
     let mut reader = BufReader::new(stream);
-    let Some(req) = read_request(&mut reader)? else {
+    let read_out = read_request(&mut reader);
+    // The deadline covers the REQUEST read (head + body); once the head
+    // is parsed the guard disarms and the coarse per-read timeout is
+    // restored for the body reads below (they stay bounded by the
+    // per-read window + MAX_BODY).
+    deadline.end(reader.get_ref());
+    let Some(req) = read_out? else {
         return Ok(());
     };
     let cors = cors_echo(req.origin.as_deref(), allow);
@@ -1961,3 +2056,111 @@ fn hex_digest(b: &[u8; 32]) -> String {
 // submitter, the verifier, and this edge all spell the receipt
 // identically. The `use` at the top of this file binds the names; the
 // call sites are unchanged.
+
+#[cfg(test)]
+mod request_deadline_tests {
+    //! Issue 024 regression gates: a slow-drip peer must NOT pin the
+    //! connection past the total deadline (the pre-fix posture — a
+    //! per-read timeout only — hung the reader forever, because every
+    //! drip byte resets SO_RCVTIMEO).
+    use super::*;
+    use std::io::{Read, Write};
+
+    /// A real loopback pair: the client drips one byte at a time and
+    /// then goes silent — the exact peer that defeated the per-read
+    /// timeout. The reader (the server half) runs under the armed
+    /// guard; the gate is that the read RETURNS (Err — the shutdown
+    /// unblocked it) inside deadline + margin, never hangs.
+    #[test]
+    fn the_slow_drip_peer_is_released_at_the_total_deadline() {
+        let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
+        let addr = listener.local_addr().unwrap();
+        let mut client = std::net::TcpStream::connect(addr).unwrap();
+        client.set_nodelay(true).unwrap();
+        let mut server = listener.accept().unwrap().0;
+
+        // The drip: a request line byte by byte, then silence — the
+        // request never completes, the connection never closes.
+        let _drip = std::thread::spawn(move || {
+            for b in b"GET /healthz HTTP/1.1\r\n" {
+                std::thread::sleep(Duration::from_millis(60));
+                if client.write_all(&[*b]).is_err() {
+                    return; // the deadline shutdown reached us: good
+                }
+            }
+            // Now silent for the test's window (the defect's posture is
+            // silence forever; the thread is left unjoined — the test
+            // process's exit reaps it, exactly like the defect leaves
+            // the pinned reader).
+            std::thread::sleep(Duration::from_millis(2500));
+        });
+
+        let deadline = Duration::from_millis(400);
+        let guard = RequestDeadlineGuard::arm_with(deadline, &server)
+            .expect("arm the deadline");
+        server
+            .set_read_timeout(Some(deadline + Duration::from_secs(30)))
+            .unwrap(); // generous per-read window: the drip answers it
+        let t0 = std::time::Instant::now();
+        let mut buf = [0u8; 1];
+        let mut total = 0usize;
+        // The pre-fix loop: read until the request completes or the
+        // peer closes. THE GATE: this loop ENDS inside deadline+margin
+        // because the watchdog shut the socket down.
+        loop {
+            match server.read(&mut buf) {
+                Ok(0) | Err(_) => break,
+                Ok(n) => {
+                    total += n;
+                    if total > 4096 {
+                        break;
+                    }
+                }
+            }
+        }
+        let took = t0.elapsed();
+        // The watchdog fired at the deadline BEFORE the drip finished
+        // (22 bytes would need 1.3 s at 60 ms/byte; the deadline is
+        // 400 ms) — the partial receipt (a few bytes) is the PROOF the
+        // drip was being served and the shutdown cut it at the deadline.
+        assert!(
+            total >= 1,
+            "the drip delivered bytes before the deadline (got {total})"
+        );
+        assert!(
+            took >= deadline.saturating_sub(Duration::from_millis(100)),
+            "the read ended only after the deadline armed the shutdown \
+             (took {took:?}, deadline {deadline:?})"
+        );
+        assert!(
+            took < Duration::from_secs(5),
+            "the read returned at the deadline, not hung forever (took {took:?})
+        ");
+        guard.end(&server);
+        // No join: the drip thread is left to its 2.5 s silence (the
+        // defect's posture); joining it would serialize the silence.
+    }
+
+    #[test]
+    fn a_fast_normal_request_is_not_disturbed_by_the_deadline() {
+        let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
+        let addr = listener.local_addr().unwrap();
+        let mut client = std::net::TcpStream::connect(addr).unwrap();
+        let server = listener.accept().unwrap().0;
+
+        let guard = RequestDeadlineGuard::arm_with(Duration::from_millis(300), &server)
+            .expect("arm the deadline");
+        client
+            .write_all(b"POST /decide HTTP/1.1\r\nHost: x\r\nContent-Length: 2\r\n\r\n{}")
+            .unwrap();
+        let mut reader = BufReader::new(server.try_clone().unwrap());
+        let req = read_request(&mut reader).unwrap().expect("the request parses");
+        assert_eq!(req.method, "POST");
+        assert_eq!(req.path, "/decide");
+        assert_eq!(req.content_length, 2);
+        let mut body = vec![0u8; 2];
+        reader.read_exact(&mut body).unwrap();
+        assert_eq!(&body, b"{}");
+        guard.end(reader.get_ref());
+    }
+}
