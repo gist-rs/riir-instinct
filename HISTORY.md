@@ -2,6 +2,12 @@
 
 Compacted 2026-10-16: every `##` heading kept verbatim, one compact entry per record; the full pre-compaction text is in git history (pre-compaction HEAD 0d9263517632). Operational rules live in `AGENTS.md`; removed issue files: git history.
 
+## 2026-10-30 — Issue 024 CLOSED: serve_edge request read under a TOTAL deadline (`RequestDeadlineGuard`)
+
+**Status: Resolved. Fix `c2f909b` (HEAD at close; the general law = riir-refine batch 316 `per-read-timeout-vs-request-deadline`, corpus `4d1fdb2e`). Issue file removed this date — its full life: `git log --follow -- .issues/024_serve_edge_slow_drip_lane_hold.md`.**
+
+`serve_edge.rs` set ONLY a per-read timeout (10 s) before reading the request — a slow-drip/silent peer pins a worker slot forever because any byte resets the socket timeout (the per-read-timeout-vs-request-deadline class, distilled from pbakaus/impeccable @ `02523aec`). Fix: `RequestDeadlineGuard` (`arm`/`arm_with`/`end` + Drop-disarm) — the request read runs under a TOTAL wall-clock deadline (`REQUEST_DEADLINE` 10 s) enforced on BOTH axes: socket read timeout set to the full deadline (the always-works axis; the Windows parked-recv quirk) + a 50 ms-poll watchdog thread calling `shutdown(Both)` at expiry (the trickle backstop); prior coarse `READ_TIMEOUT` restored after the head parses; Drop disarms on error paths. Regression gates (`request_deadline_tests`): a real loopback slow-drip peer (1 byte/60 ms then silence) released AT the deadline, a fast request undisturbed. Gates: clippy -D 0, lib 105/105. Product-coverage sibling: riir-reflex issue 103 (`d947fa5`, the same guard shape).
+
 ## 2026-10-27 — owner verdicts on the 008/009/019 remainders: Tetris DEFERRED entirely; holds moved to riir-rethink Plan 007
 Owner call: **Tetris is deferred — no value in training it for research's sake.** That includes the follow-up suggested at close (serving the modelless b0 champion through free Reflex via the raw-afterstate sidecar): DEFERRED too, no issue filed; the Tetris harness stays an inert opt-in instrument (`tetris` feature). The remaining owner holds (encoder seating, the instinct board flip / PoC→GOAT chip, mainnet) now live as `[-]` rows in riir-rethink `.plans/007` §"Arming checklist + owner holds" (rethink `78f9cae`); the hosted lane was armed on the numbers side the same day ($0.001/decision, riir-dapps `a2a6df1`; free tier 20/day). The vs-best gap lane's re-entry is riir-rethink Research 002 §Execution (synthetic emotion first) — rethink Issue 024 closed into it.
 
