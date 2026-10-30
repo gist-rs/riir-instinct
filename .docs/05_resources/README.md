@@ -1,7 +1,7 @@
 # 05_resources
 
 The Instinct lane's teaching docs — the DRY sources mirrored to
-reflex.gist.rs's `/resources` education page (riir-ai Proposal 053).
+reflex.riir.ai's `/resources` education page (riir-ai Proposal 053).
 
 | doc | what it is |
 |---|---|

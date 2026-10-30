@@ -165,7 +165,7 @@ fn the_gate_passes_decide_with_the_right_bearer_and_passes_everything_it_does_no
     // it must NOT read as the gate's 401 (the gate passed it).
     let resp = roundtrip(
         port,
-        "OPTIONS /decide HTTP/1.1\r\nHost: 127.0.0.1\r\nOrigin: https://rethink.gist.rs\r\nAccess-Control-Request-Method: POST\r\n\r\n",
+        "OPTIONS /decide HTTP/1.1\r\nHost: 127.0.0.1\r\nOrigin: https://rethink.riir.ai\r\nAccess-Control-Request-Method: POST\r\n\r\n",
     );
     assert!(
         !resp.starts_with("HTTP/1.1 401 "),

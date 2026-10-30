@@ -111,7 +111,7 @@ HISTORY_MOAT_RE='^(\.benchmarks/0(29|3[0-9]|4[0-9]|5[0-6])|\.issues/01[4-8]|\.pl
 RECORD_MOAT_RE='^\.benchmarks/0+(29|3[0-9]|4[0-9]|5[0-6])(_|$)'
 
 # The DELIBERATE STAYS — the published-evidence records that back the live
-# reflex.gist.rs cells and the public gate suite, allowed BY NAME (a set, never
+# reflex.riir.ai cells and the public gate suite, allowed BY NAME (a set, never
 # a count — a cardinality-preserving swap must red). Everything else matching
 # RECORD_MOAT_RE is a finding: the next moat record that lands in the public
 # tree must NOT read GREEN.

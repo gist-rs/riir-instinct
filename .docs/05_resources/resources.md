@@ -14,7 +14,7 @@ retirement of the internal split). The same idea runs one rung
 deeper in Rethink, where a bag-specialist is too coarse and a trained
 encoder head thinks behind HOSTED-ONLY (weights that never leave our
 servers — you call, we think) serving; see the family resources page
-(`/resources/` on reflex.gist.rs) for the full three-name picture.
+(`/resources/` on reflex.riir.ai) for the full three-name picture.
 
 ## How the composition works
 

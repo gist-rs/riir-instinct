@@ -1481,7 +1481,7 @@ fn spawn_server() -> ServerProc {
     // the bin's embedded default is the teaching manifest).
     cmd.env("INSTINCT_ARSENAL", production_manifest_file());
     // The CORS arm needs an allow-list.
-    cmd.env("RIIR_INSTINCT_ALLOWED_ORIGIN", "https://reflex.gist.rs");
+    cmd.env("RIIR_INSTINCT_ALLOWED_ORIGIN", "https://reflex.riir.ai");
     let child = cmd
         .stdout(Stdio::null())
         .stderr(Stdio::null())
@@ -1612,14 +1612,14 @@ fn http_edge_refusal_and_healthz_faces() {
     // CORS: allow-listed origin echoes; a foreign one is refused.
     let mut s = TcpStream::connect(("127.0.0.1", srv.port)).unwrap();
     s.write_all(
-        b"OPTIONS /decide HTTP/1.1\r\nOrigin: https://reflex.gist.rs\r\nConnection: close\r\n\r\n",
+        b"OPTIONS /decide HTTP/1.1\r\nOrigin: https://reflex.riir.ai\r\nConnection: close\r\n\r\n",
     )
     .unwrap();
     let mut resp = String::new();
     let _ = BufReader::new(s).read_to_string(&mut resp);
     assert!(resp.contains("204 No Content"), "{resp}");
     assert!(
-        resp.contains("Access-Control-Allow-Origin: https://reflex.gist.rs"),
+        resp.contains("Access-Control-Allow-Origin: https://reflex.riir.ai"),
         "{resp}"
     );
 
