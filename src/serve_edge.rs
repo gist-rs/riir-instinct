@@ -2344,7 +2344,7 @@ mod lru_hysteresis_tests {
         assert_eq!(reloads, 60, "capacity < working set: every arrival reloads");
         assert!(peak <= 2, "floor-off residency stays at capacity: {peak}");
         let mut residents: Vec<(u64, usize)> = Vec::new();
-        let mut stamps = vec![0u64; 3];
+        let mut stamps = [0u64; 3];
         let mut legacy_drive_evictions = Vec::new();
         let mut now = 0u64;
         for _ in 0..20 {
