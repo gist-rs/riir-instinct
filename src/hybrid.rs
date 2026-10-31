@@ -169,13 +169,15 @@ pub enum SeatJoin {
 
 /// Decide the join form for a seat (Plan 003). Name-joinable seats and
 /// the positional noul pair yield [`SeatJoin::Named`]; a seat whose labels
-/// are ALL absent from the artifact yields [`SeatJoin::Context`]. Two
+/// are ALL absent from the artifact yields [`SeatJoin::Context`]. Three
 /// drift shapes deliberately fall through to [`SeatJoin::Named`] with the
 /// seat labels unchanged, so [`SpecialistLane::join`] is the single
 /// refusal site: a PARTIAL overlap (some seat labels resolve, some don't
 /// — the join's "seat label not in the artifact" error carries the
 /// context), and the positional int spelling whose artifact lacks the
-/// unified pair (a producer-contract break — never read as context).
+/// unified pair (a producer-contract break — never read as context), and
+/// its mirror: a named seat over an int-spelled `"0".."n-1"` artifact of
+/// the same arity (a stale pre-content-binding artifact, Issue 027).
 #[must_use]
 pub fn seat_join(seat_labels: &[String], artifact_labels: &[String]) -> SeatJoin {
     let int_spelling = seat_labels
@@ -193,7 +195,17 @@ pub fn seat_join(seat_labels: &[String], artifact_labels: &[String]) -> SeatJoin
     if positional {
         return SeatJoin::Named(NOUL_PAIR.iter().map(|s| (*s).to_string()).collect());
     }
-    if !int_spelling && seat_labels.iter().all(|l| !artifact_labels.contains(l)) {
+    // The mirror producer-contract break (Issue 027): a renamed-ClassLabel
+    // seat (reflex 077's content binding) over a stale int-spelled
+    // artifact ("0".."n-1", same arity) is NOT a domain-space seat —
+    // fall through so the join refuses at BOOT naming the drift, never a
+    // context join that refuses every request.
+    let int_artifact = artifact_labels.len() == seat_labels.len()
+        && artifact_labels
+            .iter()
+            .enumerate()
+            .all(|(i, l)| l == &i.to_string());
+    if !int_spelling && !int_artifact && seat_labels.iter().all(|l| !artifact_labels.contains(l)) {
         return SeatJoin::Context;
     }
     SeatJoin::Named(seat_labels.to_vec())
@@ -763,6 +775,16 @@ mod tests {
         // Partial overlap → unchanged (join refuses with drift context).
         let seat = vec!["wf_a".to_string(), "no".to_string()];
         let artifact = vec!["no".to_string(), "yes".to_string()];
+        assert_eq!(seat_join(&seat, &artifact), SeatJoin::Named(seat));
+        // The mirror (Issue 027): a content-bound seat over a stale
+        // int-spelled artifact of the same arity — never context →
+        // unchanged (join refuses at boot).
+        let seat = vec![
+            "entailment".to_string(),
+            "neutral".to_string(),
+            "contradiction".to_string(),
+        ];
+        let artifact = vec!["0".to_string(), "1".to_string(), "2".to_string()];
         assert_eq!(seat_join(&seat, &artifact), SeatJoin::Named(seat));
         // Int spelling but NO pair in the artifact — a producer-contract
         // break, never context → unchanged (join refuses).
