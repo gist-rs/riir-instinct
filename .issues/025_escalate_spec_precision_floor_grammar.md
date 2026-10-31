@@ -1,6 +1,6 @@
 # Issue 025: `EscalateSpec` escalation-precision floor / damp field — one-definition home (OWNER-GATED)
 
-**Status:** Open — OWNER-GATED decision record (widens a public grammar that rethink byte-pins); sequenced AFTER riir-rethink Issue 047 lands
+**Status:** Open — OWNER-GATED decision record (widens a public grammar that rethink byte-pins); sequenced AFTER riir-rethink Issue 047 lands. **2026-10-31: rethink 047 LANDED** (`e7a770a`, rethink Bench 081). This changes the decision input: the served lane has NO outcome capture (decstat records receipts only), so in production the readout's precision leg is BLIND/UNDECIDABLE. A precision floor in `EscalateSpec` would have no live data to enforce against until an outcome join exists. Recommendation for the owner: hold the grammar widening until an outcome source lands. The only precision measurement so far is the research-posture sst5 replay (0.333 precision, +0.254 value per escalation).
 
 **Provenance:** follow-up consumer-routing pass after katgpt-rs Issue 975 closed (close commit `878526076`; PoC G1–G4 PASS at `48fd0be4d`; consumers (a)–(d) filed per katgpt-rs `HISTORY.md` §Issue 975). Re-scoped under verdict review: the first draft framed this as a "thrash→damp grammar arm," which claimed a dynamics (churn×slope) the ESC gate does not have — the gate is EXACT and stationary (rethink Issues 046/047, verified at `escalating_backend.rs` L1026/L1037). Retracted. The surviving question is static and simpler, below.
 
