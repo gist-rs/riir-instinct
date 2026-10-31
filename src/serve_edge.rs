@@ -117,7 +117,9 @@ impl RequestDeadlineGuard {
     fn arm_with(deadline: Duration, stream: &TcpStream) -> std::io::Result<Self> {
         let done = std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false));
         let Ok(watch_stream) = stream.try_clone() else {
-            return Err(std::io::Error::other("deadline watchdog: cannot clone stream"));
+            return Err(std::io::Error::other(
+                "deadline watchdog: cannot clone stream",
+            ));
         };
         let watch_done = done.clone();
         std::thread::Builder::new()
@@ -147,8 +149,7 @@ impl RequestDeadlineGuard {
 
     /// Disarm the watchdog and restore the coarse per-read backstop.
     fn end(self, stream: &TcpStream) {
-        self.done
-            .store(true, std::sync::atomic::Ordering::SeqCst);
+        self.done.store(true, std::sync::atomic::Ordering::SeqCst);
         let _ = stream.set_read_timeout(Some(READ_TIMEOUT));
     }
 }
@@ -156,8 +157,7 @@ impl RequestDeadlineGuard {
 impl Drop for RequestDeadlineGuard {
     fn drop(&mut self) {
         // Error paths that skip `end` still disarm the watchdog.
-        self.done
-            .store(true, std::sync::atomic::Ordering::SeqCst);
+        self.done.store(true, std::sync::atomic::Ordering::SeqCst);
     }
 }
 
@@ -748,18 +748,82 @@ fn lru_capacity() -> usize {
         .unwrap_or(0)
 }
 
+/// Issue 026 — the eviction hysteresis floor (`INSTINCT_LRU_MIN_IDLE_SECS`,
+/// in seconds; converted to millis): a Ready lazy lane is
+/// eviction-eligible only when idle for at least this long. `0`/unset =
+/// OFF — the byte-identical default posture (the `INSTINCT_LRU_CAPACITY`
+/// precedent: 0 never means "aggressive", it means "this guard off").
+/// Read LIVE at every trigger, the same way [`lru_capacity`] reads its env.
+fn lru_min_idle_ms() -> u64 {
+    std::env::var("INSTINCT_LRU_MIN_IDLE_SECS")
+        .ok()
+        .and_then(|v| v.trim().parse::<u64>().ok())
+        .map(|s| s.saturating_mul(1000))
+        .unwrap_or(0)
+}
+
+/// Issue 026 — the overshoot ceiling over capacity: at/over this many
+/// resident candidates the idle floor is WAIVED (plain LRU resumes) so
+/// the floor's softness stays bounded — resident lazy lanes never need
+/// exceed `capacity + OVERSHOOT_CAP` (the pressure valve; a named const,
+/// deliberately not a second env).
+pub(crate) const OVERSHOOT_CAP: usize = 16;
+
+/// Idle millis behind a last-use stamp at `now_ms` (stamps carry the +1
+/// never-used offset — strip it; a 0 stamp = never used → idle since
+/// process start).
+fn stamp_idle_ms(stamp: u64, now_ms: u64) -> u64 {
+    now_ms.saturating_sub(stamp.saturating_sub(1))
+}
+
+/// One eviction pass's victim choice over the resident candidate set —
+/// PURE (no env, no clock beyond `now_ms`, no state), so the Issue-026
+/// fixtures pin the DECISION SEQUENCE hermetically. `min_idle_ms == 0` =
+/// the floor off: every candidate eligible and the choice is exactly the
+/// incumbent expression (G1's byte-identity — the same `min_by_key`). At
+/// /over the ceiling (`capacity + OVERSHOOT_CAP` residents) the floor is
+/// waived — plain LRU resumes, which bounds residency. Below it, only
+/// lanes idle ≥ the floor are eligible; `None` = nothing eligible (the
+/// caller logs `skipped_not_idle` and loads over budget — best-effort).
+fn lru_victim(
+    candidates: &[(u64, usize)],
+    capacity: usize,
+    min_idle_ms: u64,
+    now_ms: u64,
+) -> Option<usize> {
+    let floor_active = min_idle_ms > 0 && candidates.len() < capacity + OVERSHOOT_CAP;
+    if !floor_active {
+        return candidates
+            .iter()
+            .copied()
+            .min_by_key(|(t, i)| (*t, *i))
+            .map(|(_, i)| i);
+    }
+    candidates
+        .iter()
+        .copied()
+        .filter(|(t, _)| stamp_idle_ms(*t, now_ms) >= min_idle_ms)
+        .min_by_key(|(t, i)| (*t, *i))
+        .map(|(_, i)| i)
+}
+
 /// The R5 LRU policy, best-effort by contract: while the resident lazy
 /// set is at/over [`lru_capacity`], [`LaneSlot::release`] the
 /// least-recently-used evictable lane to make room for `incoming`.
 /// Evictable = Ready AND a lazy manifest row (posture-as-data — eager
 /// rows are boot-critical and refuse release at the wire, so the policy
-/// never side-doors that law) AND not the incoming suite itself. When
-/// nothing is evictable the load proceeds anyway — the policy bounds a
-/// resource, it never refuses a decision; the hoard gate stays the only
-/// admission control (orthogonal bounds: Vendi judges DIVERSITY, the LRU
-/// policy bounds RESIDENCY). Returns the eviction count (logged per
-/// lane; the released tag is kept, so the re-load installs `Idempotent`).
+/// never side-doors that law) AND not the incoming suite itself — and,
+/// when the Issue-026 floor is armed (`INSTINCT_LRU_MIN_IDLE_SECS` > 0),
+/// idle for at least the floor (waived at/over the
+/// [`OVERSHOOT_CAP`] ceiling, which bounds the floor's residency
+/// softness). When nothing is evictable the load proceeds anyway — the
+/// policy bounds a resource, it never refuses a decision; the hoard gate
+/// stays the only admission control (orthogonal bounds: Vendi judges
+/// DIVERSITY, the LRU policy bounds RESIDENCY). Returns the eviction
+/// count (logged per lane; the released tag is kept, so the re-load
+/// installs `Idempotent`).
 fn lru_make_room(state: &SrvState, incoming: &str, capacity: usize) -> usize {
+    let min_idle_ms = lru_min_idle_ms();
     let mut evicted = 0;
     loop {
         // (last_used, slot index) of every candidate — Ready, lazy row,
@@ -787,7 +851,23 @@ fn lru_make_room(state: &SrvState, incoming: &str, capacity: usize) -> usize {
         if candidates.len() < capacity {
             return evicted;
         }
-        let Some((_, victim_idx)) = candidates.iter().copied().min_by_key(|(t, i)| (*t, *i)) else {
+        let Some(victim_idx) = lru_victim(
+            &candidates,
+            capacity,
+            min_idle_ms,
+            crate::arsenal_ops::process_epoch_ms(),
+        ) else {
+            // Issue 026 — every resident is inside the idle floor (and
+            // below the ceiling): skip this trigger LOUD, never silent
+            // (the load proceeds over budget — best-effort stays
+            // best-effort).
+            eprintln!(
+                "[riir-instinct] arsenal: LRU eviction skipped (skipped_not_idle={} below the \n                 {} ms floor, resident {}/{}, making room for {incoming:?} over budget)",
+                candidates.len(),
+                min_idle_ms,
+                candidates.len(),
+                capacity,
+            );
             return evicted;
         };
         let victim = &state.slots[victim_idx];
@@ -1112,13 +1192,7 @@ fn handle_conn(
             }
             let mut body = vec![0u8; req.content_length];
             reader.read_exact(&mut body)?;
-            decide_edge(
-                &mut writer,
-                state,
-                &body,
-                cors.as_deref(),
-                on_decision,
-            );
+            decide_edge(&mut writer, state, &body, cors.as_deref(), on_decision);
         }
         ("POST", "/arsenal/release") | ("POST", "/arsenal/swap") if local => {
             if req.content_length > MAX_BODY {
@@ -2096,8 +2170,7 @@ mod request_deadline_tests {
         });
 
         let deadline = Duration::from_millis(400);
-        let guard = RequestDeadlineGuard::arm_with(deadline, &server)
-            .expect("arm the deadline");
+        let guard = RequestDeadlineGuard::arm_with(deadline, &server).expect("arm the deadline");
         server
             .set_read_timeout(Some(deadline + Duration::from_secs(30)))
             .unwrap(); // generous per-read window: the drip answers it
@@ -2135,7 +2208,8 @@ mod request_deadline_tests {
         assert!(
             took < Duration::from_secs(5),
             "the read returned at the deadline, not hung forever (took {took:?})
-        ");
+        "
+        );
         guard.end(&server);
         // No join: the drip thread is left to its 2.5 s silence (the
         // defect's posture); joining it would serialize the silence.
@@ -2154,7 +2228,9 @@ mod request_deadline_tests {
             .write_all(b"POST /decide HTTP/1.1\r\nHost: x\r\nContent-Length: 2\r\n\r\n{}")
             .unwrap();
         let mut reader = BufReader::new(server.try_clone().unwrap());
-        let req = read_request(&mut reader).unwrap().expect("the request parses");
+        let req = read_request(&mut reader)
+            .unwrap()
+            .expect("the request parses");
         assert_eq!(req.method, "POST");
         assert_eq!(req.path, "/decide");
         assert_eq!(req.content_length, 2);
@@ -2162,5 +2238,203 @@ mod request_deadline_tests {
         reader.read_exact(&mut body).unwrap();
         assert_eq!(&body, b"{}");
         guard.end(reader.get_ref());
+    }
+}
+
+#[cfg(test)]
+mod lru_hysteresis_tests {
+    //! Issue 026 — the eviction hysteresis fixtures, HERMETIC: the
+    //! decision is [`lru_victim`] (pure), and `release`'s only effect on
+    //! the next pass's candidate set is REMOVAL (Ready → Unloaded), so a
+    //! sequential drive over a plain `Vec<(stamp, idx)>` models the
+    //! `lru_make_room` loop faithfully — no env, no clock, no live edge.
+    //! G1 pins the flag-off sequence against the LEGACY algorithm inlined
+    //! verbatim as the oracle; G2/G4 pin the floor's reload cut and the
+    //! residency bound on seeded oscillation fixtures.
+
+    use super::*;
+
+    /// One arrival's make-room decision: evict per [`lru_victim`], then
+    /// the incoming lane installs (its stamp = now). Returns the evicted
+    /// slot indices in order. `resident` is the drive's resident set —
+    /// (stamp, slot_idx), slot order stable.
+    fn arrival_make_room(
+        residents: &mut Vec<(u64, usize)>,
+        incoming: usize,
+        capacity: usize,
+        min_idle_ms: u64,
+        now_ms: u64,
+    ) -> Vec<usize> {
+        let mut evicted = Vec::new();
+        loop {
+            let candidates: Vec<(u64, usize)> = residents
+                .iter()
+                .copied()
+                .filter(|(_, i)| *i != incoming)
+                .collect();
+            if candidates.len() < capacity {
+                return evicted;
+            }
+            let Some(slot) = lru_victim(&candidates, capacity, min_idle_ms, now_ms) else {
+                return evicted; // skipped_not_idle (the log fires in make_room)
+            };
+            residents.retain(|&(_, i)| i != slot);
+            evicted.push(slot);
+        }
+    }
+
+    /// The oscillation drive: `suites.len()` suites, each arriving
+    /// round-robin `rounds` times, the clock advancing `tick_ms` per
+    /// arrival. Resident arrival = a touch (no reload); non-resident
+    /// arrival = make room + reload (the 503 window). Returns the full
+    /// eviction sequence, the reload count, and the peak post-install
+    /// resident count (the bound's sampling point — the incoming lane is
+    /// not Ready until its load lands, after make room ran).
+    fn drive(
+        suites: usize,
+        rounds: usize,
+        capacity: usize,
+        min_idle_ms: u64,
+        tick_ms: u64,
+    ) -> (Vec<usize>, usize, usize) {
+        let mut residents: Vec<(u64, usize)> = Vec::new();
+        let mut stamps = vec![0u64; suites];
+        let mut evictions = Vec::new();
+        let mut reloads = 0usize;
+        let mut peak = 0usize;
+        let mut now = 0u64;
+        for _r in 0..rounds {
+            for s in 0..suites {
+                now += tick_ms;
+                if stamps[s] > 0 {
+                    // Resident: a touch, no reload, no eviction.
+                    stamps[s] = now + 1;
+                    if let Some(row) = residents.iter_mut().find(|(_, i)| *i == s) {
+                        row.0 = now + 1;
+                    }
+                    continue;
+                }
+                let evicted = arrival_make_room(&mut residents, s, capacity, min_idle_ms, now);
+                for slot in &evicted {
+                    stamps[*slot] = 0; // the release → Unloaded: the next arrival reloads
+                }
+                evictions.extend(evicted);
+                stamps[s] = now + 1; // the +1 never-used offset
+                residents.push((now + 1, s));
+                reloads += 1;
+                peak = peak.max(residents.len());
+            }
+        }
+        (evictions, reloads, peak)
+    }
+
+    #[test]
+    fn g1_flag_off_matches_the_legacy_sequence_exactly() {
+        // Round-robin over 3 suites at capacity 2: every arrival after
+        // the first two reloads, evicting the LRU resident. The floor-off
+        // drive must produce the LEGACY algorithm's exact sequence — the
+        // legacy chooser inlined verbatim over the same schedule (the
+        // pin: min_by_key over ALL candidates, no floor, no ceiling).
+        let (evictions, reloads, peak) = drive(3, 20, 2, 0, 1_000);
+        assert!(!evictions.is_empty());
+        // The thrash signature: the working set (3 suites) EXCEEDS the
+        // capacity (2), so every round-robin arrival finds itself evicted
+        // — all 60 arrivals reload. That pathology is exactly what the
+        // floor exists to stop.
+        assert_eq!(reloads, 60, "capacity < working set: every arrival reloads");
+        assert!(peak <= 2, "floor-off residency stays at capacity: {peak}");
+        let mut residents: Vec<(u64, usize)> = Vec::new();
+        let mut stamps = vec![0u64; 3];
+        let mut legacy_drive_evictions = Vec::new();
+        let mut now = 0u64;
+        for _ in 0..20 {
+            for s in 0..3 {
+                now += 1_000;
+                if stamps[s] > 0 {
+                    stamps[s] = now + 1;
+                    if let Some(row) = residents.iter_mut().find(|(_, i)| *i == s) {
+                        row.0 = now + 1;
+                    }
+                    continue;
+                }
+                loop {
+                    let candidates: Vec<(u64, usize)> =
+                        residents.iter().copied().filter(|(_, i)| *i != s).collect();
+                    if candidates.len() < 2 {
+                        break;
+                    }
+                    let Some((_, slot)) = candidates.iter().copied().min_by_key(|(t, i)| (*t, *i))
+                    else {
+                        break;
+                    };
+                    residents.retain(|&(_, i)| i != slot);
+                    stamps[slot] = 0; // the release → Unloaded (same model)
+                    legacy_drive_evictions.push(slot);
+                }
+                stamps[s] = now + 1;
+                residents.push((now + 1, s));
+            }
+        }
+        assert_eq!(evictions, legacy_drive_evictions, "flag-off == legacy");
+    }
+
+    #[test]
+    fn g2_floor_cuts_oscillation_reloads_by_at_least_half() {
+        // capacity 2, three suites round-robin: the flag-off policy
+        // thrashes — one evict+reload per round (the third arrival always
+        // finds a full residency); the 60 s floor holds the working set
+        // (arrivals tick 1 s apart, every lane stays fresh) — reloads
+        // drop to the initial three and never recur.
+        let (_, reloads_off, _) = drive(3, 20, 2, 0, 1_000);
+        let (_, reloads_on, _) = drive(3, 20, 2, 60_000, 1_000);
+        assert_eq!(reloads_off, 60, "flag-off thrashes: every arrival reloads");
+        assert!(
+            reloads_on * 2 <= reloads_off,
+            "pre-registered >=50% reload cut: on={reloads_on} off={reloads_off}"
+        );
+        assert_eq!(reloads_on, 3, "the held working set never re-loads");
+    }
+
+    #[test]
+    fn g4_peak_resident_stays_bounded_by_capacity_plus_overshoot() {
+        // 24 distinct suites, one arrival each, capacity 2, a fresh-every
+        // arrival floor of 60 s: the floor skips until residency reaches
+        // the ceiling (2 + OVERSHOOT_CAP), then plain LRU resumes — the
+        // pressure valve. Peak post-install residency ≤ the ceiling.
+        let (evictions, reloads, peak) = drive(24, 1, 2, 60_000, 1_000);
+        let ceiling = 2 + OVERSHOOT_CAP;
+        assert!(
+            peak <= ceiling,
+            "residency bound: peak {peak} > capacity+OVERSHOOT_CAP {ceiling}"
+        );
+        assert!(
+            !evictions.is_empty(),
+            "the ceiling must actually fire the waive on this fixture"
+        );
+        assert_eq!(reloads, 24, "every distinct suite reloads exactly once");
+        // And the flag-off twin never exceeds capacity itself.
+        let (_, _, peak_off) = drive(24, 1, 2, 0, 1_000);
+        assert!(peak_off <= 2);
+    }
+
+    #[test]
+    fn idle_floor_at_exact_boundary_is_eligible_and_stamp_zero_reads_since_boot() {
+        // The eligibility predicate's edges: idle == min_idle is
+        // ELIGIBLE (>=, not >), and a never-used stamp (0) reads as idle
+        // since process start (boot), not as 0 ms.
+        let candidates = vec![(5u64, 0usize), (1u64, 1)];
+        let now = 6_001u64;
+        // stamp 5 → idle 6001-4 = 5997 < 6000 → ineligible; stamp 1 →
+        // idle 6001-0 = 6001 ≥ 6000 → eligible. Wait — the +1 offsets:
+        // stamp 1 strips to 0 → idle = 6001. stamp 5 strips to 4 →
+        // 5997. Exactly one eligible lane.
+        assert_eq!(stamp_idle_ms(5, now), 5_997);
+        assert_eq!(stamp_idle_ms(1, now), 6_001);
+        assert_eq!(stamp_idle_ms(0, now), 6_001, "never-used = since boot");
+        let victim = lru_victim(&candidates, 2, 6_000, now);
+        assert_eq!(victim, Some(1), "only the boundary-eligible lane");
+        // A fully-fresh set: no eligible lane → None (the skip path).
+        let fresh = vec![(now, 0), (now, 1)];
+        assert_eq!(lru_victim(&fresh, 2, 60_000, now), None);
     }
 }

@@ -83,14 +83,19 @@ hard-coded posture tables or filename conventions behind it.
 - **A6** posture rows are pinned in both media — `tests/serve_gates.rs`
   pins the manifest's BLAKE3 digest; a TOML edit reds like a code edit.
 - **A7** lazy + budgeted, evicted by wire signal or by the R5 LRU
-  policy (`INSTINCT_LRU_CAPACITY`, 0 = off) — `budget.load = "lazy"`
-  rows boot `Unloaded` (the 503 window covers the first load);
-  `POST /arsenal/release` evicts, `POST /arsenal/swap` swaps monotonic
-  (both loopback-only); the LRU policy releases the least-recently-used
-  Ready lazy lane at a lazy trigger when residency is at/over capacity
-  (best-effort, eager rows exempt — the same release machinery, the tag
-  kept, the reload `Idempotent`). Kill-switch `RIIR_INSTINCT_HOARD_GATE=0`
-  (the exact literal) disarms the hoarding gate.
+  policy (`INSTINCT_LRU_CAPACITY`, 0 = off; Issue 026's eviction
+  hysteresis `INSTINCT_LRU_MIN_IDLE_SECS`, 0 = off — a Ready lazy lane is
+  eviction-eligible only when idle ≥ the floor, waived at/over the
+  `OVERSHOOT_CAP` 16 ceiling so residency stays ≤ capacity + 16;
+  `skipped_not_idle=N` logs when the floor skips a trigger) —
+  `budget.load = "lazy"` rows boot `Unloaded` (the 503 window covers the
+  first load); `POST /arsenal/release` evicts, `POST /arsenal/swap`
+  swaps monotonic (both loopback-only); the LRU policy releases the
+  least-recently-used Ready lazy lane at a lazy trigger when residency
+  is at/over capacity (best-effort, eager rows exempt — the same release
+  machinery, the tag kept, the reload `Idempotent`). Kill-switch
+  `RIIR_INSTINCT_HOARD_GATE=0` (the exact literal) disarms the hoarding
+  gate.
 - **A8** no runtime minting (riir-train mints); **A9** same-engine-class
   only; **A10** moat (PUBLIC-RELEASE carries no GAME-IP content).
 
