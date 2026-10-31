@@ -1,6 +1,6 @@
 # Issue 027: an int-labelled artifact on a content-bound seat is misread as a CONTEXT join (xnli_en/ag_news since reflex 077)
 
-**Status:** OPEN, filed 2026-10-31 (amo, session `claude-amo-i047`). Root cause measured; the fix is not chosen. It only affects research posture: no production arsenal row has this shape today.
+**Status:** OPEN — T1 LANDED (boot refusal); T2/T3 open. Filed 2026-10-31 (amo, session `claude-amo-i047`). Root cause measured; the fix is not chosen. It only affects research posture: no production arsenal row has this shape today.
 
 ## Symptom
 
@@ -30,6 +30,6 @@ The G5 gate has been red since 2026-10-08, unseen: it is parity-gated (`INSTINCT
 
 ## Tasks
 
-- [ ] T1 Option A plus a `seat_join` unit row for the mirror drift (named seat over an int artifact means NOT context)
+- [x] T1 Option A (LANDED `383494d`; xnli now refuses at boot: `join: seat label "entailment" not in the artifact`) plus a `seat_join` unit row for the mirror drift (named seat over an int artifact means NOT context)
 - [ ] T2 Decide B or C for the research lane, or record G5 as RETIRED-with-reason in the rethink test doc
 - [ ] T3 The ag_news check, on a box that has the corpus
