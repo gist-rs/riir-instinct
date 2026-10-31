@@ -64,6 +64,12 @@ escalation-set signal downstream lanes (Rethink's ESC) read.
   whole under the slot lock — no torn reads, no blend, no dyn.
 - **Wire eviction** — a release call evicts a lazy lane; the epoch tag is
   kept, so reloading a downgraded artifact still refuses.
+- **The LRU residency bound** — lazy lanes are additionally bounded by an
+  LRU policy: at/over the capacity knob (`INSTINCT_LRU_CAPACITY`, `0` =
+  off), the least-recently-used Ready lazy row that has sat idle past the
+  hysteresis floor is released at the next lazy trigger, best-effort — a
+  resource bound, never an admission control (the hoard gate stays the
+  only admission judge), eager rows exempt.
 
 ## The extension seam
 
@@ -102,14 +108,30 @@ not request time**: if the heavier class does not strictly beat the incumbent
 at the paired gate, the manifest simply keeps the cheaper arm, and the
 heavier lane never boots for that suite.
 
-## Where adaptivity could live
+## Where adaptivity lives today
 
-A two-tier escalation INSIDE one seated suite — answer on the cheap leg, and
-escalate the hard cases to the think leg behind a worthiness gate with the
-tier disclosed in the receipt — is specified in the private lane's design
-record (escalation lane proposal, the private moat repo). The measured
-caution it carries: a bare "escalate on abstain" transfers badly out of
-sample, so per-suite margins, a bounded escalation rate, and a loud
-fallback policy are load-bearing parts of that design, not decoration. The
-open grammar changes only if that composition passes its GOAT gate — via the
-two-repo lockstep the pin law already enforces.
+The two-tier escalation is no longer hypothetical — the private lane
+SHIPPED it through this seam: answer on the cheap leg, escalate the hard
+cases to the think leg behind a worthiness gate, the tier disclosed in the
+receipt. It was promoted after its paired GOAT (riir-rethink Issue 017 T5,
+2026-10-04, Bench 0060) and is armed per the same laws this page carries:
+the manifest `escalate` table is the only arming surface (A5 — no new env
+switch), one row carries an escalate table today (`emotion_syn`), a
+rolling rate guard latches a cheap-only demotion outside its band, and
+`RIIR_RETHINK_ESC=0` (the exact literal) is the runtime demote. The
+measured caution it was designed under still holds in the shipped shape:
+per-suite margins, a bounded escalation rate, and a loud no-fallback
+policy are load-bearing, not decoration. A report-only value-of-information
+readout rides beside the guard (riir-rethink Issue 047, 2026-10-31) —
+receipts only, so its precision leg stays blind until an outcome join
+exists, and it gates nothing.
+
+What stays open HERE is the grammar question: should the open
+`EscalateSpec` carry a static precision floor / damp field, so the gate
+itself sits closer to the value frontier between re-arms? That widens a
+public grammar the private lane byte-pins — a contract act held
+owner-gated in [Issue 025](../../.issues/025_escalate_spec_precision_floor_grammar.md),
+with the standing recommendation to HOLD until an outcome source exists
+(a floor with no live data to enforce against enforces nothing). The
+one-definition law is unchanged: the vocabulary lands HERE and rethink
+byte-pins it — the two-repo lockstep the manifest law already enforces.
