@@ -1,6 +1,7 @@
 # Issue 026: `LaneSlot` LRU evict/reload hysteresis — the small churn guard
 
-**Status:** Open — small, standalone; env-gated with `0` = current behavior; NOT a step_noise consumer (right-sized tool, see Fix shape)
+**Status:** Open — small, standalone; env-gated with `0` = current behavior; NOT a step_noise consumer (right-sized tool, see Fix shape)  
+**Claimed:** zed-m3-i026, 1793430322, expires 2026-11-02T07:05:22+00:00
 
 **Provenance:** follow-up consumer-routing pass after katgpt-rs Issue 975 closed (close commit `878526076`; PoC G1–G4 PASS at `48fd0be4d`; consumers (a)–(d) filed per katgpt-rs `HISTORY.md` §Issue 975). Motivated by riir-train Research 485's diagnosis — "update too aggressive relative to evidence" — during the 2026-10-31 routing pass. Honesty note recorded up front: the FIX here is plain hysteresis, not the `StepNoiseMonitor` — pulling a regime monitor to do one idle-time comparison fails the right-sizing bar (substrate-first / SOLID). The paper motivates; it is not consumed. (This issue survives verdict round 1 unchanged in shape; the code citations, alloc claim, and memory bound below are the round-1 corrections.)
 
