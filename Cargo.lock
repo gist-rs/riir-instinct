@@ -1297,11 +1297,20 @@ dependencies = [
  "katgpt-core",
  "katgpt-tetris",
  "reflexer-vessel",
+ "riir-ledger",
  "riir-reflex",
  "serde",
  "serde_json",
  "tempfile",
  "toml",
+]
+
+[[package]]
+name = "riir-ledger"
+version = "0.1.0"
+dependencies = [
+ "serde",
+ "serde_json",
 ]
 
 [[package]]

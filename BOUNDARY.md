@@ -73,14 +73,22 @@ teaching/product sibling of the public modelless engine `../riir-reflex`:
 | katgpt-core | `../katgpt-rs/crates/katgpt-core` | `default-features = false`, features `best_belief` + `sigmoid_calibration`. Consumed: `exact_sigmoid` (the score readout, never softmax — `src/specialist.rs`), `best_belief_score` (the ε-quantile Beta LCB — the pre-registration instrument's selector, `src/stats.rs`), `SigmoidGateCalibrator` (the G1 Platt face, the arena) — measured at P3 T1/T2 (2026-09-26/27) |
 | riir-reflex | `../riir-reflex` | lib dep, features `modelless,nb_scope,nb_ridge,option_cond`; consumed: `embed::hashed_tokens_into` (the ONE tokenizer law) + the `nb_scope` tables for the hybrid composition + `harness::{suites, metrics, runner::seat}` (the seat — byte-identical questions) — measured at P3 T1/T3. **Never a dep on the harness's lane runners.** The opt-in `laya-face`/`laya-face-metal` features forward `laya-riir`/`laya-riir-metal` for the arena's G2 paired face (the rename of the retired `arena-laya*` spellings) |
 | `reflexer-vessel` | `../riir-reflexer/crates/reflexer-vessel` | optional (the `vessel` feature); **public read only** — `decode`/`open`/`peek`/`PinTable`/`ApplyState`/`check_monotonic`; the HOSTED-ONLY class refuses by the format crate's own law, which is exactly why the hosted reader lives in the moat — the public boot measured at the B2 move (2026-10-03) |
+| riir-ledger | `../riir-ledger` | optional (the `points_drain` feature; landed WITH its first consumer, Plan 326 T8–T12, 2026-11-02): the points-plane wire DTOs + the ONE attestation signing-bytes home — a zero-dep serde leaf, consumed never re-derived. The default build never resolves it |
+| ed25519-dalek (lib, optional) | crates.io | **one narrow optional-lib row** (amended 2026-11-02, Plan 326 T9): verify-only Ed25519 for the hosted-seat drain attestation behind `points_drain`; `default-features = false`. The default and public teaching builds still carry zero ed25519 in their lib surface (the carve law below holds where it was written) |
 | katgpt-tetris | `../katgpt-rs/crates/katgpt-tetris` | the Tetris lane's shared engine (Issue 009 T5/T6): sim + lookahead + champion genome, opt-in `tetris` feature — never a fourth engine; NOT a game runtime. Consumed: `sim`, `lookahead`, `rulebook` — measured 2026-09-27 |
 | katgpt-core `karc_forecaster` | `../katgpt-rs/crates/katgpt-core` | in the `tetris` feature set (Issue 009 T8's modelless arm): the Plan-308 KARC fit substrate. Opt-in with the lane — measured Bench 009 |
 | fastrand | crates.io | version-matched `"2"` (one copy compiles); the teacher-search RNG. Opt-in behind `tetris` |
-| ed25519-dalek | crates.io | **dev-dependencies only** (2026-10-03, the carve): test-side vessel MINTING (`arsenal_ops`'s identity tests); the lib surface carries zero ed25519 |
+| ed25519-dalek | crates.io | dev-dependencies (2026-10-03, the carve): test-side vessel MINTING (`arsenal_ops`'s identity tests). The lib surface of the DEFAULT build carries zero ed25519 — amended 2026-11-02 with the one narrow optional row above (Plan 326 T9) |
 | toml | crates.io, `default-features = false`, feature `parse` | the arsenal manifest parser: schema types + boot validation in `src/arsenal.rs`; parse-only; non-optional |
 
 **Removed at the carve (2026-10-03), now moat-only deps: `riir-kat`,
 `papaya`, `ed25519-dalek` (lib), the hosted `reflexer-vessel` reader use.**
+Amended 2026-11-02: `ed25519-dalek` regained the narrow optional-lib row above
+(Plan 326 T9's hosted-seat drain-attestation verify — verify-only, opt-in
+`points_drain`, default builds carry zero). `papaya` STAYS moat-only: the drain
+meter runs on std sync primitives — a `try_lock` miss IS the tiered-fail
+store-down branch, and at seat call volumes a held mutex on an O(1) path is
+far under the decision latency.
 The `[patch."https://github.com/katopz/katgpt-rs"]` table left with them
 (it existed for the riir-kat → riir-auth → riir-neuron-db git-reached
 tree; no git-URL katgpt dep remains in this graph).

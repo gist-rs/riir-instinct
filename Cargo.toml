@@ -41,6 +41,18 @@ reflexer-vessel = { path = "../riir-reflexer/crates/reflexer-vessel", optional =
 # the lane).
 katgpt-tetris = { path = "../katgpt-rs/crates/katgpt-tetris", optional = true }
 fastrand = { version = "2", optional = true }
+# The points-drain wire (Plan 326 T8–T12 / Proposal 027): the seat-side
+# fair-use meter consumes the wire crate's DTOs + the ONE attestation
+# signing-bytes home — a zero-dep serde leaf, consumed never
+# re-derived. Optional under `points_drain`; the default build never
+# resolves it (the BOUNDARY.md row landed with this first consumer).
+riir-ledger = { path = "../riir-ledger", optional = true }
+# Ed25519 VERIFY for the per-call drain attestation (Plan 326 T9) —
+# optional under `points_drain`; the default and public teaching builds
+# still carry zero ed25519 in their lib surface (the 2026-10-03 carve
+# law holds where it was written; the hosted seat verifies — the
+# BOUNDARY.md amendment carries the dated reason).
+ed25519-dalek = { version = "2", optional = true, default-features = false }
 
 [dev-dependencies]
 # The origin-gate test's constant-time compare models the mint_token_matches
@@ -78,6 +90,14 @@ arsenal_goat = []
 # chance_puct teacher. Opt-in — default builds never resolve the tetris
 # substrate, and the /decide path is byte-identical.
 tetris = ["dep:katgpt-tetris", "dep:fastrand", "katgpt-core/chance_puct", "katgpt-core/karc_forecaster"]
+# The hosted-seat fair-use meter (Plan 326 T8–T12 / Proposal 027):
+# report-only day counters, the per-call attestation verify, the N=128
+# replay window, the config-gated enforcement hooks and the daily
+# aggregate export. Opt-in — the default build never resolves the deps
+# and the /decide path is byte-identical (G3); the enforcement numbers
+# live in env config that does not ship pre-ratification (absent = the
+# meter counts and verifies, never refuses).
+points_drain = ["dep:riir-ledger", "dep:ed25519-dalek"]
 # The teacher-check bench target (007) + the critic-arm bench target
 # (009): select their bench targets behind the lane feature.
 tetris_goat = ["tetris"]
@@ -116,6 +136,15 @@ runetrace_loop = [
 [[test]]
 name = "tetris_critic_parity"
 required-features = ["tetris"]
+
+# The points-drain seat gates (Plan 326 T8–T12): the report-only day
+# counters, attestation verify, replay window, enforcement hooks + the
+# aggregate export. The required-features row keeps the default `cargo
+# test` from building a target whose module does not exist without the
+# feature (the tetris_critic_parity row's own class).
+[[test]]
+name = "points_drain_gates"
+required-features = ["points_drain"]
 
 # The arsenal GOAT bench (Proposal 001 T8) — whole-target gated; the
 # required-features row keeps a plain `cargo bench` from building it.

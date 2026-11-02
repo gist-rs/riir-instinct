@@ -256,3 +256,37 @@ Owner call 2026-09-30 to retire the Instinct brand was superseded by riir-ai Pro
 ## 2026-10-31 — Issue 027 CLOSED + removed: a stale int-label artifact on a content-bound seat was misread as a CONTEXT join
 
 reflex 077 (`b3520a5`, 2026-10-08) content-bound the xnli/ag_news seat labels. The pre-077 `xnli_en_winner_v1.bin` still carries `"0","1","2"`, so `seat_join` returned Context and every request refused with a misleading bridge error. The parity-gated research G5 replay was red, unseen, from 10-08 to 10-31. **T1** (`383494d`): the mirror producer-contract break (a named seat over an int-spelled `"0".."n-1"` artifact of the same arity) now falls through to `Named(seat)`, so the join refuses at BOOT naming the drift. A unit row was added; no production row has the shape. **T2** (decided, not owner-gated): the rethink G5 replay is RETIRED-WITH-REASON at riir-rethink `cdea009`. The boot refusal is its pinned outcome, any other error reds, and a re-minted named-label artifact re-arms it unchanged. The declared-ClassLabel-alias grammar (option B) and a riir-train re-mint (option C) were declined: xnli is licence-demoted research posture, so the value does not cover a grammar change or a frozen-read re-cut. **T3**: no ag_news specialist artifact exists in the fleet (the 4090 carries only the `ag_news_encoder_v1.bin` think head), so the shape cannot arise there. With the corpus synced to amo, ag_news's ESC gate-fit pin reproduces post-077, and rethink esc_gates reads 18/18.
+
+## 2026-11-02 — Plan 326 T8–T12: the seat-side points-drain meter (report-only)
+
+Landed the hosted-seat half of the points drain (riir-refine Plan 326 Phase 2;
+the design contract is Proposal 027): the opt-in `points_drain` feature carries
+the whole meter — **T8** report-only day counters keyed `(account, utc_day)` +
+`(source_hash, utc_day)`, the per-source key a salted daily-rotating
+BLAKE3(/24-or-/64) hash kept in memory for the day only (the plain-words
+disclosure joined README beside the T16.1 law's canonical home); **T9** the
+per-call attestation verify (`blake3(pubkey) == account` + detached Ed25519
+over `riir_ledger::attest::attestation_signing_bytes`, any failure → the
+anonymous posture, never an error); **T10** the fixed N=128 replay-window
+bitmap (out-of-order concurrent runs ACCEPT — the shift-direction bug a gate
+caught on first run: seen bits must move toward HIGHER indices on slide, the
+wrong-way shift silently re-admitted replays); **T11** enforcement hooks
+env-gated OFF (absent/malformed A/B/R/P = report-only, the shipped posture —
+the tiered fail: `try_lock` miss ⇒ per-source OPEN, billable CLOSED-to-
+anonymous; joined/balance read = plane `/points/usage-state` behind a TTL
+cache, failed reads demote to per-source); **T12** the daily aggregate export
+(plane POST `DrainUsageExport` with the bearer, else/failed → the LOCAL daily
+JSONL dump — the P-sizing data; counts never lost). Declared deviations, both
+ratify-in-027 items: (1) `X-Points-Seq` — Ed25519 cannot message-recover, so
+the seq rides an UNTRUSTED fourth header used only to reconstruct the payload;
+the signature authenticates it and the seat reads the seq out of the VERIFIED
+payload bytes [42..50]; (2) `papaya` stayed moot-only per the 052 carve — the
+counters run on std sync primitives. Boundary: `riir-ledger` (zero-dep serde
+leaf) + a narrow verify-only `ed25519-dalek` optional-lib row landed WITH this
+first consumer, BOUNDARY.md amended in-repo; `ci_boundary_contract.sh` clean
+(32 repos, 481 edges). Gates: clippy `-D warnings` at default, `points_drain`,
+and `--all-features`; `cargo test` green at both feature states incl.
+`ext_seat_rerank_gates` (8/8) + `serve_gates` (23/23) + the new
+`points_drain_gates` (19); the PRE-EXISTING fence RED (`EncoderLane` doc
+mentions in `src/server.rs` + `tests/serve_gates.rs`) reproduced at a clean
+HEAD worktree — not this change's.

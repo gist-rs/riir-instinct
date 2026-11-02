@@ -46,6 +46,16 @@ pub mod receipt;
 /// the /decide path is byte-identical without it.
 #[cfg(feature = "runetrace_loop")]
 pub mod scene_loop;
+/// The hosted-seat fair-use meter (Plan 326 T8–T12 / Proposal 027):
+/// report-only day counters, the per-call attestation verify, the N=128
+/// replay window, the config-gated enforcement hooks and the daily
+/// aggregate export. Opt-in `points_drain` — the default (public
+/// teaching) build never resolves the deps and the /decide path is
+/// byte-identical without the feature; the enforcement numbers live in
+/// env config that does not ship pre-ratification (absent = the meter
+/// counts and verifies, never refuses).
+#[cfg(feature = "points_drain")]
+pub mod points_drain;
 /// The shared hosted-serving HTTP edge (plan 009 T1 — the serve-edge
 /// lift): the listener loop, routing, the lane registry + loading
 /// machinery and every refusal shape, parameterized by

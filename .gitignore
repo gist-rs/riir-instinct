@@ -30,6 +30,10 @@ artifacts/**
 .export/
 __pycache__/
 
+# The points-drain meter's local daily dump (Plan 326 T12) — runtime data,
+# never committed (the default dir beside the serve process's cwd).
+drain_dump/
+
 # local secrets (template: .env.example, tracked)
 .env
 .env.local

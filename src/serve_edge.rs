@@ -997,6 +997,15 @@ struct Req {
     content_length: usize,
     origin: Option<String>,
     authorization: Option<String>,
+    /// The drain-meter header extraction (Plan 326 T8/T9) — compiled
+    /// only under `points_drain`; the default build's parse is untouched
+    /// and the frozen decision_wire body is unaffected (headers only).
+    #[cfg(feature = "points_drain")]
+    points: Option<crate::points_drain::AttestHeaders>,
+    /// `X-Forwarded-For` — honored ONLY from a loopback peer (the seat
+    /// trusts its edge; see [`crate::points_drain::resolve_client_ip`]).
+    #[cfg(feature = "points_drain")]
+    xff: Option<String>,
 }
 
 fn read_request(reader: &mut BufReader<TcpStream>) -> std::io::Result<Option<Req>> {
@@ -1010,6 +1019,10 @@ fn read_request(reader: &mut BufReader<TcpStream>) -> std::io::Result<Option<Req
     let mut content_length = 0usize;
     let mut origin = None;
     let mut authorization = None;
+    #[cfg(feature = "points_drain")]
+    let mut points = crate::points_drain::AttestHeaders::default();
+    #[cfg(feature = "points_drain")]
+    let mut xff: Option<String> = None;
     loop {
         let mut h = String::new();
         if reader.read_line(&mut h)? == 0 {
@@ -1028,6 +1041,23 @@ fn read_request(reader: &mut BufReader<TcpStream>) -> std::io::Result<Option<Req
             } else if name.eq_ignore_ascii_case("authorization") {
                 authorization = Some(value.to_string());
             }
+            // The drain attestation headers (Plan 326 T8/T9) — additive
+            // verbatim reads; unknown headers stay ignored.
+            #[cfg(feature = "points_drain")]
+            {
+                use crate::points_drain::{HDR_ACCOUNT, HDR_PUBKEY, HDR_SEQ, HDR_SIG};
+                if name.eq_ignore_ascii_case(HDR_ACCOUNT) {
+                    points.account = Some(value.to_string());
+                } else if name.eq_ignore_ascii_case(HDR_PUBKEY) {
+                    points.pubkey = Some(value.to_string());
+                } else if name.eq_ignore_ascii_case(HDR_SEQ) {
+                    points.seq = Some(value.to_string());
+                } else if name.eq_ignore_ascii_case(HDR_SIG) {
+                    points.sig = Some(value.to_string());
+                } else if name.eq_ignore_ascii_case("x-forwarded-for") {
+                    xff = Some(value.to_string());
+                }
+            }
         }
     }
     Ok(Some(Req {
@@ -1036,6 +1066,10 @@ fn read_request(reader: &mut BufReader<TcpStream>) -> std::io::Result<Option<Req
         content_length,
         origin,
         authorization,
+        #[cfg(feature = "points_drain")]
+        points: Some(points),
+        #[cfg(feature = "points_drain")]
+        xff,
     }))
 }
 
@@ -1112,11 +1146,11 @@ fn handle_conn(
     // arming it here would overwrite the deadline on the socket axis)
     // The arsenal admin endpoints' recorded auth posture: loopback only
     // (this server has no token surface; anything off the loopback
-    // interface is refused before its body is read).
-    let local = stream
-        .peer_addr()
-        .map(|a| a.ip().is_loopback())
-        .unwrap_or(false);
+    // interface is refused before its body is read). The peer address is
+    // kept (Plan 326 T8) — the drain meter keys the per-source budget on
+    // it (a /24- or /64-prefix hash, never the address itself).
+    let peer_ip = stream.peer_addr().map(|a| a.ip()).ok();
+    let local = peer_ip.is_some_and(|ip| ip.is_loopback());
     let mut writer = stream.try_clone()?;
     let mut reader = BufReader::new(stream);
     let read_out = read_request(&mut reader);
@@ -1192,6 +1226,27 @@ fn handle_conn(
             }
             let mut body = vec![0u8; req.content_length];
             reader.read_exact(&mut body)?;
+            // The hosted-seat fair-use meter (Plan 326 T8–T12): REPORT-ONLY
+            // day counters + attestation verify unless the ratified
+            // enforcement config exists (it does not ship — absent config
+            // never refuses, so the default posture's boots are
+            // byte-identical; G3). Counted at entry: the fair-use budgets
+            // bound capacity consumption, which begins here — 4xx/503
+            // responses over-count by that margin, disclosed.
+            #[cfg(feature = "points_drain")]
+            if let crate::points_drain::Verdict::Refuse(message) = {
+                let ip = crate::points_drain::resolve_client_ip(peer_ip, req.xff.as_deref());
+                crate::points_drain::observe_decide(ip, req.points.as_ref(), &body)
+            } {
+                json_error(
+                    &mut writer,
+                    "429 Too Many Requests",
+                    "quota_exhausted",
+                    &message,
+                    cors.as_deref(),
+                );
+                return Ok(());
+            }
             decide_edge(&mut writer, state, &body, cors.as_deref(), on_decision);
         }
         ("POST", "/arsenal/release") | ("POST", "/arsenal/swap") if local => {
