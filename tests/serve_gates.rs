@@ -361,9 +361,12 @@ fn arsenal_manifest_bytes_are_pinned_byte_for_byte() {
 /// (the pin travels with the law, not with the repo). RE-PINNED 2026-10-06
 /// comment-only (the fence's post-split moat-token reword inside the
 /// typed_decisions row's comment — zero data rows changed, no GOAT
-/// implication; the pin covers the bytes, comments included).
+/// implication; the pin covers the bytes, comments included). RE-PINNED
+/// 2026-11-02 comment-only again (the same fence law, the same class:
+/// the moat-token reword moved into the H1-comparison text — zero data
+/// rows changed, no GOAT implication).
 const PINNED_PRODUCTION_MANIFEST_DIGEST: &str =
-    "blake3:733d93e6a31ada0a740a46cce5c07caddbbd6e31616cf6de54dfa31e049f32e9";
+    "blake3:47cc4b7b3de1f8f921e14e829f5af57ad93633ba760e7aa9a1e80106d62c9605";
 
 #[test]
 fn production_manifest_bytes_are_pinned_byte_for_byte() {
