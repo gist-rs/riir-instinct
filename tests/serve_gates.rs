@@ -2046,3 +2046,77 @@ fn arsenal_swap_monotonic_gate_over_http() {
     assert_eq!(status, 409, "{body}");
     assert!(body.contains("\"code\":\"downgrade\""), "{body}");
 }
+
+// ── face 5: the artifact-less escalate wall (Issue 017 T5, the raw-loader bypass closure) ──
+
+/// An artifact-less (digest-less) A0 row carrying an `escalate` table must
+/// refuse the OPEN artifact-less boot with the escalate-wall message — the
+/// raw loader's digest-less branch reaches `boot_a0_from_seat` before any
+/// other escalate check, so the wall has to live ON the constructor (the
+/// open build never serves the ESC composition). The sanctioned exception
+/// is `boot_cheap_a0_from_seat` (the private ESC wrapper's cheap route),
+/// which must BOOT the same row. The seat prep is data-gated (skip loud on
+/// a bare clone); the wall itself needs only the manifest.
+fn emotion_syn_esc_served_shape_manifest() -> ArsenalManifest {
+    // The riir-rethink production emotion_syn row's shape, verbatim the
+    // contract: artifact-less A0 + the escalate table.
+    let text = concat!(
+        "[[vessel]]\n",
+        "suite   = \"emotion_syn\"\n",
+        "class   = \"hosted_only\"\n",
+        "posture = { arm = \"A0\" }\n",
+        "escalate = { think_file = \"emotion_syn_encoder_head_v1.bin\", ",
+        "think_digest = \"blake3:4002c471f73f42b7b843fe18863ffbec7625f4f58aed2dcb961aa2db3da0d098\", ",
+        "margin = 0.05, min_rate = 0.15, max_rate = 0.60 }\n",
+        "pin_keys = []\n",
+        "budget  = { load = \"eager\", max_payload_mb = 16 }\n",
+    );
+    ArsenalManifest::parse(text).expect("the artifact-less ESC row parses")
+}
+
+#[test]
+fn artifact_less_escalate_row_refuses_the_open_boot_and_boots_the_sanctioned_cheap_twin() {
+    let manifest = emotion_syn_esc_served_shape_manifest();
+    // emotion_syn seats from the CANONICAL reflex datasets (the t6 corpus
+    // was seated there at reflex plan 013 — NOT the t20k set the other
+    // gates use).
+    let datasets = repo_root().join("../riir-reflex/.raw/datasets");
+    if !datasets.join("emotion_syn").is_dir() {
+        eprintln!(
+            "SKIP loud: the emotion_syn datasets are absent — the wall witness needs the seat \
+             (a skip is a deferral, never a green)"
+        );
+        return;
+    }
+    // The seat boot's stack frames exceed a test thread's 2 MiB default
+    // (the same 64 MiB headroom every seat-booting gate uses). The seat
+    // is prepared twice — `prepare_seat` is deterministic from the
+    // dataset files, and `Seat` is deliberately not Clone (the wrapper's
+    // own constructors re-prepare per boot for the same reason).
+    let handle = std::thread::Builder::new()
+        .stack_size(64 * 1024 * 1024)
+        .spawn(move || {
+            // The open build's artifact-less boot: REFUSES with the wall.
+            let seat = riir_reflex::harness::runner::seat::prepare_seat("emotion_syn", &datasets)
+                .expect("prepare_seat emotion_syn");
+            let Err(err) = AnySuiteServer::boot_a0_from_seat("emotion_syn", seat, &manifest)
+            else {
+                panic!("an artifact-less escalate row must refuse the open boot (the T5 wall)")
+            };
+            assert!(
+                err.contains("escalate") && err.contains("private Rethink lane"),
+                "the refusal must name the escalate wall: {err}"
+            );
+
+            // The sanctioned cheap twin: BOOTS the same row (the ESC
+            // wrapper's artifact-less cheap route).
+            let seat = riir_reflex::harness::runner::seat::prepare_seat("emotion_syn", &datasets)
+                .expect("prepare_seat emotion_syn (cheap twin)" );
+            let cheap = AnySuiteServer::boot_cheap_a0_from_seat("emotion_syn", seat, &manifest)
+                .unwrap_or_else(|e| panic!("the sanctioned cheap A0 boot must boot: {e}"));
+            let arm_name = cheap.meta().arm.name();
+            assert_eq!(arm_name, "A0", "the cheap twin serves the row's own A0 posture");
+        })
+        .expect("spawn the wall-witness thread");
+    handle.join().expect("the wall witness panicked");
+}

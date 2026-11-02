@@ -1515,12 +1515,57 @@ impl AnySuiteServer {
     /// tier alone — `HybridLane::ReflexOnly` (the G0a arm, byte-identical
     /// to A0) over the seat engine. Only an `A0` row may boot here; the
     /// refusal is posture-as-data, never a defaulted specialist.
+    ///
+    /// An `escalate` row refuses here like every other open-boot path
+    /// (the Issue 017 T5 wall): before this wall existed, the raw loader's
+    /// digest-less branch reached this constructor before any escalate
+    /// check, so an open-build serve of an artifact-less ESC row would
+    /// have silently served the cheap leg — exactly what the wall exists
+    /// to stop. The one deliberate exception is
+    /// [`Self::boot_cheap_a0_from_seat`].
     pub fn boot_a0_from_seat(
         suite: &'static str,
         seat: Seat,
         manifest: &ArsenalManifest,
     ) -> Result<Self, String> {
+        Self::boot_a0_from_seat_inner(suite, seat, manifest, false)
+    }
+
+    /// The ESC cheap-leg A0 boot (the sanctioned escalate-aware caller:
+    /// the private Rethink ESC wrapper's ARTIFACT-LESS cheap route — the
+    /// row pins no digest, so the winner-file route has nothing to read):
+    /// boots the ReflexOnly modelless tier with the escalate table
+    /// deliberately IGNORED — the cheap leg the ESC lane composes over.
+    /// Every other artifact-less boot path refuses an escalate row loud;
+    /// this is the second deliberate exception beside
+    /// [`Self::boot_cheap_from_seat`], documented for the private lane's
+    /// wrapper.
+    pub fn boot_cheap_a0_from_seat(
+        suite: &'static str,
+        seat: Seat,
+        manifest: &ArsenalManifest,
+    ) -> Result<Self, String> {
+        Self::boot_a0_from_seat_inner(suite, seat, manifest, true)
+    }
+
+    fn boot_a0_from_seat_inner(
+        suite: &'static str,
+        seat: Seat,
+        manifest: &ArsenalManifest,
+        allow_escalate: bool,
+    ) -> Result<Self, String> {
         let arm = Self::posture_of(manifest, suite)?;
+        // The ESC escalate wall (Issue 017 T5) — the same law the winner
+        // route's boot carries: an escalate row composes in the private
+        // Rethink lane only; the open build's artifact-less boot refuses
+        // rather than serve the cheap leg silently.
+        if !allow_escalate {
+            if let Some(row) = manifest.row(suite) {
+                if row.escalate.is_some() {
+                    return Err(Self::escalate_refusal(suite, &arm));
+                }
+            }
+        }
         if arm != Arm::A0 {
             return Err(format!(
                 "suite {suite}: artifact-less boot requires posture A0, got {}",
