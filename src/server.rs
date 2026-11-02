@@ -832,7 +832,7 @@ impl<const N: usize> SuiteServer<N> {
 
     /// The suite's DEFAULT question template — `(qid, kind,
     /// instructions)`, the single-question shape every synthesized
-    /// per-request case carries (the rethink EncoderLane::template
+    /// per-request case carries (the rethink encoder lane's template
     /// mirror, for the Phase-C healthz disclosure).
     pub fn template(&self) -> (&str, QKind, &str) {
         (&self.qid, self.q_kind, &self.q_instructions)
