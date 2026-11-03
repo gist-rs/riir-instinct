@@ -157,7 +157,7 @@ RIIR_DEPLOY_STAGE_ONLY=1 \
   ../riir-deployer/target/debug/riir-deploy -m deploy.yaml deploy --dest local
 file .deploy/local/stage/decisions/app-bin   # → ELF 64-bit x86-64
 
-# The heal-seat lane (riir-refine Plan 225 T2/T4, Bench 119 — the A1 candidate:
+# The rerank-seat lane (riir-refine Plan 225 T2/T4, Bench 119 — the A1 candidate:
 # trainer + Ext-seat server for the cargo-refine fixer's rerank; the served pick
 # names a candidate or abstains, options echoed exactly): the two examples are
 # the lane's whole surface here — the record (plan + bench) lives in riir-refine:
