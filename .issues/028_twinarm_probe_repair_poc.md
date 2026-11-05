@@ -5,7 +5,7 @@ addressed); G0 oracle census runs FIRST (fold law pre-registered); class 1 (weak
 collapse) is the repair target, class 2 (collisions) is census-only; the tune/eval split
 is pre-registered below (proportional alternation — no seed constant exists to pin) and
 binds G1 AND G2
-**Claimed:** zed-4090-4fa6, 1793897593, expires 2026-11-07T16:53:00+00:00 (T1 G0 census first)
+**Claimed:** zed-4090-4fa6, 1793897593, expires 2026-11-07T16:53:00+00:00
 **Research:** [katgpt-rs/.research/653_Twinarm_Probe_Repair_Fusion.md](../katgpt-rs/.research/653_Twinarm_Probe_Repair_Fusion.md) · anchor: 649 (probe-authored circuit grammar, Bench 978) · prior sweep: 650
 **Target:** `src/instinct_probe_repair.rs` (new module, opt-in feature `probe_repair = ["katgpt-core/probe_circuit_grammar"]`) — trainer-side census + repair pass; grammar record as a BLAKE3 sidecar beside the RISP artifact (the RIDT sidecar pattern; no format break)
 
