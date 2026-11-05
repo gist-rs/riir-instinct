@@ -750,7 +750,7 @@ pub fn train_arm_a(
     holdout_idx: &[usize],
     cfg: &ArmAConfig,
 ) -> Result<ArmARun, String> {
-    arm_a_core(rows, labels, train_idx, holdout_idx, cfg, None)
+    arm_a_core(rows, labels, train_idx, holdout_idx, cfg, None, None)
 }
 
 /// [`train_arm_a`] over the census's REMAPPED feature map — the issue-028
@@ -765,11 +765,28 @@ pub fn train_arm_a_remap(
     cfg: &ArmAConfig,
     remap: &BucketRemap,
 ) -> Result<ArmARun, String> {
-    arm_a_core(rows, labels, train_idx, holdout_idx, cfg, Some(remap))
+    arm_a_core(rows, labels, train_idx, holdout_idx, cfg, Some(remap), None)
 }
 
-/// The Arm-A prelude (gold targets) + [`train_core`], shared by both
-/// feature-map arms — never a second copy.
+/// [`train_arm_a`] warm-started from an existing `Specialist` — the
+/// issue-028 T2 b1 baseline ("continue-train-on-gold k steps", the
+/// generic move toward the gold optimum). Fresh lazy-Adam state at the
+/// warm start (the honest k-step continuation semantics, disclosed);
+/// same trainer, same schedule, never a second copy.
+pub fn train_arm_a_warm(
+    rows: &[SuiteRow],
+    labels: &[String],
+    train_idx: &[usize],
+    holdout_idx: &[usize],
+    cfg: &ArmAConfig,
+    init: &Specialist,
+) -> Result<ArmARun, String> {
+    arm_a_core(rows, labels, train_idx, holdout_idx, cfg, None, Some(init))
+}
+
+/// The Arm-A prelude (gold targets) + [`train_core`], shared by every
+/// feature-map / warm-start arm — never a second copy.
+#[allow(clippy::too_many_arguments)]
 fn arm_a_core(
     rows: &[SuiteRow],
     labels: &[String],
@@ -777,6 +794,7 @@ fn arm_a_core(
     holdout_idx: &[usize],
     cfg: &ArmAConfig,
     remap: Option<&BucketRemap>,
+    init: Option<&Specialist>,
 ) -> Result<ArmARun, String> {
     let mut class_of: HashMap<&str, usize> = HashMap::with_capacity(labels.len());
     for (i, l) in labels.iter().enumerate() {
@@ -798,6 +816,7 @@ fn arm_a_core(
         cfg,
         Targets::Gold(gold),
         remap,
+        init,
     )
 }
 
@@ -856,12 +875,13 @@ impl Targets<'_> {
 
 /// The shared trainer core (Arm A gold / Arm B distilled soft targets):
 /// lazy-AdamW one-vs-all logistic BCE, bit-deterministic (fixed row order,
-/// fixed op order, single thread, zero init). Crate-visible so the 632 T3
-/// Eq-9 typed lane (`instinct_typed_eq9`) shares the ONE trainer — never a
-/// second copy of the schedule/Adam laws. `remap = Some` swaps the bag
-/// builder for the census's remapped feature map (issue-028 G0 oracle);
-/// `None` is the incumbent path, bit-identical to before the param
-/// existed.
+/// fixed op order, single thread, zero init — or a WARM-STARTED `init`
+/// model with fresh lazy-Adam state, the issue-028 T2 b1 baseline's
+/// continuation semantics). Crate-visible so the 632 T3 Eq-9 typed lane
+/// (`instinct_typed_eq9`) shares the ONE trainer — never a second copy of
+/// the schedule/Adam laws. `remap = Some` swaps the bag builder for the
+/// census's remapped feature map (issue-028 G0 oracle); `None` is the
+/// incumbent path, bit-identical to before the params existed.
 #[allow(clippy::too_many_arguments)]
 pub(crate) fn train_core(
     rows: &[SuiteRow],
@@ -871,6 +891,7 @@ pub(crate) fn train_core(
     cfg: &ArmAConfig,
     targets: Targets<'_>,
     remap: Option<&BucketRemap>,
+    init: Option<&Specialist>,
 ) -> Result<ArmARun, String> {
     if !(0.0..=1.0).contains(&cfg.brier_lambda) {
         return Err(format!(
@@ -912,7 +933,10 @@ pub(crate) fn train_core(
         return Err("every train row tokenized to zero events".into());
     }
 
-    let mut model = Specialist::zero(labels);
+    let mut model = match init {
+        Some(s) => s.clone(),
+        None => Specialist::zero(labels),
+    };
     let mut opt_w: Vec<(f32, f32)> = vec![(0.0, 0.0); l * VOCAB]; // (m, v)
     let mut b_state: Vec<(f32, f32)> = vec![(0.0, 0.0); l];
     let total_steps = (cfg.epochs * bags.len()) as u64;
@@ -1279,6 +1303,7 @@ pub fn train_arm_b(
             mix: cfg.gold_mix,
         },
         None,
+        None,
     )
 }
 
@@ -1421,6 +1446,104 @@ pub fn decode_artifact(bytes: &[u8]) -> Result<(String, Specialist), String> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    /// The source-granularity projection's buckets equal the bucket
+    /// projection, event for event — one walk, two views (issue-028 T1
+    /// substrate; the census's member tables read sources, the trainer
+    /// reads buckets, and they must never diverge).
+    #[test]
+    fn source_projection_matches_events_into() {
+        let text = b"Alpha, beta! alpha beta gamma... gamma.";
+        let mut buckets = Vec::new();
+        events_into(text, &mut buckets);
+        let mut sources = Vec::new();
+        source_events_into(text, &mut sources);
+        let mapped: Vec<u32> = sources
+            .iter()
+            .map(|e| (e.hash % VOCAB as u64) as u32)
+            .collect();
+        assert_eq!(buckets, mapped);
+        assert!(sources.iter().any(|e| e.bigram), "bigrams exist in the sample");
+    }
+
+    /// An EMPTY remap is the incumbent map — bit-identical bags (the
+    /// issue-028 oracle path's None-equivalence law).
+    #[test]
+    fn empty_remap_is_bag_into() {
+        let text = b"the quick brown fox jumps over the lazy dog";
+        let mut a = Vec::new();
+        let mut s1 = Vec::new();
+        bag_into(text, &mut a, &mut s1);
+        let mut b = Vec::new();
+        let mut s2 = Vec::new();
+        let mut src = Vec::new();
+        let remap = BucketRemap::new();
+        bag_into_remap(text, &mut b, &mut s2, &mut src, &remap);
+        assert_eq!(a, b);
+    }
+
+    /// A named source moves to its forced bucket; unnamed neighbors stay;
+    /// the L2 law survives the remap.
+    #[test]
+    fn remap_moves_only_named_sources() {
+        let text = b"alpha beta";
+        let mut sources = Vec::new();
+        source_events_into(text, &mut sources);
+        let alpha = sources
+            .iter()
+            .find(|e| !e.bigram)
+            .expect("unigram exists")
+            .hash;
+        let beta = sources
+            .iter()
+            .filter(|e| !e.bigram)
+            .find(|e| e.hash != alpha)
+            .expect("second unigram exists")
+            .hash;
+        let alpha_bucket = (alpha % VOCAB as u64) as u32;
+        let beta_bucket = (beta % VOCAB as u64) as u32;
+        // A fresh bucket neither source uses (first candidate is
+        // near-certain; the walk is the guard).
+        let fresh = (0..VOCAB as u32)
+            .find(|&c| c != alpha_bucket && c != beta_bucket)
+            .expect("VOCAB has room");
+        let mut remap = BucketRemap::new();
+        remap.insert((alpha, false), fresh);
+        let mut bag = Vec::new();
+        let mut scratch = Vec::new();
+        bag_into_remap(text, &mut bag, &mut scratch, &mut sources, &remap);
+        assert!(bag.iter().any(|&(b, _)| b == fresh), "alpha sits at the fresh bucket");
+        assert!(!bag.iter().any(|&(b, _)| b == alpha_bucket), "old bucket abandoned");
+        let sumsq: f32 = bag.iter().map(|(_, w)| w * w).sum();
+        assert!((sumsq - 1.0).abs() < 1e-5, "L2 law intact after remap");
+    }
+
+    /// The warm-start continuation (the issue-028 T2 b1 primitive): from
+    /// a ZERO model it is bit-identical to [`train_arm_a`] — the warm
+    /// path only substitutes the init, never the schedule or Adam laws.
+    #[test]
+    fn warm_start_from_zero_is_train_arm_a() {
+        let rows: Vec<SuiteRow> = (0..8)
+            .map(|i| SuiteRow {
+                label: if i % 2 == 0 { "a" } else { "b" }.to_string(),
+                text: format!("doc {i} topic {} w{i} shared words", i % 2),
+                presented: None,
+            })
+            .collect();
+        let labels = vec!["a".to_string(), "b".to_string()];
+        let (holdout, train) = stratified_holdout(&rows, 4);
+        let cfg = ArmAConfig {
+            epochs: 1,
+            warmup_steps: 0,
+            ..ArmAConfig::default()
+        };
+        let zero = Specialist::zero(&labels);
+        let base = train_arm_a(&rows, &labels, &train, &holdout, &cfg).unwrap();
+        let warm = train_arm_a_warm(&rows, &labels, &train, &holdout, &cfg, &zero).unwrap();
+        assert_eq!(base.model.w, warm.model.w);
+        assert_eq!(base.model.b, warm.model.b);
+        assert_eq!(base.holdout_pick_hit, warm.holdout_pick_hit);
+    }
 
     #[test]
     fn feature_law_structure() {

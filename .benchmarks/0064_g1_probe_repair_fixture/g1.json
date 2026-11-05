@@ -1,0 +1,216 @@
+{
+  "rows_train": 400,
+  "rows_tune": 200,
+  "rows_eval": 200,
+  "poison_buckets": [
+    43175,
+    43610,
+    44045,
+    41000
+  ],
+  "arm_a_eval_acc": 1.0,
+  "arm_b_tune_acc": 0.755,
+  "arm_b_eval_acc": 0.755,
+  "first_arcs": [
+    {
+      "bucket": 43610,
+      "class": 1,
+      "contrast": 0.0884353767852394,
+      "slope": 3.496115,
+      "fail_rows": 49
+    },
+    {
+      "bucket": 43175,
+      "class": 1,
+      "contrast": 0.0884353767852394,
+      "slope": 3.4418395,
+      "fail_rows": 49
+    },
+    {
+      "bucket": 41000,
+      "class": 1,
+      "contrast": 0.08163265549406713,
+      "slope": 3.3744957,
+      "fail_rows": 49
+    },
+    {
+      "bucket": 44045,
+      "class": 1,
+      "contrast": 0.06829398629569014,
+      "slope": 3.3286588,
+      "fail_rows": 49
+    },
+    {
+      "bucket": 11782,
+      "class": 1,
+      "contrast": 0.006802721291172261,
+      "slope": 3.0246468,
+      "fail_rows": 49
+    },
+    {
+      "bucket": 119918,
+      "class": 1,
+      "contrast": 0.006802721291172261,
+      "slope": 3.0020306,
+      "fail_rows": 49
+    },
+    {
+      "bucket": 65249,
+      "class": 1,
+      "contrast": 0.006802721291172261,
+      "slope": 2.9612653,
+      "fail_rows": 49
+    },
+    {
+      "bucket": 19636,
+      "class": 1,
+      "contrast": 0.006802721291172261,
+      "slope": 3.0246468,
+      "fail_rows": 49
+    },
+    {
+      "bucket": 60370,
+      "class": 1,
+      "contrast": 0.006802721291172261,
+      "slope": 3.0246468,
+      "fail_rows": 49
+    },
+    {
+      "bucket": 4653,
+      "class": 1,
+      "contrast": 0.006802721291172261,
+      "slope": 3.0020306,
+      "fail_rows": 49
+    },
+    {
+      "bucket": 66001,
+      "class": 1,
+      "contrast": 0.006802721291172261,
+      "slope": 2.9612653,
+      "fail_rows": 49
+    },
+    {
+      "bucket": 93534,
+      "class": 1,
+      "contrast": 0.006802721291172261,
+      "slope": 3.0020306,
+      "fail_rows": 49
+    },
+    {
+      "bucket": 74964,
+      "class": 1,
+      "contrast": 0.006802721291172261,
+      "slope": 3.0020306,
+      "fail_rows": 49
+    },
+    {
+      "bucket": 1943,
+      "class": 1,
+      "contrast": 0.006802721291172261,
+      "slope": 3.0246468,
+      "fail_rows": 49
+    },
+    {
+      "bucket": 98953,
+      "class": 1,
+      "contrast": 0.006802721291172261,
+      "slope": 2.9612653,
+      "fail_rows": 49
+    },
+    {
+      "bucket": 86417,
+      "class": 1,
+      "contrast": 0.006802721291172261,
+      "slope": 3.0246468,
+      "fail_rows": 49
+    }
+  ],
+  "recovery_exact": true,
+  "zero_strength_bit_identity": true,
+  "isolation_ok": true,
+  "isolation_diff_positions": 4,
+  "repair": {
+    "words": [
+      {
+        "bucket": 43175,
+        "class": 1,
+        "strength": 0.86045986,
+        "contrast": 0.0884353767852394,
+        "tune_acc_before": 0.755,
+        "tune_acc_after": 0.82
+      },
+      {
+        "bucket": 43610,
+        "class": 1,
+        "strength": 0.9061724,
+        "contrast": 0.12037037395768696,
+        "tune_acc_before": 0.82,
+        "tune_acc_after": 0.885
+      },
+      {
+        "bucket": 41000,
+        "class": 1,
+        "strength": 0.9088689,
+        "contrast": 0.17391304866127347,
+        "tune_acc_before": 0.885,
+        "tune_acc_after": 0.945
+      },
+      {
+        "bucket": 44045,
+        "class": 1,
+        "strength": 0.9283938,
+        "contrast": 0.3295880248037617,
+        "tune_acc_before": 0.945,
+        "tune_acc_after": 1.0
+      }
+    ],
+    "declined_rounds": 1,
+    "tune_acc_start": 0.755,
+    "tune_acc_end": 1.0
+  },
+  "repair_eval_acc": 0.995,
+  "baselines": [
+    {
+      "name": "b1_continue_gold",
+      "detail": "k=1 epochs (tune-selected)",
+      "tune_acc": 1.0,
+      "eval_acc": 1.0
+    },
+    {
+      "name": "b2_bias_recal",
+      "detail": "greedy per-class bias grid",
+      "tune_acc": 0.995,
+      "eval_acc": 0.995
+    },
+    {
+      "name": "b3_bucket_coord",
+      "detail": "greedy 8 edits over 858 tune buckets",
+      "tune_acc": 0.795,
+      "eval_acc": 0.755
+    }
+  ],
+  "best_baseline": "b1_continue_gold",
+  "vs_base": {
+    "delta": 0.24,
+    "ci95": [
+      0.1806618539417508,
+      0.29933814605824915
+    ],
+    "lcb95": 0.19020184712755162,
+    "oracle_better": 48,
+    "incumbent_better": 0,
+    "n": 200
+  },
+  "vs_best": {
+    "delta": -0.005,
+    "ci95": [
+      -0.014799820000000047,
+      0.004799820000000046
+    ],
+    "lcb95": -0.013224270000000038,
+    "oracle_better": 0,
+    "incumbent_better": 1,
+    "n": 200
+  },
+  "verdict": "Fold"
+}

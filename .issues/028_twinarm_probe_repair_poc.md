@@ -1,13 +1,12 @@
 # Issue 028: twinarm probe-repair pass PoC (Research 653 rev 2 — 649 × twinarm consumer fusion)
 
-**Status:** Active — PoC filed 2026-11-05 (rev 4 same day, verdict rounds 1–3
-addressed); G0 oracle census runs FIRST (fold law pre-registered); class 1 (weak-teacher
-collapse) is the repair target, class 2 (collisions) is census-only; the tune/eval split
-is pre-registered below (proportional alternation — no seed constant exists to pin) and
-binds G1 AND G2. **Update 2026-11-05: T1 census DONE (86a8de2, record 0063) — every
-suite immaterial at 2¹⁷ ⇒ CLASS 2 FOLDS as a recorded negative; class 1 (the repair
-target) is unaffected and the lane proceeds to T2.**
-**Claimed:** zed-4090-4fa6, 1793897593, expires 2026-11-07T16:53:00+00:00
+**Status:** CLOSED — FOLDED 2026-11-05 (both legs): class 2 folded at T1 (census-only
+negative, record 0063: every suite immaterial at 2¹⁷); class 1 folded at T2 (G1 value
+claim failed — the repair beat its unrepaired base Δ +0.24 but LOST to the fair b1
+baseline, LCB95 −0.0132; record 0064). The fold law executed in the fold commit: the
+lane module + bins + feature REMOVED (no zombie module); the trainer-side primitives
+stayed as tested capabilities. **Lease closed:** zed-4090-4fa6, 1793897593, expired
+2026-11-07T16:53:00+00:00 (closed 2026-11-05 on the fold)
 **Research:** [katgpt-rs/.research/653_Twinarm_Probe_Repair_Fusion.md](../katgpt-rs/.research/653_Twinarm_Probe_Repair_Fusion.md) · anchor: 649 (probe-authored circuit grammar, Bench 978) · prior sweep: 650
 **Target:** `src/instinct_probe_repair.rs` (new module, opt-in feature `probe_repair = ["katgpt-core/probe_circuit_grammar"]`) — trainer-side census + repair pass; grammar record as a BLAKE3 sidecar beside the RISP artifact (the RIDT sidecar pattern; no format break)
 
@@ -101,28 +100,60 @@ finalizes with these gates; a fold is a recorded negative, never a zombie module
       docs BEFORE the run (support = train-row presence; S_MIN = 5; dominant =
       ties-to-lowest; oracle = train_arm_a_remap over ArmAConfig::default() on the
       Bench-608 stratified_holdout(200) split; material = Δ ≥ 1.0 pt AND LCB95 > 0).
-- [ ] **T2.** G1 fixture: pinned corrupted-teacher synthetic corpus; build the
+- [-] **T2.** G1 fixture: pinned corrupted-teacher synthetic corpus; build the
       tune/eval split by the proportional-alternation rule (+ its unit test), THEN
       train; Arm A + Arm B train; gold-pool parse recovery; dose-sweep repair (tune
       slice); the full gate arms incl. the baseline battery; the single eval-slice
       read.
-- [ ] **T3.** Mode T repair path (f32 trainer-state pre-seal) + re-seal; isolation asserts.
-- [ ] **T4.** Mode A repair path (±integer i8-artifact-direct, monotonic version bump);
-      operates on the sealed artifact + a labelled authoring slice (skips the full
-      training corpus, never the labels); salvage posture.
-- [ ] **T5.** G4 grammar sidecar: record shape (drive bucket × gate pool × gap class ×
-      window × word), BLAKE3 digest, stale-epoch refusal.
-- [ ] **T6.** G2/G3: repair where class 1 applies on real suites (conditional on a
-      surviving Bench-609-era teacher dump or a cheap re-capture); the single
-      eval-slice paired read vs base + baselines; winner law for any seat (sst5 the
-      candidate); board republish via the existing publish path.
-- [ ] **T7.** Conditional katgpt-rs follow-up (ONLY if G1 passes — the parse needs the
-      pool-contrast stats; the census G0 does not): file the pool-contrast
-      generalization issue for `katgpt_core::probe_circuit_grammar` (the consumer's pull
-      — katgpt-rs stays consumer-free by default).
-- [ ] **T8.** Negative-control ledger: every refused repair word + the reason, appended
-      to the bench record (the sweep's dose arms are the dose-response evidence, 649 §4
-      style).
+      **DONE FOLDED (2026-11-05, record [.benchmarks/0064_g1_probe_repair_fixture](../.benchmarks/0064_g1_probe_repair_fixture/G1.md)):
+      the machinery worked — proportional-alternation split (per-label floor/ceil
+      asserted by unit test + runtime assert BEFORE any arm), fixture built (4 poison
+      buckets, teacher flip re-pinned 0.25→0.05 BEFORE the first gate run: the first
+      pin's 0.475/0.525 target was absorbed by the topical signal — Arm B 1.0000 with
+      ZERO failing rows, no pathology to repair; two token-assignment pins also
+      corrected pre-run: `r % 4` token keying left tokens 2–3 rowless, and an
+      `r % 2` poison rule put every poison row in one alternation slice — both
+      measured, both fixed pre-run), Arm B collapsed 0.7550 on both slices (exactly
+      the poison rows), the within-gold pool-contrast parse recovered the 4 planted
+      arcs EXACTLY at ranks 1–4 (0.07–0.09 contrast vs 0.0068 noise; the
+      CROSS-gold contrast is confounded by the topical signal — measured on the
+      first cut, the within-gold refinement is the recorded law), zero-strength
+      bit-identity ✓, isolation ✓ (exactly the words' edit set), repair
+      tune 0.7550 → 1.0000, eval → 0.9950, vs base Δ +0.2400 (LCB95 +0.1902).
+      **THE VALUE CLAIM FAILED: b1 continue-train-on-gold (k=1 epoch, warm-started
+      via the new `train_arm_a_warm`) reached eval 1.0000 — vs best Δ −0.0050,
+      LCB95 −0.0132 < 0.** The fold law executes: G1 failure ⇒ the whole lane folds
+      into the trainer, no zombie module. b2 bias-recal 0.9950 eval (the runner-up);
+      b3 blind coordinate search 0.7550 (its greedy first-improvement over 858
+      buckets wasted the 8-edit budget — generic search is NOT automatically
+      strong; the battery's strength concentrated in b1). Honest reading: on a
+      linear fixture with adequate clean gold, the generic move toward the gold
+      optimum wins — exactly 653 §3's documented boundary ("the repair can only
+      gain where training stopped short of the gold optimum... generic weight-side
+      alternatives exist"). The fixture was pinned pre-run; re-designing it until
+      the repair wins would be the threshold-iteration the pre-registration
+      forbids. FOLD EXECUTED in the same commit: `instinct_probe_repair.rs` + the
+      two gate bins + the `probe_repair` feature REMOVED (records 0063/0064 + git
+      history at 86a8de2 carry the full lane); the trainer-side primitives STAY as
+      tested capabilities (the "folds into the trainer" reading, the 649
+      substrate-absorption precedent): `source_events_into` (the source-granularity
+      projection of the ONE tokenizer walk), `bag_into_remap` + `BucketRemap` +
+      `train_arm_a_remap` (the un-collided oracle instrument, record 0063),
+      `train_arm_a_warm` (the k-step gold continuation) — each with in-tree unit
+      tests incl. the warm-start-from-zero ≡ train_arm_a bit-identity pin.
+- [-] **T3.** Mode T repair path — FOLDED with the lane (G1 failure); the Mode-T
+      edit mechanics are in git history at 86a8de2 if a future pre-registration
+      wants them.
+- [-] **T4.** Mode A repair path — FOLDED with the lane.
+- [-] **T5.** G4 grammar sidecar — FOLDED with the lane (T7's condition never fired).
+- [-] **T6.** G2/G3 real-suite repair — FOLDED with the lane (no repair to seat).
+- [-] **T7.** katgpt-rs pool-contrast filing — the CONDITION (G1 passes) never
+      fired. Separate note: the katgpt-core substrate's own demotion law ("the PoC
+      battery failing its identification/repair arms records the negative and the
+      lane folds into weight_edit_overlay") has now FIRED — filed as a katgpt-rs
+      follow-up, not executed from this repo.
+- [-] **T8.** Negative-control ledger — the record 0064 carries the measured dose
+      arms + the declined final round; the lane's fold supersedes the ledger.
 
 ## Records
 
