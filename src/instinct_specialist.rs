@@ -85,6 +85,33 @@ fn token(raw: &[u8]) -> &[u8] {
 /// order (duplicates kept — a count model wants them). The reflex
 /// `hashed_tokens_into` law.
 pub fn events_into(text: &[u8], out: &mut Vec<u32>) {
+    walk_events(text, out, |h, _bigram| (h % VOCAB as u64) as u32);
+}
+
+/// One event at SOURCE granularity: the full 64-bit law hash plus its
+/// kind (unigram vs bigram). `hash % VOCAB` is the trainer's bucket —
+/// this view exists for the issue-028 G0 collision census, which must
+/// tell two DIFFERENT sources sharing a bucket apart (the bucket
+/// projection cannot; the 64-bit source identity collision probability
+/// is ~n²/2⁶⁴, disclosed in the census record).
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
+pub struct SourceEvent {
+    pub hash: u64,
+    pub bigram: bool,
+}
+
+/// The source-granularity projection of the SAME walk [`events_into`]
+/// speaks: identical traversal, identical hashes, identical emission
+/// order (a bigram follows its second word, exactly as there). One
+/// tokenizer law, two projections — never a second walk.
+pub fn source_events_into(text: &[u8], out: &mut Vec<SourceEvent>) {
+    walk_events(text, out, |h, bigram| SourceEvent { hash: h, bigram });
+}
+
+/// The ONE traversal behind both projections: whitespace split, edge
+/// trim, empty skip, FNV-1a per word, bigram after every second word.
+/// Monomorphized per sink — zero allocation, zero dispatch.
+fn walk_events<T: Copy>(text: &[u8], out: &mut Vec<T>, mk: impl Fn(u64, bool) -> T) {
     out.clear();
     let mut prev: Option<u64> = None;
     for raw in text.split(|b: &u8| b.is_ascii_whitespace()) {
@@ -93,24 +120,26 @@ pub fn events_into(text: &[u8], out: &mut Vec<u32>) {
             continue;
         }
         let h = fnv1a_word(t, WORD_SALT);
-        out.push((h % VOCAB as u64) as u32);
+        out.push(mk(h, false));
         if let Some(p) = prev {
             let mut pair = [0u8; 16];
             pair[..8].copy_from_slice(&p.to_le_bytes());
             pair[8..].copy_from_slice(&h.to_le_bytes());
-            out.push((fnv1a_word(&pair, BIGRAM_SALT) % VOCAB as u64) as u32);
+            out.push(mk(fnv1a_word(&pair, BIGRAM_SALT), true));
         }
         prev = Some(h);
     }
 }
 
-/// The L2-normalized sparse count bag: `(bucket, weight)` pairs SORTED by
-/// bucket (deterministic reduction order — a HashMap iteration would make
-/// the gradient sum order machine-dependent). Collisions merge with their
-/// weights summed, so `Σ weights` is the event count whatever the hashes
-/// do. Cleared first.
-pub fn bag_into(text: &[u8], out: &mut Vec<(u32, f32)>, scratch: &mut Vec<u32>) {
-    events_into(text, scratch);
+/// The feature-map override the G0 oracle trains under: source identity
+/// `(full hash, bigram)` → forced bucket. Entries name ONLY the flagged
+/// colliding members; every other source keeps `hash % VOCAB`. A
+/// diagnostic map — NEVER shipped (Research 653 §3 class 2).
+pub type BucketRemap = HashMap<(u64, bool), u32>;
+
+/// The sort+merge+L2 reduction behind [`bag_into`] — ONE law, shared by
+/// the incumbent and the remapped bag builders. Cleared first.
+fn reduce_buckets(scratch: &mut [u32], out: &mut Vec<(u32, f32)>) {
     out.clear();
     if scratch.is_empty() {
         return;
@@ -132,6 +161,44 @@ pub fn bag_into(text: &[u8], out: &mut Vec<(u32, f32)>, scratch: &mut Vec<u32>) 
             w.1 *= inv;
         }
     }
+}
+
+/// The L2-normalized sparse count bag: `(bucket, weight)` pairs SORTED by
+/// bucket (deterministic reduction order — a HashMap iteration would make
+/// the gradient sum order machine-dependent). Collisions merge with their
+/// weights summed, so `Σ weights` is the event count whatever the hashes
+/// do. Cleared first.
+pub fn bag_into(text: &[u8], out: &mut Vec<(u32, f32)>, scratch: &mut Vec<u32>) {
+    events_into(text, scratch);
+    reduce_buckets(scratch, out);
+}
+
+/// The [`bag_into`] law over a REMAPPED feature map: sources named in
+/// `remap` take their forced bucket, every other source keeps
+/// `hash % VOCAB`, and the SAME reduce law folds the result. Exists for
+/// the issue-028 G0 un-collided oracle — splitting flagged colliding
+/// pairs must not fork the trainer. The incumbent path is [`bag_into`]
+/// itself (bit-identical); the remap's fresh buckets MUST come from the
+/// suite's unused pool (the census builder guarantees it), so a remapped
+/// source never collides with anything.
+pub fn bag_into_remap(
+    text: &[u8],
+    out: &mut Vec<(u32, f32)>,
+    scratch: &mut Vec<u32>,
+    sources: &mut Vec<SourceEvent>,
+    remap: &BucketRemap,
+) {
+    source_events_into(text, sources);
+    scratch.clear();
+    scratch.reserve(sources.len());
+    for e in sources.iter() {
+        let b = remap
+            .get(&(e.hash, e.bigram))
+            .copied()
+            .unwrap_or((e.hash % VOCAB as u64) as u32);
+        scratch.push(b);
+    }
+    reduce_buckets(scratch, out);
 }
 
 // ── rows + the stratified holdout (the reflex label/text laws) ──────────
@@ -198,7 +265,7 @@ pub fn suite_row(suite: &str, row: &serde_json::Value) -> Option<SuiteRow> {
                         label: format!("__bad_noul_key_{other}"),
                         text: String::new(),
                         presented: None,
-                    })
+                    });
                 }
             },
             _ => keys.get(gold_idx)?.as_str()?.to_string(),
@@ -683,6 +750,34 @@ pub fn train_arm_a(
     holdout_idx: &[usize],
     cfg: &ArmAConfig,
 ) -> Result<ArmARun, String> {
+    arm_a_core(rows, labels, train_idx, holdout_idx, cfg, None)
+}
+
+/// [`train_arm_a`] over the census's REMAPPED feature map — the issue-028
+/// G0 un-collided oracle arm. Same trainer, same schedule, same split law;
+/// ONLY the flagged members' buckets move. Diagnostic — never a serving
+/// or seating path.
+pub fn train_arm_a_remap(
+    rows: &[SuiteRow],
+    labels: &[String],
+    train_idx: &[usize],
+    holdout_idx: &[usize],
+    cfg: &ArmAConfig,
+    remap: &BucketRemap,
+) -> Result<ArmARun, String> {
+    arm_a_core(rows, labels, train_idx, holdout_idx, cfg, Some(remap))
+}
+
+/// The Arm-A prelude (gold targets) + [`train_core`], shared by both
+/// feature-map arms — never a second copy.
+fn arm_a_core(
+    rows: &[SuiteRow],
+    labels: &[String],
+    train_idx: &[usize],
+    holdout_idx: &[usize],
+    cfg: &ArmAConfig,
+    remap: Option<&BucketRemap>,
+) -> Result<ArmARun, String> {
     let mut class_of: HashMap<&str, usize> = HashMap::with_capacity(labels.len());
     for (i, l) in labels.iter().enumerate() {
         class_of.insert(l.as_str(), i);
@@ -702,6 +797,7 @@ pub fn train_arm_a(
         holdout_idx,
         cfg,
         Targets::Gold(gold),
+        remap,
     )
 }
 
@@ -762,7 +858,10 @@ impl Targets<'_> {
 /// lazy-AdamW one-vs-all logistic BCE, bit-deterministic (fixed row order,
 /// fixed op order, single thread, zero init). Crate-visible so the 632 T3
 /// Eq-9 typed lane (`instinct_typed_eq9`) shares the ONE trainer — never a
-/// second copy of the schedule/Adam laws.
+/// second copy of the schedule/Adam laws. `remap = Some` swaps the bag
+/// builder for the census's remapped feature map (issue-028 G0 oracle);
+/// `None` is the incumbent path, bit-identical to before the param
+/// existed.
 #[allow(clippy::too_many_arguments)]
 pub(crate) fn train_core(
     rows: &[SuiteRow],
@@ -771,6 +870,7 @@ pub(crate) fn train_core(
     holdout_idx: &[usize],
     cfg: &ArmAConfig,
     targets: Targets<'_>,
+    remap: Option<&BucketRemap>,
 ) -> Result<ArmARun, String> {
     if !(0.0..=1.0).contains(&cfg.brier_lambda) {
         return Err(format!(
@@ -787,10 +887,20 @@ pub(crate) fn train_core(
     let mut bags: Vec<Vec<(u32, f32)>> = Vec::with_capacity(train_idx.len());
     let mut row_of: Vec<usize> = Vec::with_capacity(train_idx.len());
     let mut scratch = Vec::new();
+    let mut scratch_src = Vec::new();
     let mut skipped_empty = 0usize;
     for &i in train_idx {
         let mut bag = Vec::new();
-        bag_into(rows[i].text.as_bytes(), &mut bag, &mut scratch);
+        match remap {
+            None => bag_into(rows[i].text.as_bytes(), &mut bag, &mut scratch),
+            Some(m) => bag_into_remap(
+                rows[i].text.as_bytes(),
+                &mut bag,
+                &mut scratch,
+                &mut scratch_src,
+                m,
+            ),
+        }
         if bag.is_empty() {
             skipped_empty += 1;
             continue;
@@ -876,6 +986,7 @@ pub(crate) fn train_core(
     }
     let mut bag = Vec::new();
     let mut scratch2 = Vec::new();
+    let mut scratch2_src = Vec::new();
     let mut hit = 0usize;
     // The 464 §3 readout: per holdout row, the picked class's raw sigmoid
     // and the hit flag (NaN conf = skipped empty-bag row, excluded by
@@ -884,7 +995,16 @@ pub(crate) fn train_core(
     let mut pick_hit: Vec<u8> = Vec::with_capacity(holdout_idx.len());
     let mut scores_buf = vec![0.0f32; l];
     for &i in holdout_idx {
-        bag_into(rows[i].text.as_bytes(), &mut bag, &mut scratch2);
+        match remap {
+            None => bag_into(rows[i].text.as_bytes(), &mut bag, &mut scratch2),
+            Some(m) => bag_into_remap(
+                rows[i].text.as_bytes(),
+                &mut bag,
+                &mut scratch2,
+                &mut scratch2_src,
+                m,
+            ),
+        }
         if bag.is_empty() {
             pick_conf.push(f32::NAN);
             pick_hit.push(0);
@@ -1158,6 +1278,7 @@ pub fn train_arm_b(
             gold,
             mix: cfg.gold_mix,
         },
+        None,
     )
 }
 

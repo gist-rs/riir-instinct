@@ -98,6 +98,14 @@ tetris = ["dep:katgpt-tetris", "dep:fastrand", "katgpt-core/chance_puct", "katgp
 # live in env config that does not ship pre-ratification (absent = the
 # meter counts and verifies, never refuses).
 points_drain = ["dep:riir-ledger", "dep:ed25519-dalek"]
+# Issue 028 (Research 653 — the 649 × twinarm consumer fusion): the
+# trainer-side probe-repair lane — the G0 collision census (T1) + the
+# class-1 repair pass. Forwards the katgpt-core probe-circuit-grammar
+# substrate (the 649/978 grammar the parse consumes); the census half
+# itself is crate-local (the trainer's own feature law). Opt-in, zero
+# default-build surface; a fold is a recorded negative, never a zombie
+# module (the issue's fold law).
+probe_repair = ["katgpt-core/probe_circuit_grammar"]
 # The teacher-check bench target (007) + the critic-arm bench target
 # (009): select their bench targets behind the lane feature.
 tetris_goat = ["tetris"]
@@ -181,6 +189,13 @@ required-features = ["tetris"]
 [[bin]]
 name = "export_tetris_critic_cont"
 required-features = ["tetris"]
+
+# The issue-028 G0 collision census runner (T1) — whole-target gated; the
+# required-features row keeps a plain build from resolving the gated
+# module (the repo-birth gate discipline).
+[[bin]]
+name = "probe_census"
+required-features = ["probe_repair"]
 
 # The round-5 per-seed scale probe (Issue 009 T7 round 5, Bench 025/026) —
 # imports the tetris-only surface (tetris_blend/tetris_critic/tetris_lane +

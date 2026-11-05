@@ -33,6 +33,14 @@ pub mod instinct_nbsvm;
 pub mod instinct_specialist;
 pub mod instinct_specialist_typed;
 pub mod instinct_typed_eq9;
+/// The trainer-side probe-repair lane (Issue 028, Research 653 — the 649
+/// × twinarm consumer fusion): the G0 collision census (the un-collided
+/// oracle pricing the frozen 2¹⁷ feature law's aliasing cost) and, when
+/// the gates keep the lane open, the class-1 weak-teacher repair pass.
+/// Opt-in `probe_repair`; a fold is a recorded negative, never a zombie
+/// module.
+#[cfg(feature = "probe_repair")]
+pub mod instinct_probe_repair;
 /// The serve lane's receipt primitives (Plan 043 C0 — the
 /// one-definition law): the build fingerprint + the input/decision
 /// BLAKE3 halves + the manifest fingerprint, ONE home for the serve

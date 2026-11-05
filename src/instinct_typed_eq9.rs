@@ -454,6 +454,7 @@ pub fn train_choice_eq9(
             gold: data.gold.clone(),
             gold_mix: data.gold_mix.clone(),
         },
+        None,
     )
 }
 
@@ -870,9 +871,10 @@ mod tests {
                 gold: gold.clone(),
                 gold_mix: gold_mix.clone(),
             },
+            None,
         )
         .expect("row-mix run trains");
-        let via_gold = train_core(&rows, &universe, &all, &[], &cfg, Targets::Gold(gold))
+        let via_gold = train_core(&rows, &universe, &all, &[], &cfg, Targets::Gold(gold), None)
             .expect("gold run trains");
         assert_eq!(
             via_mix.model.w, via_gold.model.w,
@@ -922,10 +924,12 @@ mod tests {
                 gold: gold.clone(),
                 gold_mix: vec![GOLD_MIX_QUALIFIED; 4],
             },
+            None,
         )
         .expect("qualified run trains");
         let pure_gold =
-            train_core(&rows, &universe, &all, &[], &cfg, Targets::Gold(gold)).expect("gold run");
+            train_core(&rows, &universe, &all, &[], &cfg, Targets::Gold(gold), None)
+                .expect("gold run");
         assert_ne!(
             qualified.model.w, pure_gold.model.w,
             "a 0.3-gold / 0.7-teacher blend must differ from pure gold"
