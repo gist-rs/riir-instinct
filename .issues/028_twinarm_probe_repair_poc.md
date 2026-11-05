@@ -4,7 +4,9 @@
 addressed); G0 oracle census runs FIRST (fold law pre-registered); class 1 (weak-teacher
 collapse) is the repair target, class 2 (collisions) is census-only; the tune/eval split
 is pre-registered below (proportional alternation — no seed constant exists to pin) and
-binds G1 AND G2
+binds G1 AND G2. **Update 2026-11-05: T1 census DONE (86a8de2, record 0063) — every
+suite immaterial at 2¹⁷ ⇒ CLASS 2 FOLDS as a recorded negative; class 1 (the repair
+target) is unaffected and the lane proceeds to T2.**
 **Claimed:** zed-4090-4fa6, 1793897593, expires 2026-11-07T16:53:00+00:00
 **Research:** [katgpt-rs/.research/653_Twinarm_Probe_Repair_Fusion.md](../katgpt-rs/.research/653_Twinarm_Probe_Repair_Fusion.md) · anchor: 649 (probe-authored circuit grammar, Bench 978) · prior sweep: 650
 **Target:** `src/instinct_probe_repair.rs` (new module, opt-in feature `probe_repair = ["katgpt-core/probe_circuit_grammar"]`) — trainer-side census + repair pass; grammar record as a BLAKE3 sidecar beside the RISP artifact (the RIDT sidecar pattern; no format break)
@@ -78,10 +80,27 @@ finalizes with these gates; a fold is a recorded negative, never a zombie module
 
 ## Tasks
 
-- [ ] **T1.** G0 oracle census over the Bench-608 suites + the three no-specialist
+- [x] **T1.** G0 oracle census over the Bench-608 suites + the three no-specialist
       suites (emotion / xnli_en / sst5): member tables, flagged colliding pairs,
       split-bucket oracle ceilings; the census verdict recorded in a `.benchmarks/`
       record. FOLD class 2 here if every ceiling ≈ 0.
+      **DONE (86a8de2, 2026-11-05): [.benchmarks/0063_g0_collision_census](../.benchmarks/0063_g0_collision_census/record.md)
+      — 7 suites (the six Bench-608 suites + prompt_injections via the same
+      `suite_row` law; `typed_decisions` DISCLOSED EXCLUSION — its row space rides the
+      typed loader, a separate feature law; can join a follow-up cell if the lane
+      survives). The incumbent arm EXACTLY reproduces the Bench-608 table (0.8700 /
+      0.7300 / 0.3350 / 0.6600 / 0.8100 / 0.3650) — the harness drives the trainer law
+      correctly. Oracle deltas: ag_news **−1.00 pt** (removing collisions HURT — the
+      merged columns were acting as useful co-occurrence features), emotion +1.50 pt
+      (fails the one-sided LCB95 −0.0034 at n=200), sst5 +0.50, the rest 0.00.
+      Flag counts: ag_news 2598 buckets / 5499 members, xnli_en 1056/2193, emotion
+      291/588, sst5 119/239, banking77 73/147, massive 38/76, prompt_injections 0/0
+      (too few rows for S_MIN=5 co-support). **Verdict: every suite immaterial at 2¹⁷
+      ⇒ CLASS 2 FOLDS as a recorded negative** (the fold law, executed); class 1
+      unaffected. Pre-registration pinned in `src/instinct_probe_repair.rs` module
+      docs BEFORE the run (support = train-row presence; S_MIN = 5; dominant =
+      ties-to-lowest; oracle = train_arm_a_remap over ArmAConfig::default() on the
+      Bench-608 stratified_holdout(200) split; material = Δ ≥ 1.0 pt AND LCB95 > 0).
 - [ ] **T2.** G1 fixture: pinned corrupted-teacher synthetic corpus; build the
       tune/eval split by the proportional-alternation rule (+ its unit test), THEN
       train; Arm A + Arm B train; gold-pool parse recovery; dose-sweep repair (tune
