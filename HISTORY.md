@@ -290,3 +290,21 @@ and `--all-features`; `cargo test` green at both feature states incl.
 `points_drain_gates` (19); the PRE-EXISTING fence RED (`EncoderLane` doc
 mentions in `src/server.rs` + `tests/serve_gates.rs`) reproduced at a clean
 HEAD worktree — not this change's.
+
+## 2026-11-06 — Issue 028 CLOSED + removed: the twinarm probe-repair pass PoC folded on its pre-registered value gate
+
+Both legs measured, both negative, fold law executed in the fold commit `b98e759`:
+class 2 folded at T1 — the G0 collision census (record `.benchmarks/0063_g0_collision_census/`,
+landed `86a8de2`) found every suite immaterial at 2¹⁷ (census-only negative); class 1 folded
+at T2 — the G1 fixture (record `.benchmarks/0064_g1_probe_repair_fixture/`) had the machinery
+pass every structural gate and the repair beat its unrepaired base (Δ +0.24, LCB95 +0.1902)
+but LOSE to the fair b1 continue-train-on-gold baseline (best delta −0.0050, LCB95 −0.0132):
+on a linear fixture with adequate clean gold the generic move toward the gold optimum wins —
+653 sec 3's documented boundary, now measured. The fixture was pinned pre-run; re-designing
+it until the repair wins would be the threshold-iteration the pre-registration forbids.
+The fold removed `src/instinct_probe_repair.rs` + the `probe_census` bin + the `probe_repair`
+feature (no zombie module — verified post-fold: zero twinarm residue in src/, Cargo.toml,
+AGENTS.md, README); the trainer-side primitives stayed as tested capabilities (`source_events_into`,
+`bag_into_remap`/`BucketRemap`/`train_arm_a_remap`, `train_arm_a_warm`). Research lineage:
+katgpt-rs Research 653 rev 2 (the 649 × twinarm consumer fusion); lease zed-4090-4fa6 closed
+on the fold.
