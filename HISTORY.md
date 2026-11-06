@@ -308,3 +308,16 @@ AGENTS.md, README); the trainer-side primitives stayed as tested capabilities (`
 `bag_into_remap`/`BucketRemap`/`train_arm_a_remap`, `train_arm_a_warm`). Research lineage:
 katgpt-rs Research 653 rev 2 (the 649 × twinarm consumer fusion); lease zed-4090-4fa6 closed
 on the fold.
+
+## 2026-11-06 — Issue 025 DECLINED + removed: `EscalateSpec` precision-floor grammar (no gain proven)
+
+Owner rule for this decision: arm only with a proven gain. Neither is present. (1) No live
+evidence: rethink Issue 047 (`e7a770a`, rethink Bench 081) showed the served lane is
+RECEIPTS-ONLY (decstat records no outcomes), so the precision/value legs are BLIND in
+production and a floor would enforce against nothing. (2) The only measurement argues
+against the knob: on the sst5 gold replay, 63 escalations scored precision 0.333 and value
++0.254 ±0.147 per escalation, i.e. POSITIVE. Escalation already pays, so a floor has no
+failing case to fix, and arming it would widen a byte-pinned two-repo contract for zero
+proven benefit. Nothing changed in the grammar or the rethink pin; byte-identity is trivial.
+Re-open trigger (file a new issue, never reuse 025): an outcome join lands on the served lane
+AND a suite's measured value per escalation reads non-positive (95% CI excluding positive).

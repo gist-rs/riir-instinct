@@ -126,12 +126,13 @@ readout rides beside the guard (riir-rethink Issue 047, 2026-10-31) —
 receipts only, so its precision leg stays blind until an outcome join
 exists, and it gates nothing.
 
-What stays open HERE is the grammar question: should the open
-`EscalateSpec` carry a static precision floor / damp field, so the gate
-itself sits closer to the value frontier between re-arms? That widens a
-public grammar the private lane byte-pins — a contract act held
-owner-gated in [Issue 025](../../.issues/025_escalate_spec_precision_floor_grammar.md),
-with the standing recommendation to HOLD until an outcome source exists
-(a floor with no live data to enforce against enforces nothing). The
+The grammar question — should the open `EscalateSpec` carry a static
+precision floor / damp field? — was DECLINED by the owner on 2026-11-06
+(Issue 025, closed; record in `HISTORY.md`): no gain is proven. The
+served lane has no outcome capture, so a floor would have nothing to
+enforce against, and the only measurement (rethink Bench 081, sst5
+replay) shows escalation already pays (+0.254 ±0.147 per escalation),
+so a floor has no failing case to fix. Re-open trigger: an outcome join
+lands AND a suite's measured value per escalation reads non-positive. The
 one-definition law is unchanged: the vocabulary lands HERE and rethink
 byte-pins it — the two-repo lockstep the manifest law already enforces.
