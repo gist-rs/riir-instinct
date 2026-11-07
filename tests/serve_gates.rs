@@ -179,6 +179,8 @@ suite   = "massive_intent_en"
 digest  = "blake3:7bc3ee385f81abc0f2a91e47f6dca08db37f9fb6cee6d48121b80e3f11378556"
 class   = "hosted_only"
 posture = { arm = "H2", beta = 1.0, n_min = 2.0, tau_n = 4.0 }    # best measured 0.8400 vs A0 0.8133 (Bench 0029, the SYNTH SEAT — Plan 426 T5/T6: corpus 11314 gold + 2048 vetoed synth, blake3 8eed806a…, posture gold-fit) — T2 LB95 -0.0039 UNCERTIFIED vs the synth A0 (the banking77 precedent: serves under best-measured); gold-seat rows were 0.8267/0.7800 (Bench 019+020)
+# Issue 052's T4 arm (Bench 086's pre-registered seat, the delegated-owner GO-with-constraints + the licence clearance 2026-11-07, Research 019 finding 1): ESC composed 0.8833 vs cheap 0.8400 (Δ +0.0433, paired LB95 +0.0137 > 0) at rate 42.7% in-window (cal 42.5%, shift +0.2pp) — all three arm gates pass; gate rho 0.60 (ESC_GATE_RHOS), thresholds score 0.000 / dist 0.643 (re-fit live at boot on the seat). Think leg = mammoth-1 REMOTE via the esc-systemone-adapter (Issue 052 T3): the locator is deployment config (RIIR_RETHINK_ESC_REMOTE), think_file is UNREAD in the remote posture, and the digest law rides the wire — think_digest is the OPERATOR-ATTESTED blake3 of the staged mammoth-1 weights (both safetensors, streamed in index order, bmo 2026-11-07), disclosed first-16 by the adapter's healthz and cross-checked at boot. COST: escalations pay the teacher's latency (Bench 082 p50 1.4–6.5 s/case) — the rate window bounds the share. VERDICT CONDITIONS still attached: (a) the contamination shadow read (mammoth may have trained on public MASSIVE — the gain is BENCHMARK-conditioned until a held-out-paraphrase or non-benchmark read lands; never cite it as real-traffic); (b) the composed cal→test shift was NOT measured (the cal slice carries no mammoth coverage) — the rate-transfer guard (+0.2pp) is the only transfer evidence; the Bench 077 +21.8pt emotion_syn shift stays the prior.
+escalate = { think_file = "mammoth_esc_adapter_v1", think_digest = "blake3:627f1fc03779b21ac08bd18997e3f7c486f9d3632dca873886d4bf2ce69d37b5", margin = 0.05, min_rate = 0.15, max_rate = 0.60 }
 pin_keys = []
 budget  = { load = "eager", max_payload_mb = 16 }
 
@@ -203,7 +205,7 @@ budget  = { load = "eager", max_payload_mb = 16 }
 suite   = "typed_decisions"
 digest  = "blake3:7f7a39e1935f8665beaf61106a84a65a0066a73fe3eee4ad7638fda0f776f2f0"   # riir-train Issue 581 / Bench 614's re-mint over the FULL 1200-row train pool
 class   = "hosted_only"
-posture = { arm = "H2", beta = 0.5, n_min = 2.0, tau_n = 2.0 }    # best measured 0.6475 vs A0' 0.5725 (+7.5 pt, T2 LB95 +0.0580 PASS) AND vs the certified A1 0.6300 (+1.75 pt, paired LB95 +0.0062 PASS) AND vs H1 (+1.4 pt, LB95 +0.0034) — Bench 020's full-pool read; G1 PASS (platt 0.0095 vs floor 0.1701). The margin source is the option-conditioned (qid, option) tables (reflex issue 038 T7b + `oc()`, riir-instinct Issue 005's precondition — typed's options are state-field values the domain tables never speak). NO escalate row: the ESC GOAT CLEARED typed (Bench 0059: composed 0.6725 vs 0.6475, +2.50 pt, LB95 +0.0129) but the encoder SERVE lane answers the single-question contract only (the encoder lane's from_parts guard; typed is 5 q/case) — the ESC cell stays the ARENA record until the per-question scoring shape exists (the T5 record's structural deferral, not a gate refusal).
+posture = { arm = "H2", beta = 0.5, n_min = 2.0, tau_n = 2.0 }    # best measured 0.6475 vs A0' 0.5725 (+7.5 pt, T2 LB95 +0.0580 PASS) AND vs the certified A1 0.6300 (+1.75 pt, paired LB95 +0.0062 PASS) AND vs H1 (+1.4 pt, LB95 +0.0034) — Bench 020's full-pool read; G1 PASS (platt 0.0095 vs floor 0.1701). The margin source is the option-conditioned (qid, option) tables (reflex issue 038 T7b + `oc()`, riir-instinct Issue 005's precondition — typed's options are state-field values the domain tables never speak). NO escalate row: the ESC GOAT CLEARED typed (Bench 0059: composed 0.6725 vs 0.6475, +2.50 pt, LB95 +0.0129) but the encoder SERVE lane answers the single-question contract only (EncoderLane::from_parts's own guard; typed is 5 q/case) — the ESC cell stays the ARENA record until the per-question scoring shape exists (the T5 record's structural deferral, not a gate refusal).
 pin_keys = []
 budget  = { load = "eager", max_payload_mb = 16 }
 
@@ -364,9 +366,19 @@ fn arsenal_manifest_bytes_are_pinned_byte_for_byte() {
 /// implication; the pin covers the bytes, comments included). RE-PINNED
 /// 2026-11-02 comment-only again (the same fence law, the same class:
 /// the moat-token reword moved into the H1-comparison text — zero data
-/// rows changed, no GOAT implication).
+/// rows changed, no GOAT implication). RE-PINNED 2026-11-07 WITH DATA:
+/// the massive_intent_en row gains its escalate table (rethink Issue 052
+/// T4 — Bench 086's pre-registered seat: composed 0.8833 vs cheap 0.8400,
+/// Δ +0.0433, LB95 +0.0137, rate 42.7% in-window; the REMOTE mammoth
+/// think leg via the esc-systemone-adapter, licence SETTLED MIT per
+/// Research 019 finding 1 + the owner ruling; the two verdict conditions
+/// — contamination shadow read + the cal→test disclosure — ride in the
+/// row's own comment). The GOAT re-run law: the GOAT IS Bench 086's
+/// frozen read (the pre-registered arm gates passed on it); the
+/// lockstep rethink-side pins (esc_gates 22/22 + ESC_POSTURES +
+/// ESC_GATE_RHOS) landed in the same family.
 const PINNED_PRODUCTION_MANIFEST_DIGEST: &str =
-    "blake3:47cc4b7b3de1f8f921e14e829f5af57ad93633ba760e7aa9a1e80106d62c9605";
+    "blake3:ac4c70f0339e0f033f80324157b2f2e6a8228a1506da9470c2b3eb334edf8173";
 
 #[test]
 fn production_manifest_bytes_are_pinned_byte_for_byte() {
@@ -1192,49 +1204,83 @@ fn escalate_manifest_text(posture: &str, escalate: &str) -> String {
 }
 
 /// The production escalate surface is EXACTLY the armed set: emotion_syn
-/// only, since issue 044's re-arm (rethink plan 016 / Bench 078, verdict
-/// AGREE 2026-10-30 — the re-source law satisfied: first-party synthetic,
-/// its own GOAT, the verdict's three lockstep conditions carried). Before
-/// that, the ZERO state held since the licence demotions (issue 023
-/// T2/T3 removed xnli_en's and ag_news's with their rows) — the parser +
-/// validator rules stay exercised by the mutation fixtures below, and
-/// the Bench-0057 posture records + the G5 research replay live in the
-/// Rethink repo. A FUTURE escalate row re-arms ONLY with its own GOAT
-/// record AND, for a licence-barred suite, the ledger's re-source.
+/// (issue 044's re-arm — rethink plan 016 / Bench 078, verdict AGREE
+/// 2026-10-30; the re-source law satisfied: first-party synthetic, its
+/// own GOAT, the verdict's three lockstep conditions carried) and
+/// massive_intent_en (rethink Issue 052 T4, 2026-11-07 — Bench 086's
+/// pre-registered seat: composed 0.8833 vs cheap 0.8400, Δ +0.0433, LB95
+/// +0.0137, rate 42.7% in-window; the REMOTE mammoth-1 think leg via the
+/// esc-systemone-adapter — the digest pin is the operator-attested
+/// blake3 of the staged weights; the licence SETTLED MIT per Research
+/// 019 finding 1 + the owner ruling; the two verdict conditions — the
+/// contamination shadow read + the cal→test disclosure — ride in the
+/// row's comment). Before those, the ZERO state held since the licence
+/// demotions (issue 023 T2/T3 removed xnli_en's and ag_news's with their
+/// rows) — the parser + validator rules stay exercised by the mutation
+/// fixtures below, and the Bench-0057 posture records + the G5 research
+/// replay live in the Rethink repo. A FUTURE escalate row re-arms ONLY
+/// with its own GOAT record AND, for a licence-barred suite, the
+/// ledger's re-source.
 #[test]
 fn escalate_grammar_pins_the_armed_production_state() {
     let m = production_manifest();
     let armed: Vec<_> = m.rows().iter().filter(|r| r.escalate.is_some()).collect();
     assert_eq!(
         armed.len(),
-        1,
-        "the production manifest arms exactly one escalate row (emotion_syn) — \
-         a new armed row is its own re-source + GOAT, never a silent re-flag"
+        2,
+        "the production manifest arms exactly two escalate rows (emotion_syn + \
+         massive_intent_en) — a new armed row is its own re-source + GOAT, \
+         never a silent re-flag"
     );
-    assert_eq!(armed[0].suite, "emotion_syn", "the armed row is emotion_syn");
-    let esc = armed[0].escalate.as_ref().expect("asserted above");
-    assert_eq!(esc.margin, 0.05, "the armed margin is the pinned record");
-    assert_eq!(esc.lcb_floor, None, "lcb_floor none is EXPLICIT (the LCB leg is negative)");
     assert_eq!(
-        (esc.min_rate, esc.max_rate),
-        (0.15, 0.60),
-        "the rate window is the GOAT's"
+        armed[0].suite, "massive_intent_en",
+        "row order pins the armed set"
     );
-    // The four permissive rows each carry none, named — a suite-scoped
-    // refusal spelling that names its subject.
-    for suite in [
-        "massive_intent_en",
-        "banking77",
-        "prompt_injections",
-        "typed_decisions",
-    ] {
+    {
+        let esc = armed[0].escalate.as_ref().expect("massive armed above");
+        assert_eq!(esc.margin, 0.05, "the armed margin is the pinned record");
+        assert_eq!(
+            esc.lcb_floor, None,
+            "lcb_floor none is EXPLICIT (the LCB leg is UNMEASURED — no cal mammoth coverage)"
+        );
+        assert_eq!(
+            (esc.min_rate, esc.max_rate),
+            (0.15, 0.60),
+            "the rate window is the GOAT's"
+        );
+        assert_eq!(
+            esc.think_digest,
+            "blake3:627f1fc03779b21ac08bd18997e3f7c486f9d3632dca873886d4bf2ce69d37b5",
+            "the operator-attested digest of the staged mammoth-1 weights"
+        );
+    }
+    assert_eq!(
+        armed[1].suite, "emotion_syn",
+        "row order pins the armed set"
+    );
+    {
+        let esc = armed[1].escalate.as_ref().expect("emotion_syn armed above");
+        assert_eq!(esc.margin, 0.05, "the armed margin is the pinned record");
+        assert_eq!(
+            esc.lcb_floor, None,
+            "lcb_floor none is EXPLICIT (the LCB leg is negative)"
+        );
+        assert_eq!(
+            (esc.min_rate, esc.max_rate),
+            (0.15, 0.60),
+            "the rate window is the GOAT's"
+        );
+    }
+    // The remaining permissive rows each carry none, named — a
+    // suite-scoped refusal spelling that names its subject.
+    for suite in ["banking77", "prompt_injections", "typed_decisions"] {
         assert!(
             m.row(suite)
                 .unwrap_or_else(|| panic!("{suite}: missing from the production manifest"))
                 .escalate
                 .is_none(),
             "{suite}: no escalate table on this row (the GOAT verdicts are \
-             suite-scoped — Bench 0059)"
+             suite-scoped — Bench 0059; banking77 rides Issue 054's own lane)"
         );
     }
 }
@@ -2099,8 +2145,7 @@ fn artifact_less_escalate_row_refuses_the_open_boot_and_boots_the_sanctioned_che
             // The open build's artifact-less boot: REFUSES with the wall.
             let seat = riir_reflex::harness::runner::seat::prepare_seat("emotion_syn", &datasets)
                 .expect("prepare_seat emotion_syn");
-            let Err(err) = AnySuiteServer::boot_a0_from_seat("emotion_syn", seat, &manifest)
-            else {
+            let Err(err) = AnySuiteServer::boot_a0_from_seat("emotion_syn", seat, &manifest) else {
                 panic!("an artifact-less escalate row must refuse the open boot (the T5 wall)")
             };
             assert!(
@@ -2111,11 +2156,14 @@ fn artifact_less_escalate_row_refuses_the_open_boot_and_boots_the_sanctioned_che
             // The sanctioned cheap twin: BOOTS the same row (the ESC
             // wrapper's artifact-less cheap route).
             let seat = riir_reflex::harness::runner::seat::prepare_seat("emotion_syn", &datasets)
-                .expect("prepare_seat emotion_syn (cheap twin)" );
+                .expect("prepare_seat emotion_syn (cheap twin)");
             let cheap = AnySuiteServer::boot_cheap_a0_from_seat("emotion_syn", seat, &manifest)
                 .unwrap_or_else(|e| panic!("the sanctioned cheap A0 boot must boot: {e}"));
             let arm_name = cheap.meta().arm.name();
-            assert_eq!(arm_name, "A0", "the cheap twin serves the row's own A0 posture");
+            assert_eq!(
+                arm_name, "A0",
+                "the cheap twin serves the row's own A0 posture"
+            );
         })
         .expect("spawn the wall-witness thread");
     handle.join().expect("the wall witness panicked");
