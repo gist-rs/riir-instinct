@@ -195,8 +195,10 @@ per case).
 
 | suite | serves | Rethink encoder (record-only, `serve: ✗`) |
 |---|---|---|
-| massive_intent_en | H2(β=1,nmin=2,τ=4) **0.8400** (Bench 0029 synth seat; was 0.8267) | 0.675 — not seated (better-only law) |
-| banking77 | H2(β=2,nmin=8,τ=8) **0.8540** (nbsvm v2 PRESENCE bags, Bench 012; T2 uncertified — reads LB95 −0.0163 at the 0059 published posture) | DEAD (Bench 039 screen) |
+| suite | serves | Rethink encoder (record-only, `serve: ✗`) |
+|---|---|---|
+| massive_intent_en | **ESC-composed H2+mammoth-1 0.8833** (cheap 0.8400 = Bench 0029 synth seat, was 0.8267; +0.0433, LB95 +0.0137, rate 42.7% — Bench 086's seat; ARMED 2026-11-07, rethink Issues 052/054 + live smoke Bench 088; ⚠ benchmark-conditioned — the contamination shadow read is the standing condition) | 0.675 — not seated (better-only law) |
+| banking77 | **ESC-composed H2+mammoth-1 0.8960** (cheap 0.8540 = nbsvm v2 PRESENCE bags, Bench 012; +0.0420, LB95 +0.0137, rate 52.8% — Bench 087's seat + determinism cross-check; ARMED 2026-11-07 same family; ⚠ benchmark-conditioned — same standing condition) | DEAD (Bench 039 screen) |
 | typed_decisions | H2(β=0.5,nmin=2,τ=2) **0.6475** (Benches 019+020, T2-certified; re-certified 0058+0059 at the engine + posture moves — LB95 +0.0598) | v2 head **0.7550** (Bench 041) |
 | prompt_injections | A1 **0.8534** (Bench 013, T2-certified) | DEAD (Bench 039 screen) |
 | sst5 | A1 **0.4217** | ENC **0.5267** (Bench 029, T2-certified) |
