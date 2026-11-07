@@ -1,10 +1,17 @@
 # riir-instinct — boundary contract
 
-Visibility: private TODAY; **OPENS as the public teaching product at
-Phase C** (riir-ai Proposal 052 — the owner's visibility flip is a
-personal act; `publish = false` until the fence is GREEN on the
-fresh-root export, which it is on this tree: `scripts/fence_gate.sh
---post-split`).
+Visibility: public (GitHub `gist-rs/riir-instinct` measures PUBLIC — the
+Proposal-052 Phase-C flip landed 2026-10-03, owner-confirmed 2026-11-07
+"we open for public good"; fence GREEN: `scripts/fence_gate.sh
+--post-split`). Deliberately NOT the bare C3b leaf form — the bare
+`Visibility: public` line enrolls the katgpt-rs-only public-leaf law, and
+this repo composes the public siblings `riir-reflex` + `reflexer-vessel`
+plus the opt-in PRIVATE `riir-ledger` serde leaf (`points_drain`; the
+default build never resolves it). crates.io `publish = false` is a
+registry posture, unrelated to GitHub visibility. The claim itself is
+enforced by the contract script's C10 visibility-honesty row
+(riir-instinct Issue 029: this line used to read "private TODAY" while
+GitHub measured PUBLIC).
 
 > The single source of truth for what may live in and depend on this repo.
 > Audited by the `boundary-guard` skill and
