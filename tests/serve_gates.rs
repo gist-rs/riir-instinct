@@ -190,6 +190,8 @@ digest  = "blake3:693b0d6c580d035645e2af9338847d7783102be4ca24ff89ec0fd92a25743e
 class   = "hosted_only"
 file    = "banking77_nbsvm_v2.bin"   # the Issue 579 nbsvm v2 winner (presence-bag convention, winner_bridge) — the v1 winner_v1 file stays on disk for reproduction
 posture = { arm = "H2", beta = 2.0, n_min = 8.0, tau_n = 8.0 }    # best measured 0.8540 vs A0 0.8260 (+2.8 pt; T2 LB95 -0.0013 — uncertified, serves under best-measured; Bench 012)
+# Issue 054's T3 arm (Bench 087's pre-registered seat + its determinism cross-check, the delegated-owner GO-with-constraints + the licence clearance 2026-11-07, Research 019 finding 1): ESC composed 0.8960 vs cheap 0.8540 (Δ +0.0420, paired LB95 +0.0137 > 0) at rate 52.8% in-window (cal 49.0%, shift +3.8pp inside the 10% guard) — all three arm gates pass; gate rho 0.45 (ESC_GATE_RHOS), thresholds score 0.000 / dist 0.665 (re-fit live at boot on the seat); the determinism cross-check reproduced the verdict line digit-identical under a heavier box. Think leg = mammoth-1 REMOTE via the esc-systemone-adapter (Issue 052 T3, suite-parameterized — banking77's 77-option arity re-verified at the join): the locator is deployment config (RIIR_RETHINK_ESC_REMOTE), think_file is UNREAD in the remote posture, and the digest law rides the wire — think_digest is the OPERATOR-ATTESTED blake3 of the SAME staged mammoth-1 weights as massive (the digest attests the build, not the suite). COST: escalations pay the teacher's latency (Bench 082 p50 5.2 s/case on 77-option chunking). VERDICT CONDITIONS identical to massive: (a) contamination shadow read REQUIRED before any real-traffic claim (public BANKING77 itself unverified); (b) the composed cal→test shift NOT measured — the rate-transfer guard (+3.8pp) is the only transfer evidence.
+escalate = { think_file = "mammoth_esc_adapter_v1", think_digest = "blake3:627f1fc03779b21ac08bd18997e3f7c486f9d3632dca873886d4bf2ce69d37b5", margin = 0.05, min_rate = 0.15, max_rate = 0.60 }
 pin_keys = []
 budget  = { load = "eager", max_payload_mb = 16 }
 
@@ -377,8 +379,16 @@ fn arsenal_manifest_bytes_are_pinned_byte_for_byte() {
 /// frozen read (the pre-registered arm gates passed on it); the
 /// lockstep rethink-side pins (esc_gates 22/22 + ESC_POSTURES +
 /// ESC_GATE_RHOS) landed in the same family.
+/// RE-PINNED 2026-11-07 WITH DATA (twice): the massive_intent_en row
+/// gains its escalate table (rethink Issue 052 T4 — Bench 086), and the
+/// banking77 row gains HERS (rethink Issue 054 T3 — Bench 087: composed
+/// 0.8960 vs cheap 0.8540, Δ +0.0420, LB95 +0.0137, rate 52.8% in-window,
+/// ρ 0.45; the same remote mammoth think leg + the same operator-attested
+/// weights digest — the digest attests the build, not the suite; the
+/// licence SETTLED MIT per Research 019 finding 1 + the owner ruling;
+/// the two verdict conditions ride in the rows' comments).
 const PINNED_PRODUCTION_MANIFEST_DIGEST: &str =
-    "blake3:ac4c70f0339e0f033f80324157b2f2e6a8228a1506da9470c2b3eb334edf8173";
+    "blake3:b66c99aa5e49b8b8fbe4372d948c468594c829d23495b8642805938e163cb2a3";
 
 #[test]
 fn production_manifest_bytes_are_pinned_byte_for_byte() {
@@ -1209,12 +1219,16 @@ fn escalate_manifest_text(posture: &str, escalate: &str) -> String {
 /// own GOAT, the verdict's three lockstep conditions carried) and
 /// massive_intent_en (rethink Issue 052 T4, 2026-11-07 — Bench 086's
 /// pre-registered seat: composed 0.8833 vs cheap 0.8400, Δ +0.0433, LB95
-/// +0.0137, rate 42.7% in-window; the REMOTE mammoth-1 think leg via the
-/// esc-systemone-adapter — the digest pin is the operator-attested
+/// +0.0137, rate 42.7% in-window, ρ 0.60; the REMOTE mammoth-1 think leg
+/// via the esc-systemone-adapter — the digest pin is the operator-attested
 /// blake3 of the staged weights; the licence SETTLED MIT per Research
 /// 019 finding 1 + the owner ruling; the two verdict conditions — the
 /// contamination shadow read + the cal→test disclosure — ride in the
-/// row's comment). Before those, the ZERO state held since the licence
+/// row's comment) and banking77 (rethink Issue 054 T3, 2026-11-07 —
+/// Bench 087's pre-registered seat: composed 0.8960 vs cheap 0.8540,
+/// Δ +0.0420, LB95 +0.0137, rate 52.8% in-window, ρ 0.45; the SAME
+/// remote leg + weights digest — the digest attests the build, not the
+/// suite; the same two conditions ride). Before those, the ZERO state held since the licence
 /// demotions (issue 023 T2/T3 removed xnli_en's and ag_news's with their
 /// rows) — the parser + validator rules stay exercised by the mutation
 /// fixtures below, and the Bench-0057 posture records + the G5 research
@@ -1227,9 +1241,9 @@ fn escalate_grammar_pins_the_armed_production_state() {
     let armed: Vec<_> = m.rows().iter().filter(|r| r.escalate.is_some()).collect();
     assert_eq!(
         armed.len(),
-        2,
-        "the production manifest arms exactly two escalate rows (emotion_syn + \
-         massive_intent_en) — a new armed row is its own re-source + GOAT, \
+        3,
+        "the production manifest arms exactly three escalate rows (massive_intent_en + \
+         banking77 + emotion_syn) — a new armed row is its own re-source + GOAT, \
          never a silent re-flag"
     );
     assert_eq!(
@@ -1255,11 +1269,33 @@ fn escalate_grammar_pins_the_armed_production_state() {
         );
     }
     assert_eq!(
-        armed[1].suite, "emotion_syn",
+        armed[1].suite, "banking77",
         "row order pins the armed set"
     );
     {
-        let esc = armed[1].escalate.as_ref().expect("emotion_syn armed above");
+        let esc = armed[1].escalate.as_ref().expect("banking77 armed above");
+        assert_eq!(esc.margin, 0.05, "the armed margin is the pinned record");
+        assert_eq!(
+            esc.lcb_floor, None,
+            "lcb_floor none is EXPLICIT (the LCB leg is UNMEASURED — no cal mammoth coverage)"
+        );
+        assert_eq!(
+            (esc.min_rate, esc.max_rate),
+            (0.15, 0.60),
+            "the rate window is the GOAT's"
+        );
+        assert_eq!(
+            esc.think_digest,
+            "blake3:627f1fc03779b21ac08bd18997e3f7c486f9d3632dca873886d4bf2ce69d37b5",
+            "the SAME staged build serves both suites — the digest attests the build, not the suite"
+        );
+    }
+    assert_eq!(
+        armed[2].suite, "emotion_syn",
+        "row order pins the armed set"
+    );
+    {
+        let esc = armed[2].escalate.as_ref().expect("emotion_syn armed above");
         assert_eq!(esc.margin, 0.05, "the armed margin is the pinned record");
         assert_eq!(
             esc.lcb_floor, None,
@@ -1273,7 +1309,7 @@ fn escalate_grammar_pins_the_armed_production_state() {
     }
     // The remaining permissive rows each carry none, named — a
     // suite-scoped refusal spelling that names its subject.
-    for suite in ["banking77", "prompt_injections", "typed_decisions"] {
+    for suite in ["prompt_injections", "typed_decisions"] {
         assert!(
             m.row(suite)
                 .unwrap_or_else(|| panic!("{suite}: missing from the production manifest"))
