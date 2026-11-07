@@ -2,6 +2,10 @@
 
 Compacted 2026-10-30: every `##` heading kept verbatim, one compact entry per record (≤2 short lines); the full pre-compaction text is in git history (pre-compaction HEAD 844f9170d72d). Operational rules live in `AGENTS.md`.
 
+## 2026-11-07 — Issue 029 CLOSED: the visibility claim now matches GitHub, and the claim class is gate-enforced (C10)
+
+**Status: Resolved.** gh measured the repo PUBLIC while BOUNDARY.md read "private TODAY" — the Proposal-052 Phase-C flip landed 2026-10-03, the line never did; a private note was nearly filed on the stale line's strength. Owner call: "we open for public good". Fix `6c40fca`: an honest QUALIFIED public claim (the bare `Visibility: public` line enrolls the workspace C3b katgpt-rs-only leaf law, and instinct composes public siblings + the opt-in PRIVATE `riir-ledger` serde leaf — it is NOT a leaf) + the README title/status de-staled. The drift class got its own gate row: **C10 visibility honesty** in `../riir-ai/scripts/ci_boundary_contract.sh` (`bd20b517b`) — every declared Visibility claim is compared against gh-measured GitHub visibility (slug from the origin remote, first-word parse, LOUD skip without gh/remote); stub-gh self-test arms prove both drift classes fire and a skip is never a green. First workspace verdict: 5/5 claims match (reflex-site/instinct/reflexer public=PUBLIC, refab/rethink private=PRIVATE). Fence GREEN post-edit. (`6c40fca` · `bd20b517b`)
+
 ## 2026-10-30 — Issue 024 CLOSED: serve_edge request read under a TOTAL deadline (`RequestDeadlineGuard`)
 
 **Status: Resolved. Fix `c2f909b` (HEAD at close; the general law = riir-refine batch 316 `per-read-timeout-vs-request-deadline`,
